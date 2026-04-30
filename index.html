@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Greeter.com · Create Memorable websites for every occasion</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ---------- CSS VARIABLES (LIGHT/DARK MODE) ---------- */
+        :root {
+            --bg-primary: #f9f7ff;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1025;
+            --text-secondary: #4a3b66;
+            --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+            --accent-solid: #7b5df6;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(0, 0, 0, 0.05);
+            --navbar-bg: rgba(255, 255, 255, 0.6);
+            --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
+            --glow: rgba(123, 93, 246, 0.15);
+            --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+            --popup-bg: rgba(255, 255, 255, 0.95);
+            --sun-color: #f4b942;
+        }
+
+        body.dark {
+            --bg-primary: #0c0719;
+            --bg-secondary: #1a1230;
+            --text-primary: #f0edff;
+            --text-secondary: #b9aed6;
+            --card-bg: rgba(30, 20, 55, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --navbar-bg: rgba(18, 12, 38, 0.7);
+            --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 30px 50px -15px #00000055;
+            --glow: rgba(123, 93, 246, 0.25);
+            --popup-bg: rgba(30, 20, 55, 0.95);
+            --sun-color: #ffd966;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            transition: var(--mode-transition);
+            overflow-x: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%);
+            pointer-events: none;
+            z-index: -2;
+            transition: var(--mode-transition);
+            animation: gradientFlow 12s ease infinite alternate;
+        }
+
+        @keyframes gradientFlow {
+            0% { opacity: 0.6; background-size: 100% 100%; }
+            100% { opacity: 1; background-size: 120% 120%; background-position: 10% 10%; }
+        }
+
+        body.dark .bg-gradient {
+            background: radial-gradient(circle at 20% 30%, #2d1b4e40, #0a0614 90%);
+            animation: darkGradientFlow 14s ease infinite alternate;
+        }
+
+        @keyframes darkGradientFlow {
+            0% { opacity: 0.7; background-position: 0% 0%; }
+            100% { opacity: 1; background-position: 10% 15%; }
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+        }
+
+        /* ---------- NAVBAR (floating pill) ---------- */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            margin: 16px 0 8px;
+            backdrop-filter: blur(20px);
+            background: var(--navbar-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 80px;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 12px;
+            z-index: 100;
+            transition: var(--mode-transition), box-shadow 0.2s;
+            animation: navbarGlow 3s infinite alternate;
+        }
+
+        @keyframes navbarGlow {
+            0% { box-shadow: var(--shadow-sm); }
+            100% { box-shadow: 0 0 0 2px rgba(123, 93, 246, 0.2), var(--shadow-sm); }
+        }
+
+        .navbar.scrolled {
+            box-shadow: 0 12px 30px var(--glow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-icon {
+            background: var(--accent-gradient);
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            box-shadow: 0 12px 20px -8px var(--glow);
+            transition: transform 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: rotate(5deg) scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 36px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: inherit;
+            transition: 0.2s;
+            position: relative;
+            padding-bottom: 4px;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover {
+            color: #ff7a2f;
+            transform: translateY(-2px);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .mode-toggle, .lang-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(8px);
+            width: 44px;
+            height: 44px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+        
+        .mode-toggle i.fa-sun { color: var(--sun-color); }
+        .mode-toggle i.fa-moon { color: var(--text-primary); }
+        body.dark .mode-toggle i.fa-moon { color: #ffd966; }
+        
+        .lang-toggle {
+            width: auto;
+            padding: 0 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .mode-toggle:hover, .lang-toggle:hover {
+            background: var(--accent-solid);
+            color: white;
+            transform: scale(1.05);
+            animation: pulse 0.5s ease;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1.05); }
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--card-border);
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent-solid);
+            background: rgba(123, 93, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(8px);
+            width: 44px;
+            height: 44px;
+            border-radius: 30px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            transition: 0.2s;
+        }
+
+        /* ---------- BUTTONS & ANIMATIONS ---------- */
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 16px 36px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 16px 32px -8px var(--glow);
+            transition: all 0.25s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: softPulse 3s infinite ease-in-out;
+        }
+
+        @keyframes softPulse {
+            0% { box-shadow: 0 16px 32px -8px var(--glow); transform: scale(1); }
+            50% { box-shadow: 0 20px 40px -6px #7b5df6a0; transform: scale(1.02); }
+            100% { box-shadow: 0 16px 32px -8px var(--glow); transform: scale(1); }
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 28px 45px -8px #7b5df6b0;
+            filter: brightness(1.05);
+            animation: none;
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 16px 36px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.25s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-solid);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 16px 30px -8px var(--glow);
+        }
+
+        .hero-badge {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--card-border);
+            padding: 8px 24px;
+            border-radius: 60px;
+            display: inline-block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--accent-solid);
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+            animation: badgeGlide 1s ease-out;
+        }
+
+        @keyframes badgeGlide {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .hero-badge::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.3) 30%, transparent 50%);
+            transform: rotate(25deg);
+            animation: shine 6s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(25deg); }
+            20%, 100% { transform: translateX(100%) rotate(25deg); }
+        }
+
+        /* ---------- HERO + BEAUTIFUL CARD ANIMATIONS ---------- */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px 0 80px;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .hero-content {
+            flex: 1 1 500px;
+        }
+
+        .hero-title {
+            font-size: clamp(40px, 8vw, 64px);
+            font-weight: 800;
+            line-height: 1.3;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            overflow: visible;
+            display: block;
+            animation: titleGlow 2s ease-out;
+        }
+
+        @keyframes titleGlow {
+            0% { opacity: 0; letter-spacing: -0.05em; filter: blur(8px); }
+            100% { opacity: 1; letter-spacing: -0.03em; filter: blur(0); }
+        }
+
+        .hero-title span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            line-height: 1.3;
+            padding: 0 2px;
+            transition: text-shadow 0.3s;
+        }
+
+        .hero-title span:hover {
+            text-shadow: 0 0 8px rgba(123, 93, 246, 0.5);
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 540px;
+            margin-bottom: 40px;
+            animation: fadeUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* ---------- STAGGERED ENTRANCE ANIMATION FOR MOCK CARDS ---------- */
+        .hero-visual {
+            flex: 1 1 480px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border-radius: 48px;
+            padding: 28px;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
+        }
+
+        .hero-visual:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 35px 55px -15px var(--glow);
+            border-color: rgba(123, 93, 246, 0.4);
+        }
+
+        .mock-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .mock-card {
+            background: var(--bg-secondary);
+            border-radius: 28px;
+            padding: 24px 16px;
+            border: 1px solid var(--card-border);
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(30px) scale(0.92);
+            animation: cardReveal 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+        }
+
+        .mock-card:nth-child(1) { animation-delay: 0.05s; }
+        .mock-card:nth-child(2) { animation-delay: 0.2s; }
+        .mock-card:nth-child(3) { animation-delay: 0.35s; }
+        .mock-card:nth-child(4) { animation-delay: 0.5s; }
+
+        @keyframes cardReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.88) rotateX(-5deg);
+            }
+            60% {
+                transform: translateY(-5px) scale(1.02) rotateX(2deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotateX(0);
+            }
+        }
+
+        .mock-card:hover {
+            transform: scale(1.04) translateY(-8px) !important;
+            border-color: var(--accent-solid);
+            box-shadow: 0 25px 35px -12px rgba(123, 93, 246, 0.3);
+        }
+
+        .mock-card i {
+            font-size: 36px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .mock-card:hover i {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .mock-card h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .mock-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* ---------- SECTION HEADER ANIMATIONS ---------- */
+        .section-header {
+            text-align: center;
+            margin: 80px 0 48px;
+        }
+
+        .section-header h2 {
+            font-size: clamp(36px, 6vw, 48px);
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        /* ---------- USE CASES (enhanced hover animations) ---------- */
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 24px;
+        }
+
+        .use-case-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            padding: 36px 24px;
+            border: 1px solid var(--card-border);
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            text-align: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .use-case-card:hover {
+            transform: translateY(-14px) scale(1.02);
+            background: var(--accent-solid);
+            border-color: transparent;
+            box-shadow: 0 30px 40px -15px var(--glow);
+        }
+
+        .use-case-card:hover .use-icon i {
+            animation: iconSpin 0.5s ease;
+            color: white;
+            background: none;
+            -webkit-background-clip: unset;
+        }
+
+        @keyframes iconSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .use-icon {
+            font-size: 52px;
+            margin-bottom: 24px;
+        }
+
+        .use-icon i {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: all 0.3s;
+        }
+
+        /* ---------- HOW IT WORKS ---------- */
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin: 40px 0 80px;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 200px;
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            padding: 32px 24px;
+            border-radius: 40px;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-solid);
+        }
+
+        .step-number {
+            font-size: 48px;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 16px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .step:hover .step-number {
+            transform: scale(1.2) rotate(3deg);
+        }
+
+        /* ---------- SOCIAL PROOF ---------- */
+        .proof-strip {
+            display: flex;
+            justify-content: space-around;
+            padding: 48px 0;
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+            margin: 60px 0;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .proof-item {
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .proof-item:hover {
+            transform: scale(1.05);
+        }
+
+        .proof-number {
+            font-size: 42px;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        /* ---------- CTA BANNER (enhanced) ---------- */
+        .cta-banner {
+            background: var(--accent-gradient);
+            border-radius: 64px;
+            padding: 64px 48px;
+            margin: 80px 0;
+            text-align: center;
+            color: white;
+            box-shadow: 0 40px 60px -15px #00000055;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: ctaGlowPulse 3s infinite alternate;
+        }
+
+        @keyframes ctaGlowPulse {
+            0% { box-shadow: 0 20px 40px -12px rgba(0,0,0,0.3); }
+            100% { box-shadow: 0 45px 70px -12px rgba(123, 93, 246, 0.5); }
+        }
+
+        .cta-banner:hover {
+            transform: scale(1.01);
+        }
+
+        .cta-headline {
+            font-size: clamp(36px, 8vw, 56px);
+            font-weight: 800;
+            margin-bottom: 24px;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #FFE57F 0%, #FFD54F 50%, #FFB300 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            letter-spacing: -0.02em;
+        }
+
+        /* ---------- FOOTER ---------- */
+        .footer {
+            padding: 48px 0 24px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 30px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--card-border);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: inherit;
+            transition: 0.2s;
+        }
+        .footer-links a:hover {
+            color: var(--accent-solid);
+            transform: translateY(-2px);
+        }
+
+        .social .platform-logo {
+            width: 24px;
+            height: 24px;
+            margin-left: 24px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .social .platform-logo:hover {
+            transform: translateY(-4px) scale(1.2);
+        }
+
+        /* ---------- SHARE BUTTON & POPUP (fixed) ---------- */
+        .share-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+        }
+
+        .share-btn {
+            background: var(--accent-gradient);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            animation: floatBounce 2.5s infinite ease;
+        }
+
+        @keyframes floatBounce {
+            0%,100%{ transform: translateY(0px) scale(1); }
+            50%{ transform: translateY(-10px) scale(1.08); }
+        }
+
+        .share-btn:hover {
+            animation: none;
+            transform: scale(1.15) rotate(8deg);
+        }
+
+        .share-popup {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background: var(--popup-bg);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border);
+            border-radius: 32px;
+            padding: 24px;
+            box-shadow: var(--shadow-lg);
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(15px) scale(0.95);
+            transition: 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            z-index: 1000;
+        }
+
+        .share-popup.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .share-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .share-popup-header h4 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .share-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 22px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .share-close-btn:hover {
+            background: var(--card-bg);
+            color: var(--accent-solid);
+        }
+
+        .native-share-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 20px var(--glow);
+        }
+
+        .native-share-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .share-icons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .share-icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: 0.2s;
+            padding: 8px 4px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .platform-logo {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        /* Real social media logos using SVG data URIs */
+        .facebook-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'/%3E%3C/svg%3E");
+            background-color: #1877F2;
+        }
+
+        .twitter-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z'/%3E%3C/svg%3E");
+            background-color: #1DA1F2;
+        }
+
+        .whatsapp-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488'/%3E%3C/svg%3E");
+            background-color: #25D366;
+        }
+
+        .linkedin-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z'/%3E%3C/svg%3E");
+            background-color: #0077B5;
+        }
+
+        .pinterest-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.751.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.746-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24c6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001.012.017z'/%3E%3C/svg%3E");
+            background-color: #E60023;
+        }
+
+        .reddit-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.398-.377.673-.89.73-1.447.090-.825-.179-1.643-.598-2.348-.417-.69-.967-1.244-1.617-1.744-.19-.12-.37-.246-.554-.372l2.07-3.503c.034-.053.072-.102.11-.152.108-.117.227-.215.345-.285zm-4.011 6.817c-.494 0-.901.407-.901.901 0 .494.407.9.901.9.494 0 .9-.406.9-.9 0-.494-.406-.901-.9-.901zm5.988 1.486c-.291 0-.529.238-.529.529 0 .292.238.529.529.529a.528.528 0 0 0 .529-.529c0-.291-.238-.529-.529-.529zm-9.989 0c-.292 0-.53.238-.53.529 0 .292.238.529.53.529a.53.53 0 0 0 .529-.529c0-.291-.237-.529-.529-.529zM12 7.072c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6zm4.025 4.411c-.38.239-.816.372-1.272.372a1.193 1.193 0 0 1-1.195-1.193 1.195 1.195 0 0 1 1.195-1.193 1.2 1.2 0 0 1 .979.439c.563.563.765 1.516.765 2.647 0 1.765-.571 3.04-1.641 3.04-.902 0-1.314-.461-1.783-1.032l-.362.194c.65.477 1.213.924 2.092.924 1.931 0 3.041-2.096 3.041-4.553 0-2.093-.787-3.188-2.084-3.188a2.088 2.088 0 0 0-1.485.621z'/%3E%3C/svg%3E");
+            background-color: #FF4500;
+        }
+
+        .telegram-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z'/%3E%3C/svg%3E");
+            background-color: #0088CC;
+        }
+
+        .email-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z'/%3E%3C/svg%3E");
+            background-color: #EA4335;
+        }
+
+        .sms-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H6zm0 2h12v16H6V4zm7 11l4-4h-3V9h-2v2H8l4 4z'/%3E%3C/svg%3E");
+            background-color: #34B7F1;
+        }
+
+        .instagram-logo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='url(%23instagram-gradient)'%3E%3Cdefs%3E%3ClinearGradient id='instagram-gradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23f09433'/%3E%3Cstop offset='25%25' style='stop-color:%23e6683c'/%3E%3Cstop offset='50%25' style='stop-color:%23dc2743'/%3E%3Cstop offset='75%25' style='stop-color:%23cc2366'/%3E%3Cstop offset='100%25' style='stop-color:%23bc1888'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z'/%3E%3C/svg%3E");
+            background-color: white;
+        }
+
+        .share-icon-item span {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .share-icon-item:hover {
+            background: var(--card-bg);
+            transform: translateY(-3px);
+        }
+
+        .share-icon-item:hover .platform-logo {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
+
+        .copy-link-section {
+            display: flex;
+            border-top: 1px solid var(--card-border);
+            padding-top: 16px;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-link-input {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 40px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .copy-link-btn {
+            background: var(--accent-solid);
+            border: none;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 18px;
+        }
+
+        .copy-link-btn:hover {
+            background: #ff7a2f;
+            transform: scale(1.05);
+        }
+
+        /* ---------- CUSTOM MODAL (fixed visibility) ---------- */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+        .custom-modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-card {
+            background: var(--bg-secondary);
+            border-radius: 32px;
+            max-width: 480px;
+            width: 90%;
+            padding: 28px 28px 24px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--card-border);
+            position: relative;
+            text-align: center;
+            transform: scale(0.95);
+            transition: transform 0.2s;
+            animation: modalPop 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            width: 32px;
+            height: 32px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-close:hover {
+            background: var(--accent-solid);
+            color: white;
+        }
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--accent-solid);
+        }
+        .modal-message {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        .modal-link-box {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            border-radius: 60px;
+            padding: 4px 4px 4px 18px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 16px;
+        }
+        .modal-link-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 0;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-copy-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 18px;
+        }
+        .modal-copy-btn:hover {
+            background: var(--accent-solid);
+            color: white;
+        }
+        .modal-button {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px var(--glow);
+            width: 100%;
+        }
+        .modal-button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .modal-button.secondary {
+            background: transparent;
+            border: 1.5px solid var(--card-border);
+            color: var(--text-primary);
+            box-shadow: none;
+        }
+        .modal-button.secondary:hover {
+            border-color: var(--accent-solid);
+            background: rgba(123, 93, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Instagram modal icon */
+        #instagramModal .modal-icon {
+            color: #E4405F;
+        }
+
+        /* Mobile modal adjustments */
+        @media (max-width: 768px) {
+            .modal-buttons {
+                flex-direction: column;
+            }
+            .modal-button {
+                width: 100%;
+            }
+        }
+
+        /* responsive */
+        @media (max-width: 900px) {
+            .use-case-grid { grid-template-columns: repeat(2,1fr); }
+            .mock-grid { gap: 16px; }
+            .mock-card { padding: 20px 12px; min-height: 130px; }
+        }
+        @media (max-width: 768px) {
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 80px; left: 16px; right: 16px; background: var(--navbar-bg); backdrop-filter: blur(25px); padding: 28px 24px; border-radius: 40px; border: 1px solid var(--card-border); gap: 20px; z-index: 99; }
+            .nav-links.show { display: flex; }
+            .mobile-menu-btn { display: flex; }
+            .nav-actions .btn-outline { display: none; }
+            .hero-buttons .btn-primary, .hero-buttons .btn-secondary { width: 100%; justify-content: center; }
+            .proof-strip { flex-direction: column; align-items: center; }
+            .share-popup { width: 320px; right: 0; }
+            .mock-card h4 { font-size: 1rem; }
+        }
+        @media (max-width: 480px) {
+            .use-case-grid { grid-template-columns: 1fr; }
+            .steps-container { flex-direction: column; }
+            .mock-card p { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="container">
+        <nav class="navbar" id="navbar">
+            <div class="logo"><div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com</div>
+            <div class="nav-links" id="navLinks"><a href="#">Templates</a><a href="#">Showcase</a><a href="#">Pricing</a><a href="#">Blog</a><a href="#" class="mobile-only-signin" style="display: none;">Sign in</a></div>
+            <div class="nav-actions"><div class="lang-toggle" id="langToggleBtn">हिन्दी</div><div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div><button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button><div class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div></div>
+        </nav>
+
+        <div class="hero">
+            <div class="hero-content fade-up visible">
+                <div class="hero-badge" id="heroBadge"><i class="fas fa-sparkles" style="margin-right: 10px;"></i> AI + Handcrafted templates</div>
+                <h1 class="hero-title" id="heroTitle">Turn moments into <span>Interactive</span> websites</h1>
+                <p class="hero-description" id="heroDesc">No coding. Choose a mood, customize with animations, and share a unique site for proposals, birthdays, festivals — in minutes.</p>
+                <div class="hero-buttons"><button class="btn-primary" onclick="startFlow('personal')" id="btnCreatePerson"><i class="fas fa-user-heart"></i> Create for a person</button><button class="btn-secondary" onclick="startFlow('event')" id="btnCreateEvent"><i class="fas fa-calendar-star"></i> Create for an event</button></div>
+                <p style="margin-top: 20px; opacity: 0.7; font-size: 0.9rem; color: var(--text-secondary);" id="freeStartText"><i class="fas fa-check-circle" style="color: #7b5df6;"></i> Free to start · No card required</p>
+            </div>
+            <div class="hero-visual float-animation">
+                <div class="mock-grid">
+                    <div class="mock-card" data-event="proposal"><i class="fas fa-heart"></i><h4 id="mock1Title">Proposal</h4><p id="mock1Desc">Ask someone to say-yes! ✨</p></div>
+                    <div class="mock-card" data-event="birthday"><i class="fas fa-cake-candles"></i><h4 id="mock2Title">Birthday</h4><p id="mock2Desc">Colorful Balloons/Flowers</p></div>
+                    <div class="mock-card" data-event="anniversary"><i class="fas fa-champagne-glasses"></i><h4 id="mock3Title">Anniversary</h4><p id="mock3Desc">Timeline of love</p></div>
+                    <div class="mock-card" data-event="festival"><i class="fas fa-gift"></i><h4 id="mock4Title">Festival</h4><p id="mock4Desc">Diwali · Christmas</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-header animate-on-scroll" id="sectionUseHeader"><h2 id="useHeaderTitle">Real magic, real moments</h2><p id="useHeaderDesc">Join thousands who created unforgettable surprises</p></div>
+        <div class="use-case-grid"><div class="use-case-card animate-on-scroll" onclick="startFlow('personal')"><div class="use-icon"><i class="fas fa-ring"></i></div><h3 id="case1Title">Proposal</h3><p id="case1Desc">“Will you marry me?” with floating hearts & music</p></div><div class="use-case-card animate-on-scroll" onclick="startFlow('personal')"><div class="use-icon"><i class="fas fa-face-smile"></i></div><h3 id="case2Title">Roast / Funny</h3><p id="case2Desc">Humorous birthday site with memes & sarcasm</p></div><div class="use-case-card animate-on-scroll" onclick="startFlow('event')"><div class="use-icon"><i class="fas fa-calendar"></i></div><h3 id="case3Title">Anniversary</h3><p id="case3Desc">Interactive timeline, love notes, gallery</p></div><div class="use-case-card animate-on-scroll" onclick="startFlow('event')"><div class="use-icon"><i class="fas fa-holly-berry"></i></div><h3 id="case4Title">Festival Wishes</h3><p id="case4Desc">Diwali, Eid, Christmas — animated wishes</p></div></div>
+
+        <div class="section-header animate-on-scroll" id="stepsHeader"><h2 id="stepsTitle">How Greeter works — 4 simple steps</h2><p id="stepsDesc">No design skills? Our AI & templates do the heavy lifting.</p></div>
+        <div class="steps-container"><div class="step fade-up"><div class="step-number">01</div><h4 id="step1Title">Enter details</h4><p id="step1Desc">Name, event, and personal story — we’ll handle the rest.</p></div><div class="step fade-up"><div class="step-number">02</div><h4 id="step2Title">Pick a mood</h4><p id="step2Desc">Funny, emotional, romantic, roast — set the vibe.</p></div><div class="step fade-up"><div class="step-number">03</div><h4 id="step3Title">Customize</h4><p id="step3Desc">Edit animations, colors, and add your media.</p></div><div class="step fade-up"><div class="step-number">04</div><h4 id="step4Title">Share & impress</h4><p id="step4Desc">Get a link — WhatsApp, Instagram, or SMS.</p></div></div>
+
+        <div class="proof-strip" id="proofStrip"><div class="proof-item"><div class="proof-number" id="stat1" data-target="5">0</div><span class="proof-number">k+</span><p id="proofText1">Websites created</p></div><div class="proof-item"><div class="proof-number" id="stat2" data-target="4.8 ">0.0</div><span class="proof-number"> ★</span><p id="proofText2">Rating from 3k+ reviews</p></div><div class="proof-item"><div class="proof-number" id="stat3" data-target="2">0</div><span class="proof-number">min</span><p id="proofText3">Average setup time</p></div></div>
+
+        <div class="cta-banner animate-on-scroll"><h1 class="cta-headline" id="ctaHeadline">Ready to create something unforgettable?</h1><p style="font-size: 1.2rem; margin-bottom: 32px; opacity: 0.95;" id="ctaSub">Join 50,000+ people who made their loved ones smile.</p><button class="btn-primary" style="font-size: 1.3rem; padding: 20px 48px;" onclick="startFlow('personal')" id="ctaBtn"><i class="fas fa-gem"></i> Start creating — it's free</button><p style="margin-top: 24px; opacity: 0.8;" id="ctaFine"><i class="fas fa-lock"></i> No credit card · Cancel anytime</p></div>
+
+        <div class="footer"><div><div class="logo" style="margin-bottom: 12px;"><div class="logo-icon" style="width: 36px; height: 36px;"><i class="fas fa-magic"></i></div>Greeter.com</div><p id="copyright">© 2026 Greeter · Make every moment Memorable</p></div><div class="footer-links"><a href="#" id="footerTemplates">Templates</a><a href="#" id="footerFeatures">Features</a><a href="#" id="footerShowcase">Showcase</a><a href="#" id="footerHelp">Help</a><a href="#" id="footerPrivacy">Privacy</a></div><div class="social"><div class="platform-logo instagram-logo" id="footerInstagram"></div><div class="platform-logo whatsapp-logo" id="footerWhatsApp"></div><div class="platform-logo facebook-logo" id="footerFacebook"></div></div></div>
+    </div>
+
+    <!-- Share Popup fixed -->
+    <div class="share-float">
+        <div class="share-popup" id="sharePopup">
+            <div class="share-popup-header">
+                <h4 id="shareTitle">Share this page</h4>
+                <button class="share-close-btn" id="closeSharePopupBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <button class="native-share-btn" id="nativeShareBtn" style="display: none;"><i class="fas fa-share-alt"></i> <span id="nativeShareText">Share via device apps</span></button>
+            <div class="share-icons-grid">
+                <div class="share-icon-item" data-platform="facebook"><div class="platform-logo facebook-logo"></div><span>Facebook</span></div>
+                <div class="share-icon-item" data-platform="twitter"><div class="platform-logo twitter-logo"></div><span>Twitter</span></div>
+                <div class="share-icon-item" data-platform="whatsapp"><div class="platform-logo whatsapp-logo"></div><span>WhatsApp</span></div>
+                <div class="share-icon-item" data-platform="linkedin"><div class="platform-logo linkedin-logo"></div><span>LinkedIn</span></div>
+                <div class="share-icon-item" data-platform="pinterest"><div class="platform-logo pinterest-logo"></div><span>Pinterest</span></div>
+                <div class="share-icon-item" data-platform="reddit"><div class="platform-logo reddit-logo"></div><span>Reddit</span></div>
+                <div class="share-icon-item" data-platform="telegram"><div class="platform-logo telegram-logo"></div><span>Telegram</span></div>
+                <div class="share-icon-item" data-platform="email"><div class="platform-logo email-logo"></div><span id="emailSpan">Email</span></div>
+                <div class="share-icon-item" data-platform="sms"><div class="platform-logo sms-logo"></div><span id="smsSpan">SMS</span></div>
+                <div class="share-icon-item" data-platform="instagram"><div class="platform-logo instagram-logo"></div><span>Instagram</span></div>
+            </div>
+            <div class="copy-link-section">
+                <input type="text" class="copy-link-input" id="pageUrlInput" readonly value="">
+                <button class="copy-link-btn" id="copyPageLinkBtn"><i class="far fa-copy"></i></button>
+            </div>
+        </div>
+        <button class="share-btn" id="shareBtn"><i class="fas fa-share-alt"></i></button>
+    </div>
+
+    <!-- Custom Modal -->
+    <div class="custom-modal" id="customModal">
+        <div class="modal-card">
+            <div class="modal-close" id="modalCloseBtn"><i class="fas fa-times"></i></div>
+            <div class="modal-icon"><i class="fas fa-info-circle"></i></div>
+            <div class="modal-message" id="modalMessage"></div>
+            <div id="modalLinkContainer" style="display: none;">
+                <div class="modal-link-box">
+                    <input type="text" id="modalLinkInput" readonly>
+                    <button class="modal-copy-btn" id="modalCopyBtn"><i class="far fa-copy"></i></button>
+                </div>
+            </div>
+            <button class="modal-button" id="modalOkBtn">OK</button>
+        </div>
+    </div>
+
+    <!-- Instagram Share Modal -->
+    <div class="custom-modal" id="instagramModal">
+      <div class="modal-card">
+        <div class="modal-close" id="instagramModalClose"><i class="fas fa-times"></i></div>
+        <div class="modal-icon"><div class="platform-logo instagram-logo" style="width: 48px; height: 48px;"></div></div>
+        <div class="modal-message" id="instagramModalMessage">Share this magical link on Instagram</div>
+        <div class="modal-link-box">
+          <input type="text" id="instagramModalLink" readonly>
+          <button class="modal-copy-btn" id="instagramModalCopy"><i class="far fa-copy"></i></button>
+        </div>
+        <div class="modal-buttons">
+          <button class="modal-button secondary" id="instagramModalRedirect">Go to Instagram</button>
+          <button class="modal-button primary" id="instagramModalOk">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        // ========== CUSTOM MODAL ==========
+        const modalEl = document.getElementById('customModal');
+        const modalMessageSpan = document.getElementById('modalMessage');
+        const modalLinkContainer = document.getElementById('modalLinkContainer');
+        const modalLinkInput = document.getElementById('modalLinkInput');
+        
+        function showModal(message, link = null) {
+            modalMessageSpan.innerText = message;
+            if (link) {
+                modalLinkInput.value = link;
+                modalLinkContainer.style.display = 'block';
+            } else {
+                modalLinkContainer.style.display = 'none';
+            }
+            modalEl.classList.add('show');
+        }
+        
+        function closeModal() {
+            modalEl.classList.remove('show');
+        }
+        
+        document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+        document.getElementById('modalOkBtn').addEventListener('click', closeModal);
+        document.getElementById('modalCopyBtn').addEventListener('click', function() {
+            modalLinkInput.select();
+            navigator.clipboard?.writeText(modalLinkInput.value).then(() => {
+                const original = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => { this.innerHTML = original; }, 1500);
+            });
+        });
+        modalEl.addEventListener('click', function(e) {
+            if (e.target === modalEl) closeModal();
+        });
+
+        // ========== INSTAGRAM MODAL ==========
+        const instagramModal = document.getElementById('instagramModal');
+        const instagramModalMessage = document.getElementById('instagramModalMessage');
+        const instagramModalLink = document.getElementById('instagramModalLink');
+
+        function showInstagramModal(link) {
+            instagramModalLink.value = link;
+            instagramModalMessage.innerText = currentLang === 'en' ? 'Share this magical link on Instagram' : 'इंस्टाग्राम पर यह जादुई लिंक शेयर करें';
+            instagramModal.classList.add('show');
+        }
+
+        function closeInstagramModal() {
+            instagramModal.classList.remove('show');
+        }
+
+        document.getElementById('instagramModalClose').addEventListener('click', closeInstagramModal);
+        document.getElementById('instagramModalOk').addEventListener('click', closeInstagramModal);
+        document.getElementById('instagramModalRedirect').addEventListener('click', () => {
+            window.open('https://instagram.com', '_blank');
+            closeInstagramModal();
+        });
+        document.getElementById('instagramModalCopy').addEventListener('click', function() {
+            instagramModalLink.select();
+            navigator.clipboard?.writeText(instagramModalLink.value).then(() => {
+                const original = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => { this.innerHTML = original; }, 1500);
+            });
+        });
+        instagramModal.addEventListener('click', function(e) {
+            if (e.target === instagramModal) closeInstagramModal();
+        });
+
+        // ========== TRANSLATIONS ==========
+        const translations = {
+            en: {
+                heroBadge: '✨ AI + Handcrafted templates',
+                heroTitlePre: 'Turn moments into ',
+                heroTitleSpan: 'Interactive',
+                heroTitlePost: ' websites',
+                heroDesc: 'No coding. Choose a mood, customize with animations, and share a unique site for proposals, birthdays, festivals — in minutes.',
+                btnPerson: 'Create for a person',
+                btnEvent: 'Create for an event',
+                freeText: 'Free to start · No card required',
+                nav: ['Templates','Showcase','Pricing','Blog'],
+                signin: 'Sign in',
+                useHeader: ['Real magic, real moments','Join thousands who created unforgettable surprises'],
+                case: [['Proposal','“Will you marry me?” with floating hearts & music'],['Roast / Funny','Humorous birthday site with memes & sarcasm'],['Anniversary','Interactive timeline, love notes, gallery'],['Festival Wishes','Diwali, Eid, Christmas — animated wishes']],
+                stepsTitle: 'How Greeter works — 4 simple steps',
+                stepsDesc: 'No design skills? Our AI & templates do the heavy lifting.',
+                step: [['Enter details','Name, event, and personal story — we’ll handle the rest.'],['Pick a mood','Funny, emotional, romantic, roast — set the vibe.'],['Customize','Edit animations, colors, and add your media.'],['Share & impress','Get a link — WhatsApp, Instagram, or SMS.']],
+                proof: ['Websites created','Rating from 3k+ reviews','Average setup time'],
+                ctaHead: 'Ready to create something unforgettable?',
+                ctaSub: 'Join 50,000+ people who made their loved ones smile.',
+                ctaBtn: 'Start creating — it\'s free',
+                ctaFine: 'No credit card · Absolutely Free to Start',
+                copyright: '© 2026 Greeter · Make Every Moment Memorable',
+                footerLinks: ['Templates','Features','Showcase','Help','Privacy'],
+                shareTitle: 'Share this page',
+                nativeShare: 'Share via device apps',
+                emailLabel: 'Email',
+                smsLabel: 'SMS',
+                copyAlert: 'Link copied to clipboard!',
+                instaAlert: 'Instagram sharing: Copy link and share manually in Instagram.',
+                signinAlert: 'Sign in feature will be available soon!',
+                mock: [['Proposal','Ask someone to say-yes✨'],['Birthday','Colorful Balloons 🎈'],['Anniversary','Timeline of love 👩🏻‍❤️‍👨🏻'],['Festival','Diwali · Eid · Christmas 🎉']]
+            },
+            hi: {
+                heroBadge: '✨ AI + खुद के बनाए टेम्पलेट',
+                heroTitlePre: 'हर पल को बनाएं ',
+                heroTitleSpan: 'दिलचस्प',
+                heroTitlePost: ' वेबसाइट',
+                heroDesc: 'कोडिंग की ज़रूरत नहीं। मूड चुनो, एनिमेशन से सजाओ, और प्रपोज़ल, जन्मदिन, त्योहारों के लिए अनोखी साइट बनाकर शेयर करो — बस कुछ मिनटों में।',
+                btnPerson: 'किसी व्यक्ति के लिए बनाएं',
+                btnEvent: 'किसी इवेंट के लिए बनाएं',
+                freeText: 'बिलकुल - मुफ्त में शुरू करें ',
+                nav: ['टेम्पलेट','शोकेस','कीमतें','ब्लॉग'],
+                signin: 'लॉगिन करें',
+                useHeader: ['असली जादू, असली पल','हजारों लोगों ने बनाए यादगार सरप्राइज़, अब आपकी बारी'],
+                case: [['शादी का प्रपोज़ल','“क्या तुम मुझसे शादी करोगी?” — बरसते दिल और संगीत के साथ'],['मज़ाकिया अंदाज़','मीम्स और मस्ती भरा जन्मदिन का तोहफा'],['सालगिरह का जश्न','प्यार की कहानी, तस्वीरें और दिल के नोट्स'],['त्योहारी शुभकामनाएं','दिवाली, ईद, क्रिसमस — एनिमेटेड विशेस']],
+                stepsTitle: 'Greeter कैसे काम करता है — 4 आसान चरण',
+                stepsDesc: 'डिज़ाइन नहीं आता? हमारा AI और टेम्पलेट सब संभाल लेंगे।',
+                step: [['जानकारी दें','नाम, मौका और अपनी कहानी — बाकी हम कर देंगे।'],['मूड चुनें','मज़ाकिया, इमोशनल, रोमांटिक, रोस्ट — जैसा मूड हो वैसा चुनो।'],['अपनी मर्जी से सजाएं','रंग, एनिमेशन और अपनी फोटो या वीडियो डालो।'],['शेयर करो और वाह कराओ','लिंक मिलेगा — व्हाट्सएप, इंस्टाग्राम या एसएमएस से भेजो।']],
+                proof: ['वेबसाइट बन चुकी हैं','3k+ रिव्यू से रेटिंग','बनने में औसत समय'],
+                ctaHead: 'कुछ अनोखा बनाने के लिए तैयार हो?',
+                ctaSub: '50,000+ लोगों के साथ जुड़ो जिन्होंने अपनों को खुश कर दिया।',
+                ctaBtn: 'अभी बनाना शुरू करो — बिल्कुल मुफ्त',
+                ctaFine: 'कोई क्रेडिट कार्ड नहीं · बिलकुल फ्री में शुरू करें',
+                copyright: '© 2026 Greeter · हर पल यादगार बनाएं',
+                footerLinks: ['टेम्पलेट','फीचर्स','शोकेस','मदद','प्राइवेसी'],
+                shareTitle: 'ये पेज शेयर करें',
+                nativeShare: 'दूसरे ऐप्स से शेयर करें',
+                emailLabel: 'ईमेल',
+                smsLabel: 'एसएमएस',
+                copyAlert: 'लिंक कॉपी हो गया!',
+                instaAlert: 'इंस्टाग्राम पर शेयर करने के लिए आप यह लिंक कॉपी करके भेज सकते हैं।',
+                signinAlert: 'लॉगिन सुविधा जल्द ही आ रही है!',
+                mock: [['प्रपोज़ल','किसी को -हाँ के लिए पूछे ✨'],['जन्मदिन','रंग-बिरंगे गुब्बारे 🎈'],['सालगिरह','प्यार की टाइमलाइन👩🏻‍❤️‍👨🏻'],['त्योहार','  दिवाली · ईद · क्रिसमस🎉']]
+            }
+        };
+
+        let currentLang = 'en';
+        function applyLanguage(lang) {
+            const t = translations[lang];
+            if (!t) return;
+            document.getElementById('heroBadge').innerHTML = `<i class="fas fa-sparkles" style="margin-right: 10px;"></i> ${t.heroBadge}`;
+            document.getElementById('heroTitle').innerHTML = `${t.heroTitlePre}<span>${t.heroTitleSpan}</span>${t.heroTitlePost}`;
+            document.getElementById('heroDesc').innerText = t.heroDesc;
+            document.getElementById('btnCreatePerson').innerHTML = `<i class="fas fa-user-heart"></i> ${t.btnPerson}`;
+            document.getElementById('btnCreateEvent').innerHTML = `<i class="fas fa-calendar-star"></i> ${t.btnEvent}`;
+            document.getElementById('freeStartText').innerHTML = `<i class="fas fa-check-circle" style="color: #7b5df6;"></i> ${t.freeText}`;
+            const navLinks = document.querySelectorAll('.nav-links a');
+            if (navLinks.length) { navLinks[0].innerText = t.nav[0]; navLinks[1].innerText = t.nav[1]; navLinks[2].innerText = t.nav[2]; navLinks[3].innerText = t.nav[3]; }
+            document.querySelector('.btn-outline').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
+            document.getElementById('useHeaderTitle').innerText = t.useHeader[0];
+            document.getElementById('useHeaderDesc').innerText = t.useHeader[1];
+            for (let i = 0; i < 4; i++) { document.getElementById(`case${i+1}Title`).innerText = t.case[i][0]; document.getElementById(`case${i+1}Desc`).innerText = t.case[i][1]; }
+            document.getElementById('stepsTitle').innerText = t.stepsTitle;
+            document.getElementById('stepsDesc').innerText = t.stepsDesc;
+            for (let i = 0; i < 4; i++) { document.getElementById(`step${i+1}Title`).innerText = t.step[i][0]; document.getElementById(`step${i+1}Desc`).innerText = t.step[i][1]; }
+            for (let i = 0; i < 3; i++) { document.getElementById(`proofText${i+1}`).innerText = t.proof[i]; }
+            document.getElementById('ctaHeadline').innerText = t.ctaHead;
+            document.getElementById('ctaSub').innerText = t.ctaSub;
+            document.getElementById('ctaBtn').innerHTML = `<i class="fas fa-gem"></i> ${t.ctaBtn}`;
+            document.getElementById('ctaFine').innerHTML = `<i class="fas fa-lock"></i> ${t.ctaFine}`;
+            document.getElementById('copyright').innerText = t.copyright;
+            const footerLinksArr = ['footerTemplates','footerFeatures','footerShowcase','footerHelp','footerPrivacy'];
+            footerLinksArr.forEach((id, idx) => { if (document.getElementById(id)) document.getElementById(id).innerText = t.footerLinks[idx]; });
+            document.getElementById('shareTitle').innerText = t.shareTitle;
+            const nativeSpan = document.getElementById('nativeShareText'); if (nativeSpan) nativeSpan.innerText = t.nativeShare;
+            const emailSpan = document.getElementById('emailSpan'); if (emailSpan) emailSpan.innerText = t.emailLabel;
+            const smsSpan = document.getElementById('smsSpan'); if (smsSpan) smsSpan.innerText = t.smsLabel;
+            for (let i = 0; i < 4; i++) { document.getElementById(`mock${i+1}Title`).innerText = t.mock[i][0]; document.getElementById(`mock${i+1}Desc`).innerText = t.mock[i][1]; }
+            localStorage.setItem('greeter_lang', lang);
+        }
+        function toggleLanguage() { const newLang = currentLang === 'en' ? 'hi' : 'en'; currentLang = newLang; applyLanguage(currentLang); document.getElementById('langToggleBtn').innerText = currentLang === 'en' ? 'हिन्दी' : 'English'; }
+        
+        // ========== SHARE POPUP LOGIC (FIXED) ==========
+        const sharePopup = document.getElementById('sharePopup');
+        const shareBtn = document.getElementById('shareBtn');
+        const closeShareBtn = document.getElementById('closeSharePopupBtn');
+        const copyLinkBtn = document.getElementById('copyPageLinkBtn');
+        const pageUrlInput = document.getElementById('pageUrlInput');
+        
+        function toggleSharePopup() {
+            sharePopup.classList.toggle('show');
+            if (sharePopup.classList.contains('show')) {
+                pageUrlInput.value = window.location.href;
+            }
+        }
+        function closeSharePopup() {
+            sharePopup.classList.remove('show');
+        }
+        shareBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSharePopup();
+        });
+        closeShareBtn.addEventListener('click', closeSharePopup);
+        document.addEventListener('click', (e) => {
+            if (!sharePopup.contains(e.target) && !shareBtn.contains(e.target) && sharePopup.classList.contains('show')) {
+                closeSharePopup();
+            }
+        });
+        
+        function copyPageLink() {
+            const link = window.location.href;
+            navigator.clipboard.writeText(link).then(() => {
+                const msg = currentLang === 'hi' ? translations.hi.copyAlert : translations.en.copyAlert;
+                showModal(msg);
+                closeSharePopup();
+            }).catch(() => {
+                const msg = currentLang === 'hi' ? translations.hi.copyAlert : translations.en.copyAlert;
+                showModal(msg, link);
+                closeSharePopup();
+            });
+        }
+        copyLinkBtn.addEventListener('click', copyPageLink);
+        
+        function nativeShare() {
+            if (navigator.share) {
+                navigator.share({ title: 'Greeter.com', text: currentLang === 'hi' ? 'हर मौके के लिए यादगार वेबसाइट बनाएं' : 'Create Memorable websites for every occasion', url: window.location.href }).catch(() => {});
+            } else {
+                const msg = currentLang === 'hi' ? translations.hi.instaAlert : translations.en.instaAlert;
+                showModal(msg, window.location.href);
+            }
+            closeSharePopup();
+        }
+        const nativeShareBtn = document.getElementById('nativeShareBtn');
+        if (navigator.share) nativeShareBtn.style.display = 'flex';
+        nativeShareBtn.addEventListener('click', nativeShare);
+        
+        // Share icons
+        document.querySelectorAll('.share-icon-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const platform = item.dataset.platform;
+                let shareUrl = '';
+                const pageUrl = encodeURIComponent(window.location.href);
+                const title = encodeURIComponent('Greeter.com');
+                if (platform === 'facebook') shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
+                else if (platform === 'twitter') shareUrl = `https://twitter.com/intent/tweet?url=${pageUrl}&text=${title}`;
+                else if (platform === 'whatsapp') shareUrl = `https://api.whatsapp.com/send?text=${title}%20${pageUrl}`;
+                else if (platform === 'linkedin') shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`;
+                else if (platform === 'pinterest') shareUrl = `https://pinterest.com/pin/create/button/?url=${pageUrl}&description=${title}`;
+                else if (platform === 'reddit') shareUrl = `https://reddit.com/submit?url=${pageUrl}&title=${title}`;
+                else if (platform === 'telegram') shareUrl = `https://t.me/share/url?url=${pageUrl}&text=${title}`;
+                else if (platform === 'email') shareUrl = `mailto:?subject=${title}&body=${pageUrl}`;
+                else if (platform === 'sms') shareUrl = `sms:?body=${title}%20${pageUrl}`;
+                else if (platform === 'instagram') {
+                    showInstagramModal(window.location.href);
+                    closeSharePopup();
+                    return;
+                }
+                if (shareUrl) window.open(shareUrl, '_blank');
+                closeSharePopup();
+            });
+        });
+        
+        // ========== OTHER FUNCTIONS ==========
+        function handleSignInAlert() {
+            const msg = currentLang === 'hi' ? translations.hi.signinAlert : translations.en.signinAlert;
+            showModal(msg);
+        }
+        document.getElementById('signinBtn').addEventListener('click', handleSignInAlert);
+        
+        function redirectWithEvent(eventType) { localStorage.setItem('presetEvent', eventType); window.location.href = 'create.html'; }
+        document.querySelectorAll('.mock-card').forEach(card => {
+            card.addEventListener('click', (e) => { e.stopPropagation(); const eventType = card.getAttribute('data-event'); if (eventType) redirectWithEvent(eventType); });
+        });
+        window.startFlow = function(type) { localStorage.setItem('greeter_flow_type', type); window.location.href = 'create.html'; };
+        
+        // Theme
+        function setTheme(isDark) {
+            const body = document.body, icon = document.getElementById('themeIcon');
+            if (isDark) { body.classList.add('dark'); icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); localStorage.setItem('greeter-theme', 'dark'); }
+            else { body.classList.remove('dark'); icon.classList.remove('fa-moon'); icon.classList.add('fa-sun'); localStorage.setItem('greeter-theme', 'light'); }
+        }
+        const savedTheme = localStorage.getItem('greeter-theme');
+        setTheme(savedTheme === 'dark');
+        document.getElementById('modeToggle').addEventListener('click', () => { setTheme(!document.body.classList.contains('dark')); });
+        
+        // Language init
+        const savedLang = localStorage.getItem('greeter_lang') || 'en';
+        currentLang = savedLang;
+        applyLanguage(currentLang);
+        document.getElementById('langToggleBtn').innerText = currentLang === 'en' ? 'हिन्दी' : 'English';
+        document.getElementById('langToggleBtn').addEventListener('click', toggleLanguage);
+        
+        // Mobile menu
+        function toggleMobileMenu() {
+            const nav = document.getElementById('navLinks');
+            const btn = document.getElementById('mobileMenuBtn');
+            const icon = btn.querySelector('i');
+            nav.classList.toggle('show');
+            if (nav.classList.contains('show')) { icon.classList.remove('fa-bars'); icon.classList.add('fa-times'); }
+            else { icon.classList.remove('fa-times'); icon.classList.add('fa-bars'); }
+        }
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
+        
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.15 });
+        document.querySelectorAll('.fade-up, .animate-on-scroll').forEach(el => observer.observe(el));
+        
+        // Count-up
+        const countObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !window.counted) {
+                window.counted = true;
+                const animateValue = (el, start, end, duration, isFloat) => {
+                    let startTime = null;
+                    const step = (ts) => {
+                        if (!startTime) startTime = ts;
+                        const progress = Math.min((ts - startTime) / duration, 1);
+                        let val = isFloat ? (start + progress * (end - start)).toFixed(1) : Math.floor(start + progress * (end - start));
+                        el.innerText = val;
+                        if (progress < 1) requestAnimationFrame(step);
+                        else el.innerText = isFloat ? end.toFixed(1) : end;
+                    };
+                    requestAnimationFrame(step);
+                };
+                animateValue(document.getElementById('stat1'), 0, 50, 2000, false);
+                animateValue(document.getElementById('stat2'), 0, 4.9, 1800, true);
+                animateValue(document.getElementById('stat3'), 0, 2, 1500, false);
+            }
+        }, { threshold: 0.5 });
+        if (document.getElementById('proofStrip')) countObserver.observe(document.getElementById('proofStrip'));
+        
+        // Footer social
+        document.getElementById('footerInstagram')?.addEventListener('click', (e) => { e.preventDefault(); showInstagramModal(window.location.href); });
+        document.getElementById('footerTikTok')?.addEventListener('click', (e) => { e.preventDefault(); const msg = currentLang === 'hi' ? '🎵 TikTok पर शेयर करने के लिए लिंक कॉपी करें:' : '🎵 Copy this link to share on TikTok:'; showModal(msg, window.location.href); });
+        document.getElementById('footerFacebook')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank'); });
+        document.getElementById('footerWhatsApp')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://wa.me/?text=${encodeURIComponent('Greeter.com - Create Memorable websites')}%20${encodeURIComponent(window.location.href)}`, '_blank'); });
+    </script>
+</body>
+</html>

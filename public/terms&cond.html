@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Terms and Conditions · Greeter.com</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* ---------- GLOBAL & RESET (from ContactUs + terms additions) ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #f9f7ff;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a1025;
+      --text-secondary: #4a3b66;
+      --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+      --accent-solid: #7b5df6;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --navbar-bg: rgba(255, 255, 255, 0.75);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
+      --glow: rgba(123, 93, 246, 0.15);
+      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+      --border-light: #ece7f5;
+      --input-bg: rgba(255, 255, 255, 0.9);
+    }
+
+    body.dark {
+      --bg-primary: #0c0719;
+      --bg-secondary: #1a1230;
+      --text-primary: #f0edff;
+      --text-secondary: #b9aed6;
+      --card-bg: rgba(30, 20, 55, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --navbar-bg: rgba(18, 12, 38, 0.85);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 30px 50px -15px #00000055;
+      --glow: rgba(123, 93, 246, 0.25);
+      --border-light: #2a2442;
+      --input-bg: rgba(30, 20, 55, 0.9);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: var(--mode-transition);
+      overflow-x: hidden;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -2;
+      transition: var(--mode-transition);
+    }
+
+    body.dark .bg-gradient {
+      background: radial-gradient(circle at 20% 30%, #2d1b4e40, #0a0614 90%);
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ----- NAVBAR (glass, sticky, from ContactUs) ----- */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 28px;
+      margin: 16px 0 12px;
+      backdrop-filter: blur(16px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      transition: var(--mode-transition);
+      flex-wrap: nowrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+      flex-shrink: 1;
+      white-space: nowrap;
+    }
+
+    .logo-icon {
+      background: var(--accent-gradient);
+      width: 44px;
+      height: 44px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 12px 20px -8px var(--glow);
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+      transition: 0.25s;
+      position: relative;
+      padding: 6px 0;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2.5px;
+      background: var(--accent-gradient);
+      transition: width 0.3s;
+      border-radius: 4px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: #ff7a2f;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .mode-toggle,
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      width: 44px;
+      height: 44px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mode-toggle .fa-sun {
+      color: #fbbf24;
+      font-size: 1.2rem;
+    }
+
+    body.dark .mode-toggle .fa-moon {
+      color: #cbd5e1;
+    }
+
+    .lang-toggle {
+      width: auto;
+      padding: 0 18px;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .mode-toggle:hover,
+    .lang-toggle:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 9px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 40px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+    }
+
+    /* ----- TERMS CARD (professional, dark/light compatible) ----- */
+    .terms-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 36px;
+      padding: 48px 40px;
+      margin: 40px 0;
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .terms-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .terms-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .terms-section {
+      margin-bottom: 28px;
+    }
+
+    .terms-section h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .terms-section p,
+    .terms-section li {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .terms-section ul {
+      padding-left: 24px;
+      margin: 8px 0;
+    }
+
+    .terms-section li {
+      margin-bottom: 6px;
+    }
+
+    hr {
+      margin: 28px 0;
+      border: none;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .contact-email {
+      color: var(--text-secondary);
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .contact-email:hover {
+      color: var(--accent-solid);
+    }
+
+    /* ----- FOOTER (from ContactUs) ----- */
+    .footer {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--card-border);
+      border-radius: 40px 40px 0 0;
+      margin-top: 40px;
+      padding: 48px 32px 32px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .footer-brand p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      max-width: 260px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 60px;
+    }
+
+    .footer-col a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent-solid);
+    }
+
+    .copyright {
+      text-align: center;
+      padding-top: 32px;
+      margin-top: 32px;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .social-icons a {
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: 0.2s;
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+    }
+
+    .social-icons a .fa-facebook-f {
+      color: #1877f2;
+    }
+
+    .social-icons a .fa-instagram {
+      color: #e4405f;
+    }
+
+    .social-icons a .fa-twitter {
+      color: #1da1f2;
+    }
+
+    .social-icons a .fa-whatsapp {
+      color: #25d366;
+    }
+
+    .social-icons a:hover {
+      transform: translateY(-3px);
+    }
+
+    .social-icons a:hover .fab {
+      color: white !important;
+    }
+
+    .social-icons a:has(.fa-facebook-f):hover {
+      background: #1877f2;
+      border-color: #1877f2;
+    }
+
+    .social-icons a:has(.fa-instagram):hover {
+      background: #e4405f;
+      border-color: #e4405f;
+    }
+
+    .social-icons a:has(.fa-twitter):hover {
+      background: #1da1f2;
+      border-color: #1da1f2;
+    }
+
+    .social-icons a:has(.fa-whatsapp):hover {
+      background: #25d366;
+      border-color: #25d366;
+    }
+
+    /* ----- RESPONSIVE (navbar + footer + terms) ----- */
+    @media (max-width: 1024px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .navbar {
+        padding: 10px 20px;
+        gap: 12px;
+      }
+
+      .logo {
+        font-size: 1.2rem;
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        gap: 20px;
+      }
+
+      .nav-links a {
+        font-size: 0.85rem;
+        padding: 4px 0;
+      }
+
+      .btn-outline {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        gap: 6px;
+      }
+
+      .mode-toggle,
+      .lang-toggle {
+        width: 40px;
+        height: 40px;
+      }
+
+      .lang-toggle {
+        width: auto;
+        padding: 0 12px;
+        font-size: 0.8rem;
+        gap: 6px;
+      }
+
+      .nav-actions {
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .navbar {
+        padding: 10px 18px;
+      }
+
+      .logo {
+        font-size: clamp(0.9rem, 4vw, 1.3rem);
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 85px;
+        left: 20px;
+        right: 20px;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(24px);
+        border-radius: 32px;
+        padding: 28px 20px;
+        flex-direction: column;
+        gap: 18px;
+        text-align: center;
+        z-index: 1000;
+        border: 1px solid var(--card-border);
+        box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transform: translateY(-15px);
+        pointer-events: none;
+        transition: 0.3s;
+      }
+
+      .nav-links.show {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .nav-links a {
+        font-size: 1.1rem;
+        padding: 10px 0;
+      }
+
+      .nav-links a::after {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .nav-actions .btn-outline {
+        display: none;
+      }
+
+      .terms-card {
+        padding: 32px 24px;
+      }
+
+      .terms-header h1 {
+        font-size: 1.6rem;
+      }
+
+      .terms-section h2 {
+        font-size: 1.1rem;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .footer-brand {
+        margin: 0 auto;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .footer-brand p {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 280px;
+      }
+
+      .footer-links {
+        flex-direction: row;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      .footer-col {
+        text-align: center;
+        min-width: 120px;
+        flex-shrink: 0;
+      }
+
+      .footer-col ul {
+        padding-left: 0;
+        list-style: none;
+        text-align: center;
+      }
+
+      .footer-col li {
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-col h4 {
+        margin-bottom: 0.75rem;
+      }
+
+      .footer-social {
+        text-align: center;
+        width: 100%;
+      }
+
+      .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .lang-toggle span {
+        display: none;
+      }
+
+      .lang-toggle {
+        width: 44px;
+        padding: 0;
+        justify-content: center;
+      }
+
+      .footer-inner {
+        gap: 1.5rem;
+      }
+
+      .footer-links {
+        gap: 1.5rem;
+      }
+
+      .footer-col {
+        min-width: 110px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+  <div class="container">
+    <!-- ========== HEADER (exactly from ContactUs) ========== -->
+    <nav class="navbar">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" id="navHome">Home</a>
+        <a href="create.html" id="navCreate">Create</a>
+        <a href="WhyWe.html" id="navWhy">Why Greeter</a>
+        <a href="privacy.html" id="navShowcase">Privacy</a>
+        <a href="ContactUs.html" id="navPricing">Contact Us</a>
+      </div>
+      <div class="nav-actions">
+        <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
+        <div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button>
+        <div class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div>
+      </div>
+    </nav>
+
+    <!-- ========== TERMS AND CONDITIONS CONTENT (preserved) ========== -->
+    <div class="terms-card">
+      <div class="terms-header">
+        <h1 id="termsTitle">TERMS AND CONDITIONS</h1>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t1Title">1. ACCEPTANCE OF TERMS</h2>
+        <p id="t1Text">By accessing or using the website greeter.com (“Site”) and any associated services, features, or
+          functionalities (collectively, “Services”) provided by Greeter.com (“Company”, “we”, “us”, “our”), you agree
+          to be bound by these Terms and Conditions (“Terms”). If you do not agree to these Terms, you must not use the
+          Services. These Terms constitute a legally binding agreement between you and the Company.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t2Title">2. ELIGIBILITY AND REGISTRATION</h2>
+        <p id="t2Text">You represent and warrant that you are at least 13 years of age (or such higher age as required
+          by applicable law) and possess the legal authority to enter into this agreement. Certain features of the
+          Services may require registration. You agree to provide accurate, current, and complete information and to
+          maintain and update such information as necessary. You are solely responsible for maintaining the
+          confidentiality of any account credentials.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t3Title">3. USER CONDUCT AND CONTENT</h2>
+        <p id="t3Text">You are solely responsible for any content you upload, create, or otherwise make available
+          through the Services, including but not limited to text, images, messages, and customizations (“User
+          Content”). You agree not to:</p>
+        <ul id="t3List">
+          <li>Post or transmit any unlawful, defamatory, obscene, or otherwise objectionable content.</li>
+          <li>Infringe upon the intellectual property rights or privacy of any third party.</li>
+          <li>Use the Services to distribute spam, malware, or any harmful code.</li>
+          <li>Attempt to gain unauthorized access to any portion of the Services or interfere with their operation.</li>
+        </ul>
+        <p id="t3Cont">We reserve the right, in our sole discretion, to remove or modify any User Content that violates
+          these Terms without prior notice.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t4Title">4. INTELLECTUAL PROPERTY RIGHTS</h2>
+        <p id="t4Text">All content, features, and functionality of the Services, including but not limited to software,
+          design, text, graphics, logos, and trademarks, are owned by the Company or its licensors and are protected by
+          copyright, trademark, and other intellectual property laws. You retain ownership of your User Content;
+          however, by uploading or creating content through the Services, you grant the Company a non‑exclusive,
+          worldwide, royalty‑free license to host, store, display, and share such content as necessary to provide the
+          Services (including sharing via generated links).</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t5Title">5. THIRD‑PARTY LINKS AND SERVICES</h2>
+        <p id="t5Text">The Services may contain links to third‑party websites, plugins, or applications. These links are
+          provided for convenience only, and we do not endorse or assume any responsibility for the content, privacy
+          practices, or terms of such third parties. Your interactions with third‑party services are solely between you
+          and the third party.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t6Title">6. DISCLAIMER OF WARRANTIES</h2>
+        <p id="t6Text">THE SERVICES ARE PROVIDED ON AN “AS IS” AND “AS AVAILABLE” BASIS, WITHOUT ANY WARRANTIES OF ANY
+          KIND, EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, THE COMPANY DISCLAIMS ALL WARRANTIES,
+          INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+          NON‑INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICES WILL BE UNINTERRUPTED, SECURE, OR ERROR‑FREE, OR THAT
+          ANY DEFECTS WILL BE CORRECTED.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t7Title">7. LIMITATION OF LIABILITY</h2>
+        <p id="t7Text">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE COMPANY, ITS AFFILIATES,
+          DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE
+          DAMAGES, INCLUDING WITHOUT LIMITATION LOSS OF PROFITS, DATA, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH
+          YOUR USE OF THE SERVICES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR TOTAL LIABILITY TO YOU FOR
+          ANY CLAIM ARISING FROM THESE TERMS OR THE SERVICES SHALL NOT EXCEED THE AMOUNT YOU HAVE PAID TO US, IF ANY, IN
+          THE PAST SIX MONTHS.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t8Title">8. INDEMNIFICATION</h2>
+        <p id="t8Text">You agree to indemnify, defend, and hold harmless the Company and its officers, directors,
+          employees, and agents from and against any and all claims, liabilities, damages, losses, costs, and expenses
+          (including reasonable attorneys’ fees) arising out of or relating to: (i) your violation of these Terms; (ii)
+          your User Content; (iii) your use of the Services in violation of any applicable law or third‑party rights.
+        </p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t9Title">9. TERMINATION AND SUSPENSION</h2>
+        <p id="t9Text">We may, in our sole discretion, terminate or suspend your access to all or part of the Services
+          at any time, with or without notice, for any reason, including if you breach these Terms. Upon termination,
+          your right to use the Services ceases immediately. Provisions that by their nature should survive termination
+          shall survive, including but not limited to intellectual property rights, disclaimers, limitations of
+          liability, and indemnification.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t10Title">10. GOVERNING LAW AND DISPUTE RESOLUTION</h2>
+        <p id="t10Text">These Terms shall be governed by and construed in accordance with the laws of the jurisdiction
+          in which Greeter.com is established, without regard to conflict of law principles. Any dispute arising from or
+          relating to these Terms or the Services shall be resolved exclusively through binding arbitration in
+          accordance with the rules of the applicable arbitration body, unless otherwise required by mandatory local
+          law. You agree to waive any right to a jury trial or to participate in a class action.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t11Title">11. AMENDMENTS TO THESE TERMS</h2>
+        <p id="t11Text">We reserve the right to modify these Terms at any time. Material changes will be communicated by
+          updating the “Last Revised” date at the top of this page and, where reasonably practicable, via a notice on
+          the Site or by email. Your continued use of the Services after the effective date of any modifications
+          constitutes acceptance of the revised Terms.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t12Title">12. SEVERABILITY AND WAIVER</h2>
+        <p id="t12Text">If any provision of these Terms is found to be unenforceable or invalid, that provision shall be
+          limited or eliminated to the minimum extent necessary so that the remaining provisions remain in full force
+          and effect. Our failure to enforce any right or provision of these Terms shall not be deemed a waiver of such
+          right or provision.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t13Title">13. ENTIRE AGREEMENT</h2>
+        <p id="t13Text">These Terms, together with our Privacy Policy, constitute the entire agreement between you and
+          the Company regarding your use of the Services and supersede all prior agreements and understandings, whether
+          written or oral.</p>
+      </div>
+
+      <div class="terms-section">
+        <h2 id="t14Title">14. CONTACT INFORMATION</h2>
+        <p id="t14Text">For any questions or concerns regarding these Terms, please contact us at <a
+            href="mailto:legal@greeter.com" class="contact-email" id="contactEmail">legal@greeter.com</a>.</p>
+      </div>
+
+      <hr>
+      <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;" id="footerNote">By using
+        Greeter.com, you acknowledge that you have read, understood, and agree to be bound by these Terms and
+        Conditions.</p>
+    </div>
+
+    <!-- ========== FOOTER (exactly from ContactUs) ========== -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="/" class="logo" style="margin-bottom: 16px; display: inline-flex;">
+            <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+          </a>
+          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
+            and festivals — no coding needed.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4 id="exploreTitle">Explore</h4>
+            <ul>
+              <li><a href="create.html" id="exploreTemplates">Create</a></li>
+              <li><a href="WhyWe.html" id="exploreFeatures">Why Greeter</a></li>
+              <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
+              <li><a href="#" id="explorePricing">Pricing</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4 id="supportTitle">Support</h4>
+            <ul>
+              <li><a href="ContactUs.html" id="supportHelp">Help Center</a></li>
+              <li><a href="privacy.html" id="supportPrivacy">Privacy Policy</a></li>
+              <li><a href="terms&cond.html" id="supportTerms">Terms of Use</a></li>
+              <li><a href="ContactUs.html" id="supportContact">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-social">
+          <h4 id="followTitle">Follow us</h4>
+          <div class="social-icons">
+            <a href="#" id="footerFacebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" id="footerInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" id="footerWhatsApp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" id="footerTwitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">
+        <p id="copyrightText">© 2026 Greeter · Make every moment magical</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ---------- COMPLETE TRANSLATIONS (navbar + footer + terms) ----------
+    const translations = {
+      en: {
+        // navbar
+        nav: ["Home", "Create", "Why Greeter", "Privacy", "Contact Us"],
+        signin: "Sign in",
+        // footer
+        footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
+        exploreTitle: "Explore",
+        exploreLinks: ["Create", "Why Greeter", "How it Works", "Pricing"],
+        supportTitle: "Support",
+        supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
+        followTitle: "Follow us",
+        copyright: "© 2026 Greeter · Make every moment magical",
+        // terms content
+        termsTitle: "TERMS AND CONDITIONS",
+        t1Title: "1. ACCEPTANCE OF TERMS",
+        t1Text: "By accessing or using the website greeter.com (“Site”) and any associated services, features, or functionalities (collectively, “Services”) provided by Greeter.com (“Company”, “we”, “us”, “our”), you agree to be bound by these Terms and Conditions (“Terms”). If you do not agree to these Terms, you must not use the Services. These Terms constitute a legally binding agreement between you and the Company.",
+        t2Title: "2. ELIGIBILITY AND REGISTRATION",
+        t2Text: "You represent and warrant that you are at least 13 years of age (or such higher age as required by applicable law) and possess the legal authority to enter into this agreement. Certain features of the Services may require registration. You agree to provide accurate, current, and complete information and to maintain and update such information as necessary. You are solely responsible for maintaining the confidentiality of any account credentials.",
+        t3Title: "3. USER CONDUCT AND CONTENT",
+        t3Text: "You are solely responsible for any content you upload, create, or otherwise make available through the Services, including but not limited to text, images, messages, and customizations (“User Content”). You agree not to:",
+        t3ListItems: [
+          "Post or transmit any unlawful, defamatory, obscene, or otherwise objectionable content.",
+          "Infringe upon the intellectual property rights or privacy of any third party.",
+          "Use the Services to distribute spam, malware, or any harmful code.",
+          "Attempt to gain unauthorized access to any portion of the Services or interfere with their operation."
+        ],
+        t3Cont: "We reserve the right, in our sole discretion, to remove or modify any User Content that violates these Terms without prior notice.",
+        t4Title: "4. INTELLECTUAL PROPERTY RIGHTS",
+        t4Text: "All content, features, and functionality of the Services, including but not limited to software, design, text, graphics, logos, and trademarks, are owned by the Company or its licensors and are protected by copyright, trademark, and other intellectual property laws. You retain ownership of your User Content; however, by uploading or creating content through the Services, you grant the Company a non‑exclusive, worldwide, royalty‑free license to host, store, display, and share such content as necessary to provide the Services (including sharing via generated links).",
+        t5Title: "5. THIRD‑PARTY LINKS AND SERVICES",
+        t5Text: "The Services may contain links to third‑party websites, plugins, or applications. These links are provided for convenience only, and we do not endorse or assume any responsibility for the content, privacy practices, or terms of such third parties. Your interactions with third‑party services are solely between you and the third party.",
+        t6Title: "6. DISCLAIMER OF WARRANTIES",
+        t6Text: "THE SERVICES ARE PROVIDED ON AN “AS IS” AND “AS AVAILABLE” BASIS, WITHOUT ANY WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, THE COMPANY DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON‑INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICES WILL BE UNINTERRUPTED, SECURE, OR ERROR‑FREE, OR THAT ANY DEFECTS WILL BE CORRECTED.",
+        t7Title: "7. LIMITATION OF LIABILITY",
+        t7Text: "TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE COMPANY, ITS AFFILIATES, DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION LOSS OF PROFITS, DATA, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF THE SERVICES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR TOTAL LIABILITY TO YOU FOR ANY CLAIM ARISING FROM THESE TERMS OR THE SERVICES SHALL NOT EXCEED THE AMOUNT YOU HAVE PAID TO US, IF ANY, IN THE PAST SIX MONTHS.",
+        t8Title: "8. INDEMNIFICATION",
+        t8Text: "You agree to indemnify, defend, and hold harmless the Company and its officers, directors, employees, and agents from and against any and all claims, liabilities, damages, losses, costs, and expenses (including reasonable attorneys’ fees) arising out of or relating to: (i) your violation of these Terms; (ii) your User Content; (iii) your use of the Services in violation of any applicable law or third‑party rights.",
+        t9Title: "9. TERMINATION AND SUSPENSION",
+        t9Text: "We may, in our sole discretion, terminate or suspend your access to all or part of the Services at any time, with or without notice, for any reason, including if you breach these Terms. Upon termination, your right to use the Services ceases immediately. Provisions that by their nature should survive termination shall survive, including but not limited to intellectual property rights, disclaimers, limitations of liability, and indemnification.",
+        t10Title: "10. GOVERNING LAW AND DISPUTE RESOLUTION",
+        t10Text: "These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which Greeter.com is established, without regard to conflict of law principles. Any dispute arising from or relating to these Terms or the Services shall be resolved exclusively through binding arbitration in accordance with the rules of the applicable arbitration body, unless otherwise required by mandatory local law. You agree to waive any right to a jury trial or to participate in a class action.",
+        t11Title: "11. AMENDMENTS TO THESE TERMS",
+        t11Text: "We reserve the right to modify these Terms at any time. Material changes will be communicated by updating the “Last Revised” date at the top of this page and, where reasonably practicable, via a notice on the Site or by email. Your continued use of the Services after the effective date of any modifications constitutes acceptance of the revised Terms.",
+        t12Title: "12. SEVERABILITY AND WAIVER",
+        t12Text: "If any provision of these Terms is found to be unenforceable or invalid, that provision shall be limited or eliminated to the minimum extent necessary so that the remaining provisions remain in full force and effect. Our failure to enforce any right or provision of these Terms shall not be deemed a waiver of such right or provision.",
+        t13Title: "13. ENTIRE AGREEMENT",
+        t13Text: "These Terms, together with our Privacy Policy, constitute the entire agreement between you and the Company regarding your use of the Services and supersede all prior agreements and understandings, whether written or oral.",
+        t14Title: "14. CONTACT INFORMATION",
+        t14Text: "For any questions or concerns regarding these Terms, please contact us at legal@greeter.com.",
+        footerNote: "By using Greeter.com, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions."
+      },
+      hi: {
+        nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"],
+        signin: "लॉगिन करें",
+        footerBrand: "जन्मदिन, प्रपोज़ल, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
+        exploreTitle: "देखिए",
+        exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "कीमतें"],
+        supportTitle: "सहायता",
+        supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
+        followTitle: "हमें फॉलो करें",
+        copyright: "© 2026 Greeter · हर पल जादुई बनाएँ",
+        termsTitle: "नियम और शर्तें",
+        t1Title: "1. नियमों की स्वीकृति",
+        t1Text: "greeter.com वेबसाइट और किसी भी संबद्ध सेवाओं, सुविधाओं, या कार्यक्षमताओं (सामूहिक रूप से \"सेवाएँ\") तक पहुँचने या उपयोग करने से, आप इन नियमों और शर्तों से बंधे होने के लिए सहमत होते हैं। यदि आप इन नियमों से सहमत नहीं हैं, तो आपको सेवाओं का उपयोग नहीं करना चाहिए। ये नियम आपके और कंपनी के बीच एक कानूनी रूप से बाध्यकारी समझौता बनाते हैं।",
+        t2Title: "2. पात्रता और पंजीकरण",
+        t2Text: "आप प्रतिनिधित्व और आश्वासन देते हैं कि आप कम से कम 13 वर्ष की आयु (या लागू कानून द्वारा आवश्यक उच्च आयु) के हैं और इस समझौते में प्रवेश करने का कानूनी अधिकार रखते हैं। सेवाओं की कुछ सुविधाओं के लिए पंजीकरण की आवश्यकता हो सकती है। आप सटीक, वर्तमान और पूर्ण जानकारी प्रदान करने और आवश्यकतानुसार ऐसी जानकारी को बनाए रखने और अद्यतन करने के लिए सहमत हैं। किसी भी खाता क्रेडेंशियल की गोपनीयता बनाए रखने के लिए आप पूरी तरह से जिम्मेदार हैं।",
+        t3Title: "3. उपयोगकर्ता आचरण और सामग्री",
+        t3Text: "आप सेवाओं के माध्यम से अपलोड, बनाई या अन्यथा उपलब्ध कराई गई किसी भी सामग्री, जिसमें टेक्स्ट, छवियाँ, संदेश और कस्टमाइज़ेशन शामिल हैं लेकिन इन्हीं तक सीमित नहीं हैं (“उपयोगकर्ता सामग्री”), के लिए पूरी तरह से जिम्मेदार हैं। आप सहमत हैं कि आप निम्नलिखित कार्य नहीं करेंगे:",
+        t3ListItems: [
+          "कोई भी अवैध, मानहानिकारक, अश्लील, या अन्यथा आपत्तिजनक सामग्री पोस्ट या प्रसारित करना।",
+          "किसी तीसरे पक्ष के बौद्धिक संपदा अधिकारों या गोपनीयता का उल्लंघन करना।",
+          "स्पैम, मैलवेयर, या किसी हानिकारक कोड को वितरित करने के लिए सेवाओं का उपयोग करना।",
+          "सेवाओं के किसी भी भाग में अनधिकृत पहुँच प्राप्त करने का प्रयास करना या उनके संचालन में हस्तक्षेप करना।"
+        ],
+        t3Cont: "हम अपने एकमात्र विवेकाधिकार पर, बिना पूर्व सूचना के, किसी भी उपयोगकर्ता सामग्री को हटाने या संशोधित करने का अधिकार सुरक्षित रखते हैं जो इन नियमों का उल्लंघन करती है।",
+        t4Title: "4. बौद्धिक संपदा अधिकार",
+        t4Text: "सेवाओं की सभी सामग्री, सुविधाएँ, और कार्यक्षमताएँ, जिनमें सॉफ्टवेयर, डिज़ाइन, टेक्स्ट, ग्राफिक्स, लोगो, और ट्रेडमार्क शामिल हैं लेकिन इन्हीं तक सीमित नहीं हैं, कंपनी या उसके लाइसेंसदाताओं के स्वामित्व में हैं और कॉपीराइट, ट्रेडमार्क, और अन्य बौद्धिक संपदा कानूनों द्वारा संरक्षित हैं। आप अपनी उपयोगकर्ता सामग्री का स्वामित्व बनाए रखते हैं; हालाँकि, सेवाओं के माध्यम से सामग्री अपलोड या बनाकर, आप कंपनी को सेवाएँ प्रदान करने के लिए आवश्यक सीमा तक ऐसी सामग्री को होस्ट करने, संग्रहीत करने, प्रदर्शित करने और साझा करने (जनरेट किए गए लिंक के माध्यम से साझा करने सहित) के लिए एक गैर-अनन्य, विश्वव्यापी, रॉयल्टी-मुक्त लाइसेंस प्रदान करते हैं।",
+        t5Title: "5. तृतीय-पक्ष लिंक और सेवाएँ",
+        t5Text: "सेवाओं में तृतीय-पक्ष वेबसाइटों, प्लगइन्स, या एप्लिकेशन के लिंक हो सकते हैं। ये लिंक केवल सुविधा के लिए प्रदान किए गए हैं, और हम ऐसे तृतीय पक्षों की सामग्री, गोपनीयता प्रथाओं, या नियमों का समर्थन या कोई जिम्मेदारी नहीं लेते हैं। तृतीय-पक्ष सेवाओं के साथ आपकी बातचीत पूरी तरह से आपके और उस तृतीय पक्ष के बीच होती है।",
+        t6Title: "6. वारंटी की अस्वीकृति",
+        t6Text: "सेवाएँ “जैसी हैं” और “जैसी उपलब्ध हैं” के आधार पर प्रदान की जाती हैं, बिना किसी प्रकार की वारंटी के, स्पष्ट या निहित। कानून द्वारा अनुमत अधिकतम सीमा तक, कंपनी सभी वारंटियों को अस्वीकार करती है, जिनमें व्यापारिकता, किसी विशेष उद्देश्य के लिए उपयुक्तता, और अनुल्लंघनीयता की निहित वारंटियाँ शामिल हैं लेकिन इन्हीं तक सीमित नहीं हैं। हम यह वारंटी नहीं देते कि सेवाएँ निर्बाध, सुरक्षित, या त्रुटि-मुक्त होंगी, या कि किसी भी दोष को ठीक किया जाएगा।",
+        t7Title: "7. दायित्व की सीमा",
+        t7Text: "लागू कानून द्वारा अनुमत अधिकतम सीमा तक, किसी भी स्थिति में कंपनी, उसके सहयोगी, निदेशक, कर्मचारी, या एजेंट किसी भी अप्रत्यक्ष, आकस्मिक, विशेष, परिणामी, या दंडात्मक हर्जाने के लिए उत्तरदायी नहीं होंगे, जिसमें लाभ, डेटा, या साख की हानि शामिल है लेकिन इन्हीं तक सीमित नहीं है, जो सेवाओं के आपके उपयोग के संबंध में या उससे उत्पन्न होते हैं, भले ही ऐसे हर्जाने की संभावना के बारे में सलाह दी गई हो। इन नियमों या सेवाओं से उत्पन्न होने वाले किसी भी दावे के लिए आपके प्रति हमारी कुल देयता पिछले छह महीनों में आपके द्वारा हमें भुगतान की गई राशि (यदि कोई हो) से अधिक नहीं होगी।",
+        t8Title: "8. क्षतिपूर्ति",
+        t8Text: "आप कंपनी और उसके अधिकारियों, निदेशकों, कर्मचारियों, और एजेंटों को किसी भी और सभी दावों, देनदारियों, हर्जानों, हानियों, लागतों, और खर्चों (उचित वकीलों की फीस सहित) से उत्पन्न होने वाले या संबंधित होने वाले नुकसान से बचाने, बचाव करने और हानिरहित रखने के लिए सहमत हैं: (i) इन नियमों का आपका उल्लंघन; (ii) आपकी उपयोगकर्ता सामग्री; (iii) किसी भी लागू कानून या तृतीय-पक्ष अधिकारों के उल्लंघन में सेवाओं का आपका उपयोग।",
+        t9Title: "9. समाप्ति और निलंबन",
+        t9Text: "हम अपने एकमात्र विवेकाधिकार पर, बिना सूचना के, किसी भी समय, किसी भी कारण से, सेवाओं के सभी या भाग तक आपकी पहुँच को समाप्त या निलंबित कर सकते हैं, जिसमें यदि आप इन नियमों का उल्लंघन करते हैं तो शामिल है। समाप्ति पर, सेवाओं का उपयोग करने का आपका अधिकार तुरंत समाप्त हो जाता है। वे प्रावधान जो अपनी प्रकृति से समाप्ति के बाद भी जीवित रहने चाहिए, जीवित रहेंगे, जिनमें बौद्धिक संपदा अधिकार, अस्वीकरण, दायित्व की सीमाएँ, और क्षतिपूर्ति शामिल हैं लेकिन इन्हीं तक सीमित नहीं हैं।",
+        t10Title: "10. शासी कानून और विवाद समाधान",
+        t10Text: "ये नियम उस क्षेत्राधिकार के कानूनों के अनुसार शासित और व्याख्या किए जाएंगे जिसमें Greeter.com स्थापित है, बिना कानून संघर्ष सिद्धांतों के संदर्भ के। इन नियमों या सेवाओं से उत्पन्न होने वाले या संबंधित किसी भी विवाद को अनिवार्य स्थानीय कानून द्वारा अन्यथा आवश्यक होने को छोड़कर, लागू मध्यस्थता निकाय के नियमों के अनुसार विशेष रूप से बाध्यकारी मध्यस्थता के माध्यम से हल किया जाएगा। आप जूरी परीक्षण या क्लास एक्शन में भाग लेने के किसी भी अधिकार को छोड़ने के लिए सहमत हैं।",
+        t11Title: "11. इन नियमों में संशोधन",
+        t11Text: "हम किसी भी समय इन नियमों को संशोधित करने का अधिकार सुरक्षित रखते हैं। भौतिक परिवर्तनों को इस पृष्ठ के शीर्ष पर “अंतिम बार संशोधित” तिथि को अद्यतन करके और, जहाँ उचित रूप से व्यावहारिक हो, साइट पर एक नोटिस या ईमेल के माध्यम से संप्रेषित किया जाएगा। किसी भी संशोधन की प्रभावी तिथि के बाद सेवाओं का आपका निरंतर उपयोग संशोधित नियमों की स्वीकृति का गठन करता है।",
+        t12Title: "12. पृथक्करणीयता और छूट",
+        t12Text: "यदि इन नियमों का कोई प्रावधान अप्रवर्तनीय या अमान्य पाया जाता है, तो उस प्रावधान को न्यूनतम आवश्यक सीमा तक सीमित या समाप्त कर दिया जाएगा ताकि शेष प्रावधान पूर्ण रूप से प्रभावी बने रहें। इन नियमों के किसी भी अधिकार या प्रावधान को लागू करने में हमारी विफलता को ऐसे अधिकार या प्रावधान की छूट नहीं माना जाएगा।",
+        t13Title: "13. पूर्ण समझौता",
+        t13Text: "ये नियम, हमारी गोपनीयता नीति के साथ, सेवाओं के आपके उपयोग के संबंध में आपके और कंपनी के बीच पूर्ण समझौते का गठन करते हैं और सभी पिछले समझौतों और समझों को प्रतिस्थापित करते हैं, चाहे लिखित हो या मौखिक।",
+        t14Title: "14. संपर्क जानकारी",
+        t14Text: "इन नियमों के संबंध में किसी भी प्रश्न या चिंता के लिए, कृपया हमसे legal@greeter.com पर संपर्क करें।",
+        footerNote: "Greeter.com का उपयोग करके, आप स्वीकार करते हैं कि आपने इन नियमों और शर्तों को पढ़, समझ लिया है और उनसे बंधे होने के लिए सहमत हैं।"
+      }
+    };
+
+    let currentLang = localStorage.getItem('greeter_lang') || 'en';
+
+    function applyLanguage(lang) {
+      const t = translations[lang];
+      if (!t) return;
+
+      // Navbar
+      document.getElementById('navHome').innerText = t.nav[0];
+      document.getElementById('navCreate').innerText = t.nav[1];
+      document.getElementById('navWhy').innerText = t.nav[2];
+      document.getElementById('navShowcase').innerText = t.nav[3];
+      document.getElementById('navPricing').innerText = t.nav[4];
+      document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
+
+      // Footer
+      document.getElementById('footerBrandText').innerText = t.footerBrand;
+      document.getElementById('exploreTitle').innerText = t.exploreTitle;
+      document.getElementById('supportTitle').innerText = t.supportTitle;
+      document.getElementById('followTitle').innerText = t.followTitle;
+      document.getElementById('copyrightText').innerText = t.copyright;
+      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+      t.exploreLinks.forEach((txt, i) => { if (document.getElementById(exploreIds[i])) document.getElementById(exploreIds[i]).innerText = txt; });
+      const supportIds = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
+      t.supportLinks.forEach((txt, i) => { if (document.getElementById(supportIds[i])) document.getElementById(supportIds[i]).innerText = txt; });
+
+      // Terms content
+      document.getElementById('termsTitle').innerText = t.termsTitle;
+      document.getElementById('t1Title').innerText = t.t1Title;
+      document.getElementById('t1Text').innerText = t.t1Text;
+      document.getElementById('t2Title').innerText = t.t2Title;
+      document.getElementById('t2Text').innerText = t.t2Text;
+      document.getElementById('t3Title').innerText = t.t3Title;
+      document.getElementById('t3Text').innerText = t.t3Text;
+      const t3List = document.getElementById('t3List');
+      t3List.innerHTML = t.t3ListItems.map(item => `<li>${item}</li>`).join('');
+      document.getElementById('t3Cont').innerText = t.t3Cont;
+      document.getElementById('t4Title').innerText = t.t4Title;
+      document.getElementById('t4Text').innerText = t.t4Text;
+      document.getElementById('t5Title').innerText = t.t5Title;
+      document.getElementById('t5Text').innerText = t.t5Text;
+      document.getElementById('t6Title').innerText = t.t6Title;
+      document.getElementById('t6Text').innerText = t.t6Text;
+      document.getElementById('t7Title').innerText = t.t7Title;
+      document.getElementById('t7Text').innerText = t.t7Text;
+      document.getElementById('t8Title').innerText = t.t8Title;
+      document.getElementById('t8Text').innerText = t.t8Text;
+      document.getElementById('t9Title').innerText = t.t9Title;
+      document.getElementById('t9Text').innerText = t.t9Text;
+      document.getElementById('t10Title').innerText = t.t10Title;
+      document.getElementById('t10Text').innerText = t.t10Text;
+      document.getElementById('t11Title').innerText = t.t11Title;
+      document.getElementById('t11Text').innerText = t.t11Text;
+      document.getElementById('t12Title').innerText = t.t12Title;
+      document.getElementById('t12Text').innerText = t.t12Text;
+      document.getElementById('t13Title').innerText = t.t13Title;
+      document.getElementById('t13Text').innerText = t.t13Text;
+      document.getElementById('t14Title').innerText = t.t14Title;
+      document.getElementById('t14Text').innerHTML = t.t14Text.replace('legal@greeter.com', '<a href="mailto:legal@greeter.com" class="contact-email">legal@greeter.com</a>');
+      document.getElementById('footerNote').innerText = t.footerNote;
+
+      // Language toggle button text
+      const langSpan = document.querySelector('#langToggleBtn span');
+      if (langSpan) langSpan.innerText = lang === 'en' ? 'हिन्दी' : 'English';
+      localStorage.setItem('greeter_lang', lang);
+      currentLang = lang;
+    }
+
+    // Language toggle
+    document.getElementById('langToggleBtn').addEventListener('click', () => { applyLanguage(currentLang === 'en' ? 'hi' : 'en'); });
+
+    // Theme toggle (from ContactUs)
+    function setTheme(isDark) {
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      if (isDark) {
+        body.classList.add('dark');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('greeter-theme', 'dark');
+      } else {
+        body.classList.remove('dark');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('greeter-theme', 'light');
+      }
+    }
+    window.toggleTheme = () => { setTheme(!document.body.classList.contains('dark')); };
+    const savedTheme = localStorage.getItem('greeter-theme') || 'light';
+    setTheme(savedTheme === 'dark');
+    document.getElementById('modeToggle').addEventListener('click', window.toggleTheme);
+
+    // Mobile menu (from ContactUs)
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const navLinksDiv = document.getElementById('navLinks');
+    function closeMobileMenu() { navLinksDiv.classList.remove('show'); if (menuBtn) { const icon = menuBtn.querySelector('i'); icon.classList.remove('fa-times'); icon.classList.add('fa-bars'); } }
+    function openMobileMenu() { navLinksDiv.classList.add('show'); if (menuBtn) { const icon = menuBtn.querySelector('i'); icon.classList.remove('fa-bars'); icon.classList.add('fa-times'); } }
+    if (menuBtn) {
+      menuBtn.addEventListener('click', (e) => { e.stopPropagation(); navLinksDiv.classList.contains('show') ? closeMobileMenu() : openMobileMenu(); });
+    }
+    document.addEventListener('click', (e) => { if (!navLinksDiv.contains(e.target) && !menuBtn?.contains(e.target) && navLinksDiv.classList.contains('show')) closeMobileMenu(); });
+    window.addEventListener('resize', () => { if (window.innerWidth > 768 && navLinksDiv.classList.contains('show')) closeMobileMenu(); });
+
+    // Sign in alert + social alerts
+    document.getElementById('signinBtn')?.addEventListener('click', () => alert(currentLang === 'en' ? "Sign in feature coming soon!" : "लॉगिन सुविधा जल्द आ रही है!"));
+    document.querySelectorAll('.social-icons a, .footer-social a').forEach(link => {
+      link.addEventListener('click', (e) => { e.preventDefault(); alert(currentLang === 'en' ? "Social media integration coming soon." : "सोशल मीडिया इंटीग्रेशन जल्द आ रहा है।"); });
+    });
+
+    // Initial load
+    applyLanguage(localStorage.getItem('greeter_lang') || 'en');
+  </script>
+</body>
+
+</html>

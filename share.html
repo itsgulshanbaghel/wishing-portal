@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Share Your Surprise · Greeter.com</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    /* ----- CSS Variables (matches main site) ----- */
+    :root {
+      --bg-primary: #f9f7ff;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a1025;
+      --text-secondary: #4a3b66;
+      --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+      --accent-solid: #7b5df6;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --navbar-bg: rgba(255, 255, 255, 0.6);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
+      --glow: rgba(123, 93, 246, 0.15);
+      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+    }
+
+    body.dark {
+      --bg-primary: #0a0614;
+      --bg-secondary: #1e1635;
+      --text-primary: #f5f0ff;
+      --text-secondary: #cbbff0;
+      --accent-gradient: linear-gradient(145deg, #a78bfa 0%, #fb923c 100%);
+      --accent-solid: #a78bfa;
+      --card-bg: rgba(30, 20, 55, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --navbar-bg: rgba(15, 10, 30, 0.7);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 30px 50px -15px #00000070;
+      --glow: rgba(167, 139, 250, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: var(--mode-transition);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-top: 16px;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -2;
+      transition: var(--mode-transition);
+    }
+
+    body.dark .bg-gradient {
+      background: radial-gradient(circle at 20% 30%, #4c2a8e30, #0a0614 90%),
+        radial-gradient(circle at 80% 70%, #b4530930, transparent 70%);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* ----- NAVBAR - STICKY ----- */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      margin: 0 0 12px 0;
+      backdrop-filter: blur(20px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 60px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--mode-transition);
+      flex-wrap: wrap;
+    }
+
+    @media (min-width: 640px) {
+      .navbar {
+        padding: 12px 28px;
+      }
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      width: 42px;
+      height: 42px;
+      border-radius: 30px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--accent-solid);
+      color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      background: var(--accent-gradient);
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      box-shadow: 0 12px 20px -8px var(--glow);
+    }
+
+    @media (min-width: 640px) {
+      .logo {
+        font-size: 26px;
+        gap: 10px;
+      }
+
+      .logo-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+        border-radius: 16px;
+      }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+      transition: 0.2s;
+      position: relative;
+      padding-bottom: 4px;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-gradient);
+      transition: width 0.3s;
+      border-radius: 4px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mode-toggle,
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      height: 42px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      font-weight: 600;
+    }
+
+    .mode-toggle {
+      width: 42px;
+    }
+
+    .lang-toggle {
+      padding: 0 14px;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    .mode-toggle:hover,
+    .lang-toggle:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: scale(1.03);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: all 0.2s;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      width: 42px;
+      height: 42px;
+      border-radius: 30px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.3rem;
+    }
+
+    /* ----- SHARE CARD (compact) ----- */
+    .share-card {
+      max-width: 750px;
+      margin: 24px auto;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 48px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+      .share-card {
+        padding: 36px 40px;
+      }
+    }
+
+    @media (min-width: 1400px) {
+      .share-card {
+        max-width: 800px;
+      }
+    }
+
+    .share-icon {
+      font-size: 56px;
+      margin-bottom: 12px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 6px;
+    }
+
+    @media (min-width: 640px) {
+      h1 {
+        font-size: 2rem;
+      }
+    }
+
+    .sub {
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+
+    .link-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-secondary);
+      border-radius: 60px;
+      padding: 4px 4px 4px 20px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 20px;
+    }
+
+    .link-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 10px 0;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      outline: none;
+      font-family: monospace;
+      min-width: 0;
+    }
+
+    @media (min-width: 768px) {
+      .link-box input {
+        font-size: 1rem;
+        padding: 12px 0;
+      }
+    }
+
+    .copy-btn {
+      background: var(--accent-gradient);
+      border: none;
+      color: white;
+      width: 42px;
+      height: 42px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: 0.2s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+
+    .native-share-btn {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* ----- SOCIAL ICONS WITH BRAND COLORS ----- */
+    .share-icons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .share-icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 8px 4px;
+      cursor: pointer;
+      transition: 0.2s;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .platform-logo {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      border-radius: 50%;
+    }
+
+    /* Real social media logos using SVG data URIs */
+    .facebook-logo {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'/%3E%3C/svg%3E");
+      background-color: #1877F2;
+    }
+
+    .twitter-logo {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z'/%3E%3C/svg%3E");
+      background-color: #1DA1F2;
+    }
+
+    .whatsapp-logo {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488'/%3E%3C/svg%3E");
+      background-color: #25D366;
+    }
+
+    .telegram-logo {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z'/%3E%3C/svg%3E");
+      background-color: #0088CC;
+    }
+
+    .email-logo {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z'/%3E%3C/svg%3E");
+      background-color: #EA4335;
+    }
+
+    .instagram-logo {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='url(%23instagram-gradient)'%3E%3Cdefs%3E%3ClinearGradient id='instagram-gradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23f09433'/%3E%3Cstop offset='25%25' style='stop-color:%23e6683c'/%3E%3Cstop offset='50%25' style='stop-color:%23dc2743'/%3E%3Cstop offset='75%25' style='stop-color:%23cc2366'/%3E%3Cstop offset='100%25' style='stop-color:%23bc1888'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z'/%3E%3C/svg%3E");
+      background-color: white;
+    }
+
+    .share-icon-item span {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .share-icon-item:hover span {
+      color: white;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .secondary-btn {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 10px 18px;
+      border-radius: 60px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: 0.2s;
+      flex: 1;
+      min-width: 150px;
+      font-size: 0.9rem;
+    }
+
+    .secondary-btn:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* ----- FOOTER ----- */
+    .footer {
+      padding: 24px 0 20px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--card-border);
+      margin-top: 16px;
+      font-size: 0.85rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      text-decoration: none;
+      color: inherit;
+      transition: 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-solid);
+    }
+
+    .social {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .social .platform-logo {
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-block;
+    }
+
+    .social .platform-logo:hover {
+      transform: translateY(-3px);
+    }
+
+    /* ----- Mobile Adjustments ----- */
+    @media (max-width: 768px) {
+      body {
+        padding-top: 12px;
+      }
+
+      .container {
+        padding: 0 16px;
+      }
+
+      .navbar {
+        padding: 8px 16px;
+        margin-bottom: 8px;
+      }
+
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--navbar-bg);
+        backdrop-filter: blur(25px);
+        padding: 28px 24px;
+        border-radius: 36px;
+        flex-direction: column;
+        gap: 24px;
+        z-index: 1001;
+        width: 85%;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .nav-links.show {
+        display: flex;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .nav-actions .btn-outline {
+        display: none;
+      }
+
+      .share-card {
+        margin: 16px 0;
+        padding: 20px 18px;
+      }
+
+      .share-icons-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .secondary-btn {
+        width: 100%;
+        padding: 10px;
+      }
+
+      .footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: 12px;
+        padding-top: 20px;
+      }
+
+      .footer-links {
+        justify-content: center;
+      }
+
+      .social {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .share-icons-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .link-box input {
+        font-size: 0.7rem;
+      }
+
+      .share-icon {
+        font-size: 48px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+  <div class="container">
+    <nav class="navbar">
+      <div class="nav-left">
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+        <a href="../index.html" class="logo">
+          <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+        </a>
+      </div>
+      <div class="nav-links" id="navLinks">
+        <a href="#" id="navTemplates">Templates</a>
+        <a href="#" id="navShowcase">Showcase</a>
+        <a href="#" id="navPricing">Pricing</a>
+        <a href="#" id="navBlog">Blog</a>
+      </div>
+      <div class="nav-actions">
+        <div class="lang-toggle" id="langToggleBtn">हिन्दी</div>
+        <div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button>
+        <div class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div>
+      </div>
+    </nav>
+
+    <div class="share-card">
+      <div class="share-icon"><i class="fas fa-magic"></i></div>
+      <h1 id="title">✨ Your Magic is Ready! ✨</h1>
+      <p class="sub" id="subText">Share this unique link and let the surprise unfold</p>
+
+      <div class="link-box">
+        <input type="text" id="shareLinkInput" readonly value="Loading...">
+        <button class="copy-btn" id="copyLinkBtn"><i class="far fa-copy"></i></button>
+      </div>
+
+      <button class="native-share-btn" id="nativeShareBtn" style="display: none;">
+        <i class="fas fa-share-alt"></i> <span id="nativeShareText">Share via device apps</span>
+      </button>
+
+      <div class="share-icons-grid">
+        <div class="share-icon-item" data-platform="whatsapp"><div class="platform-logo whatsapp-logo"></div><span>WhatsApp</span></div>
+        <div class="share-icon-item" data-platform="facebook"><div class="platform-logo facebook-logo"></div><span>Facebook</span></div>
+        <div class="share-icon-item" data-platform="twitter"><div class="platform-logo twitter-logo"></div><span>Twitter</span></div>
+        <div class="share-icon-item" data-platform="telegram"><div class="platform-logo telegram-logo"></div><span>Telegram</span>
+        </div>
+        <div class="share-icon-item" data-platform="email"><div class="platform-logo email-logo"></div><span>Email</span></div>
+        <div class="share-icon-item" data-platform="instagram"><div class="platform-logo instagram-logo"></div><span>Instagram</span>
+        </div>
+        <div class="share-icon-item" data-platform="twitter"><div class="platform-logo twitter-logo"></div><span>Twitter</span></div>
+        <div class="share-icon-item" data-platform="telegram"><div class="platform-logo telegram-logo"></div><span>Telegram</span>
+        </div>
+        <div class="share-icon-item" data-platform="email"><div class="platform-logo email-logo"></div><span>Email</span></div>
+        <div class="share-icon-item" data-platform="instagram"><div class="platform-logo instagram-logo"></div><span>Instagram</span>
+        </div>
+
+      </div>
+
+      <div class="action-buttons">
+        <button class="secondary-btn" id="openTabBtn"><i class="fas fa-external-link-alt"></i> Open in new tab</button>
+        <button class="secondary-btn" id="backToCustomizeBtn"><i class="fas fa-paint-brush"></i> Back to
+          customize</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div id="copyrightText">© 2026 Greeter · Make every moment magical</div>
+      <div class="footer-links">
+        <a href="#" id="footerTemplates">Templates</a>
+        <a href="#" id="footerFeatures">Features</a>
+        <a href="#" id="footerShowcase">Showcase</a>
+        <a href="#" id="footerHelp">Help</a>
+        <a href="#" id="footerPrivacy">Privacy</a>
+      </div>
+      <div class="social">
+        <div class="platform-logo instagram-logo" id="footerInstagram"></div>
+        <div class="platform-logo whatsapp-logo" id="footerWhatsApp"></div>
+        <div class="platform-logo facebook-logo" id="footerFacebook"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // ----- Theme (Dark/Light) -----
+      const body = document.body;
+      const themeIcon = document.getElementById('themeIcon');
+      function setTheme(isDark) {
+        if (isDark) {
+          body.classList.add('dark');
+          themeIcon.classList.remove('fa-sun');
+          themeIcon.classList.add('fa-moon');
+          localStorage.setItem('greeter-theme', 'dark');
+        } else {
+          body.classList.remove('dark');
+          themeIcon.classList.remove('fa-moon');
+          themeIcon.classList.add('fa-sun');
+          localStorage.setItem('greeter-theme', 'light');
+        }
+      }
+      window.toggleTheme = () => setTheme(!body.classList.contains('dark'));
+      const savedTheme = localStorage.getItem('greeter-theme');
+      if (savedTheme === 'dark') setTheme(true);
+      else setTheme(false);
+      document.getElementById('modeToggle').addEventListener('click', window.toggleTheme);
+
+      // ----- Language & Translations -----
+      let currentLang = localStorage.getItem('greeter_lang') || 'en';
+      const translations = {
+        en: {
+          title: "✨ Your Magic is Ready! ✨",
+          sub: "Share this unique link and let the surprise unfold",
+          nativeShare: "Share via device apps",
+          copyAlert: "Link copied to clipboard!",
+          openTab: "Open in new tab",
+          back: "Back to customize",
+          signin: "Sign in",
+          navTemplates: "Templates",
+          navShowcase: "Showcase",
+          navPricing: "Pricing",
+          navBlog: "Blog",
+          copyright: "© 2026 Greeter · Make every moment magical",
+          footerTemplates: "Templates",
+          footerFeatures: "Features",
+          footerShowcase: "Showcase",
+          footerHelp: "Help",
+          footerPrivacy: "Privacy"
+        },
+        hi: {
+          title: "✨ आपका जादू तैयार है! ✨",
+          sub: "इस अनोखे लिंक को शेयर करें और सरप्राइज़ का आनंद लें",
+          nativeShare: "दूसरे ऐप्स से शेयर करें",
+          copyAlert: "लिंक कॉपी हो गया!",
+          openTab: "नए टैब में खोलें",
+          back: "कस्टमाइज़ पर वापस जाएं",
+          signin: "लॉगिन करें",
+          navTemplates: "टेम्पलेट",
+          navShowcase: "प्रदर्शनी",
+          navPricing: "कीमतें",
+          navBlog: "ब्लॉग",
+          copyright: "© 2026 Greeter · हर पल जादुई बनाएं",
+          footerTemplates: "टेम्पलेट",
+          footerFeatures: "फीचर्स",
+          footerShowcase: "शोकेस",
+          footerHelp: "मदद",
+          footerPrivacy: "प्राइवेसी"
+        }
+      };
+      function applyLanguage(lang) {
+        const t = translations[lang];
+        if (!t) return;
+        document.getElementById('title').innerText = t.title;
+        document.getElementById('subText').innerText = t.sub;
+        document.getElementById('nativeShareText').innerText = t.nativeShare;
+        document.getElementById('openTabBtn').innerHTML = `<i class="fas fa-external-link-alt"></i> ${t.openTab}`;
+        document.getElementById('backToCustomizeBtn').innerHTML = `<i class="fas fa-paint-brush"></i> ${t.back}`;
+        document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
+        document.getElementById('navTemplates').innerText = t.navTemplates;
+        document.getElementById('navShowcase').innerText = t.navShowcase;
+        document.getElementById('navPricing').innerText = t.navPricing;
+        document.getElementById('navBlog').innerText = t.navBlog;
+        document.getElementById('copyrightText').innerText = t.copyright;
+        document.getElementById('footerTemplates').innerText = t.footerTemplates;
+        document.getElementById('footerFeatures').innerText = t.footerFeatures;
+        document.getElementById('footerShowcase').innerText = t.footerShowcase;
+        document.getElementById('footerHelp').innerText = t.footerHelp;
+        document.getElementById('footerPrivacy').innerText = t.footerPrivacy;
+      }
+      function toggleLanguage() {
+        currentLang = currentLang === 'en' ? 'hi' : 'en';
+        localStorage.setItem('greeter_lang', currentLang);
+        applyLanguage(currentLang);
+        document.getElementById('langToggleBtn').innerText = currentLang === 'en' ? 'हिन्दी' : 'English';
+      }
+      applyLanguage(currentLang);
+      document.getElementById('langToggleBtn').innerText = currentLang === 'en' ? 'हिन्दी' : 'English';
+      document.getElementById('langToggleBtn').onclick = toggleLanguage;
+
+      // ----- Get view ID from URL -----
+      const urlParams = new URLSearchParams(window.location.search);
+      const viewId = urlParams.get('view');
+      const linkInput = document.getElementById('shareLinkInput');
+      let fullLink = '';
+
+      if (!viewId) {
+        linkInput.value = '❌ No link found. Please generate first.';
+      } else {
+        fullLink = `./customize.html?view=${viewId}`;
+        linkInput.value = fullLink;
+      }
+
+      // ----- Copy link -----
+      const copyBtn = document.getElementById('copyLinkBtn');
+      copyBtn.addEventListener('click', () => {
+        if (!fullLink) return;
+        navigator.clipboard.writeText(fullLink).then(() => {
+          const original = copyBtn.innerHTML;
+          copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+          setTimeout(() => copyBtn.innerHTML = original, 1500);
+          alert(currentLang === 'en' ? 'Link copied!' : 'लिंक कॉपी हो गया!');
+        }).catch(() => alert('Could not copy link'));
+      });
+
+      // ----- Native share -----
+      const nativeShareBtn = document.getElementById('nativeShareBtn');
+      if (navigator.share) nativeShareBtn.style.display = 'flex';
+      nativeShareBtn.addEventListener('click', () => {
+        if (!fullLink) return;
+        navigator.share({
+          title: 'Greeter.com',
+          text: currentLang === 'en' ? 'Check out this magical surprise website!' : 'यह जादुई सरप्राइज़ वेबसाइट देखें!',
+          url: fullLink
+        }).catch(() => { });
+      });
+
+      // ----- Social share icons -----
+      function shareOn(platform) {
+        if (!fullLink) return;
+        const url = encodeURIComponent(fullLink);
+        const title = encodeURIComponent('Greeter.com – A magical surprise for you!');
+        let shareUrl = '';
+        switch (platform) {
+          case 'whatsapp': shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`; break;
+          case 'facebook': shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
+          case 'twitter': shareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}`; break;
+          case 'telegram': shareUrl = `https://t.me/share/url?url=${url}&text=${title}`; break;
+          case 'email': shareUrl = `mailto:?subject=${title}&body=${url}`; break;
+          case 'instagram':
+            alert(currentLang === 'en' ? `📸 Share this link on Instagram:\n${fullLink}` : `📸 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:\n${fullLink}`);
+            return;
+
+        }
+        if (shareUrl) window.open(shareUrl, '_blank');
+      }
+      document.querySelectorAll('.share-icon-item').forEach(item => {
+        const platform = item.dataset.platform;
+        item.addEventListener('click', () => shareOn(platform));
+      });
+
+      // ----- Open in new tab -----
+      document.getElementById('openTabBtn').addEventListener('click', () => {
+        if (fullLink) window.open(fullLink, '_blank');
+      });
+
+      // ----- Back to customize -----
+      document.getElementById('backToCustomizeBtn').addEventListener('click', () => {
+        window.location.href = './customize.html';
+      });
+
+      // ----- Go back (history) -----
+      window.goBack = () => window.history.back();
+
+      // ----- Mobile menu toggle -----
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const navLinks = document.getElementById('navLinks');
+      window.toggleMobileMenu = () => {
+        navLinks.classList.toggle('show');
+        const icon = mobileMenuBtn.querySelector('i');
+        if (navLinks.classList.contains('show')) {
+          icon.classList.remove('fa-bars');
+          icon.classList.add('fa-times');
+        } else {
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        }
+      };
+      mobileMenuBtn.addEventListener('click', window.toggleMobileMenu);
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('show');
+          mobileMenuBtn.querySelector('i').classList.remove('fa-times');
+          mobileMenuBtn.querySelector('i').classList.add('fa-bars');
+        });
+      });
+
+      // ----- Footer social icons (same as share logic) -----
+      document.getElementById('footerInstagram').addEventListener('click', () => shareOn('instagram'));
+      document.getElementById('footerWhatsApp').addEventListener('click', () => shareOn('whatsapp'));
+      document.getElementById('footerFacebook').addEventListener('click', () => shareOn('facebook'));
+
+
+      // ----- Footer navigation links (placeholder alerts) -----
+      const footerLinks = {
+        footerTemplates: () => alert('Templates page coming soon!'),
+        footerFeatures: () => alert('Features page coming soon!'),
+        footerShowcase: () => alert('Showcase page coming soon!'),
+        footerHelp: () => alert('Help center coming soon!'),
+        footerPrivacy: () => alert('Privacy policy coming soon!')
+      };
+      for (const [id, handler] of Object.entries(footerLinks)) {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', (e) => { e.preventDefault(); handler(); });
+      }
+
+      // ----- Sign in button -----
+      document.getElementById('signinBtn').addEventListener('click', () => {
+        alert(currentLang === 'en' ? 'Sign in feature coming soon!' : 'लॉगिन सुविधा जल्द आ रही है!');
+      });
+    })();
+  </script>
+</body>
+
+</html>

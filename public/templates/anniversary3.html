@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>💛 Happy Anniversary · Greeter.com</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;1,400;1,600&family=Allura&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --ivory:  #fefdf7;
+      --cream:  #fdf8ec;
+      --pale:   #fff8e7;
+      --gold:   #d4a853;
+      --deep:   #8b6914;
+      --light-gold: #f7e4b0;
+      --rose:   #c0748a;
+      --blush:  #f5dce4;
+      --text:   #3a2a10;
+      --glass:  rgba(255,255,255,0.7);
+    }
+
+    body {
+      font-family: 'Lora', serif;
+      background: linear-gradient(155deg, #fefdf7 0%, #fff8e7 45%, #fdf5f9 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── GOLD PARTICLE CANVAS ── */
+    #goldCanvas { position:fixed; inset:0; pointer-events:none; z-index:1; }
+
+    /* ── RIBBON BANNER ── */
+    .ribbon-banner {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg,
+        transparent 0%, var(--light-gold) 15%, var(--gold) 50%,
+        var(--light-gold) 85%, transparent 100%);
+      animation: shimmer 3s linear infinite;
+      z-index: 10;
+    }
+    @keyframes shimmer {
+      from { background-position: -200% 0; }
+      to   { background-position: 200% 0; }
+    }
+
+    /* ── MAIN ── */
+    .page {
+      position: relative; z-index: 5;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      padding: 80px 24px 80px;
+    }
+
+    /* ── MONOGRAM ── */
+    .monogram-ring {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--light-gold) 0%, #fff9e8 50%, var(--light-gold) 100%);
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem; font-weight: 700;
+      color: var(--deep);
+      margin-bottom: 28px;
+      animation: fadeUpIn 0.9s ease both;
+      box-shadow: 0 0 0 6px rgba(212,168,83,0.12), 0 8px 30px rgba(139,105,20,0.15);
+      position: relative;
+    }
+    .monogram-ring::before {
+      content: '';
+      position: absolute; inset: -8px;
+      border-radius: 50%;
+      border: 1px solid rgba(212,168,83,0.3);
+    }
+    .monogram-ring::after {
+      content: '';
+      position: absolute; inset: -14px;
+      border-radius: 50%;
+      border: 1px dashed rgba(212,168,83,0.2);
+    }
+
+    @keyframes fadeUpIn {
+      from { opacity:0; transform:translateY(30px) scale(0.9); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+
+    /* ── HERO ── */
+    .hero-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem; letter-spacing: 0.4em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 16px;
+      animation: fadeUpIn 1s 0.1s ease both;
+    }
+
+    h1 {
+      font-family: 'Allura', cursive;
+      font-size: clamp(4rem, 13vw, 7rem);
+      color: var(--deep);
+      line-height: 1.05;
+      animation: fadeUpIn 1s 0.15s ease both;
+    }
+
+    .years-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold) 0%, #e8c060 100%);
+      color: white;
+      border-radius: 50px;
+      padding: 8px 28px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      margin: 16px 0;
+      animation: fadeUpIn 1s 0.2s ease both;
+      box-shadow: 0 6px 20px rgba(212,168,83,0.35);
+    }
+
+    .names-duo {
+      font-family: 'Allura', cursive;
+      font-size: clamp(1.6rem, 5vw, 2.8rem);
+      color: var(--rose);
+      margin: 8px 0 0;
+      animation: fadeUpIn 1s 0.25s ease both;
+    }
+
+    /* ── VOW CARD ── */
+    .vow-wrap {
+      width: min(480px, 94vw);
+      margin: 32px auto;
+      animation: fadeUpIn 1s 0.35s ease both;
+    }
+    .vow-card {
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(14px);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(139,105,20,0.12), 0 0 0 1px rgba(255,255,255,0.9);
+      overflow: hidden;
+    }
+    .vow-header {
+      background: linear-gradient(135deg, var(--light-gold) 0%, #fff5d6 100%);
+      padding: 26px 28px 18px;
+      position: relative; overflow: hidden;
+    }
+    .vow-header::after {
+      content:'♡';
+      position:absolute; right:18px; top:10px;
+      font-size:4.5rem; color:rgba(212,168,83,0.12);
+    }
+    .vow-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .vow-title {
+      font-family: 'Allura', cursive;
+      font-size: 2.2rem; color: var(--deep);
+    }
+    .vow-body { padding: 26px 28px; }
+    .vow-text {
+      font-style: italic; font-size: 1.05rem;
+      line-height: 2; color: #5a4020;
+      border-left: 3px solid var(--light-gold);
+      padding-left: 16px; margin-bottom: 20px;
+    }
+    .vow-sign {
+      font-family: 'Allura', cursive;
+      font-size: 2rem; color: var(--gold);
+      text-align: right;
+    }
+    .vow-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 16px 0;
+    }
+    .vow-divider::before, .vow-divider::after {
+      content:''; flex:1; height:1px;
+      background: linear-gradient(90deg, transparent, var(--light-gold), transparent);
+    }
+    .vow-divider span { color: var(--gold); font-size: 1.2rem; }
+
+    /* ── TIMELINE ── */
+    .timeline-section {
+      width: min(640px, 96vw);
+      margin: 0 auto 36px;
+      animation: fadeUpIn 1s 0.5s ease both;
+    }
+    .timeline-head {
+      font-family: 'Allura', cursive;
+      font-size: 2.4rem; color: var(--deep); margin-bottom: 28px;
+    }
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+      text-align: left;
+    }
+    .timeline::before {
+      content:'';
+      position:absolute; left:14px; top:0; bottom:0;
+      width:1px;
+      background:linear-gradient(180deg, transparent, var(--light-gold) 10%, var(--gold) 50%, var(--light-gold) 90%, transparent);
+    }
+    .tl-item {
+      position:relative; padding:0 0 28px 28px;
+    }
+    .tl-dot {
+      position:absolute; left:-8px; top:4px;
+      width:16px; height:16px; border-radius:50%;
+      background: linear-gradient(135deg, var(--gold), #e8c060);
+      box-shadow:0 0 0 3px rgba(212,168,83,0.2), 0 3px 12px rgba(212,168,83,0.3);
+    }
+    .tl-year {
+      font-family:'Cinzel', serif; font-size:0.7rem;
+      letter-spacing:0.15em; color:var(--gold);
+      margin-bottom:4px;
+    }
+    .tl-event {
+      font-family:'Cinzel', serif; font-size:1rem;
+      font-weight:600; color:var(--deep); margin-bottom:4px;
+    }
+    .tl-detail {
+      font-style:italic; font-size:0.92rem;
+      color:#7a5a28; line-height:1.6;
+    }
+
+    /* ── MEMORY GALLERY ── */
+    .gallery-section {
+      width: min(680px, 96vw);
+      margin: 0 auto 36px;
+      animation: fadeUpIn 1s 0.6s ease both;
+    }
+    .gallery-head {
+      font-family: 'Allura', cursive;
+      font-size: 2.4rem; color: var(--deep); margin-bottom: 22px;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .gal-tile {
+      aspect-ratio: 1; border-radius: 18px;
+      background: rgba(255,255,255,0.7);
+      border: 1.5px solid rgba(212,168,83,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem;
+      box-shadow: 0 6px 20px rgba(139,105,20,0.08);
+      overflow: hidden; transition: all 0.35s ease; cursor: pointer;
+    }
+    .gal-tile img { width:100%; height:100%; object-fit:cover; border-radius:inherit; }
+    .gal-tile:hover { transform:scale(1.07) rotate(-2deg); box-shadow:0 14px 36px rgba(139,105,20,0.18); }
+
+    /* ── CELEBRATE ── */
+    .cel-section {
+      animation: fadeUpIn 1s 0.7s ease both;
+      margin-bottom: 16px;
+    }
+    .cel-btn {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--deep) 100%);
+      color: white; border: none; border-radius: 50px;
+      padding: 18px 54px;
+      font-family: 'Cinzel', serif; font-size: 1rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      box-shadow: 0 10px 36px rgba(139,105,20,0.3);
+      transition: all 0.3s ease;
+    }
+    .cel-btn:hover { transform:translateY(-4px) scale(1.04); box-shadow:0 16px 48px rgba(139,105,20,0.4); }
+
+    /* ── TOAST ── */
+    .toast {
+      position:fixed; bottom:30px; left:50%;
+      transform:translateX(-50%) translateY(80px);
+      background:linear-gradient(135deg, var(--gold), var(--deep));
+      color:white; padding:14px 34px; border-radius:50px;
+      font-family:'Cinzel', serif; font-size:0.9rem; letter-spacing:0.1em;
+      z-index:999;
+      transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.5s;
+      opacity:0;
+      box-shadow:0 8px 30px rgba(139,105,20,0.35);
+    }
+    .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+    .footer { font-size:0.78rem; color:var(--gold); opacity:0.65; margin-top:22px; letter-spacing:0.2em; font-family:'Cinzel',serif; }
+
+    /* ── CORNER ORNAMENTS ── */
+    .corner { position:fixed; font-size:2.4rem; opacity:0.12; z-index:3; }
+    .corner.tl { top:16px; left:16px; }
+    .corner.tr { top:16px; right:16px; transform:scaleX(-1); }
+    .corner.bl { bottom:16px; left:16px; transform:scaleY(-1); }
+    .corner.br { bottom:16px; right:16px; transform:scale(-1,-1); }
+  </style>
+</head>
+<body>
+
+<div class="ribbon-banner"></div>
+<canvas id="goldCanvas"></canvas>
+
+<div class="corner tl">❧</div>
+<div class="corner tr">❧</div>
+<div class="corner bl">❧</div>
+<div class="corner br">❧</div>
+
+<div class="page">
+
+  <div class="monogram-ring" id="monogram">♡</div>
+  <div class="hero-label">A Celebration of Love</div>
+  <h1 id="heroTitle">Happy Anniversary</h1>
+  <div class="years-badge" id="yearsBadge">Together · Forever · Always</div>
+  <div class="names-duo" id="namesDuo">Two hearts, one beautiful story</div>
+
+  <!-- Vow Card -->
+  <div class="vow-wrap">
+    <div class="vow-card">
+      <div class="vow-header">
+        <div class="vow-eyebrow">✦ A Letter of Love</div>
+        <div class="vow-title" id="vowTitle">To My Everything</div>
+      </div>
+      <div class="vow-body">
+        <div class="vow-divider"><span>✦</span></div>
+        <p class="vow-text" id="vowText">
+          Every year that passes adds another golden thread to the tapestry of our love — richer, deeper, and more beautiful than I ever imagined. Thank you for choosing me, every single day. Thank you for every laugh, every quiet evening, every adventure and every ordinary moment that became extraordinary because you were there.
+        </p>
+        <div class="vow-sign" id="vowSign">Yours, always ♡</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline-section">
+    <div class="timeline-head">Our Journey Together ✦</div>
+    <div class="timeline" id="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-year">THE BEGINNING</div>
+        <div class="tl-event">When We First Met</div>
+        <div class="tl-detail">That magical moment the universe decided our paths should cross — and nothing was ever the same again.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-year">THE PROMISE</div>
+        <div class="tl-event">Our Wedding Day</div>
+        <div class="tl-detail">The day two souls became one, surrounded by love, joy, and the beginning of forever.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-year">TODAY</div>
+        <div class="tl-event">A New Chapter</div>
+        <div class="tl-detail">Every day together is a gift. Here's to countless more years of love, laughter, and growing old gracefully together.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Memory Gallery -->
+  <div class="gallery-section">
+    <div class="gallery-head">Our Precious Memories ✦</div>
+    <div class="gallery-grid" id="gallery">
+      <div class="gal-tile">💛</div>
+      <div class="gal-tile">🌹</div>
+      <div class="gal-tile">💍</div>
+      <div class="gal-tile">✨</div>
+      <div class="gal-tile">🥂</div>
+      <div class="gal-tile">❤️</div>
+    </div>
+  </div>
+
+  <!-- Celebrate -->
+  <div class="cel-section">
+    <button class="cel-btn" id="celBtn">✦ Celebrate Our Love ✦</button>
+  </div>
+
+  <p class="footer">Made with ♡ · Greeter.com</p>
+</div>
+
+<div class="toast" id="toast">✦ Happy Anniversary! ✦</div>
+
+<script>
+  (function () {
+    const params = new URLSearchParams(location.search);
+    let userData = {};
+    try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch {}
+    const userName    = params.get('name')    || userData.name    || 'My Love';
+    const userStory   = params.get('story')   || userData.story   || '';
+    const userWishes  = params.get('wishes')  || userData.wishes  || '';
+    const userMems    = userData.memories || [];
+    const userYears   = userData.years || params.get('years') || '';
+    const lang = localStorage.getItem('greeter_lang') || 'en';
+
+    const heroTitleEl = document.getElementById('heroTitle');
+    const namesDuoEl  = document.getElementById('namesDuo');
+    const yearsBadgeEl= document.getElementById('yearsBadge');
+    const vowTitleEl  = document.getElementById('vowTitle');
+    const vowTextEl   = document.getElementById('vowText');
+    const vowSignEl   = document.getElementById('vowSign');
+    const toastEl     = document.getElementById('toast');
+    const monEl       = document.getElementById('monogram');
+
+    if (lang === 'hi') {
+      heroTitleEl.innerText  = 'सालगिरह मुबारक, ' + userName;
+      namesDuoEl.innerText   = 'दो दिल, एक प्यारी कहानी';
+      vowTitleEl.innerText   = 'मेरे सब कुछ, ' + userName + ' के लिए';
+      vowSignEl.innerText    = 'हमेशा तुम्हारा ♡';
+      toastEl.innerText      = '✦ सालगिरह मुबारक! ✦';
+      if (userYears) yearsBadgeEl.innerText = userYears + ' साल · साथ · हमेशा';
+    } else {
+      heroTitleEl.innerText = 'Happy Anniversary, ' + userName;
+      vowTitleEl.innerText  = 'To My Everything, ' + userName;
+      if (userYears) yearsBadgeEl.innerText = userYears + ' Years · Together · Forever · Always';
+    }
+
+    if (userStory)  vowTextEl.innerText  = userStory;
+    if (userWishes) vowTextEl.innerText  = userWishes;
+
+    // Gallery
+    if (userMems.length > 0) {
+      const gal = document.getElementById('gallery');
+      gal.innerHTML = '';
+      userMems.forEach(m => {
+        const t = document.createElement('div');
+        t.className = 'gal-tile';
+        if (m.img) t.innerHTML = `<img src="${m.img}" alt="memory">`;
+        else t.innerText = m.text || '💛';
+        gal.appendChild(t);
+      });
+    }
+
+    // Celebrate
+    document.getElementById('celBtn').addEventListener('click', () => {
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 3200);
+      const colors = ['#d4a853','#f7e4b0','#e8c060','#c0748a','#f5dce4','#fff8e7'];
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          canvasConfetti({ particleCount: 60, angle: 60,  spread: 65, origin: { x:0 }, colors, shapes:['star'], startVelocity:20 });
+          canvasConfetti({ particleCount: 60, angle: 120, spread: 65, origin: { x:1 }, colors, shapes:['star'], startVelocity:20 });
+          canvasConfetti({ particleCount: 80, spread: 90, origin: { y:0.5 }, colors, startVelocity:15 });
+        }, i * 350);
+      }
+      setTimeout(() => canvasConfetti({ particleCount: 250, spread: 140, origin: { y:0.4 }, colors, startVelocity:18, ticks:200 }), 800);
+    });
+
+    window.addEventListener('storage', e => {
+      if (e.key === 'userData') {
+        try {
+          const d = JSON.parse(e.newValue);
+          if (d.name)   heroTitleEl.innerText = 'Happy Anniversary, ' + d.name;
+          if (d.story)  vowTextEl.innerText   = d.story;
+          if (d.wishes) vowTextEl.innerText   = d.wishes;
+        } catch {}
+      }
+    });
+  })();
+
+  // ── GOLD PARTICLES ──────────────────────────────────────────────────────────
+  (function () {
+    const canvas = document.getElementById('goldCanvas');
+    const ctx    = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() { canvas.width=innerWidth; canvas.height=innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    const GOLD = ['#d4a853','#f7e4b0','#e8c060','#ffe8a0','#c0748a','#f5dce4'];
+
+    function newParticle() {
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: 1 + Math.random() * 3.5,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: -(0.2 + Math.random() * 0.5),
+        op: 0.15 + Math.random() * 0.5,
+        fade: 0.003 + Math.random() * 0.005,
+        color: GOLD[Math.floor(Math.random() * GOLD.length)],
+        type: Math.random() < 0.4 ? 'star' : 'circle',
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.03,
+      };
+    }
+
+    function drawStar(ctx, x, y, r, color, op) {
+      ctx.save();
+      ctx.globalAlpha = op;
+      ctx.fillStyle = color;
+      ctx.translate(x, y);
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const a  = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+        const a2 = a + (2 * Math.PI) / 10;
+        if (i === 0) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+        else ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+        ctx.lineTo(Math.cos(a2) * r * 0.45, Math.sin(a2) * r * 0.45);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    for (let i = 0; i < 50; i++) particles.push(newParticle());
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        if (p.type === 'star') drawStar(ctx, p.x, p.y, p.r, p.color, p.op);
+        else {
+          ctx.save();
+          ctx.globalAlpha = p.op;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        p.x += p.vx; p.y += p.vy;
+        p.op -= p.fade;
+        if (p.op <= 0 || p.y < -10) Object.assign(p, newParticle());
+      });
+      if (particles.length < 70 && Math.random() < 0.06) particles.push(newParticle());
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+</script>
+</body>
+</html>

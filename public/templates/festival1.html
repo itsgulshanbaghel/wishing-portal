@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🪔 Diwali Wishes · Greeter.com</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange: #ff8c42;
+            --gold: #ffd966;
+            --deep: #2c1a0e;
+            --cream: #fff3e0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, #1f1105, #3a2312);
+            color: var(--cream);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated sparkles */
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            background: radial-gradient(circle, gold, transparent);
+            border-radius: 50%;
+            animation: floatSparkle 4s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes floatSparkle {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.8;
+            }
+
+            90% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(-20vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        .diya {
+            font-size: 70px;
+            display: inline-block;
+            animation: diyaGlow 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px var(--orange));
+        }
+
+        @keyframes diyaGlow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 5px var(--orange);
+                transform: scale(1);
+            }
+
+            50% {
+                text-shadow: 0 0 25px var(--orange);
+                transform: scale(1.05);
+            }
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            background: linear-gradient(135deg, var(--gold), var(--orange));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 16px 0 8px;
+        }
+
+        .festival-name {
+            font-size: 1.4rem;
+            letter-spacing: 0.2em;
+            color: var(--gold);
+            margin-bottom: 32px;
+        }
+
+        .glass-card {
+            background: rgba(44, 26, 14, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 32px;
+            margin: 24px auto;
+            max-width: 700px;
+            border: 1px solid rgba(255, 216, 102, 0.3);
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            font-style: italic;
+        }
+
+        /* Gallery */
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 32px 0;
+        }
+
+        .memory-card {
+            width: 160px;
+            background: rgba(255, 255, 240, 0.1);
+            border-radius: 20px;
+            padding: 12px;
+            transition: transform 0.3s;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-img {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 16px;
+            background: rgba(255, 140, 66, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            overflow: hidden;
+        }
+
+        .memory-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .memory-caption {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            color: var(--gold);
+        }
+
+        /* Buttons */
+        .btn-light {
+            background: linear-gradient(135deg, var(--orange), #c95a0f);
+            border: none;
+            padding: 14px 32px;
+            border-radius: 60px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-light:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--orange);
+        }
+
+        /* Edit mode */
+        .edit-tools {
+            display: none;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        body.edit-mode .edit-tools {
+            display: flex;
+        }
+
+        body.edit-mode .memory-card {
+            cursor: pointer;
+        }
+
+        .edit-btn {
+            background: rgba(255, 140, 66, 0.3);
+            border: 1px solid var(--orange);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            color: var(--gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .gallery {
+                gap: 12px;
+            }
+
+            .memory-card {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="sparklesContainer"></div>
+    <div class="content">
+        <div class="diya">🪔</div>
+        <h1>Happy <span id="festivalPlaceholder">Festival</span></h1>
+        <div class="festival-name" id="festivalNameDisplay"></div>
+
+        <div class="glass-card">
+            <p class="story-text" id="storyText"></p>
+        </div>
+
+        <div class="gallery" id="galleryContainer"></div>
+
+        <button class="btn-light" id="lightBtn">✨ Light a Diya ✨</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const EDIT_MODE = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+            if (EDIT_MODE) document.body.classList.add('edit-mode');
+
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            const festival = userData.festival || 'Diwali';
+            const name = userData.name || 'Loved One';
+            const story = userData.story || `May this ${festival} bring endless joy, prosperity, and togetherness into your life. You are the light that brightens every room.`;
+            const wishes = userData.wishes || `Wishing you a ${festival} filled with sweets, smiles, and beautiful memories.`;
+            const memories = userData.memories || [];
+
+            document.getElementById('festivalPlaceholder').innerText = festival;
+            document.getElementById('festivalNameDisplay').innerText = `To ${name}, with love ✨`;
+            document.getElementById('storyText').innerHTML = story;
+
+            // Gallery render
+            const gallery = document.getElementById('galleryContainer');
+            function renderGallery() {
+                gallery.innerHTML = '';
+                memories.forEach((mem, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'memory-img';
+                    if (mem.img && mem.img.startsWith('data:image')) {
+                        const img = document.createElement('img');
+                        img.src = mem.img;
+                        imgDiv.appendChild(img);
+                    } else {
+                        imgDiv.innerHTML = '🪔';
+                    }
+                    const cap = document.createElement('div');
+                    cap.className = 'memory-caption';
+                    cap.innerText = mem.text || '✨';
+                    card.appendChild(imgDiv);
+                    card.appendChild(cap);
+                    if (EDIT_MODE) {
+                        const tools = document.createElement('div');
+                        tools.className = 'edit-tools';
+                        const uploadBtn = document.createElement('button');
+                        uploadBtn.className = 'edit-btn';
+                        uploadBtn.innerHTML = '📷';
+                        uploadBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = (ev) => {
+                                const file = ev.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (re) => {
+                                        mem.img = re.target.result;
+                                        localStorage.setItem('userData', JSON.stringify(userData));
+                                        renderGallery();
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            };
+                            input.click();
+                        };
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'edit-btn';
+                        removeBtn.innerHTML = '🗑️';
+                        removeBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            memories.splice(idx, 1);
+                            localStorage.setItem('userData', JSON.stringify(userData));
+                            renderGallery();
+                        };
+                        tools.appendChild(uploadBtn);
+                        tools.appendChild(removeBtn);
+                        card.appendChild(tools);
+                    }
+                    gallery.appendChild(card);
+                });
+                if (EDIT_MODE) {
+                    const addCard = document.createElement('div');
+                    addCard.className = 'memory-card';
+                    addCard.innerHTML = '<div class="memory-img" style="font-size:2rem;">+</div><div class="memory-caption">Add Memory</div>';
+                    addCard.onclick = () => {
+                        memories.push({ img: null, text: 'Festive Moment' });
+                        localStorage.setItem('userData', JSON.stringify(userData));
+                        renderGallery();
+                    };
+                    gallery.appendChild(addCard);
+                }
+            }
+            renderGallery();
+
+            // Light Diya button
+            document.getElementById('lightBtn').addEventListener('click', () => {
+                confetti({ particleCount: 150, spread: 100, colors: ['#ff8c42', '#ffd966', '#ffb347'], origin: { y: 0.6 } });
+            });
+
+            // Sparkles background
+            const sparklesDiv = document.getElementById('sparklesContainer');
+            for (let i = 0; i < 60; i++) {
+                const s = document.createElement('div');
+                s.className = 'sparkle';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.width = s.style.height = (Math.random() * 6 + 2) + 'px';
+                s.style.animationDuration = (Math.random() * 5 + 3) + 's';
+                s.style.animationDelay = (Math.random() * 8) + 's';
+                sparklesDiv.appendChild(s);
+            }
+        })();
+    </script>
+</body>
+
+</html>

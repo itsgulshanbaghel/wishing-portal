@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Contact Us · Greeter.com</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #f9f7ff;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a1025;
+      --text-secondary: #4a3b66;
+      --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+      --accent-solid: #7b5df6;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --navbar-bg: rgba(255, 255, 255, 0.75);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
+      --glow: rgba(123, 93, 246, 0.15);
+      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+      --border-light: #ece7f5;
+      --input-bg: rgba(255, 255, 255, 0.9);
+      --fb-blue: #1877f2;
+      --insta-pink: #e4405f;
+      --twitter-blue: #1da1f2;
+      --whatsapp-green: #25d366;
+      --linkedin-blue: #0077b5;
+    }
+
+    body.dark {
+      --bg-primary: #0c0719;
+      --bg-secondary: #1a1230;
+      --text-primary: #f0edff;
+      --text-secondary: #b9aed6;
+      --card-bg: rgba(30, 20, 55, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --navbar-bg: rgba(18, 12, 38, 0.85);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 30px 50px -15px #00000055;
+      --glow: rgba(123, 93, 246, 0.25);
+      --border-light: #2a2442;
+      --input-bg: rgba(30, 20, 55, 0.9);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: var(--mode-transition);
+      overflow-x: hidden;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -2;
+      transition: var(--mode-transition);
+    }
+
+    body.dark .bg-gradient {
+      background: radial-gradient(circle at 20% 30%, #2d1b4e40, #0a0614 90%);
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ----- NAVBAR (glass, sticky, professional) ----- */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 28px;
+      margin: 16px 0 12px;
+      backdrop-filter: blur(16px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      transition: var(--mode-transition);
+      flex-wrap: nowrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+      flex-shrink: 1;
+      white-space: nowrap;
+    }
+
+    .logo-icon {
+      background: var(--accent-gradient);
+      width: 44px;
+      height: 44px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 12px 20px -8px var(--glow);
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+      transition: 0.25s;
+      position: relative;
+      padding: 6px 0;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2.5px;
+      background: var(--accent-gradient);
+      transition: width 0.3s;
+      border-radius: 4px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: #ff7a2f;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .mode-toggle,
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      width: 44px;
+      height: 44px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mode-toggle .fa-sun {
+      color: #fbbf24;
+      font-size: 1.2rem;
+    }
+
+    body.dark .mode-toggle .fa-moon {
+      color: #cbd5e1;
+    }
+
+    .lang-toggle {
+      width: auto;
+      padding: 0 18px;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .mode-toggle:hover,
+    .lang-toggle:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 9px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 40px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+    }
+
+    /* ----- CONTACT HERO (responsive text) ----- */
+    .contact-hero {
+      text-align: center;
+      margin: 40px 0 24px;
+    }
+
+    .contact-hero h1 {
+      font-size: clamp(2rem, 7vw, 3.5rem);
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .contact-hero p {
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      font-size: clamp(0.85rem, 3vw, 1.05rem);
+    }
+
+    /* ----- FORM (improved visibility & input sizing) ----- */
+    .form-wrapper {
+      max-width: 700px;
+      margin: 0 auto 32px;
+    }
+
+    .form-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 40px;
+      padding: 36px 28px;
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .form-title {
+      font-size: clamp(1.4rem, 5vw, 1.9rem);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .form-desc {
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    /* Enhanced input styles for better visibility in light mode */
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 14px 18px;
+      background: var(--input-bg);
+      border: 1px solid #cbd5e1;
+      border-radius: 30px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+      outline: none;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    body.dark .form-group input,
+    body.dark .form-group textarea,
+    body.dark .form-group select {
+      border-color: var(--card-border);
+      background: var(--input-bg);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--accent-solid);
+      box-shadow: 0 0 0 3px rgba(123, 93, 246, 0.2);
+    }
+
+    /* Ensure proper width on email and name fields on desktop */
+    .row-2cols {
+      display: flex;
+      gap: 16px;
+    }
+
+    .row-2cols .form-group {
+      flex: 1;
+      min-width: 0;
+      /* prevent overflow */
+    }
+
+    @media (max-width: 640px) {
+      .row-2cols {
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+
+    .btn-submit {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: 0.2s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px var(--glow);
+    }
+
+    /* ----- CARDS (unchanged) ----- */
+    .contact-methods {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin: 32px 0;
+    }
+
+    .method-item {
+      flex: 1;
+      min-width: 160px;
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      padding: 20px 16px;
+      text-align: center;
+      border: 1px solid var(--card-border);
+      transition: all 0.2s ease;
+    }
+
+    .method-item:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-solid);
+      box-shadow: var(--shadow-md);
+    }
+
+    .method-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--accent-gradient);
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 26px;
+      color: white;
+    }
+
+    .method-item h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .method-item p {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+    }
+
+    .method-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(123, 93, 246, 0.1);
+      padding: 6px 16px;
+      border-radius: 40px;
+      text-decoration: none;
+      font-weight: 600;
+      color: var(--accent-solid);
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+
+    .method-link:hover {
+      background: var(--accent-solid);
+      color: white;
+    }
+
+    .method-link:hover i {
+      transform: translateX(3px);
+    }
+
+    .sub-method {
+      margin-top: 8px;
+      font-size: 0.7rem;
+    }
+
+    .sub-method a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .sub-method a:hover {
+      color: var(--accent-solid);
+    }
+
+    /* social row and footer */
+    .social-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0 10px;
+    }
+
+    .social-row a,
+    .footer-social .social-icons a {
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: 0.2s;
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+      backdrop-filter: blur(4px);
+    }
+
+    .social-row a .fa-facebook-f,
+    .footer-social .social-icons a .fa-facebook-f {
+      color: #1877f2;
+    }
+
+    .social-row a .fa-instagram,
+    .footer-social .social-icons a .fa-instagram {
+      color: #e4405f;
+    }
+
+    .social-row a .fa-twitter,
+    .footer-social .social-icons a .fa-twitter {
+      color: #1da1f2;
+    }
+
+    .social-row a .fa-linkedin-in,
+    .footer-social .social-icons a .fa-linkedin-in {
+      color: #0077b5;
+    }
+
+    .footer-social .social-icons a .fa-whatsapp {
+      color: #25d366;
+    }
+
+    .social-row a:hover,
+    .footer-social .social-icons a:hover {
+      transform: translateY(-3px);
+    }
+
+    .social-row a:hover .fab,
+    .footer-social .social-icons a:hover .fab {
+      color: white !important;
+    }
+
+    .social-row a:has(.fa-facebook-f):hover,
+    .footer-social .social-icons a:has(.fa-facebook-f):hover {
+      background: #1877f2;
+      border-color: #1877f2;
+    }
+
+    .social-row a:has(.fa-instagram):hover,
+    .footer-social .social-icons a:has(.fa-instagram):hover {
+      background: #e4405f;
+      border-color: #e4405f;
+    }
+
+    .social-row a:has(.fa-twitter):hover,
+    .footer-social .social-icons a:has(.fa-twitter):hover {
+      background: #1da1f2;
+      border-color: #1da1f2;
+    }
+
+    .social-row a:has(.fa-linkedin-in):hover,
+    .footer-social .social-icons a:has(.fa-linkedin-in):hover {
+      background: #0077b5;
+      border-color: #0077b5;
+    }
+
+    .footer-social .social-icons a:has(.fa-whatsapp):hover {
+      background: #25d366;
+      border-color: #25d366;
+    }
+
+    .footer {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--card-border);
+      border-radius: 40px 40px 0 0;
+      margin-top: 40px;
+      padding: 48px 32px 32px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .footer-brand p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      max-width: 260px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 60px;
+    }
+
+    .footer-col a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent-solid);
+    }
+
+    .copyright {
+      text-align: center;
+      padding-top: 32px;
+      margin-top: 32px;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+
+    /* ----- RESPONSIVE ----- */
+    @media (max-width: 1024px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .navbar {
+        padding: 10px 20px;
+        gap: 12px;
+      }
+
+      .logo {
+        font-size: 1.2rem;
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        gap: 20px;
+      }
+
+      .nav-links a {
+        font-size: 0.85rem;
+        padding: 4px 0;
+      }
+
+      .btn-outline {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        gap: 6px;
+      }
+
+      .mode-toggle,
+      .lang-toggle {
+        width: 40px;
+        height: 40px;
+      }
+
+      .lang-toggle {
+        width: auto;
+        padding: 0 12px;
+        font-size: 0.8rem;
+        gap: 6px;
+      }
+
+      .nav-actions {
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .navbar {
+        padding: 10px 18px;
+      }
+
+      .logo {
+        font-size: clamp(0.9rem, 4vw, 1.3rem);
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 85px;
+        left: 20px;
+        right: 20px;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(24px);
+        border-radius: 32px;
+        padding: 28px 20px;
+        flex-direction: column;
+        gap: 18px;
+        text-align: center;
+        z-index: 1000;
+        border: 1px solid var(--card-border);
+        box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transform: translateY(-15px);
+        pointer-events: none;
+        transition: 0.3s;
+      }
+
+      .nav-links.show {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .nav-links a {
+        font-size: 1.1rem;
+        padding: 10px 0;
+      }
+
+      .nav-links a::after {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .nav-actions .btn-outline {
+        display: none;
+      }
+
+      .method-item {
+        min-width: 140px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .footer-brand {
+        margin: 0 auto;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .footer-brand p {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 280px;
+      }
+
+      .footer-links {
+        flex-direction: row;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      .footer-col {
+        text-align: center;
+        min-width: 120px;
+        flex-shrink: 0;
+      }
+
+      .footer-col ul {
+        padding-left: 0;
+        list-style: none;
+        text-align: center;
+      }
+
+      .footer-col li {
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-col h4 {
+        margin-bottom: 0.75rem;
+      }
+
+      .footer-social {
+        text-align: center;
+        width: 100%;
+      }
+
+      .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+      }
+
+      .footer-col ul li a {
+        display: inline-block;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .lang-toggle span {
+        display: none;
+      }
+
+      .lang-toggle {
+        width: 44px;
+        padding: 0;
+        justify-content: center;
+      }
+
+      .footer-inner {
+        gap: 1.5rem;
+      }
+
+      .footer-links {
+        gap: 1.5rem;
+      }
+
+      .footer-col {
+        min-width: 110px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+  <div class="container">
+    <nav class="navbar">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" id="navHome">Home</a>
+        <a href="create.html" id="navCreate">Create</a>
+        <a href="WhyWe.html" id="navWhy">Why Greeter</a>
+        <a href="privacy.html" id="navShowcase">Privacy</a>
+        <a href="ContactUs.html" id="navPricing">Contact Us</a>
+      </div>
+      <div class="nav-actions">
+        <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
+        <div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button>
+        <div class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div>
+      </div>
+    </nav>
+
+    <div class="contact-hero">
+      <h1 id="pageTitle">Contact Us</h1>
+      <p id="heroDesc">We are here to help you. Send us a message – We will reply in the fastest possible time.</p>
+    </div>
+
+    <div class="form-wrapper">
+      <div class="form-card">
+        <div class="form-title" id="formTitle">Send a message</div>
+        <div class="form-desc" id="formDesc">Fill out the form below and we'll get back to you promptly.</div>
+        <form id="contactForm">
+          <div class="row-2cols">
+            <div class="form-group">
+              <label id="nameLabel" for="name">Full Name *</label>
+              <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label id="emailLabel" for="email">Email Address *</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label id="subjectLabel" for="subject">Subject *</label>
+            <select id="subject" name="subject" required>
+              <option value="general" id="subjectGeneral">General Inquiry</option>
+              <option value="support" id="subjectSupport">Technical Support</option>
+              <option value="sales" id="subjectSales">Sales / Partnership</option>
+              <option value="feedback" id="subjectFeedback">Feedback</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="messageLabel" for="message">Message *</label>
+            <textarea id="message" name="message" required rows="5"></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane"></i> <span
+              id="btnText">Send Message</span></button>
+          <div id="formStatus" class="form-status"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- CONTACT METHODS CARDS unchanged -->
+    <div class="contact-methods">
+      <div class="method-item">
+        <div class="method-icon"><i class="fas fa-envelope"></i></div>
+        <h3 id="emailTitle">Email</h3>
+        <p id="emailDesc">For inquiries & support</p>
+        <a href="mailto:hello@greeter.com" class="method-link" id="emailLink">hello@greeter.com <i
+            class="fas fa-arrow-right"></i></a>
+        <div class="sub-method">
+          <a href="mailto:support@greeter.com" id="supportEmailLink">support@greeter.com</a>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-icon"><i class="fab fa-telegram-plane"></i></div>
+        <h3 id="telegramTitle">Telegram</h3>
+        <p id="telegramDesc">Fast & encrypted</p>
+        <a href="https://t.me/greeter_support" target="_blank" class="method-link"
+          id="telegramLink">t.me/greeter_support <i class="fas fa-arrow-right"></i></a>
+        <div class="sub-method">
+          <a href="https://t.me/greeter_community" target="_blank" id="telegramCommunityLink">Join community</a>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-icon"><i class="fas fa-map-marker-alt"></i></div>
+        <h3 id="locationTitle">Location</h3>
+        <p id="locationDesc">India (Remote / Digital)</p>
+        <div class="method-link" style="cursor: default; background: transparent; color: var(--text-secondary);"
+          id="locationBadge">📍 Based in India</div>
+      </div>
+      <div class="method-item">
+        <div class="method-icon"><i class="fas fa-clock"></i></div>
+        <h3 id="responseTitle">Response time</h3>
+        <p id="responseDesc">Fastest possible</p>
+        <div class="method-link" style="cursor: default; background: transparent; color: var(--text-secondary);"
+          id="responseBadge">Quick support</div>
+      </div>
+    </div>
+
+    <div class="social-row">
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="/" class="logo" style="margin-bottom: 16px; display: inline-flex;">
+            <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+          </a>
+          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
+            and festivals — no coding needed.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4 id="exploreTitle">Explore</h4>
+            <ul>
+              <!-- Replace Templates with Create (link to create.html) -->
+              <li><a href="create.html" id="exploreTemplates">Create</a></li>
+              <!-- Replace Features with Why Greeter (link to WhyWe.html) -->
+              <li><a href="WhyWe.html" id="exploreFeatures">Why Greeter</a></li>
+              <!-- How it Works remains (link to index.html#stepsHeader) -->
+              <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
+              <li><a href="#" id="explorePricing">Pricing</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4 id="supportTitle">Support</h4>
+            <ul>
+              <li><a href="ContactUs.html" id="supportHelp">Help Center</a></li>
+              <li><a href="privacy.html" id="supportPrivacy">Privacy Policy</a></li>
+              <li><a href="terms&cond.html" id="supportTerms">Terms of Use</a></li>
+              <li><a href="ContactUs.html" id="supportContact">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-social">
+          <h4 id="followTitle">Follow us</h4>
+          <div class="social-icons">
+            <a href="#" id="footerFacebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" id="footerInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" id="footerWhatsApp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" id="footerTwitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">
+        <p id="copyrightText">© 2026 Greeter · Make every moment magical</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // UPDATED TRANSLATIONS: footer links renamed to match new links
+    const translations = {
+      en: {
+        nav: ["Home", "Create", "Why Greeter", "Privacy", "Contact Us"],
+        signin: "Sign in",
+        pageTitle: "Contact Us",
+        heroDesc: "We are here to help you. Send us a message – We will reply in the fastest possible time.",
+        formTitle: "Send a message",
+        formDesc: "Fill out the form below and we'll get back to you promptly.",
+        nameLabel: "Full Name *",
+        emailLabel: "Email Address *",
+        subjectLabel: "Subject *",
+        subjectGeneral: "General Inquiry",
+        subjectSupport: "Technical Support",
+        subjectSales: "Sales / Partnership",
+        subjectFeedback: "Feedback",
+        messageLabel: "Message *",
+        btnText: "Send Message",
+        formSuccess: "Thank you! Your message has been sent. We'll reply soon.",
+        formError: "An error occurred. Please try again later.",
+        formRequired: "Please fill in all required fields.",
+        emailTitle: "Email",
+        emailDesc: "For inquiries & support",
+        emailLink: "hello@greeter.com",
+        supportEmailLink: "support@greeter.com",
+        telegramTitle: "Telegram",
+        telegramDesc: "Fast & encrypted",
+        telegramLink: "t.me/greeter_support",
+        telegramCommunityLink: "Join community",
+        locationTitle: "Location",
+        locationDesc: "India (Remote / Digital)",
+        locationBadge: "📍 Based in India",
+        responseTitle: "Response time",
+        responseDesc: "Fastest possible",
+        responseBadge: "Quick support",
+        footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
+        exploreTitle: "Explore",
+        exploreLinks: ["Create", "Why Greeter", "How it Works", "Pricing"],
+        supportTitle: "Support",
+        supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
+        followTitle: "Follow us",
+        copyright: "© 2026 Greeter · Make every moment magical"
+      },
+      hi: {
+        nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"],
+        signin: "लॉगिन करें",
+        pageTitle: "संपर्क करें",
+        heroDesc: "हम आपकी मदद के लिए यहाँ हैं। हमें संदेश भेजें – हम सबसे तेज़ संभव समय में जवाब देंगे।",
+        formTitle: "संदेश भेजें",
+        formDesc: "नीचे दिया गया फॉर्म भरें, हम जल्द ही आपसे संपर्क करेंगे।",
+        nameLabel: "पूरा नाम *",
+        emailLabel: "ईमेल पता *",
+        subjectLabel: "विषय *",
+        subjectGeneral: "सामान्य पूछताछ",
+        subjectSupport: "तकनीकी सहायता",
+        subjectSales: "बिक्री / साझेदारी",
+        subjectFeedback: "प्रतिक्रिया",
+        messageLabel: "संदेश *",
+        btnText: "संदेश भेजें",
+        formSuccess: "धन्यवाद! आपका संदेश भेज दिया गया है। हम जल्द ही जवाब देंगे।",
+        formError: "एक त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।",
+        formRequired: "कृपया सभी आवश्यक फ़ील्ड भरें।",
+        emailTitle: "ईमेल",
+        emailDesc: "पूछताछ और सहायता के लिए",
+        emailLink: "hello@greeter.com",
+        supportEmailLink: "support@greeter.com",
+        telegramTitle: "टेलीग्राम",
+        telegramDesc: "तेज़ और सुरक्षित",
+        telegramLink: "t.me/greeter_support",
+        telegramCommunityLink: "समुदाय से जुड़ें",
+        locationTitle: "स्थान",
+        locationDesc: "भारत (दूरस्थ / डिजिटल)",
+        locationBadge: "📍 भारत में स्थित",
+        responseTitle: "प्रतिक्रिया समय",
+        responseDesc: "सबसे तेज़ संभव",
+        responseBadge: "त्वरित सहायता",
+        footerBrand: "जन्मदिन, प्रपोज़ल, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
+        exploreTitle: "देखिए",
+        exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "कीमतें"],
+        supportTitle: "सहायता",
+        supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
+        followTitle: "हमें फॉलो करें",
+        copyright: "© 2026 Greeter · हर पल जादुई बनाएँ"
+      }
+    };
+
+    let currentLang = localStorage.getItem('greeter_lang') || 'en';
+    function applyLanguage(lang) {
+      const t = translations[lang];
+      if (!t) return;
+      document.getElementById('navHome').innerText = t.nav[0];
+      document.getElementById('navCreate').innerText = t.nav[1];
+      document.getElementById('navWhy').innerText = t.nav[2];
+      document.getElementById('navShowcase').innerText = t.nav[3];
+      document.getElementById('navPricing').innerText = t.nav[4];
+      document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
+      document.getElementById('pageTitle').innerText = t.pageTitle;
+      document.getElementById('heroDesc').innerText = t.heroDesc;
+      document.getElementById('formTitle').innerText = t.formTitle;
+      document.getElementById('formDesc').innerText = t.formDesc;
+      document.getElementById('nameLabel').innerHTML = t.nameLabel;
+      document.getElementById('emailLabel').innerHTML = t.emailLabel;
+      document.getElementById('subjectLabel').innerHTML = t.subjectLabel;
+      document.getElementById('subjectGeneral').innerText = t.subjectGeneral;
+      document.getElementById('subjectSupport').innerText = t.subjectSupport;
+      document.getElementById('subjectSales').innerText = t.subjectSales;
+      document.getElementById('subjectFeedback').innerText = t.subjectFeedback;
+      document.getElementById('messageLabel').innerHTML = t.messageLabel;
+      document.getElementById('btnText').innerText = t.btnText;
+      document.getElementById('emailTitle').innerText = t.emailTitle;
+      document.getElementById('emailDesc').innerText = t.emailDesc;
+      document.getElementById('emailLink').innerHTML = `${t.emailLink} <i class="fas fa-arrow-right"></i>`;
+      document.getElementById('supportEmailLink').innerText = t.supportEmailLink;
+      document.getElementById('telegramTitle').innerText = t.telegramTitle;
+      document.getElementById('telegramDesc').innerText = t.telegramDesc;
+      document.getElementById('telegramLink').innerHTML = `${t.telegramLink} <i class="fas fa-arrow-right"></i>`;
+      document.getElementById('telegramCommunityLink').innerText = t.telegramCommunityLink;
+      document.getElementById('locationTitle').innerText = t.locationTitle;
+      document.getElementById('locationDesc').innerText = t.locationDesc;
+      document.getElementById('locationBadge').innerHTML = t.locationBadge;
+      document.getElementById('responseTitle').innerText = t.responseTitle;
+      document.getElementById('responseDesc').innerText = t.responseDesc;
+      document.getElementById('responseBadge').innerText = t.responseBadge;
+      document.getElementById('footerBrandText').innerText = t.footerBrand;
+      document.getElementById('exploreTitle').innerText = t.exploreTitle;
+      document.getElementById('supportTitle').innerText = t.supportTitle;
+      document.getElementById('followTitle').innerText = t.followTitle;
+      document.getElementById('copyrightText').innerText = t.copyright;
+      const exploreLinks = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+      t.exploreLinks.forEach((text, idx) => { if (document.getElementById(exploreLinks[idx])) document.getElementById(exploreLinks[idx]).innerText = text; });
+      const supportLinks = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
+      t.supportLinks.forEach((text, idx) => { if (document.getElementById(supportLinks[idx])) document.getElementById(supportLinks[idx]).innerText = text; });
+      const langToggleSpan = document.querySelector('#langToggleBtn span');
+      if (langToggleSpan) langToggleSpan.innerText = lang === 'en' ? 'हिन्दी' : 'English';
+      localStorage.setItem('greeter_lang', lang);
+      currentLang = lang;
+    }
+
+    document.getElementById('langToggleBtn').addEventListener('click', () => { applyLanguage(currentLang === 'en' ? 'hi' : 'en'); });
+
+    function setTheme(isDark) {
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      if (isDark) {
+        body.classList.add('dark');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('greeter-theme', 'dark');
+      } else {
+        body.classList.remove('dark');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('greeter-theme', 'light');
+      }
+    }
+    window.toggleTheme = () => { setTheme(!document.body.classList.contains('dark')); };
+    const savedTheme = localStorage.getItem('greeter-theme') || 'light';
+    setTheme(savedTheme === 'dark');
+    document.getElementById('modeToggle').addEventListener('click', window.toggleTheme);
+
+    // Mobile menu logic
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const navLinksDiv = document.getElementById('navLinks');
+    function closeMobileMenu() {
+      navLinksDiv.classList.remove('show');
+      if (menuBtn) {
+        const icon = menuBtn.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    }
+    function openMobileMenu() {
+      navLinksDiv.classList.add('show');
+      const icon = menuBtn.querySelector('i');
+      icon.classList.remove('fa-bars');
+      icon.classList.add('fa-times');
+    }
+    if (menuBtn) {
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (navLinksDiv.classList.contains('show')) closeMobileMenu();
+        else openMobileMenu();
+      });
+    }
+    document.addEventListener('click', (event) => {
+      const isClickInsideMenu = navLinksDiv.contains(event.target);
+      const isClickOnToggle = menuBtn && menuBtn.contains(event.target);
+      if (!isClickInsideMenu && !isClickOnToggle && navLinksDiv.classList.contains('show')) {
+        closeMobileMenu();
+      }
+    });
+    window.addEventListener('resize', () => { if (window.innerWidth > 768 && navLinksDiv.classList.contains('show')) closeMobileMenu(); });
+    document.querySelectorAll('#navLinks a').forEach(link => { link.addEventListener('click', closeMobileMenu); });
+
+    // Form submission
+    const form = document.getElementById('contactForm');
+    const statusDiv = document.getElementById('formStatus');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const message = document.getElementById('message').value.trim();
+      if (!name || !email || !message) {
+        statusDiv.innerHTML = `<span style="color: #ef4444;">${translations[currentLang].formRequired}</span>`;
+        return;
+      }
+      statusDiv.innerHTML = `<span style="color: #10b981;">${translations[currentLang].formSuccess}</span>`;
+      form.reset();
+      setTimeout(() => { statusDiv.innerHTML = ''; }, 5000);
+    });
+
+    document.querySelectorAll('.social-row a, .footer-social a').forEach(link => {
+      link.addEventListener('click', (e) => { e.preventDefault(); alert(currentLang === 'en' ? "Social media integration coming soon." : "सोशल मीडिया इंटीग्रेशन जल्द आ रहा है।"); });
+    });
+    document.getElementById('signinBtn').addEventListener('click', () => { alert(currentLang === 'en' ? "Sign in feature coming soon!" : "लॉगिन सुविधा जल्द आ रही है!"); });
+
+    applyLanguage(localStorage.getItem('greeter_lang') || 'en');
+  </script>
+</body>
+
+</html>

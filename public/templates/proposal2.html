@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>💍 Will You Marry Me? · A Love Story</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Satisfy&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Caveat', cursive;
+            background: #f5ede0;
+            color: #3d2b1f;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* paper texture */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .wall {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-title {
+            font-family: 'Satisfy', cursive;
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            color: #8b4513;
+            text-align: center;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .page-title::after {
+            content: '';
+            display: block;
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #8b4513, transparent);
+            margin: 8px auto 0;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: #7a5c4a;
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .polaroids {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+            max-width: 900px;
+            margin-bottom: 48px;
+        }
+
+        .polaroid {
+            background: white;
+            padding: 14px 14px 48px;
+            box-shadow: 0 4px 12px rgba(61, 43, 31, 0.25), 0 1px 3px rgba(61, 43, 31, 0.1);
+            width: 160px;
+            transform: rotate(var(--rot));
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .polaroid:hover {
+            transform: rotate(0deg) scale(1.08);
+            box-shadow: 0 12px 30px rgba(61, 43, 31, 0.35);
+            z-index: 10;
+        }
+
+        .polaroid-img {
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--col);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .polaroid-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .polaroid-caption {
+            font-size: 0.95rem;
+            color: #3d2b1f;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 600;
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            right: 0;
+            padding: 0 8px;
+        }
+
+        .tape {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-2deg);
+            width: 50px;
+            height: 20px;
+            background: rgba(255, 220, 150, 0.65);
+            border-left: 1px solid rgba(200, 160, 80, 0.3);
+            border-right: 1px solid rgba(200, 160, 80, 0.3);
+        }
+
+        .letter-section {
+            max-width: 620px;
+            width: 90%;
+            background: white;
+            padding: 48px 40px;
+            box-shadow: 0 6px 20px rgba(61, 43, 31, 0.2);
+            position: relative;
+            margin-bottom: 48px;
+        }
+
+        .letter-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: repeating-linear-gradient(90deg, #c9184a 0, #c9184a 8px, transparent 8px, transparent 16px);
+        }
+
+        .letter-header {
+            font-family: 'Satisfy', cursive;
+            font-size: 1.8rem;
+            color: #8b4513;
+            margin-bottom: 20px;
+        }
+
+        .letter-body {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1rem;
+            line-height: 2;
+            color: #3d2b1f;
+            font-style: italic;
+            border-bottom: 1px solid rgba(61, 43, 31, 0.1);
+            padding-bottom: 24px;
+            margin-bottom: 24px;
+        }
+
+        .letter-sign {
+            font-family: 'Satisfy', cursive;
+            font-size: 2rem;
+            color: #c9184a;
+            text-align: right;
+        }
+
+        .question-box {
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            margin-bottom: 40px;
+        }
+
+        .question-text {
+            font-family: 'Satisfy', cursive;
+            font-size: clamp(2rem, 7vw, 3.5rem);
+            color: #8b4513;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .question-name {
+            font-family: 'Satisfy', cursive;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            color: #c9184a;
+            margin-bottom: 32px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-yes {
+            padding: 14px 44px;
+            background: #c9184a;
+            border: none;
+            color: white;
+            font-family: 'Caveat', cursive;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: 3px 3px 0 #8b0024;
+            transition: all 0.2s;
+        }
+
+        .btn-yes:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 #8b0024;
+        }
+
+        .btn-no {
+            padding: 14px 44px;
+            background: transparent;
+            border: 2px solid #8b4513;
+            color: #8b4513;
+            font-family: 'Caveat', cursive;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        #celebration {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #f5ede0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #celebration.show {
+            display: flex;
+        }
+
+        .cel-stamp {
+            font-size: 80px;
+            animation: stampIn 0.5s cubic-bezier(0.23, 1, 0.32, 1.5);
+        }
+
+        @keyframes stampIn {
+            from {
+                transform: scale(3) rotate(-15deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .cel-h {
+            font-family: 'Satisfy', cursive;
+            font-size: clamp(2rem, 7vw, 4rem);
+            color: #8b4513;
+            margin: 20px 0 12px;
+        }
+
+        .cel-p {
+            font-family: 'Libre Baskerville', serif;
+            font-style: italic;
+            color: #7a5c4a;
+            font-size: 1.1rem;
+        }
+
+        .washi {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            height: 24px;
+            background: repeating-linear-gradient(45deg, rgba(201, 24, 74, 0.15), rgba(201, 24, 74, 0.15) 5px, rgba(201, 24, 74, 0.05) 5px, rgba(201, 24, 74, 0.05) 10px);
+        }
+
+        .washi-top {
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .washi-bottom {
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        @media (max-width: 560px) {
+            .polaroid {
+                width: 130px;
+                padding-bottom: 40px;
+            }
+
+            .letter-section {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="washi washi-top"></div>
+    <div class="washi washi-bottom"></div>
+
+    <div class="wall">
+        <h1 class="page-title" id="pageTitle">Our Story</h1>
+        <p class="subtitle" id="subtitle">✨ & me ♡</p>
+
+        <div class="polaroids" id="polaroids">
+            <div class="polaroid" style="--rot:-6deg">
+                <div class="tape"></div>
+                <div class="polaroid-img" style="--col:#ffd6cc">🌸</div>
+                <div class="polaroid-caption">Chapter 1</div>
+            </div>
+            <div class="polaroid" style="--rot:4deg">
+                <div class="tape"></div>
+                <div class="polaroid-img" style="--col:#ffd9e8">💕</div>
+                <div class="polaroid-caption">Us</div>
+            </div>
+            <div class="polaroid" style="--rot:-3deg">
+                <div class="tape"></div>
+                <div class="polaroid-img" style="--col:#e8f4d9">🌿</div>
+                <div class="polaroid-caption">Adventures</div>
+            </div>
+            <div class="polaroid" style="--rot:7deg">
+                <div class="tape"></div>
+                <div class="polaroid-img" style="--col:#fef3c7">☀️</div>
+                <div class="polaroid-caption">Sunshine</div>
+            </div>
+            <div class="polaroid" style="--rot:-5deg">
+                <div class="tape"></div>
+                <div class="polaroid-img" style="--col:#e0f2fe">🌊</div>
+                <div class="polaroid-caption">Memories</div>
+            </div>
+        </div>
+
+        <div class="letter-section">
+            <div class="letter-header" id="letterHeader">Dear You,</div>
+            <div class="letter-body" id="letterBody">Every moment with you feels like a page from the most beautiful
+                story ever written. You are my favorite chapter, my happiest adventure, my greatest love.</div>
+            <div class="letter-sign" id="letterSign">Forever yours ♡</div>
+        </div>
+
+        <div class="question-box">
+            <div class="question-text" id="questionStatic">So I have one question...</div>
+            <div class="question-name" id="questionName">Will you marry me? 💍</div>
+            <div class="btn-row">
+                <button class="btn-yes" id="yesBtn">Yes, Yes, YES! 💍</button>
+                <button class="btn-no" id="noBtn">Hmm... yes 💕</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="celebration">
+        <div class="cel-stamp">💍</div>
+        <div class="cel-h" id="celebTitle">She said YES! ♡</div>
+        <div class="cel-p" id="celMsg">The beginning of our forever</div>
+        <button id="closeCelebBtn"
+            style="margin-top:24px;padding:12px 28px;background:#c9184a;border:none;color:white;font-family:'Caveat',cursive;font-size:1.2rem;border-radius:4px;cursor:pointer;box-shadow:3px 3px 0 #8b0024;">Start
+            Forever →</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            // ---------- LANGUAGE DETECTION (same as birthday1.html) ----------
+            function getLang() {
+                try {
+                    const urlParam = new URLSearchParams(location.search).get('lang');
+                    if (urlParam === 'hi' || urlParam === 'en') return urlParam;
+                    const stored = localStorage.getItem('greeter_lang');
+                    if (stored === 'hi' || stored === 'en') return stored;
+                    return 'en';
+                } catch (e) { return 'en'; }
+            }
+
+            // ---------- COMPLETE BILINGUAL DICTIONARY ----------
+            const TRANSLATIONS = {
+                en: {
+                    pageTitle: "Our Story",
+                    subtitle: "{name} & me ♡",
+                    letterHeaderPrefix: "Dear {name},",
+                    letterSign: "Forever yours ♡",
+                    questionStatic: "So I have one question...",
+                    questionName: "Will you marry me, {name}? 💍",
+                    yesBtn: "Yes, YES! 💍",
+                    noBtn: "Hmm... yes 💕",
+                    celebrationTitle: "She said YES! ♡",
+                    celebrationBtn: "Start Forever →",
+                    wishesDefault: "The beginning of our forever",
+                    storyDefault: "Every moment with you feels like a page from the most beautiful story ever written. You are my favorite chapter, my happiest adventure, my greatest love.",
+                    polaroidCaptions: ["Chapter 1", "Us", "Adventures", "Sunshine", "Memories"],
+                    sillies: ["You sure? 🤔", "Last chance...", "Hearts say YES 💕", "Do it! 💍", "YES? 🎊"]
+                },
+                hi: {
+                    pageTitle: "हमारी कहानी",
+                    subtitle: "{name} और मैं ♡",
+                    letterHeaderPrefix: "प्रिय {name},",
+                    letterSign: "हमेशा तुम्हारा ♡",
+                    questionStatic: "तो मेरा एक सवाल है...",
+                    questionName: "क्या तुम मुझसे शादी करोगी, {name}? 💍",
+                    yesBtn: "हाँ, हाँ! 💍",
+                    noBtn: "हम्म... हाँ 💕",
+                    celebrationTitle: "उसने हाँ कह दी! ♡",
+                    celebrationBtn: "हमेशा की शुरुआत →",
+                    wishesDefault: "हमारे हमेशा की शुरुआत",
+                    storyDefault: "तुम्हारे साथ हर पल एक खूबसूरत किताब का पन्ना लगता है। तुम मेरी पसंदीदा कहानी हो, मेरी सबसे खुश साहसिक यात्रा, मेरा सबसे बड़ा प्यार।",
+                    polaroidCaptions: ["अध्याय १", "हम", "सफर", "धूप", "यादें"],
+                    sillies: ["पक्का? 🤔", "आखिरी मौका...", "दिल कहता है हाँ 💕", "कर दो! 💍", "हाँ? 🎊"]
+                }
+            };
+
+            let currentLang = getLang();
+            let t = TRANSLATIONS[currentLang];
+
+            // Load user data (memories, name, custom story/wishes)
+            let userData = { name: null, story: null, wishes: null, memories: [] };
+            try {
+                const raw = localStorage.getItem('userData');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    userData.name = parsed.name || null;
+                    userData.story = parsed.story || null;
+                    userData.wishes = parsed.wishes || null;
+                    userData.memories = Array.isArray(parsed.memories) ? parsed.memories : [];
+                }
+            } catch (e) { }
+
+            function getCurrentName() {
+                if (userData.name && userData.name.trim()) return userData.name.trim();
+                return currentLang === 'hi' ? 'मेरी जान' : 'My Love';
+            }
+
+            function getCurrentStory() {
+                if (userData.story && userData.story.trim()) return userData.story;
+                return t.storyDefault;
+            }
+
+            function getCurrentWishes() {
+                if (userData.wishes && userData.wishes.trim()) return userData.wishes;
+                return t.wishesDefault;
+            }
+
+            // DOM elements
+            const pageTitleEl = document.getElementById('pageTitle');
+            const subtitleEl = document.getElementById('subtitle');
+            const letterHeaderEl = document.getElementById('letterHeader');
+            const letterBodyEl = document.getElementById('letterBody');
+            const letterSignEl = document.getElementById('letterSign');
+            const questionStaticEl = document.getElementById('questionStatic');
+            const questionNameEl = document.getElementById('questionName');
+            const yesBtn = document.getElementById('yesBtn');
+            const noBtn = document.getElementById('noBtn');
+            const celebrationDiv = document.getElementById('celebration');
+            const celebTitleEl = document.getElementById('celebTitle');
+            const celebMsgEl = document.getElementById('celMsg');
+            const closeCelebBtn = document.getElementById('closeCelebBtn');
+
+            const polaroidItems = document.querySelectorAll('.polaroid');
+            const polaroidImgs = document.querySelectorAll('.polaroid-img');
+            const polaroidCaptions = document.querySelectorAll('.polaroid-caption');
+
+            let silliesCycle = [...t.sillies];
+            let silliesIndex = 0;
+
+            function refreshPolaroids() {
+                if (userData.memories && userData.memories.length > 0) {
+                    for (let i = 0; i < polaroidItems.length; i++) {
+                        const mem = userData.memories[i];
+                        const imgDiv = polaroidImgs[i];
+                        const captionSpan = polaroidCaptions[i];
+                        if (mem) {
+                            if (mem.img && mem.img.startsWith('data:image')) {
+                                imgDiv.innerHTML = `<img src="${mem.img}" alt="memory">`;
+                            } else {
+                                const fallbackEmojis = ['🌸', '💕', '🌿', '☀️', '🌊'];
+                                imgDiv.innerHTML = fallbackEmojis[i] || '💖';
+                            }
+                            captionSpan.innerText = mem.text || '♡';
+                        } else {
+                            const fallbackEmojis = ['🌸', '💕', '🌿', '☀️', '🌊'];
+                            imgDiv.innerHTML = fallbackEmojis[i] || '✨';
+                            captionSpan.innerText = t.polaroidCaptions[i] || '♡';
+                        }
+                    }
+                } else {
+                    const defaultEmojis = ['🌸', '💕', '🌿', '☀️', '🌊'];
+                    for (let i = 0; i < polaroidItems.length; i++) {
+                        if (!polaroidImgs[i].querySelector('img')) {
+                            polaroidImgs[i].innerHTML = defaultEmojis[i] || '📸';
+                        }
+                        polaroidCaptions[i].innerText = t.polaroidCaptions[i] || '♡';
+                    }
+                }
+            }
+
+            function fullUIRefresh() {
+                t = TRANSLATIONS[currentLang];
+                const currentName = getCurrentName();
+                const currentStory = getCurrentStory();
+                const currentWishes = getCurrentWishes();
+
+                pageTitleEl.innerText = t.pageTitle;
+                subtitleEl.innerText = t.subtitle.replace('{name}', currentName);
+                letterHeaderEl.innerText = t.letterHeaderPrefix.replace('{name}', currentName);
+                letterBodyEl.innerText = currentStory;
+                letterSignEl.innerText = t.letterSign;
+                questionStaticEl.innerText = t.questionStatic;
+                questionNameEl.innerText = t.questionName.replace('{name}', currentName);
+                yesBtn.innerText = t.yesBtn;
+                noBtn.innerText = t.noBtn;
+                celebTitleEl.innerText = t.celebrationTitle;
+                celebMsgEl.innerText = currentWishes;
+                closeCelebBtn.innerText = t.celebrationBtn;
+
+                silliesCycle = [...t.sillies];
+                silliesIndex = 0;
+                noBtn.style.borderColor = '#8b4513';
+                noBtn.style.color = '#8b4513';
+
+                refreshPolaroids();
+            }
+
+            // No manual toggle – only auto-detect via URL / localStorage
+            // But we still listen for storage events (so customizer can change language)
+            function syncLanguage() {
+                const newLang = getLang();
+                if (newLang !== currentLang) {
+                    currentLang = newLang;
+                    fullUIRefresh();
+                }
+            }
+
+            // Celebration & confetti
+            function launchCelebration() {
+                const msgFinal = getCurrentWishes();
+                celebMsgEl.innerText = msgFinal;
+                celebrationDiv.classList.add('show');
+                function shoot() {
+                    canvasConfetti({ particleCount: 70, angle: 60, spread: 60, origin: { x: 0 }, colors: ['#c9184a', '#f0d080', '#ffb3c1', '#8b4513'] });
+                    canvasConfetti({ particleCount: 70, angle: 120, spread: 60, origin: { x: 1 }, colors: ['#c9184a', '#f0d080', '#ffb3c1', '#8b4513'] });
+                    canvasConfetti({ particleCount: 40, spread: 80, origin: { y: 0.6 }, startVelocity: 15, colors: ['#ffb347', '#ff6b6b'] });
+                }
+                shoot();
+                setTimeout(shoot, 400);
+                setTimeout(shoot, 800);
+                setTimeout(() => {
+                    canvasConfetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, startVelocity: 20 });
+                }, 1200);
+            }
+
+            yesBtn.addEventListener('click', launchCelebration);
+
+            // Playful no button
+            noBtn.addEventListener('click', () => {
+                if (silliesIndex < silliesCycle.length) {
+                    noBtn.innerText = silliesCycle[silliesIndex];
+                    silliesIndex++;
+                    noBtn.style.borderColor = '#c9184a';
+                    noBtn.style.color = '#c9184a';
+                    if (silliesIndex === silliesCycle.length) {
+                        setTimeout(() => yesBtn.click(), 200);
+                    }
+                } else {
+                    yesBtn.click();
+                }
+            });
+
+            closeCelebBtn.addEventListener('click', () => {
+                celebrationDiv.classList.remove('show');
+            });
+
+            // Listen for language changes from other tabs (customizer)
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'userData') {
+                    try {
+                        const newData = JSON.parse(e.newValue);
+                        if (newData) {
+                            if (newData.name !== undefined) userData.name = newData.name;
+                            if (newData.story !== undefined) userData.story = newData.story;
+                            if (newData.wishes !== undefined) userData.wishes = newData.wishes;
+                            if (newData.memories !== undefined) userData.memories = newData.memories;
+                            fullUIRefresh();
+                        }
+                    } catch (err) { }
+                }
+                if (e.key === 'greeter_lang') {
+                    const newLang = e.newValue;
+                    if (newLang === 'hi' || newLang === 'en') {
+                        currentLang = newLang;
+                        fullUIRefresh();
+                    }
+                }
+            });
+
+            // Also sync when window gets focus (in case URL changed)
+            window.addEventListener('focus', () => {
+                syncLanguage();
+                // Also re-fetch userData
+                try {
+                    const fresh = localStorage.getItem('userData');
+                    if (fresh) {
+                        const parsed = JSON.parse(fresh);
+                        let needsRefresh = false;
+                        if (parsed.name !== userData.name) { userData.name = parsed.name; needsRefresh = true; }
+                        if (parsed.story !== userData.story) { userData.story = parsed.story; needsRefresh = true; }
+                        if (parsed.wishes !== userData.wishes) { userData.wishes = parsed.wishes; needsRefresh = true; }
+                        if (parsed.memories && JSON.stringify(parsed.memories) !== JSON.stringify(userData.memories)) {
+                            userData.memories = parsed.memories;
+                            needsRefresh = true;
+                        }
+                        if (needsRefresh) fullUIRefresh();
+                    }
+                } catch (e) { }
+            });
+
+            // Initial render
+            fullUIRefresh();
+
+            // Fix for default polaroid images (if no custom memories)
+            if (!userData.memories || userData.memories.length === 0) {
+                const defaultEmojis = ['🌸', '💕', '🌿', '☀️', '🌊'];
+                for (let i = 0; i < polaroidImgs.length; i++) {
+                    if (!polaroidImgs[i].querySelector('img')) {
+                        polaroidImgs[i].innerHTML = defaultEmojis[i];
+                    }
+                }
+            }
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🎪 Carnival Circus · Greeter.com</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Fredoka+One&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Baloo 2', cursive;
+            background: linear-gradient(145deg, #ffecd6 0%, #ffe0b5 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #ferrisCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .page {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 24px 80px;
+            text-align: center;
+        }
+
+        .circus-badge {
+            background: linear-gradient(135deg, #ff3366, #ffcc00);
+            border-radius: 50px;
+            padding: 6px 24px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            animation: wobble 2s infinite;
+        }
+
+        @keyframes wobble {
+
+            0%,
+            100% {
+                transform: rotate(-2deg);
+            }
+
+            50% {
+                transform: rotate(2deg);
+            }
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(3rem, 11vw, 5rem);
+            color: #ff3366;
+            text-shadow: 3px 3px 0 #ffcc00;
+            animation: bounceIn 0.9s ease;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .sub {
+            background: white;
+            border-radius: 40px;
+            padding: 6px 24px;
+            margin: 10px 0;
+            font-weight: 600;
+            color: #ff6633;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .ticket-card {
+            width: min(360px, 90vw);
+            background: #fff8e7;
+            border-radius: 20px 40px 20px 40px;
+            padding: 28px;
+            margin: 20px auto;
+            box-shadow: 8px 8px 0 rgba(255, 51, 102, 0.2);
+            border: 2px dashed #ffcc00;
+            position: relative;
+            text-align: left;
+        }
+
+        .ticket-card::before {
+            content: "🎟️";
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            font-size: 2rem;
+            transform: rotate(-15deg);
+        }
+
+        .ticket-card h3 {
+            font-family: 'Fredoka One', cursive;
+            color: #ff3366;
+            margin-bottom: 12px;
+        }
+
+        .ticket-card p {
+            color: #663300;
+            line-height: 1.6;
+        }
+
+        .sign {
+            text-align: right;
+            font-family: 'Fredoka One', cursive;
+            color: #ffaa33;
+        }
+
+        .circus-wishes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .clown-wish {
+            background: #ffdd99;
+            border-radius: 30px;
+            padding: 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: #cc3300;
+            cursor: default;
+            transition: 0.2s;
+        }
+
+        .clown-wish:hover {
+            transform: translateY(-5px) rotate(-2deg);
+            background: #ffcc66;
+        }
+
+        .story-circus {
+            max-width: 550px;
+            background: rgba(255, 255, 240, 0.9);
+            border-radius: 30px;
+            padding: 28px;
+            margin: 20px auto;
+            border-right: 12px solid #ff3366;
+        }
+
+        .gallery-circus {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .circus-mem {
+            background: white;
+            border-radius: 20px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .circus-mem img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .circus-mem:hover {
+            transform: scale(1.05) rotate(3deg);
+        }
+
+        .celebrate-btn {
+            background: linear-gradient(135deg, #ff3366, #ffcc00);
+            border: none;
+            border-radius: 50px;
+            padding: 14px 44px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: 0.2s;
+        }
+
+        .celebrate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.5);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #ff3366;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            transition: 0.4s;
+            opacity: 0;
+            z-index: 999;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="ferrisCanvas"></canvas>
+    <div class="page">
+        <div class="circus-badge" id="badge">🎪 CARNIVAL CIRCUS 🎡</div>
+        <h1 id="heroTitle">Happy Birthday!</h1>
+        <div class="sub" id="subText">🎟️ step right up to the party! 🎟️</div>
+        <div class="ticket-card">
+            <h3 id="cardTitle">🎡 Circus Ticket to Joy</h3>
+            <p id="cardMsg">Admit one: the most wonderful person in the world! Your birthday is the greatest show on
+                earth. May your day be filled with laughter, cotton candy, and endless fun.</p>
+            <div class="sign" id="cardSign">— Ringmaster's orders 🎪</div>
+        </div>
+        <div class="circus-wishes">
+            <div class="clown-wish"><span>🎪</span> <span id="w1">Big top fun</span></div>
+            <div class="clown-wish"><span>🎡</span> <span id="w2">Rollercoaster joy</span></div>
+            <div class="clown-wish"><span>🍿</span> <span id="w3">Popcorn moments</span></div>
+            <div class="clown-wish"><span>🎈</span> <span id="w4">Balloon smiles</span></div>
+        </div>
+        <div class="story-circus">
+            <h3 id="storyTitle">📖 Our Carnival Story</h3>
+            <p id="storyText">Life with you is like a circus — colorful, exciting, and full of surprises. You're the
+                star of the show every single day. Happy birthday, my favorite performer!</p>
+        </div>
+        <div class="gallery-circus" id="gallery">
+            <div class="circus-mem">🎪</div>
+            <div class="circus-mem">🎡</div>
+            <div class="circus-mem">🎈</div>
+            <div class="circus-mem">🍿</div>
+            <div class="circus-mem">🎭</div>
+            <div class="circus-mem">🎟️</div>
+        </div>
+        <button class="celebrate-btn" id="celebrateBtn">🎉 Celebrate! 🎉</button>
+        <footer>Made with ♡ · Greeter.com</footer>
+    </div>
+    <div class="toast" id="toast">🎪 Happy Birthday! 🎂</div>
+
+    <script>
+        (function () {
+            function getLang() {
+                let urlLang = new URLSearchParams(location.search).get('lang');
+                if (urlLang === 'hi' || urlLang === 'en') return urlLang;
+                return localStorage.getItem('greeter_lang') || 'en';
+            }
+            let lang = getLang();
+            const t = {
+                en: {
+                    badge: "🎪 CARNIVAL CIRCUS 🎡", heroTitle: "Happy Birthday!", subText: "🎟️ step right up to the party! 🎟️",
+                    cardTitle: "🎡 Circus Ticket to Joy",
+                    cardMsg: "Admit one: the most wonderful person in the world! Your birthday is the greatest show on earth. May your day be filled with laughter, cotton candy, and endless fun.",
+                    cardSign: "— Ringmaster's orders 🎪",
+                    w1: "Big top fun", w2: "Rollercoaster joy", w3: "Popcorn moments", w4: "Balloon smiles",
+                    storyTitle: "📖 Our Carnival Story",
+                    storyText: "Life with you is like a circus — colorful, exciting, and full of surprises. You're the star of the show every single day. Happy birthday, my favorite performer!",
+                    toastMsg: "🎪 Happy Birthday! 🎂"
+                },
+                hi: {
+                    badge: "🎪 कार्निवल सर्कस 🎡", heroTitle: "जन्मदिन मुबारक!", subText: "🎟️ पार्टी में आइए! 🎟️",
+                    cardTitle: "🎡 खुशी का सर्कस टिकट",
+                    cardMsg: "प्रवेश: दुनिया का सबसे अद्भुत व्यक्ति! तुम्हारा जन्मदिन पृथ्वी का सबसे बड़ा शो है। तुम्हारा दिन हँसी, कॉटन कैंडी और असीम मज़े से भरा हो।",
+                    cardSign: "— रिंगमास्टर के आदेश 🎪",
+                    w1: "बड़े टेंट का मज़ा", w2: "रोलरकोस्टर खुशी", w3: "पॉपकॉर्न पल", w4: "गुब्बारा मुस्कान",
+                    storyTitle: "📖 हमारी कार्निवल कहानी",
+                    storyText: "तुम्हारे साथ ज़िंदगी एक सर्कस जैसी है — रंगीन, रोमांचक और सरप्राइज़ से भरी। तुम हर दिन शो के सितारे हो। जन्मदिन मुबारक, मेरे पसंदीदा कलाकार!",
+                    toastMsg: "🎪 जन्मदिन मुबारक! 🎂"
+                }
+            };
+            function applyLang() {
+                let tr = t[lang];
+                document.getElementById('badge').innerText = tr.badge;
+                document.getElementById('heroTitle').innerText = tr.heroTitle;
+                document.getElementById('subText').innerText = tr.subText;
+                document.getElementById('cardTitle').innerText = tr.cardTitle;
+                document.getElementById('cardMsg').innerText = tr.cardMsg;
+                document.getElementById('cardSign').innerText = tr.cardSign;
+                document.getElementById('w1').innerText = tr.w1;
+                document.getElementById('w2').innerText = tr.w2;
+                document.getElementById('w3').innerText = tr.w3;
+                document.getElementById('w4').innerText = tr.w4;
+                document.getElementById('storyTitle').innerText = tr.storyTitle;
+                document.getElementById('storyText').innerText = tr.storyText;
+                document.getElementById('toast').innerText = tr.toastMsg;
+            }
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            function refreshUI() {
+                applyLang();
+                if (userData.name) document.getElementById('heroTitle').innerText = (lang === 'hi' ? 'जन्मदिन मुबारक, ' : 'Happy Birthday, ') + userData.name;
+                if (userData.story) document.getElementById('storyText').innerText = userData.story;
+                if (userData.wishes) document.getElementById('cardMsg').innerText = userData.wishes;
+                if (userData.memories && userData.memories.length) {
+                    let gal = document.getElementById('gallery');
+                    gal.innerHTML = '';
+                    userData.memories.forEach(m => {
+                        let div = document.createElement('div'); div.className = 'circus-mem';
+                        if (m.img) div.innerHTML = `<img src="${m.img}" alt="memory">`;
+                        else div.innerText = m.text || '🎪';
+                        gal.appendChild(div);
+                    });
+                }
+            }
+            refreshUI();
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'greeter_lang') { lang = e.newValue || 'en'; refreshUI(); }
+                if (e.key === 'userData') { try { userData = JSON.parse(e.newValue || '{}'); } catch (e) { } refreshUI(); }
+            });
+            window.addEventListener('popstate', () => { let newLang = getLang(); if (newLang !== lang) { lang = newLang; refreshUI(); } });
+            // confetti with circus colors
+            document.getElementById('celebrateBtn').addEventListener('click', () => {
+                let toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+                canvasConfetti({ particleCount: 300, spread: 130, origin: { y: 0.5 }, colors: ['#ff3366', '#ffcc00', '#ff6633', '#ff99cc'], startVelocity: 20 });
+                for (let i = 0; i < 3; i++) setTimeout(() => canvasConfetti({ particleCount: 80, spread: 90, origin: { x: 0.2 + i * 0.2, y: 0.6 }, shapes: ['star', 'circle'] }), i * 180);
+            });
+            // Ferris wheel animation
+            (function () {
+                const canvas = document.getElementById('ferrisCanvas');
+                const ctx = canvas.getContext('2d');
+                let angle = 0;
+                function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+                resize(); window.addEventListener('resize', resize);
+                function drawFerris() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const centerX = canvas.width * 0.85;
+                    const centerY = canvas.height * 0.2;
+                    const radius = 70;
+                    angle += 0.01;
+                    // draw wheel
+                    ctx.beginPath(); ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 3; ctx.stroke();
+                    // spokes
+                    for (let i = 0; i < 8; i++) {
+                        let rad = angle + i * Math.PI / 4;
+                        let x = centerX + Math.cos(rad) * radius;
+                        let y = centerY + Math.sin(rad) * radius;
+                        ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.lineTo(x, y);
+                        ctx.strokeStyle = '#ffaa33'; ctx.stroke();
+                        // cabins
+                        ctx.fillStyle = '#ff6699';
+                        ctx.beginPath(); ctx.rect(x - 6, y - 6, 12, 12); ctx.fill();
+                        ctx.fillStyle = 'white'; ctx.font = '12px sans-serif'; ctx.fillText('🎡', x - 5, y + 4);
+                    }
+                    requestAnimationFrame(drawFerris);
+                }
+                drawFerris();
+            })();
+            // floating balloons (CSS)
+            const balloonDiv = document.createElement('div');
+            balloonDiv.style.position = 'fixed';
+            balloonDiv.style.bottom = '0';
+            balloonDiv.style.left = '0';
+            balloonDiv.style.width = '100%';
+            balloonDiv.style.height = '100%';
+            balloonDiv.style.pointerEvents = 'none';
+            balloonDiv.style.zIndex = '2';
+            document.body.appendChild(balloonDiv);
+            setInterval(() => {
+                let balloon = document.createElement('div');
+                balloon.innerHTML = ['🎈', '🎪', '🎡', '🍿'][Math.floor(Math.random() * 4)];
+                balloon.style.position = 'absolute';
+                balloon.style.bottom = '-30px';
+                balloon.style.left = Math.random() * 100 + '%';
+                balloon.style.fontSize = (24 + Math.random() * 20) + 'px';
+                balloon.style.opacity = 0.6 + Math.random() * 0.4;
+                balloon.style.animation = 'riseBalloon 5s linear forwards';
+                balloonDiv.appendChild(balloon);
+                setTimeout(() => balloon.remove(), 5000);
+            }, 1200);
+            const style2 = document.createElement('style');
+            style2.textContent = `@keyframes riseBalloon { 0% { bottom: -30px; transform: rotate(0deg); } 100% { bottom: 100vh; transform: rotate(20deg); } }`;
+            document.head.appendChild(style2);
+        })();
+    </script>
+</body>
+
+</html>

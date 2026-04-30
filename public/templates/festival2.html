@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🎨 Happy Holi · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Baloo+2:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pink: #ff6b6b;
+            --yellow: #ffd93d;
+            --green: #6bcb77;
+            --blue: #4d96ff;
+            --purple: #b185db;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(145deg, #fff0e0, #ffe6c7);
+            color: #2d1b0e;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Colour splash */
+        .splash {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: splashAnim 1.5s ease-out forwards;
+            z-index: 1;
+        }
+
+        @keyframes splashAnim {
+            0% {
+                transform: scale(0);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(2.8rem, 10vw, 5rem);
+            background: linear-gradient(135deg, var(--pink), var(--yellow), var(--green), var(--blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .festival-sub {
+            font-size: 1.2rem;
+            color: var(--purple);
+            margin-bottom: 32px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 240, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 32px;
+            margin: 24px auto;
+            max-width: 700px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 32px 0;
+        }
+
+        .memory-card {
+            width: 160px;
+            background: white;
+            border-radius: 24px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-img {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 16px;
+            background: #ffe0b5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            overflow: hidden;
+        }
+
+        .memory-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .memory-caption {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            color: #b85c00;
+        }
+
+        .btn-colour {
+            background: linear-gradient(135deg, var(--pink), var(--yellow));
+            border: none;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+            color: #2d1b0e;
+        }
+
+        .btn-colour:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--pink);
+        }
+
+        .edit-tools {
+            display: none;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        body.edit-mode .edit-tools {
+            display: flex;
+        }
+
+        body.edit-mode .memory-card {
+            cursor: pointer;
+        }
+
+        .edit-btn {
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid #b85c00;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            .memory-card {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <h1>Happy <span id="festivalPlaceholder">Holi</span></h1>
+        <div class="festival-sub" id="festivalNameDisplay"></div>
+
+        <div class="glass-card">
+            <p class="story-text" id="storyText"></p>
+        </div>
+
+        <div class="gallery" id="galleryContainer"></div>
+
+        <button class="btn-colour" id="colourBtn">🎨 Throw Colour 🎨</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const EDIT_MODE = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+            if (EDIT_MODE) document.body.classList.add('edit-mode');
+
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            const festival = userData.festival || 'Holi';
+            const name = userData.name || 'Friend';
+            const story = userData.story || `Let the colours of ${festival} fill your life with joy, laughter, and togetherness. May every splash bring a new reason to smile.`;
+            const wishes = userData.wishes || `Wishing you a ${festival} as bright and beautiful as you! 🎨💖`;
+            const memories = userData.memories || [];
+
+            document.getElementById('festivalPlaceholder').innerText = festival;
+            document.getElementById('festivalNameDisplay').innerHTML = `To ${name} ✨`;
+            document.getElementById('storyText').innerHTML = story;
+
+            const gallery = document.getElementById('galleryContainer');
+            function renderGallery() {
+                gallery.innerHTML = '';
+                memories.forEach((mem, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'memory-img';
+                    if (mem.img && mem.img.startsWith('data:image')) {
+                        const img = document.createElement('img');
+                        img.src = mem.img;
+                        imgDiv.appendChild(img);
+                    } else {
+                        imgDiv.innerHTML = '🎨';
+                    }
+                    const cap = document.createElement('div');
+                    cap.className = 'memory-caption';
+                    cap.innerText = mem.text || '✨';
+                    card.appendChild(imgDiv);
+                    card.appendChild(cap);
+                    if (EDIT_MODE) {
+                        const tools = document.createElement('div');
+                        tools.className = 'edit-tools';
+                        const uploadBtn = document.createElement('button');
+                        uploadBtn.className = 'edit-btn';
+                        uploadBtn.innerHTML = '📷';
+                        uploadBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = (ev) => {
+                                const file = ev.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (re) => {
+                                        mem.img = re.target.result;
+                                        localStorage.setItem('userData', JSON.stringify(userData));
+                                        renderGallery();
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            };
+                            input.click();
+                        };
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'edit-btn';
+                        removeBtn.innerHTML = '🗑️';
+                        removeBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            memories.splice(idx, 1);
+                            localStorage.setItem('userData', JSON.stringify(userData));
+                            renderGallery();
+                        };
+                        tools.appendChild(uploadBtn);
+                        tools.appendChild(removeBtn);
+                        card.appendChild(tools);
+                    }
+                    gallery.appendChild(card);
+                });
+                if (EDIT_MODE) {
+                    const addCard = document.createElement('div');
+                    addCard.className = 'memory-card';
+                    addCard.innerHTML = '<div class="memory-img" style="font-size:2rem;">+</div><div class="memory-caption">Add Memory</div>';
+                    addCard.onclick = () => {
+                        memories.push({ img: null, text: 'Colourful Day' });
+                        localStorage.setItem('userData', JSON.stringify(userData));
+                        renderGallery();
+                    };
+                    gallery.appendChild(addCard);
+                }
+            }
+            renderGallery();
+
+            document.getElementById('colourBtn').addEventListener('click', () => {
+                const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#b185db'];
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => {
+                        confetti({ particleCount: 100, spread: 120, origin: { y: 0.5, x: 0.2 + Math.random() * 0.6 }, colors, startVelocity: 15 });
+                    }, i * 200);
+                }
+                // Also create splash divs
+                for (let i = 0; i < 30; i++) {
+                    const splash = document.createElement('div');
+                    splash.className = 'splash';
+                    splash.style.left = Math.random() * 100 + '%';
+                    splash.style.top = Math.random() * 100 + '%';
+                    splash.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    splash.style.width = splash.style.height = (Math.random() * 80 + 20) + 'px';
+                    document.body.appendChild(splash);
+                    setTimeout(() => splash.remove(), 1500);
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Create Your Surprise · Greeter.com</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-primary: #f9f7ff;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a1025;
+      --text-secondary: #4a3b66;
+      --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+      --accent-solid: #7b5df6;
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --navbar-bg: rgba(255, 255, 255, 0.6);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
+      --glow: rgba(123, 93, 246, 0.15);
+      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+      --error-color: #e53e3e;
+    }
+
+    body.dark {
+      --bg-primary: #0c0719;
+      --bg-secondary: #1a1230;
+      --text-primary: #f0edff;
+      --text-secondary: #b9aed6;
+      --card-bg: rgba(30, 20, 55, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --navbar-bg: rgba(18, 12, 38, 0.7);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 30px 50px -15px #00000055;
+      --glow: rgba(123, 93, 246, 0.25);
+      --error-color: #fc8181;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: var(--mode-transition);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -2;
+      transition: var(--mode-transition);
+    }
+
+    body.dark .bg-gradient {
+      background: radial-gradient(circle at 20% 30%, #2d1b4e40, #0a0614 90%);
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      flex: 1;
+    }
+
+    @media (min-width: 640px) {
+      .container {
+        padding: 0 32px;
+      }
+    }
+
+    /* Custom Modal */
+    .custom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.2s, opacity 0.2s;
+    }
+
+    .custom-modal.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: var(--bg-secondary);
+      border-radius: 32px;
+      max-width: 480px;
+      width: 90%;
+      padding: 28px 28px 24px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--card-border);
+      position: relative;
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+
+    .custom-modal.show .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      width: 32px;
+      height: 32px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .modal-close:hover {
+      background: var(--accent-solid);
+      color: white;
+    }
+
+    .modal-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: var(--accent-solid);
+    }
+
+    .modal-message {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .modal-link-box {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border-radius: 60px;
+      padding: 4px 4px 4px 18px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 16px;
+    }
+
+    .modal-link-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px 0;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .modal-copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      width: 40px;
+      height: 40px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 18px;
+    }
+
+    .modal-copy-btn:hover {
+      background: var(--accent-solid);
+      color: white;
+    }
+
+    .modal-button {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 12px var(--glow);
+      width: 100%;
+    }
+
+    .modal-button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    /* Form styles */
+    .form-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0 40px;
+    }
+
+    @media (min-width: 640px) {
+      .form-wrapper {
+        padding: 40px 0 60px;
+      }
+    }
+
+    .form-card {
+      max-width: 1000px;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 32px;
+      padding: 28px 20px 36px;
+      box-shadow: var(--shadow-lg);
+      transition: var(--mode-transition);
+    }
+
+    @media (min-width: 640px) {
+      .form-card {
+        border-radius: 48px;
+        padding: 40px 40px 48px;
+      }
+    }
+
+    h1 {
+      font-family: 'Great Vibes', cursive;
+      font-size: clamp(2.8rem, 12vw, 4.5rem);
+      text-align: center;
+      margin-bottom: 6px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subhead {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-size: 1rem;
+    }
+
+    @media (min-width: 640px) {
+      .subhead {
+        font-size: 1.1rem;
+        margin-bottom: 32px;
+      }
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .error-message {
+      font-size: 0.8rem;
+      color: var(--error-color);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    select.error-border,
+    input.error-border {
+      border-color: var(--error-color) !important;
+      box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.2) !important;
+    }
+
+    .ai-textarea-wrapper {
+      position: relative;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 14px 52px 14px 16px;
+      border-radius: 18px;
+      border: 1.5px solid var(--card-border);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s;
+      resize: vertical;
+      box-shadow: var(--shadow-sm);
+      overflow-y: hidden;
+      min-height: 80px;
+    }
+
+    textarea:focus {
+      border-color: var(--accent-solid);
+      box-shadow: 0 0 0 3px var(--glow);
+    }
+
+    .ai-neon-btn {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 6px rgba(123, 93, 246, 0.6), 0 0 12px rgba(255, 122, 47, 0.4);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(2px);
+      z-index: 5;
+    }
+
+    .ai-neon-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 14px #7b5df6, 0 0 20px #ff7a2f;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1.5px solid var(--card-border);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent-solid);
+      box-shadow: 0 0 0 3px var(--glow);
+    }
+
+    /* Fix autofill background in dark mode */
+    body.dark input:-webkit-autofill,
+    body.dark select:-webkit-autofill,
+    body.dark textarea:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0px 1000px #1a1230 inset;
+      -webkit-text-fill-color: #f0edff;
+      background-color: transparent !important;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+    }
+
+    .btn-generate {
+      margin-top: 36px;
+      width: 100%;
+      padding: 18px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      border: none;
+      border-radius: 60px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 20px 35px -8px var(--glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-generate:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 28px 45px -8px #7b5df6b0;
+      filter: brightness(1.05);
+    }
+
+
+
+
+
+    /* ---------- NAVBAR (from ContactUs) ---------- */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 28px;
+      margin: 16px 0 12px;
+      backdrop-filter: blur(16px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      transition: var(--mode-transition);
+      flex-wrap: nowrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+      flex-shrink: 1;
+      white-space: nowrap;
+    }
+
+    .logo-icon {
+      background: var(--accent-gradient);
+      width: 44px;
+      height: 44px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 12px 20px -8px var(--glow);
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+      transition: 0.25s;
+      position: relative;
+      padding: 6px 0;
+      font-size: 0.90rem;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2.5px;
+      background: var(--accent-gradient);
+      transition: width 0.3s;
+      border-radius: 4px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: #ff7a2f;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .mode-toggle,
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      width: 44px;
+      height: 44px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mode-toggle .fa-sun {
+      color: #fbbf24;
+      font-size: 1.2rem;
+    }
+
+    body.dark .mode-toggle .fa-moon {
+      color: #cbd5e1;
+    }
+
+    .lang-toggle {
+      width: auto;
+      padding: 0 18px;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .mode-toggle:hover,
+    .lang-toggle:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 9px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 40px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+    }
+
+    /* Footer (from ContactUs) */
+    .footer {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--card-border);
+      border-radius: 40px 40px 0 0;
+      margin-top: 40px;
+      padding: 48px 32px 32px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .footer-brand p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      max-width: 260px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 60px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .footer-col a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      transition: 0.2s;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent-solid);
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .social-icons a {
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: 0.2s;
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+    }
+
+    .social-icons a .fa-facebook-f {
+      color: #1877f2;
+    }
+
+    .social-icons a .fa-instagram {
+      color: #e4405f;
+    }
+
+    .social-icons a .fa-twitter {
+      color: #1da1f2;
+    }
+
+    .social-icons a .fa-whatsapp {
+      color: #25d366;
+    }
+
+    .social-icons a:hover {
+      transform: translateY(-3px);
+    }
+
+    .social-icons a:has(.fa-facebook-f):hover {
+      background: #1877f2;
+      border-color: #1877f2;
+    }
+
+    .social-icons a:has(.fa-instagram):hover {
+      background: #e4405f;
+      border-color: #e4405f;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    .social-icons a:has(.fa-whatsapp):hover {
+      background: #25d366;
+      border-color: #25d366;
+    }
+
+    .social-icons a:has(.fa-twitter):hover {
+      background: #1da1f2;
+      border-color: #1da1f2;
+    }
+
+    .social-icons a:hover .fab {
+      color: white !important;
+    }
+
+    .copyright {
+      text-align: center;
+      padding-top: 32px;
+      margin-top: 32px;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 8px 16px;
+        flex-wrap: wrap;
+        min-height: 60px;
+      }
+
+      .logo {
+        font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      }
+
+      .logo-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+      }
+
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 85px;
+        left: 20px;
+        right: 20px;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(24px);
+        border-radius: 32px;
+        padding: 28px 20px;
+        flex-direction: column;
+        gap: 18px;
+        text-align: center;
+        z-index: 1000;
+        border: 1px solid var(--card-border);
+        opacity: 0;
+        transform: translateY(-15px);
+        pointer-events: none;
+        transition: 0.3s;
+      }
+
+      .nav-links.show {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .nav-actions {
+        gap: 8px;
+      }
+
+      .nav-actions .btn-outline {
+        display: none;
+      }
+
+      .form-wrapper {
+        padding: 16px 0 32px;
+      }
+
+      .form-card {
+        padding: 24px 16px;
+        border-radius: 24px;
+      }
+
+      h1 {
+        font-size: clamp(2.4rem, 8vw, 3.9rem);
+      }
+
+      .subhead {
+        font-size: 0.90rem;
+        margin-bottom: 20px;
+      }
+
+      .hero-buttons {
+        flex-wrap: nowrap;
+        gap: 12px;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        padding: 14px 20px;
+        font-size: 1rem;
+      }
+
+      .use-case-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      .steps-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      .proof-strip {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 24px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+      }
+
+      .social-icons {
+        justify-content: center;
+      }
+
+      .share-popup {
+        width: 320px;
+        right: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 6px 12px;
+      }
+
+      .logo {
+        font-size: 0.8rem;
+      }
+
+      .logo-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+      }
+
+      .nav-actions {
+        gap: 4px;
+      }
+
+      .lang-toggle span {
+        display: none;
+      }
+
+      .lang-toggle {
+        width: 36px;
+        padding: 0;
+        justify-content: center;
+      }
+
+      .form-card {
+        padding: 20px 12px;
+      }
+
+      h1 {
+        font-size: clamp(2.2rem, 6vw, 3.4rem);
+      }
+
+      .subhead {
+        font-size: 0.9rem;
+      }
+
+      .btn-generate {
+        padding: 16px 18px;
+        font-size: 0.90rem;
+      }
+
+      .steps-container {
+        gap: 16px;
+      }
+
+      .share-icons-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .share-icon-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+      }
+    }
+
+    .loading-spinner-small {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+  <div class="container">
+    <nav class="navbar" id="navbar">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" id="navHome">Home</a>
+        <a href="create.html" id="navCreate">Create</a>
+        <a href="WhyWe.html" id="navWhy">Why Greeter</a>
+        <a href="privacy.html" id="navShowcase">Privacy</a>
+        <a href="ContactUs.html" id="navPricing">Contact Us</a>
+      </div>
+      <div class="nav-actions">
+        <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
+        <div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button>
+        <div class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div>
+      </div>
+    </nav>
+
+    <div class="form-wrapper">
+      <div class="form-card">
+        <h1 id="mainTitle">Create Your Surprise</h1>
+        <div class="subhead" id="subheadText">Design beautiful websites for your loved ones ✨</div>
+
+        <div class="grid-2">
+          <div>
+            <label id="eventLabel"><i class="far fa-calendar-alt"></i> Select Event</label>
+            <select id="event">
+              <option value="" selected disabled>-- Select Event --</option>
+              <option value="birthday">Birthday 🎂</option>
+              <option value="proposal">Proposal 💍</option>
+              <option value="anniversary">Anniversary ❤️</option>
+              <option value="festival">Festival 🎉</option>
+            </select>
+            <div id="eventError" class="error-message" style="display: none;"><i class="fas fa-exclamation-circle"></i>
+              Please select an event</div>
+            <div id="festivalContainer" style="display: none; margin-top: 16px;">
+              <label id="festivalLabel"><i class="fas fa-gift"></i> Festival Name</label>
+              <input type="text" id="festivalInput" list="festivalList" placeholder="Select or type festival name"
+                autocomplete="off">
+              <datalist id="festivalList"></datalist>
+              <div id="festivalError" class="error-message" style="display: none;"><i
+                  class="fas fa-exclamation-circle"></i> Please enter festival name</div>
+            </div>
+          </div>
+          <div>
+            <label id="moodLabel"><i class="far fa-smile"></i> Select Mood</label>
+            <select id="mood">
+              <option value="" selected disabled>-- Select Mood --</option>
+              <option value="romantic">Romantic 💕</option>
+              <option value="funny">Funny 😂</option>
+              <option value="emotional">Emotional 😢</option>
+              <option value="happy">Happy 🎉</option>
+              <option value="roast">Roast 😈</option>
+              <option value="normal">Normal 😐</option>
+            </select>
+            <div id="moodError" class="error-message" style="display: none;"><i class="fas fa-exclamation-circle"></i>
+              Please select a mood</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <label id="creatingForLabel"><i class="fas fa-heart"></i> Creating for (Relation)</label>
+          <input type="text" id="creatingForInput" list="relationList"
+            placeholder="Select or type relation (e.g., Bestfriend, Brother...)" autocomplete="off">
+          <datalist id="relationList"></datalist>
+          <div id="creatingForError" class="error-message" style="display: none;"><i
+              class="fas fa-exclamation-circle"></i> Please specify relation (optional, but helps personalization)</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="name-wrapper">
+            <label id="nameLabel"><i class="far fa-user"></i> Name <span style="color:#ff7a2f;">*</span></label>
+            <input id="name" placeholder="Enter name (required)" value="">
+            <div id="nameError" class="error-message" style="display: none;"><i class="fas fa-exclamation-circle"></i>
+              Please enter a name</div>
+          </div>
+          <div>
+            <label id="ageLabel"><i class="far fa-calendar"></i> Age (optional)</label>
+            <input id="age" type="number" placeholder="Optional" inputmode="numeric">
+          </div>
+        </div>
+
+        <label id="storyLabel"><i class="far fa-heart"></i> Story / Message</label>
+        <div class="ai-textarea-wrapper"><textarea id="story" rows="3"
+            placeholder="Write something beautiful... or click AI to generate ✨"></textarea><button class="ai-neon-btn"
+            id="aiStoryBtn">AI</button></div>
+        <label id="wishesLabel"><i class="far fa-star"></i> Special Wishes</label>
+        <div class="ai-textarea-wrapper"><textarea id="wishes" rows="3"
+            placeholder="Write wishes... or let AI inspire you"></textarea><button class="ai-neon-btn"
+            id="aiWishesBtn">AI</button></div>
+        <button class="btn-generate" id="submitBtn"><i class="fas fa-magic"></i> <span id="continueBtnText">Continue →
+            Generate Surprise ✨</span></button>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand"><a href="index.html" class="logo" style="margin-bottom: 16px; display: inline-flex;">
+            <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+          </a>
+          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals,
+            anniversaries and festivals — no coding needed.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4 id="exploreTitle">Explore</h4>
+            <ul>
+              <li><a href="create.html" id="exploreTemplates">Create</a></li>
+              <li><a href="WhyWe.html" id="exploreFeatures">Why Greeter</a></li>
+              <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
+              <li><a href="#" id="explorePricing">Pricing</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4 id="supportTitle">Support</h4>
+            <ul>
+              <li><a href="ContactUs.html" id="supportHelp">Help Center</a></li>
+              <li><a href="privacy.html" id="supportPrivacy">Privacy Policy</a></li>
+              <li><a href="terms&cond.html" id="supportTerms">Terms of Use</a></li>
+              <li><a href="ContactUs.html" id="supportContact">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-social">
+          <h4 id="followTitle">Follow us</h4>
+          <div class="social-icons"><a href="#" id="footerFacebook"><i class="fab fa-facebook-f"></i></a><a href="#"
+              id="footerInstagram"><i class="fab fa-instagram"></i></a><a href="#" id="footerWhatsApp"><i
+                class="fab fa-whatsapp"></i></a><a href="#" id="footerTwitter"><i class="fab fa-twitter"></i></a></div>
+        </div>
+      </div>
+      <div class="copyright">
+        <p id="copyrightText">© 2026 Greeter · Make every moment magical</p>
+      </div>
+    </footer>
+  </div>
+
+  <div class="custom-modal" id="customModal">
+    <div class="modal-card">
+      <div class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></div>
+      <div class="modal-icon"><i class="fas fa-info-circle"></i></div>
+      <div class="modal-message" id="modalMessage"></div>
+      <div id="modalLinkContainer" style="display: none;">
+        <div class="modal-link-box"><input type="text" id="modalLinkInput" readonly><button class="modal-copy-btn"
+            id="modalCopyBtn"><i class="far fa-copy"></i></button></div>
+      </div><button class="modal-button" onclick="closeModal()">OK</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // ----- MODAL -----
+      const modal = document.getElementById('customModal');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalLinkContainer = document.getElementById('modalLinkContainer');
+      const modalLinkInput = document.getElementById('modalLinkInput');
+      function showModal(message, link = null) {
+        modalMessage.innerText = message;
+        if (link) { modalLinkInput.value = link; modalLinkContainer.style.display = 'block'; }
+        else { modalLinkContainer.style.display = 'none'; }
+        modal.classList.add('show');
+      }
+      window.closeModal = function () { modal.classList.remove('show'); };
+      document.getElementById('modalCopyBtn').addEventListener('click', function () {
+        modalLinkInput.select();
+        navigator.clipboard?.writeText(modalLinkInput.value).then(() => { this.innerHTML = '<i class="fas fa-check"></i>'; setTimeout(() => this.innerHTML = '<i class="far fa-copy"></i>', 1500); });
+      });
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+      // ----- BACKEND API -----
+
+      // ======================= FULL PRE-WRITTEN DATABASE (EN & HI) =======================
+      let prewriteDB = {
+        en: {
+          birthday: {
+            romantic: [
+              "🎂✨ My dearest {relation}, {name}! On your special day, every heartbeat sings a song of love for you. You are the sunshine that brightens my world. May this year bring you endless laughter, warm hugs, and unforgettable moments. I cherish every memory we've made, and I can't wait to create many more. Happy Birthday, my love! 💖🎉 I promise to stand by you through every season, to celebrate your highs and comfort you in your lows. You make my world complete, and I will love you until the stars burn out. 💖",
+              "💕 Happy Birthday to the most amazing {relation} in my life, {name}. Your smile is my greatest treasure, and your presence makes everything beautiful. Today, I wish you a day as wonderful as you are. May our love grow stronger with every passing year. You mean the world to me! 🥂💗 I want to grow old with you, hold your hand through every season, and love you more each day.",
+              "🌹 To my {relation} {name}, your birthday is a celebration of the day the universe blessed me with you. Every moment with you feels like a fairytale. I love you more than words can say. Have a day filled with romance, cake, and endless love. Happy Birthday, darling! 💐💋 You are my forever and always.",
+              "💖 On your birthday, {name}, I just want to remind you how deeply you are loved. You are the reason my heart feels full. Let's celebrate your incredible journey around the sun with all the romance you deserve. You are my forever and always. Happy Birthday, my {relation}! 🎂❤️"
+            ],
+            funny: [
+              "😂🎉 Hey {name}! Another year older, another year wiser? Nah, just more excuses to eat cake and act silly! Hope your birthday is as awesome as you are (which is pretty darn awesome). Don't worry about the gray hairs – they're just sparkles of wisdom. Let's party like we're still 21! 🥳🎈 Also, remember that growing old is mandatory, but growing up is optional – so stay as wonderfully immature as you are! Let's eat cake until we can't move. 🍰😂",
+              "🤣 Happy Birthday {name}! Remember, age is just a number – in your case, a really big one now! Just kidding, you're still young at heart (and in denial). May your day be filled with laughter, bad jokes, and enough sugar to keep you hyper for a week. Cheers to another trip around the sun! 🎂😜",
+              "🎁 Warning: You are now entering the 'vintage' zone! But hey, vintage is expensive, so you're priceless. Happy Birthday {name}! May your day be filled with memes, cake, and zero responsibilities. Let's get this party started before you fall asleep! 😴🎈",
+              "🤪 Happy Birthday to the one who makes every day a little crazier (in a good way), {name}! You're proof that age is just a number, and that number is... classified. Hope you get all the gifts you want and none of the ones you don't. Eat cake first, ask questions later! 🍰😂"
+            ],
+            emotional: [
+              "😢💝 My dear {name}, on your birthday, I'm overwhelmed with gratitude for having you in my life. You've been my rock, my cheerleader, and my safe haven. Every laugh we've shared, every tear we've wiped, every hug that mended broken pieces – I treasure them all. May you always know how much you are loved. Happy Birthday. 💕🎂 Thank you for being my anchor and my wings. You've shaped my life in ways you'll never fully know. I am forever grateful for every moment we share. 🥹💕",
+              "🎂✨ Today I celebrate not just your birthday, but the beautiful soul that you are, {name}. You have touched my life in ways you'll never know. Your kindness, your strength, your gentle heart – they make this world a better place. I hope your day is as special as you've made every day for me. Love you always. 🥹💖",
+              "💌 To my {relation} {name}, every year I watch you grow and I fall in love with you all over again. Life hasn't always been easy, but having you by my side made every storm bearable. Today, I wish you peace, joy, and the certainty that you are never alone. Happy Birthday from the bottom of my heart. 🌹",
+              "🕯️ As you blow out your candles, {name}, I'm sending you a wish for continued strength and happiness. You've overcome so much, and you shine brighter than ever. I'm proud to call you my {relation}. May your birthday be filled with the warmth of those who truly care. With all my love. 💫"
+            ],
+            happy: [
+              "🎉😄 Happy Birthday to the most cheerful soul, {name}! May your day be as bright as your smile and as fun as your laughter. Let's make this birthday unforgettable with dancing, cake, and tons of positive vibes. You deserve all the happiness in the world! 🥳🎈 Let's fill this day with dancing, silly games, and all the things that make your soul smile. You deserve a year full of adventures and sweet surprises! 🎉🎈",
+              "🎂🌟 Wishing you a birthday that's bursting with joy, {name}! You bring so much happiness to everyone around you. Today is all about celebrating YOU. Soak up every moment, eat all the sweets, and don't forget to make a wish. Here's to another amazing year! 🎁✨",
+              "🎉🎊 Happy Birthday to the life of the party, {name}! Your energy is infectious and your smile is contagious. I hope your special day is filled with everything that makes you happy – friends, family, good food, and great memories. Let's celebrate like there's no tomorrow! 🎂🎈",
+              "🎂🎈 Yay! It's your birthday, {name}! Time to put on your party hat and dance like nobody's watching. You deserve a day full of sunshine, laughter, and all your favorite things. Let's make this the happiest birthday yet. Cheers to you! 🥳✨"
+            ],
+            roast: [
+              "😈 Happy Birthday {name}! Another year older and still not a millionaire? Don't worry, your charm is your currency (and it's heavily inflated). Hope your cake is better than your jokes! Just kidding... or am I? 🎂😜 Now go blow out those candles before the fire alarm goes off – and try not to set your hair on fire! Just kidding, you're amazing even with singed eyebrows. 🔥😜",
+              "🎉 Congrats on surviving another year, {name}! Your ability to still be single/awkward/clumsy is truly impressive. But hey, that's why we love you. May your birthday be as lit as your excuses for being late. 🔥😂",
+              "😂 Happy Birthday to the person who still thinks they're 21 – {name}! Spoiler: you're not. But your spirit is ageless, even if your back isn't. Have a blast, old friend! 🥳👴",
+              "🤣 Another year, another wrinkle! Just kidding, {name}, you're aging like fine wine... cheap wine that gives you a headache. Seriously though, have a fantastic birthday, you lovable disaster! 🍷😅"
+            ],
+            normal: [
+              "🎂 Happy Birthday {name}! Wishing you a day filled with simple joys, good company, and delicious cake. May the year ahead bring you peace, health, and happiness. Enjoy your special day! 🎈 May your year ahead be filled with peace, good health, and small joys that make every day special. Cheers to you! 🥂",
+              "🎉 Hope you have a wonderful birthday, {name}. Take some time to relax and do the things you love. Sending warm wishes your way. Have a great one! 🎁",
+              "✨ Happy Birthday! May this year be kind to you and bring you many reasons to smile. Cheers to you, {name}! 🥂",
+              "🎂 Just wanted to say happy birthday, {name}. Hope your day is as nice as you are. Enjoy every moment! 🎈"
+            ]
+          },
+          proposal: {
+            romantic: [
+              "💍 My darling {name}, every moment with you feels like a beautiful dream. You are the answer to every prayer I never dared to speak. Today, I want to promise you a lifetime of love, laughter, and endless support. Will you make me the happiest person alive? 💖 I want to wake up next to you every morning, share coffee and dreams, and build a home filled with laughter. You are my forever person. 💍💖",
+              "🌹 To my {relation} {name}, being with you has shown me what true love really means. Your smile lights up my darkest days. I can't imagine my future without you by my side. So here's my heart – please take it and never let go. ❤️",
+              "✨ {name}, from the first time I saw you, I knew you were special. Your kindness, your strength, your gentle soul – they captured me completely. I want to spend the rest of my life making you smile. Will you be mine forever? 💕",
+              "💘 My love for you grows stronger every day, {name}. You are my best friend, my confidant, my everything. I'm ready to take the next step. Let's write our forever story together. 💍"
+            ],
+            funny: [
+              "😂 {name}, let's be real – you're the only person I can tolerate for more than 24 hours. That's basically a miracle! So, how about we make it official? I promise to share my fries and let you have the remote. Deal? 💍 I promise to always laugh at your jokes (even the bad ones) and to never finish the last slice of pizza without offering it first. Deal? 😜💍",
+              "🤣 Hey {name}, I've got a question: will you marry me? Don't worry, I already know you're crazy enough to say yes. Let's get hitched and annoy each other forever! 🥳",
+              "🎉 {name}, I've been looking for the perfect person to argue about the thermostat and steal the blankets. Guess what? You're it! Marry me and let's have a lifetime of adventures (and naps). 😜",
+              "😅 So {name}, I'm terrible at speeches, but I'm great at loving you. Let's skip the awkwardness – will you marry me? I'll even let you choose the wedding cake flavor. 🍰"
+            ],
+            emotional: [
+              "😢💖 {name}, from the day we met, my world changed forever. You brought light into my darkness and hope into my heart. I promise to stand by you through every storm and celebrate every sunshine. Will you share your life with me? 💌 Life is short, but my love for you is endless. I can't promise perfection, but I promise honesty, loyalty, and a lifetime of holding your hand. 🥹❤️",
+              "🥹 My dearest {name}, I never believed in fairytales until I found you. You are my happily ever after. I want to grow old with you, hold your hand through every season, and love you more each day. Please say yes. 🌹",
+              "💕 {name}, life is unpredictable, but my love for you is constant. You have my whole heart, and I'm asking for yours in return. Let's build a home filled with laughter, tears of joy, and unwavering support. I love you. 💍",
+              "🕯️ Every love story is beautiful, but ours is my favorite. {name}, you've made me a better person. I can't promise perfection, but I promise honesty, loyalty, and a love that never fades. Will you marry me? 💖"
+            ],
+            happy: [
+              "🎉💍 {name}, life with you is a celebration every single day. Let's make it official! I want to wake up next to you, dance in the kitchen, and grow old together. Marry me and let's start our greatest adventure! 🥂 Let's start this amazing adventure together. I'll be your biggest cheerleader, your partner in crime, and the one who makes you smile even on bad days. 🎉💍",
+              "🎂✨ Happy proposal day, {name}! Actually, I'm proposing because you make everything brighter. Say yes, and I'll spend the rest of my life making you smile. Deal? 😁",
+              "🎈❤️ {name}, you're my favorite notification and my greatest joy. Let's turn this happiness into a forever promise. Will you do me the honor of becoming my spouse? 💍",
+              "🥳💖 Hey {name}, let's get married! I promise to always be your biggest fan, your personal chef (occasionally), and your forever partner in crime. What do you say? 😊"
+            ],
+            roast: [
+              "😈 {name}, you're not perfect, but neither am I. Together we're a disaster waiting to happen – but a fun one! So, how about we make it legal? Marry me, you goofball! 💍😂 I know you're crazy, but that's exactly why I love you. Let's be gloriously imperfect together. What do you say, you beautiful disaster? 😈😂",
+              "🤣 Listen, {name}, I've seen your morning hair and your snoring. And I still want to marry you. That's true love, right? So, what's your answer? 🎉",
+              "😜 {name}, let's be honest – no one else would put up with either of us. So let's team up forever. I promise to always laugh at your bad puns (and sometimes mean it). Marry me? 💍",
+              "😂 Okay {name}, here's the deal: I'll take out the trash if you promise to never leave. Deal? Great! Let's get married and annoy our future kids. 🥳"
+            ],
+            normal: [
+              "💍 {name}, I've thought a lot about this, and I know you're the one I want to share my life with. Will you marry me? I've thought a lot about this, and I know you're the one I want beside me. Let's take this step and build a beautiful future. 💍",
+              "❤️ {name}, life is better with you in it. Let's take this step together. I'd love to be your partner forever.",
+              "✨ {name}, I'm ready to start this new chapter with you. Will you be my spouse?",
+              "💑 {name}, you make everything better. I hope you'll say yes and let's build a future together."
+            ]
+          },
+          anniversary: {
+            romantic: [
+              "💖 Happy Anniversary, my love {name}! Every day with you is a gift. Thank you for all the laughter, the support, and the beautiful memories. Here's to many more years of loving you. 🥂 Every day I fall in love with you a little more. You are my greatest adventure and my safest home. Happy anniversary, my everything. 💋💖",
+              "🌹 {name}, another year has passed, and my love for you has only grown deeper. You are my rock, my joy, my everything. Happy Anniversary, my darling! 💕",
+              "💋 To the one who still makes my heart flutter, {name}. Every moment with you is a treasure. I'm grateful for every sunrise we've shared. Happy Anniversary! 💍",
+              "✨ {name}, from the day we said 'I do' until now, you've made my life complete. I love you more with each passing year. Happy Anniversary! ❤️"
+            ],
+            funny: [
+              "😂 Happy Anniversary {name}! Congrats on putting up with me for another year. You deserve a medal (or at least a big slice of cake). Love you! 🎂 Thanks for not smothering me in my sleep after all these years. You deserve a medal (or at least a spa day). Here's to many more years of putting up with each other! 😂🎉",
+              "🤣 Another year, still not sick of each other. That's a win! Happy Anniversary, my favorite weirdo. Let's keep this chaos going. 🥳",
+              "😜 Happy Anniversary! Thanks for not leaving me after all my bad jokes and annoying habits. You're a saint. Love you! 💕",
+              "🎉 Happy Anniversary {name}! Let's celebrate by doing absolutely nothing together – that's my kind of perfect. 😅"
+            ],
+            emotional: [
+              "😢💌 {name}, looking back at all the years we've shared, my heart overflows with gratitude. You've been my strength, my comfort, my home. Happy Anniversary, my soulmate. 🕯️ Through all the ups and downs, you've been my constant. I cherish every wrinkle, every laugh line, every memory we've painted together. I love you more each day. 🥹💕",
+              "🥹 Every anniversary reminds me how lucky I am to have you, {name}. Through thick and thin, you've stood by me. I love you beyond words. 💖",
+              "💕 Time flies when you're having fun, and even faster when you're with the one you love. Thank you for every moment, {name}. Happy Anniversary! 🌹",
+              "✨ {name}, you are the best chapter of my life. I look forward to writing many more with you. Happy Anniversary! 💫"
+            ],
+            happy: [
+              "🎉 Happy Anniversary, {name}! Let's dance, eat cake, and make more beautiful memories. You make every day brighter. 💃🕺 Let's keep dancing in the kitchen, stealing kisses, and making every ordinary day extraordinary. Happy anniversary to my favorite person! 🎈❤️",
+              "🎂✨ Cheers to us, {name}! Another year of love, laughter, and happiness. I'm so excited for all the years ahead. 🥂",
+              "🎈❤️ Happy Anniversary! You are my sunshine, my joy, my everything. Let's keep celebrating our love story! 🎊",
+              "🎉💕 Happy Anniversary to the best {relation} ever. You make life wonderful. Here's to many more! 🥳"
+            ],
+            roast: [
+              "😈 Happy Anniversary {name}! You've survived another year with me. Impressive. Let's see if you can handle another! 😂 Another year, still not bored of you. That's either love or Stockholm syndrome. Either way, I'm in for life! 😈😂",
+              "🤣 Congrats on not running away yet, {name}. You're either crazy or really in love. Either way, I'm lucky. Happy Anniversary! 🎉",
+              "😜 Happy Anniversary! Thanks for tolerating my nonsense. I promise to keep it entertaining. Love you! 💕",
+              "😂 Another year, still married. We're basically professionals now. Happy Anniversary, partner in crime! 🥳"
+            ],
+            normal: [
+              "🎂 Happy Anniversary, {name}! Wishing you all the love and happiness today and always. Wishing you a day as wonderful as the love we share. Thank you for being my partner in everything. 💐",
+              "💐 Happy Anniversary! Thank you for being such an important part of my life.",
+              "✨ Here's to another wonderful year together. Happy Anniversary, {name}!",
+              "💖 Happy Anniversary! I'm grateful for every moment we share."
+            ]
+          },
+          festival: {
+            romantic: [
+              "🎇 Happy {festival}, my love {name}! May this festival fill our lives with colors of joy and the warmth of togetherness. You are my greatest blessing. 💖 Your love is the brightest decoration in my life. May this festival bring us even closer and fill our hearts with warmth. I adore you! 🪔💖",
+              "✨ Wishing you a {festival} as beautiful as your heart, {name}. Let's celebrate with love, sweets, and endless happiness. I love you! 🪔",
+              "💕 This {festival}, I'm grateful for you, {name}. You light up my world like a thousand diyas. Happy {festival}, my darling! 🎆",
+              "🌹 May the spirit of {festival} bring us closer, {name}. You are my favorite celebration. Love you always! 🥰"
+            ],
+            funny: [
+              "😂 Happy {festival}, {name}! Let's eat so much that we regret it tomorrow. That's the real spirit, right? 🎉 Let's eat sweets until we regret it, then eat some more. Calories don't count on festivals, right? Happy {festival}, you awesome human! 🍬😂",
+              "🤣 May your {festival} be filled with laughter, loud music, and zero family drama. You got this! 🎈",
+              "😜 Hey {name}, don't eat all the sweets before I get there! Happy {festival}! 🍬",
+              "🎉 Wishing you a {festival} that's as fun as you are (which is very fun). Let's party! 🥳"
+            ],
+            emotional: [
+              "😢💖 On this {festival}, I'm reminded of how lucky I am to have you, {name}. You make every celebration meaningful. Thank you for being my family. 🕯️ This festival reminds me how blessed I am to have you. You are my family, my joy, my everything. May the divine always protect you. 🕯️💕",
+              "🥹 {name}, festivals feel incomplete without you. Your presence is the greatest gift. Happy {festival}, my love. 💌",
+              "💕 This {festival}, I pray for your happiness, health, and peace. You are my heart's home. 🎇",
+              "✨ May the divine bless you abundantly, {name}. You deserve all the joy in the world. Happy {festival}! 🌟"
+            ],
+            happy: [
+              "🎉 Happy {festival}, {name}! May your days be filled with sweets, smiles, and celebrations. Let's make this the best one yet! 🥳 May your days be filled with lights, laughter, and lots of mithai. Let's celebrate like there's no tomorrow! 🎉🎇",
+              "🎂✨ Wishing you a {festival} full of light, laughter, and love. Enjoy every moment! 🎈",
+              "🎊 Happy {festival} to the most wonderful {relation} ever. Let's eat, dance, and be merry! 💃",
+              "🎇 Hope your {festival} is as bright and cheerful as you are, {name}. Celebrate big! 🎉"
+            ],
+            roast: [
+              "😈 Happy {festival}, {name}! Try not to eat all the sweets before I arrive, or there will be consequences. 😂 Try not to eat all the ladoos before I get there, or I'll tell everyone about that embarrassing thing you did last year. Happy {festival}! 😂😜",
+              "🤣 May your {festival} be drama‑free and your stomach be happy. Good luck with the relatives! 🎉",
+              "😜 Happy {festival}! Remember, calories don't count during festivals. So go crazy! 🍬",
+              "😂 Wishing you a {festival} that's as lit as your excuses for being late. Cheers! 🥳"
+            ],
+            normal: [
+              "🎉 Happy {festival}, {name}! May you have a wonderful celebration with your loved ones. Wishing you a peaceful and joyous festival. May this occasion bring prosperity and happiness to your home. 🎆",
+              "✨ Wishing you peace, prosperity, and happiness on this {festival}. Enjoy!",
+              "🎇 Happy {festival}! May your days be filled with light and joy.",
+              "🪔 Warm wishes on {festival} to you and your family, {name}."
+            ]
+          }
+        },
+        hi: {
+          birthday: {
+            romantic: [
+              "🎂✨ प्यारे {relation} {name}, आपके जन्मदिन पर मेरा दिल गीत गाता है। आप मेरी दुनिया की रोशनी हो। यह साल ढेर सारी हँसी, गर्मजोशी भरे पल और प्यार लेकर आए। हैप्पी बर्थडे मेरी जान! 💖🎉 मैं हर मौसम में आपके साथ खड़ा रहने का वादा करता/करती हूँ, आपकी हर खुशी में शामिल होने का। आप मेरी दुनिया हो। 💖",
+              "💕 {name}, आपकी मुस्कान मेरा सबसे बड़ा खज़ाना है। आज मैं आपके लिए उतनी ही खुशियाँ चाहता/चाहती हूँ जितनी आप मेरे लिए लाते हो। हमारा प्यार हर साल और गहरा हो। हैप्पी बर्थडे! 🥂💗",
+              "🌹 मेरे {relation} {name}, आपका जन्मदिन उस दिन की याद दिलाता है जब ब्रह्मांड ने मुझे आपसे मिलवाया। मैं आपसे बेइंतहा प्यार करता/करती हूँ। हैप्पी बर्थडे, जानेमन! 💐💋",
+              "💖 {name}, आपको बस याद दिलाना चाहता/चाहती हूँ कि आप कितने प्यारे हो। आप मेरे दिल की धड़कन हो। हैप्पी बर्थडे मेरे {relation}! 🎂❤️"
+            ],
+            funny: [
+              "😂🎉 अरे {name}! एक साल और बड़े हो गए, होशियार? नहीं, बस केक खाने के और बहाने मिल गए। हैप्पी बर्थडे! 🥳🎈 और हाँ, बूढ़े होना जरूरी है, लेकिन बड़े होना नहीं – तो जैसे हो वैसे ही पागल रहो! चलो केक खाएं और मस्ती करें। 🍰😂",
+              "🤣 जन्मदिन मुबारक हो {name}! उम्र सिर्फ एक संख्या है – तुम्हारे मामले में बहुत बड़ी संख्या! मज़ाक कर रहा/रही हूँ, तुम दिल से जवान हो। 🎂😜",
+              "🎁 चेतावनी: तुम 'विंटेज' ज़ोन में प्रवेश कर चुके हो! लेकिन विंटेज महंगा होता है, तो तुम अनमोल हो। हैप्पी बर्थडे! 😴🎈",
+              "🤪 हैप्पी बर्थडे उस शख्स को जो हर दिन थोड़ा पागलपन लाता है – {name}! उम्र एक नंबर है, और वो नंबर... गुप्त। केक पहले खाओ, बाद में सवाल पूछो! 🍰😂"
+            ],
+            emotional: [
+              "😢💝 प्यारे {name}, आपके जन्मदिन पर मैं आपके लिए आभारी हूँ। आप मेरी ताकत, मेरा सहारा हो। हर हंसी, हर आंसू, हर गले लगाना – सब कुछ अनमोल है। हैप्पी बर्थडे। 💕🎂 आपने मेरी जिंदगी को हर तरह से समृद्ध किया है। मैं हर पल के लिए आभारी हूँ। आपको बहुत-बहुत प्यार। 🥹💕",
+              "🎂✨ आज मैं सिर्फ आपका जन्मदिन नहीं, बल्कि आपकी खूबसूरत रूह का जश्न मना रहा/रही हूँ, {name}। आपकी दयालुता, आपकी मजबूती – ये दुनिया को बेहतर बनाती है। बहुत प्यार। 🥹💖",
+              "💌 मेरे {relation} {name}, हर साल मैं आपको बढ़ता देखता/देखती हूँ और फिर से प्यार में पड़ जाता/जाती हूँ। जीवन आसान नहीं था, लेकिन आपके साथ हर तूफान सहने लायक था। हैप्पी बर्थडे। 🌹",
+              "🕯️ जैसे ही आप मोमबत्तियाँ बुझाओ, {name}, मैं आपकी खुशी और ताकत की कामना करता/करती हूँ। आपने बहुत कुछ पार किया है, और आप पहले से ज्यादा चमक रहे हो। ढेर सारा प्यार। 💫"
+            ],
+            happy: [
+              "🎉😄 हैप्पी बर्थडे सबसे खुशमिजाज आत्मा को, {name}! आपकी मुस्कान जितनी चमकदार हो, आपका दिन उतना ही उज्ज्वल हो। 🥳🎈 आज का दिन नाचने, गाने और मस्ती से भरा हो। आप एक शानदार साल के हकदार हो! 🎉🎈",
+              "🎂🌟 आपको ढेर सारी खुशियों वाला जन्मदिन मुबारक हो, {name}! आप हर किसी के चेहरे पर मुस्कान लाते हो। आज का दिन आपके लिए है। 🎁✨",
+              "🎉🎊 हैप्पी बर्थडे पार्टी के जान को, {name}! आपकी ऊर्जा संक्रामक है। मैं चाहता/चाहती हूँ कि आपका दिन वैसा ही शानदार हो जैसे आप हो। 🎂🎈",
+              "🎂🎈 वाह! आपका जन्मदिन है, {name}! पार्टी हैट लगाओ और ऐसे नाचो जैसे कोई देख ही नहीं रहा। आप इस दिन के हकदार हो। 🥳✨"
+            ],
+            roast: [
+              "😈 हैप्पी बर्थडे {name}! एक साल और बड़े हो गए और फिर भी करोड़पति नहीं? कोई बात नहीं, आपकी शख्सियत ही आपकी करेंसी है (और वो महंगी है)। 🎂😜 अब जाओ और मोमबत्तियाँ बुझाओ, पर ध्यान रखना कहीं बाल न जल जाएँ! मज़ाक कर रहा/रही हूँ, तुम महान हो। 🔥😜",
+              "🎉 एक और साल बच गए, {name}! आपका अभी भी सिंगल/अजीब/फूहड़ होना वाकई प्रभावशाली है। लेकिन हे, इसीलिए हम आपसे प्यार करते हैं। 🔥😂",
+              "😂 हैप्पी बर्थडे उस व्यक्ति को जो अभी भी सोचता है कि वह 21 का है – {name}! स्पॉयलर: तुम नहीं हो। लेकिन आपकी आत्मा अजेय है। 🥳👴",
+              "🤣 एक और साल, एक और झुर्री! मज़ाक कर रहा/रही हूँ, {name}, आप ठीक शराब की तरह बूढ़े हो रहे हो... सस्ती शराब जो सिरदर्द दे। मज़ेदार जन्मदिन मनाओ! 🍷😅"
+            ],
+            normal: [
+              "🎂 हैप्पी बर्थडे {name}! आपके दिन में सादी खुशियाँ, अच्छी संगत और मीठा केक हो। साल शांति, सेहत और खुशियाँ लेकर आए। 🎈 आपका साल शांति, अच्छी सेहत और छोटी-छोटी खुशियों से भरा हो। चियर्स! 🥂",
+              "🎉 उम्मीद है आपका जन्मदिन अद्भुत हो, {name}. आराम करो और वो करो जो तुम्हें पसंद है। ढेर सारी शुभकामनाएँ। 🎁",
+              "✨ हैप्पी बर्थडे! यह साल आपके लिए दयालु हो और आपको मुस्कुराने के कई कारण दे। चियर्स, {name}! 🥂",
+              "🎂 बस हैप्पी बर्थडे कहना था, {name}. आपका दिन उतना ही अच्छा हो जितना आप हो। हर पल का आनंद लो! 🎈"
+            ]
+          },
+          proposal: {
+            romantic: [
+              "💍 मेरे प्यारे {name}, आपके साथ हर पल एक सपने जैसा है। आप उस दुआ का जवाब हो जो मैंने कभी नहीं मांगी। क्या आप मुझे दुनिया का सबसे खुश इंसान बनाएंगी/बनाएंगे? 💖 मैं हर सुबह आपके साथ उठना चाहता/चाहती हूँ, कॉफी साझा करना चाहता/चाहती हूँ, और एक घर बनाना चाहता/चाहती हूँ जो हँसी से भरा हो। आप मेरे हमेशा के लिए हो। 💍💖",
+              "🌹 मेरे {relation} {name}, आपके साथ रहकर मैंने सच्चा प्यार जाना। आपकी मुस्कान मेरे अंधेरे दिनों में रोशनी भर देती है। क्या आप मेरे साथ हमेशा के लिए चलेंगी/चलेंगे? ❤️",
+              "✨ {name}, पहली नज़र में ही मुझे पता था कि तुम खास हो। आपकी दयालुता, आपकी मजबूती ने मुझे पूरी तरह कैद कर लिया। क्या तुम मेरी हो जाओगे/जाओगी? 💕",
+              "💘 {name}, तुम्हारे लिए मेरा प्यार हर दिन बढ़ता है। तुम मेरे सबसे अच्छे दोस्त, मेरे सब कुछ हो। चलो हमेशा के लिए एक हो जाएं। 💍"
+            ],
+            funny: [
+              "😂 {name}, चलो सच मानो – तुम एकमात्र ऐसे इंसान हो जिसे मैं 24 घंटे सहन कर सकता/सकती हूँ। तो क्या हम इसे आधिकारिक बनाएं? डील? 💍 मैं वादा करता/करती हूँ कि आपके चुटकुलों पर हँसूंगा/हँसूंगी (भले ही बुरे हों) और पिज़्ज़ा का आखिरी टुकड़ा आपको बिना माँगे दूँगा। डील? 😜💍",
+              "🤣 अरे {name}, मेरा एक सवाल है: क्या तुम मुझसे शादी करोगी/करोगे? चिंता मत करो, मुझे पता है तुम पागल हो और हाँ बोलोगे/बोलोगी। चलो शादी करें! 🥳",
+              "🎉 {name}, मैं एक ऐसे इंसान की तलाश में था/थी जिससे थर्मोस्टेट को लेकर बहस कर सकूँ। लगता है तुम वो हो! मुझसे शादी करोगी/करोगे? 😜",
+              "😅 तो {name}, मैं भाषण देने में बुरा हूँ, लेकिन तुमसे प्यार करने में महान। चलो अनाड़ीपन छोड़ें – शादी करोगी/करोगे? मैं केक का फ्लेवर तुम्हें चुनने दूँगा। 🍰"
+            ],
+            emotional: [
+              "😢💖 {name}, जिस दिन से हम मिले, मेरी दुनिया बदल गई। तुमने मेरे अंधेरे में रोशनी भरी। मैं वादा करता/करती हूँ हर तूफान में तुम्हारे साथ खड़ा रहूँगा/खड़ी रहूँगी। क्या तुम मेरे साथ अपनी जिंदगी बांटोगी/बांटोगे? 💌 जिंदगी छोटी है, लेकिन आपके लिए मेरा प्यार अंतहीन है। मैं पूर्णता का वादा नहीं कर सकता, लेकिन ईमानदारी, वफादारी और हमेशा आपका हाथ थामे रखने का वादा करता/करती हूँ। 🥹❤️",
+              "🥹 मेरे प्यारे {name}, मैंने परियों की कहानियों पर कभी विश्वास नहीं किया जब तक तुमसे नहीं मिला। तुम मेरी 'हैप्पिली एवर आफ्टर' हो। कृपया हाँ बोलो। 🌹",
+              "💕 {name}, जिंदगी अनिश्चित है, लेकिन तुमसे मेरा प्यार स्थिर है। तुम्हारे पास मेरा पूरा दिल है, और मैं तुम्हारा माँग रहा/रही हूँ। मैं तुमसे प्यार करता/करती हूँ। 💍",
+              "🕯️ हर प्रेम कहानी खूबसूरत होती है, लेकिन हमारी मेरी पसंदीदा है। {name}, तुमने मुझे एक बेहतर इंसान बनाया। क्या तुम मुझसे शादी करोगी/करोगे? 💖"
+            ],
+            happy: [
+              "🎉💍 {name}, तुम्हारे साथ जिंदगी हर दिन एक जश्न है। चलो इसे आधिकारिक बनाएं! मैं तुम्हारे साथ बूढ़ा होना चाहता/चाहती हूँ। शादी करोगी/करोगे? 🥂 चलो यह अद्भुत सफर शुरू करें। मैं आपका सबसे बड़ा समर्थक, आपका साथी और आपकी मुस्कान का कारण बनूंगा/बनूंगी। 🎉💍",
+              "🎂✨ हैप्पी प्रपोज़ल डे, {name}! दरअसल, मैं प्रपोज़ इसलिए कर रहा/रही हूँ क्योंकि तुम सब कुछ उज्जवल बनाते हो। हाँ बोलो, और मैं तुम्हें हमेशा मुस्कुराता/मुस्कुराती रहूँगा/रहूँगी। 😁",
+              "🎈❤️ {name}, तुम मेरी पसंदीदा सूचना और मेरी सबसे बड़ी खुशी हो। चलो इस खुशी को हमेशा के वादे में बदलें। क्या तुम मेरे जीवनसाथी बनोगे/बनोगी? 💍",
+              "🥳💖 अरे {name}, चलो शादी कर लें! मैं वादा करता/करती हूँ तुम्हारा सबसे बड़ा फैन, कभी-कभी पर्सनल शेफ, और हमेशा साथी बनूँगा/बनूँगी। क्या कहते हो? 😊"
+            ],
+            roast: [
+              "😈 {name}, तुम परफेक्ट नहीं हो, और ना ही मैं। साथ मिलकर हम एक आपदा हैं – लेकिन मज़ेदार! तो क्या हम इसे कानूनी बनाएं? शादी करोगी/करोगे? 💍😂 मुझे पता है तुम पागल हो, लेकिन इसीलिए मैं तुमसे प्यार करता/करती हूँ। चलो शानदार ढंग से अपूर्ण रहें। क्या कहते हो, तुम खूबसूरत आपदा? 😈😂",
+              "🤣 सुनो {name}, मैंने तुम्हारी सुबह की बालें और तुम्हारी खर्राटे देखी हैं। और फिर भी मैं तुमसे शादी करना चाहता/चाहती हूँ। यही सच्चा प्यार है, है न? 🎉",
+              "😜 {name}, चलो ईमानदार रहें – हममें से किसी को भी कोई और बर्दाश्त नहीं करेगा। तो चलो हमेशा के लिए टीम बनाएं। शादी करोगी/करोगे? 💍",
+              "😂 ठीक है {name}, यह डील है: मैं कचरा बाहर निकालूंगा अगर तुम कभी जाने का वादा करो। डील? बढ़िया! चलो शादी करें और अपने भविष्य के बच्चों को परेशान करें। 🥳"
+            ],
+            normal: [
+              "💍 {name}, मैंने इस बारे में बहुत सोचा है, और मुझे पता है कि तुम वो हो जिसके साथ मैं अपनी जिंदगी बांटना चाहता/चाहती हूँ। क्या तुम मुझसे शादी करोगी/करोगे? मैंने बहुत सोचा है, और मुझे पता है कि तुम वही हो जिसे मैं अपने साथ चाहता/चाहती हूँ। चलो यह कदम उठाएं और एक खूबसूरत भविष्य बनाएं। 💍",
+              "❤️ {name}, तुम्हारे साथ जिंदगी बेहतर है। चलो यह कदम साथ उठाएं। मैं तुम्हारा जीवनसाथी बनना चाहूंगा/चाहूंगी।",
+              "✨ {name}, मैं यह नया अध्याय तुम्हारे साथ शुरू करने के लिए तैयार हूँ। क्या तुम मेरे पति/पत्नी बनोगे/बनोगी?",
+              "💑 {name}, तुम सब कुछ बेहतर बनाते हो। मुझे आशा है कि तुम हाँ कहोगे/कहोगी और चलो साथ में भविष्य बनाएं।"
+            ]
+          },
+          anniversary: {
+            romantic: [
+              "💖 सालगिरह मुबारक हो मेरे प्यार {name}! तुम हर दिन एक उपहार हो। बहुत-बहुत धन्यवाद। यहाँ कई और सालों के प्यार की शुरुआत है। 🥂 हर दिन मैं तुमसे थोड़ा और प्यार करने लगता/लगती हूँ। तुम मेरी सबसे बड़ी यात्रा और मेरा सबसे सुरक्षित घर हो। सालगिरह मुबारक हो, मेरे सब कुछ। 💋💖",
+              "🌹 {name}, एक और साल बीत गया, और तुम्हारे लिए मेरा प्यार और गहरा हो गया। तुम मेरी चट्टान हो। सालगिरह मुबारक हो! 💕",
+              "💋 उस शख्स के लिए जो अब भी मेरा दिल धड़काता है, {name}। तुम्हारे साथ हर पल एक खजाना है। सालगिरह मुबारक हो! 💍",
+              "✨ {name}, जिस दिन से हमने 'हाँ' कहा था, तब से तुमने मेरी जिंदगी पूरी कर दी। मैं हर साल तुमसे और प्यार करता/करती हूँ। सालगिरह मुबारक हो! ❤️"
+            ],
+            funny: [
+              "😂 सालगिरह मुबारक हो {name}! मेरे साथ एक और साल बिताने के लिए बधाई। तुम्हें मेडल मिलना चाहिए (या कम से कम केक का एक बड़ा टुकड़ा)। प्यार करता/करती हूँ! 🎂 इतने सालों में मुझे सुलाते समय गला नहीं घोंटने के लिए धन्यवाद। तुम्हें मेडल मिलना चाहिए (या कम से कम स्पा डे)। यहाँ और भी कई सालों तक एक-दूसरे को सहने के लिए! 😂🎉",
+              "🤣 एक और साल, फिर भी एक-दूसरे से तंग नहीं हुए। यह एक जीत है! सालगिरह मुबारक हो, मेरे पसंदीदा अजीब इंसान 😂😂। चलो मिलकर यह सफर जारी रखें। 🥳",
+              "😜 सालगिरह मुबारक हो {name}! मेरे सारे बुरे मजाकों और परेशान करने वाली आदतों के बावजूद मुझे नहीं छोड़ने के लिए धन्यवाद। तुम संत हो! 💕",
+              "🎉 सालगिरह मुबारक हो {name}! चलो बिल्कुल कुछ न करके जश्न मनाएं – यह मेरे लिए एकदम सही है। 😅"
+            ],
+            emotional: [
+              "😢💌 {name}, पिछले सभी वर्षों को देखकर मेरा दिल आभार से भर जाता है। तुम मेरी ताकत, मेरा सुकून, मेरा घर हो। सालगिरह मुबारक हो, मेरे जीवन साथी। 🕯️ हर उतार-चढ़ाव में तुम मेरे साथ खड़े रहे। मैं अपनी हर याद को संजोता/संजोती हूँ। मैं तुमसे हर दिन ज्यादा प्यार करता/करती हूँ। 🥹💕",
+              "🥹 हर सालगिरह मुझे याद दिलाती है कि मैं तुम्हें पाकर कितना/कितनी भाग्यशाली हूँ, {name}। हर सुख-दुख में तुम मेरे साथ खड़े रहते हो🙏। मैं तुमसे बहुत प्यार करता/करती हूँ। 💖",
+              "💕 समय उड़ता है जब तुम मज़े कर रहे हो, और इससे भी तेज़ जब तुम अपने प्यार के साथ हो। हर पल के लिए धन्यवाद, {name}। सालगिरह मुबारक हो! 🌹",
+              "✨ {name}, तुम मेरी जिंदगी का सबसे अच्छा अध्याय हो। मैं तुम्हारे साथ और भी कई लिखने के लिए उत्सुक हूँ। सालगिरह मुबारक हो! 💫"
+            ],
+            happy: [
+              "🎉 सालगिरह मुबारक हो, {name}! चलो नाचें, केक खाएं, और और भी खूबसूरत यादें बनाएं। तुम हर दिन उज्जवल बनाते हो। 💃🕺 चलो रसोई में नाचते रहें, चुपके से चुंबन लेते रहें, और हर सामान्य दिन को असाधारण बनाते रहें। सालगिरह मुबारक हो मेरे प्यारे व्यक्ति को! 🎈❤️",
+              "🎂✨ हमारे नाम, {name}! प्यार, हँसी और खुशियों का एक और साल। आने वाले सभी वर्षों के लिए उत्सुक हूँ। 🥂",
+              "🎈❤️ सालगिरह मुबारक हो! तुम मेरी धूप, मेरी खुशी, मेरे सब कुछ हो। चलो अपनी प्रेम कहानी का जश्न मनाते रहें! 🎊",
+              "🎉💕 सालगिरह मुबारक हो सबसे अच्छे {relation} को। तुम जीवन को अद्भुत बनाते हो। यहाँ और भी कई सालों के लिए! 🥳"
+            ],
+            roast: [
+              "😈 सालगिरह मुबारक हो {name}! तुम मेरे साथ एक और साल बच गए। प्रभावशाली। देखते हैं क्या तुम एक और संभाल पाते हो! 😂 एक और साल, फिर भी तुमसे बोर नहीं हुए। यह या तो प्यार है या स्टॉकहोम सिंड्रोम। किसी भी तरह, मैं जीवन भर के लिए हूँ! 😈😂",
+              "🤣 अभी तक भागे नहीं, {name}! तुम या तो पागल हो या सच में प्यार करते हो। किसी भी तरह, मैं भाग्यशाली हूँ। सालगिरह मुबारक हो! 🎉",
+              "😜 सालगिरह मुबारक हो! मेरी बकवास सहन करने के लिए धन्यवाद। मैं इसे मनोरंजक रखने का वादा करता/करती हूँ। प्यार करता/करती हूँ! 💕",
+              "😂 एक और साल, अभी भी शादीशुदा। हम मूल रूप से पेशेवर हैं। सालगिरह मुबारक हो, पार्टनर इन क्राइम! 🥳"
+            ],
+            normal: [
+              "🎂 सालगिरह मुबारक हो, {name}! आज और हमेशा ढेर सारा प्यार और खुशियाँ। आपको आपके जैसा ही अद्भुत दिन मुबारक हो। हर चीज़ में मेरा साथी होने के लिए धन्यवाद। 💐",
+              "💐 सालगिरह मुबारक हो! मेरी जिंदगी का इतना महत्वपूर्ण हिस्सा होने के लिए धन्यवाद।",
+              "✨ एक और अद्भुत वर्ष एक साथ। सालगिरह मुबारक हो, {name}!",
+              "💖 सालगिरह मुबारक हो! मैं आपके साथ बिताए हर पल के लिए आभारी हूँ।"
+            ]
+          },
+          festival: {
+            romantic: [
+              "🎇 {festival} की हार्दिक शुभकामनाएँ, मेरे प्यार {name}! यह त्योहार हमारे जीवन को खुशियों के रंगों से भर दे। तुम मेरी सबसे बड़ी देन हो। 💖 आपका प्यार मेरे जीवन की सबसे चमकदार सजावट है। यह त्योहार हमें और करीब लाए और हमारे दिलों को गर्माहट से भर दे। मैं तुमसे प्यार करता/करती हूँ! 🪔💖",
+              "✨ आपको {festival} मुबारक हो, {name}! चलो प्यार, मिठाई और असीम खुशियों के साथ जश्न मनाएं। मैं तुमसे प्यार करता/करती हूँ! 🪔",
+              "💕 इस {festival}, मैं तुम्हारे लिए आभारी हूँ, {name}। तुम हजारों दीयों की तरह मेरी दुनिया को रोशन करते हो। हैप्पी {festival}, मेरे प्यार! 🎆",
+              "🌹 {festival} की आत्मा हमें और करीब लाए, {name}। तुम मेरा पसंदीदा उत्सव हो। हमेशा प्यार करता/करती रहूँगा! 🥰"
+            ],
+            funny: [
+              "😂 हैप्पी {festival}, {name}! चलो इतना खाएं कि कल पछताना पड़े। यही असली भावना है, है न? 🎉 चलो इतनी मिठाइयाँ खाएं कि पछताना पड़े, फिर और खाएं। त्योहारों पर कैलोरी की गिनती नहीं होती, है न? हैप्पी {festival}, तुम कमाल के इंसान हो! 🍬😂",
+              "🤣 आपका {festival} हँसी, तेज संगीत और शून्य पारिवारिक ड्रामा से भरा हो। तुम यह कर सकते हो! 🎈",
+              "😜 अरे {name}, मेरे पहुंचने से पहले सारी मिठाइयाँ मत खाना! हैप्पी {festival}! 🍬",
+              "🎉 आपको ऐसा {festival} मुबारक हो जैसा आप मज़ेदार हो (जो बहुत ज़्यादा है)। चलो पार्टी करें! 🥳"
+            ],
+            emotional: [
+              "😢💖 इस {festival} पर, मुझे याद आता है कि मैं तुम्हें पाकर कितना/कितनी भाग्यशाली हूँ, {name}। तुम हर उत्सव को सार्थक बनाते हो। मेरा परिवार होने के लिए धन्यवाद। 🕯️ यह त्योहार मुझे याद दिलाता है कि मैं तुम्हें पाकर कितना/कितनी धन्य हूँ। तुम मेरा परिवार, मेरी खुशी, मेरे सब कुछ हो। भगवान हमेशा तुम्हारी रक्षा करें। 🕯️💕",
+              "🥹 {name}, त्योहार तुम्हारे बिना अधूरे लगते हैं। तुम्हारी मौजूदगी सबसे बड़ा उपहार है। हैप्पी {festival}, मेरे प्यार। 💌",
+              "💕 इस {festival}, मैं तुम्हारी खुशी, सेहत और शांति के लिए प्रार्थना करता/करती हूँ। तुम मेरे दिल का घर हो। 🎇",
+              "✨ प्रभु आपको बहुत आशीर्वाद दें, {name}। आप दुनिया की सारी खुशियों के हकदार हो। हैप्पी {festival}! 🌟"
+            ],
+            happy: [
+              "🎉 हैप्पी {festival}, {name}! आपके दिन मिठाइयों, मुस्कानों और जश्न से भरे हों। चलो इसे अब तक का सबसे अच्छा बनाएं! 🥳 आपके दिन रोशनी, हँसी और ढेर सारी मिठाइयों से भरे रहें। चलो ऐसे जश्न मनाएं जैसे कल कोई नहीं! 🎉🎇",
+              "🎂✨ आपको ढेर सारी रोशनी, हँसी और प्यार वाला {festival} मुबारक हो। हर पल का आनंद लो! 🎈",
+              "🎊 सबसे अद्भुत {relation} को {festival} मुबारक हो। चलो खाएं, नाचें और मस्ती करें! 💃",
+              "🎇 आशा है आपका {festival} उतना ही उज्ज्वल और खुशनुमा हो जितना आप हो, {name}! बड़े धूमधाम से मनाओ। 🎉"
+            ],
+            roast: [
+              "😈 हैप्पी {festival}, {name}! कोशिश करना कि मेरे आने से पहले सारी मिठाइयाँ न खा लो, वरना अंजाम भुगतना पड़ेगा। 😂 कोशिश करना कि मेरे पहुंचने से पहले सारे लड्डू न खा लो, वरना मैं सबको बता दूंगा कि पिछले साल तुमने क्या शर्मनाक काम किया था। हैप्पी {festival}! 😂😜",
+              "🤣 आपका {festival} ड्रामा-फ्री हो और आपका पेट खुश रहे। रिश्तेदारों के साथ गुड लक! 🎉",
+              "😜 हैप्पी {festival}! याद रखना, त्योहारों पर कैलोरी की गिनती नहीं होती। तो खाते-खाते पागल हो जाओ अरे वो तो तुम पहले से ही हो 😂! 🍬",
+              "😂 आपको ऐसा {festival} की ढेरों बधाई जो वेसे अपनी सकल देखो लगता नहीं है {festival} आ गई|😂🥳"
+            ],
+            normal: [
+              "🎉 हैप्पी {festival}, {name}! आप अपने प्रियजनों के साथ एक अद्भुत उत्सव मनाएं। आपको एक शांतिपूर्ण और आनंदमय त्योहार की शुभकामनाएं। यह अवसर आपके घर में समृद्धि और खुशियाँ लाए। 🎆",
+              "✨ इस {festival} पर आपको शांति, समृद्धि और खुशियाँ मिलें। आनंद लें!",
+              "🎇 हैप्पी {festival}! आपके दिन रोशनी और खुशियों से भरे रहें।",
+              "🪔 {name}, आपको और आपके परिवार को {festival} की हार्दिक शुभकामनाएँ।"
+            ]
+          }
+        }
+      };
+
+      function applyPersonalization(text, name, relation, age, festival) {
+        let result = text.replace(/\{name\}/g, name);
+        if (relation && relation.trim() !== "") result = result.replace(/\{relation\}/g, relation);
+        else result = result.replace(/\{relation\}/g, 'friend');
+        if (age && age.trim() !== "") result = result.replace(/\{age\}/g, age);
+        else result = result.replace(/\{age\}/g, '');
+        if (festival && festival.trim() !== "") result = result.replace(/\{festival\}/g, festival);
+        else result = result.replace(/\{festival\}/g, 'Festival');
+        return result;
+      }
+
+      function getPreWrittenMessages(event, mood, name, relation, age, festival) {
+        const lang = getCurrentLang();
+        const db = prewriteDB[lang];
+        if (!db || !db[event] || !db[event][mood]) return [];
+        return db[event][mood].map(tpl => applyPersonalization(tpl, name, relation, age, festival));
+      }
+
+      // ----- DOM & state -----
+      const festivalContainer = document.getElementById('festivalContainer');
+      const festivalInput = document.getElementById('festivalInput');
+      const festivalError = document.getElementById('festivalError');
+      const creatingForInput = document.getElementById('creatingForInput');
+      const creatingForError = document.getElementById('creatingForError');
+      const eventSelect = document.getElementById('event');
+      const moodSelect = document.getElementById('mood');
+      const nameInput = document.getElementById('name');
+      const storyTextarea = document.getElementById('story');
+      const wishesTextarea = document.getElementById('wishes');
+      const festivalDatalist = document.getElementById('festivalList');
+      const relationDatalist = document.getElementById('relationList');
+
+      let currentLang = 'en';
+      let prewriteUsage = { story: 0, wishes: 0 };
+      let dirtyFlags = { story: false, wishes: false };
+
+      function resetPrewriteAndDirty() {
+        prewriteUsage = { story: 0, wishes: 0 };
+        dirtyFlags = { story: false, wishes: false };
+      }
+      const resetFields = [eventSelect, moodSelect, nameInput, festivalInput, creatingForInput, document.getElementById('age')];
+      resetFields.forEach(f => { if (f) f.addEventListener('change', resetPrewriteAndDirty); if (f && f.tagName === 'INPUT') f.addEventListener('input', resetPrewriteAndDirty); });
+
+      storyTextarea.addEventListener('input', () => { dirtyFlags.story = true; });
+      wishesTextarea.addEventListener('input', () => { dirtyFlags.wishes = true; });
+
+      function updateDatalists(lang) {
+        const t = translations[lang];
+        festivalDatalist.innerHTML = '';
+        (lang === 'en' ? ["Diwali", "Holi", "Eid", "Christmas", "Navratri", "Raksha Bandhan", "Ganesh Chaturthi", "Onam", "Pongal", "Lohri", "New Year", "Durga Puja", "Janmashtami", "Makar Sankranti"] : ["दिवाली", "होली", "ईद", "क्रिसमस", "नवरात्रि", "रक्षा बंधन", "गणेश चतुर्थी", "ओणम", "पोंगल", "लोहड़ी", "नया साल", "दुर्गा पूजा", "जन्माष्टमी", "मकर संक्रांति"]).forEach(f => { let o = document.createElement('option'); o.value = f; festivalDatalist.appendChild(o); });
+        relationDatalist.innerHTML = '';
+        (lang === 'en' ? ["Bestfriend", "Friend", "Girlfriend", "Boyfriend", "Husband", "Wife", "Brother", "Sister", "Mother", "Father", "Son", "Daughter", "Cousin", "Colleague", "Neighbor", "Teacher", "Mentor", "Fiancé", "Fiancée", "Partner", "Soulmate", "Crush", "BFF"] : ["सबसे अच्छा दोस्त", "दोस्त", "प्रेमिका", "प्रेमी", "पति", "पत्नी", "भाई", "बहन", "माँ", "पिता", "बेटा", "बेटी", "चचेरा भाई/बहन", "सहकर्मी", "पड़ोसी", "शिक्षक", "गुरु", "मंगेतर", "मंगेतरा", "साथी", "जीवनसाथी", "क्रश", "BFF"]).forEach(r => { let o = document.createElement('option'); o.value = r; relationDatalist.appendChild(o); });
+      }
+
+      const translations = {
+        en: {
+          mainTitle: "Create Your Surprise", subhead: "Design beautiful websites for your loved ones ✨", eventLabel: "Select Event", moodLabel: "Select Mood",
+          festivalLabel: "Festival Name", festivalPlaceholder: "Select or type festival name", festivalErrorMsg: "Please enter festival name",
+          creatingForLabel: "Creating for (Relation)", creatingForPlaceholder: "Select or type relation (e.g., Bestfriend, Brother...)", creatingForErrorMsg: "Please specify relation (optional, but helps personalization)",
+          nameLabel: "Name", ageLabel: "Age (optional)", storyLabel: "Story / Message", wishesLabel: "Special Wishes",
+          continueBtn: "Continue → Generate Surprise ✨", namePlaceholder: "Enter name (required)", agePlaceholder: "Optional",
+          storyPlaceholder: "Write something beautiful... or click AI to generate ✨", wishesPlaceholder: "Write wishes... or let AI inspire you",
+          nameErrorMsg: "Please enter a name", eventErrorMsg: "Please select an event", moodErrorMsg: "Please select a mood",
+          copyright: "© 2026 Greeter · Make every moment magical", footer: ["Templates", "Features", "Showcase", "Help", "Privacy"], signinAlert: "Sign in",
+          eventOptions: { birthday: "Birthday 🎂", proposal: "Proposal 💍", anniversary: "Anniversary ❤️", festival: "Festival 🎉" },
+          moodOptions: { romantic: "Romantic 😍", funny: "Funny 😂", emotional: "Emotional 🥹", happy: "Happy 😇", roast: "Roast 😈", normal: "Normal 😊" },
+          shareMessages: { instaAlert: "📸 Instagram sharing: Copy the link: " },
+          aiErrors: { quotaExceeded: "⚠️ Please try again after some time.", genericFail: "AI generation failed: ", missingEvent: "🎯 Please select an event first — it helps us set the right mood!", missingMood: "😊 Don't forget to choose a mood for the perfect tone.", missingName: "👤 We need a name to personalize this special message.", missingFestival: "🎉 Which festival are we celebrating? Please enter the name." }
+        },
+        hi: {
+          mainTitle: "अपना सरप्राइज़ बनाएं", subhead: "अपनों के लिए खूबसूरत वेबसाइट डिज़ाइन करें ✨", eventLabel: "मौका चुनें", moodLabel: "मूड चुनें",
+          festivalLabel: "त्योहार का नाम", festivalPlaceholder: "त्योहार चुनें या लिखें", festivalErrorMsg: "कृपया त्योहार का नाम डालें",
+          creatingForLabel: "किसके लिए बना रहे हैं (रिश्ता)", creatingForPlaceholder: "रिश्ता चुनें या लिखें (जैसे: दोस्त, भाई...)", creatingForErrorMsg: "कृपया रिश्ता बताएं (वैकल्पिक, लेकिन निजीकरण में मदद करता है)",
+          nameLabel: "नाम", ageLabel: "उम्र (वैकल्पिक)", storyLabel: "कहानी / संदेश", wishesLabel: "खास शुभकामनाएं",
+          continueBtn: "आगे बढ़ें → सरप्राइज़ बनाएं ✨", namePlaceholder: "नाम लिखें (ज़रूरी)", agePlaceholder: "वैकल्पिक",
+          storyPlaceholder: "कुछ खूबसूरत लिखें... या AI से विचार लें✨", wishesPlaceholder: "शुभकामनाएं लिखें... या AI से विचार लें✨",
+          nameErrorMsg: "कृपया नाम डालें", eventErrorMsg: "कृपया कोई मौका चुनें", moodErrorMsg: "कृपया कोई मूड चुनें",
+          copyright: "© 2026 Greeter · हर पल जादुई बनाएं", footer: ["टेम्पलेट", "फीचर्स", "शोकेस", "मदद", "प्राइवेसी"], signinAlert: "लॉगिन करें",
+          eventOptions: { birthday: "जन्मदिन 🎂", proposal: "प्रपोज़ल 💍", anniversary: "सालगिरह ❤️", festival: "त्योहार 🎉" },
+          moodOptions: { romantic: "रोमांटिक 😍", funny: "मज़ाकिया 😂", emotional: "इमोशनल 🥹", happy: "खुश 😇", roast: "रोस्ट 😈", normal: "सामान्य 😊" },
+          shareMessages: { instaAlert: "📸 इंस्टाग्राम पर शेयर करने के लिए लिंक कॉपी करें: " },
+          aiErrors: { quotaExceeded: "⚠️ कृपया कुछ समय बाद प्रयास करें।", genericFail: "AI जनरेशन फेल हो गया: ", missingEvent: "🎯 कृपया पहले कोई मौका चुनें — यह सही माहौल बनाने में मदद करता है!", missingMood: "😊 सही टोन के लिए मूड चुनना न भूलें।", missingName: "👤 इस खास संदेश को व्यक्तिगत बनाने के लिए नाम की ज़रूरत है।", missingFestival: "🎉 हम कौन सा त्योहार मना रहे हैं? कृपया नाम बताएं।" }
+        }
+      };
+
+      function applyLanguage(lang) {
+        const t = translations[lang];
+        if (!t) return;
+        document.getElementById('mainTitle').innerText = t.mainTitle;
+        document.getElementById('subheadText').innerText = t.subhead;
+        document.getElementById('eventLabel').innerHTML = `<i class="far fa-calendar-alt"></i> ${t.eventLabel}`;
+        document.getElementById('moodLabel').innerHTML = `<i class="far fa-smile"></i> ${t.moodLabel}`;
+        document.getElementById('festivalLabel').innerHTML = `<i class="fas fa-gift"></i> ${t.festivalLabel}`;
+        festivalInput.placeholder = t.festivalPlaceholder;
+        festivalError.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.festivalErrorMsg}`;
+        document.getElementById('creatingForLabel').innerHTML = `<i class="fas fa-heart"></i> ${t.creatingForLabel}`;
+        creatingForInput.placeholder = t.creatingForPlaceholder;
+        creatingForError.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.creatingForErrorMsg}`;
+        document.getElementById('nameLabel').innerHTML = `<i class="far fa-user"></i> ${t.nameLabel} <span style="color:#ff7a2f;">*</span>`;
+        document.getElementById('ageLabel').innerHTML = `<i class="far fa-calendar"></i> ${t.ageLabel}`;
+        document.getElementById('storyLabel').innerHTML = `<i class="far fa-heart"></i> ${t.storyLabel}`;
+        document.getElementById('wishesLabel').innerHTML = `<i class="far fa-star"></i> ${t.wishesLabel}`;
+        document.querySelector('#continueBtnText').innerText = t.continueBtn;
+        document.getElementById('name').placeholder = t.namePlaceholder;
+        document.getElementById('age').placeholder = t.agePlaceholder;
+        document.getElementById('story').placeholder = t.storyPlaceholder;
+        document.getElementById('wishes').placeholder = t.wishesPlaceholder;
+        document.getElementById('nameError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.nameErrorMsg}`;
+        document.getElementById('eventError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.eventErrorMsg}`;
+        document.getElementById('moodError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.moodErrorMsg}`;
+        document.getElementById('copyrightText').innerText = t.copyright;
+        ['footerTemplates', 'footerFeatures', 'footerShowcase', 'footerHelp', 'footerPrivacy'].forEach((id, idx) => { if (document.getElementById(id)) document.getElementById(id).innerText = t.footer[idx]; });
+        for (let i = 1; i < eventSelect.options.length; i++) {
+          const key = eventSelect.options[i].value;
+          if (t.eventOptions[key]) eventSelect.options[i].innerText = t.eventOptions[key];
+        }
+        for (let i = 1; i < moodSelect.options.length; i++) {
+          const key = moodSelect.options[i].value;
+          if (t.moodOptions[key]) moodSelect.options[i].innerText = t.moodOptions[key];
+        }
+        updateDatalists(lang);
+        currentLang = lang;
+        localStorage.setItem('greeter_lang', lang);
+      }
+
+      function toggleLanguage() {
+        const newLang = currentLang === 'en' ? 'hi' : 'en';
+        applyLanguage(newLang);
+        document.querySelector('#langToggleBtn span').textContent = newLang === 'en' ? 'हिन्दी' : 'English';
+      }
+
+      const savedLang = localStorage.getItem('greeter_lang') || 'en';
+      applyLanguage(savedLang);
+      document.querySelector('#langToggleBtn span').textContent = savedLang === 'en' ? 'हिन्दी' : 'English';
+      document.getElementById('langToggleBtn').onclick = toggleLanguage;
+      function getCurrentLang() { return currentLang; }
+
+      function toggleFestivalField() {
+        if (eventSelect.value === 'festival') festivalContainer.style.display = 'block';
+        else { festivalContainer.style.display = 'none'; festivalInput.value = ''; festivalError.style.display = 'none'; festivalInput.classList.remove('error-border'); }
+      }
+      eventSelect.addEventListener('change', toggleFestivalField);
+      const presetEvent = localStorage.getItem('presetEvent');
+      if (presetEvent) { for (let i = 0; i < eventSelect.options.length; i++) if (eventSelect.options[i].value === presetEvent) { eventSelect.selectedIndex = i; break; } localStorage.removeItem('presetEvent'); }
+      toggleFestivalField();
+
+      function validateEventWithElement() {
+        const ok = eventSelect.value !== "";
+        document.getElementById('eventError').style.display = ok ? 'none' : 'flex';
+        eventSelect.classList.toggle('error-border', !ok);
+        return { valid: ok, errorElement: document.getElementById('eventError') };
+      }
+      function validateMoodWithElement() {
+        const ok = moodSelect.value !== "";
+        document.getElementById('moodError').style.display = ok ? 'none' : 'flex';
+        moodSelect.classList.toggle('error-border', !ok);
+        return { valid: ok, errorElement: document.getElementById('moodError') };
+      }
+      function validateNameWithElement() {
+        const ok = nameInput.value.trim() !== "";
+        document.getElementById('nameError').style.display = ok ? 'none' : 'flex';
+        nameInput.classList.toggle('error-border', !ok);
+        return { valid: ok, errorElement: document.getElementById('nameError') };
+      }
+      function validateFestivalWithElement() {
+        if (eventSelect.value !== 'festival') return { valid: true, errorElement: null };
+        const ok = festivalInput.value.trim() !== "";
+        document.getElementById('festivalError').style.display = ok ? 'none' : 'flex';
+        festivalInput.classList.toggle('error-border', !ok);
+        return { valid: ok, errorElement: document.getElementById('festivalError') };
+      }
+      eventSelect.addEventListener('change', () => validateEventWithElement());
+      moodSelect.addEventListener('change', () => validateMoodWithElement());
+      nameInput.addEventListener('input', () => validateNameWithElement());
+      festivalInput.addEventListener('input', () => { if (eventSelect.value === 'festival') validateFestivalWithElement(); });
+
+      function showFirstValidationError() {
+        const checks = [validateEventWithElement, validateMoodWithElement, validateNameWithElement, validateFestivalWithElement];
+        for (let check of checks) {
+          const res = check();
+          if (!res.valid) { showModal(translations[currentLang].aiErrors[res.errorElement?.id.replace('Error', '').toLowerCase() + 'Missing'] || 'Please fill required fields'); res.errorElement?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return false; }
+        }
+        return true;
+      }
+
+      function autoResize(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+      [storyTextarea, wishesTextarea].forEach(ta => { ta.addEventListener('input', () => autoResize(ta)); autoResize(ta); });
+
+      // Share buttons
+      const pageUrl = encodeURIComponent(window.location.href);
+      document.getElementById('shareFacebook')?.addEventListener('click', () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`, '_blank'));
+      document.getElementById('shareWhatsApp')?.addEventListener('click', () => window.open(`https://wa.me/?text=${encodeURIComponent('Create Your Surprise on Greeter.com')}%20${pageUrl}`, '_blank'));
+      document.getElementById('shareInstagram')?.addEventListener('click', () => { const msg = translations[currentLang].shareMessages.instaAlert; if (navigator.share) navigator.share({ title: 'Greeter.com', text: 'Create a magical surprise website!', url: window.location.href }).catch(() => { }); else showModal(msg, window.location.href); });
+
+
+      // Backend API
+      async function callGemini(prompt, retryForCompletion = true) {
+        const response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) });
+        if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || `HTTP ${response.status}`); }
+        const data = await response.json();
+        if (data.candidates?.[0]?.content?.parts?.[0]) {
+          let content = data.candidates[0].content.parts[0].text.trim();
+          content = content.replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]?\s*/i, '');
+          if (retryForCompletion && !/[.!?।]$/.test(content) && content.length < 300) {
+            const cont = await callGemini(prompt + "\n\n(Please ensure the response is complete and ends with proper punctuation.)", false);
+            return cont;
+          }
+          return content;
+        }
+        throw new Error("Unexpected API response");
+      }
+      async function callGeminiWithRetry(prompt, retries = 2) {
+        let lastError;
+        for (let i = 0; i < retries; i++) {
+          try { return await callGemini(prompt); }
+          catch (e) { lastError = e; if (i < retries - 1) await new Promise(r => setTimeout(r, 2000 * (i + 1))); }
+        }
+        throw lastError;
+      }
+
+      function buildStoryPrompt() {
+        if (!validateEventWithElement().valid || !validateMoodWithElement().valid || !validateNameWithElement().valid) return null;
+        if (eventSelect.value === 'festival' && !validateFestivalWithElement().valid) return null;
+        const eventDisplay = eventSelect.options[eventSelect.selectedIndex]?.text || eventSelect.value;
+        const name = nameInput.value.trim();
+        const age = document.getElementById('age').value;
+        const relation = creatingForInput.value.trim();
+        const relationPhrase = relation ? `, who is your ${relation}` : '';
+        const lang = currentLang;
+        if (lang === 'hi') {
+          return `आपको ${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} के अवसर पर एक अच्छा संदेश लिखना है। मूड: ${moodSelect.value}। भाषा सहज और बातचीत जैसी हो और मूड के हिसाब से हो। उचित इमोजी का प्रयोग करें। संदेश 150 शब्दों से कम हो। **केवल संदेश ही आउटपुट करें। कोई परिचय, व्याख्या या अतिरिक्त टिप्पणी न जोड़ें।**`;
+        } else {
+          return `Write a heartfelt, natural message for ${name}${age ? ` (age ${age})` : ''}${relationPhrase} celebrating ${eventDisplay}. Mood: ${moodSelect.value}. Use friendly, conversational language(with easy words) as per the mood and reletionship(if given) and use appropriate emojis. Keep under 150 words. **Output ONLY the message. Do not include any introductory or concluding remarks, explanations, or extra text.**`;
+        }
+      }
+
+      function buildWishesPrompt() {
+        if (!validateEventWithElement().valid || !validateMoodWithElement().valid || !validateNameWithElement().valid) return null;
+        if (eventSelect.value === 'festival' && !validateFestivalWithElement().valid) return null;
+        const eventDisplay = eventSelect.options[eventSelect.selectedIndex]?.text || eventSelect.value;
+        const name = nameInput.value.trim();
+        const age = document.getElementById('age').value;
+        const relation = creatingForInput.value.trim();
+        const relationPhrase = relation ? `, who is your ${relation}` : '';
+        const lang = currentLang;
+        if (lang === 'hi') {
+          return `आपको ${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर शुभकामनाओं की एक सूची बनानी है। मूड: ${moodSelect.value}। बुलेट पॉइंट्स (•) का प्रयोग करें, भाषा सहज और बातचीत जैसी हो और मूड के हिसाब से हो, और उचित इमोजी जोड़ें। **केवल शुभकामनाओं की सूची ही आउटपुट करें। कोई परिचय या अतिरिक्त पाठ न जोड़ें।**`;
+        } else {
+          return `Create a short, sweet bullet-point list of wishes for ${name}${age ? ` (age ${age})` : ''}${relationPhrase} on ${eventDisplay}. Mood: ${moodSelect.value}. Use bullet points (•) and Use friendly, conversational language(with easy words) as per the mood and reletionship(if given), and use appropriate emojis. Keep under 150 words. **Output ONLY the bullet list. Do not include any introductory text, explanations, or extra commentary.**`;
+        }
+      }
+
+      function buildRefinementPrompt(existingText, isWishes) {
+        const name = nameInput.value.trim() || 'the person';
+        const eventDisplay = eventSelect.options[eventSelect.selectedIndex]?.text || eventSelect.value;
+        const relation = creatingForInput.value.trim();
+        const relationPhrase = relation ? `, your ${relation}` : '';
+        const lang = currentLang;
+        if (lang === 'hi') {
+          return `आपको ${name}${relationPhrase} के लिए ${eventDisplay} के अवसर पर लिखे गए ${isWishes ? 'शुभकामनाओं' : 'संदेश'} को निखारना है। भाषा वही रखें, इमोजी जोड़ें, और भावनाओं को और गहरा करें। **केवल निखरा हुआ ${isWishes ? 'शुभकामनाएं' : 'संदेश'} ही आउटपुट करें, कोई अतिरिक्त टिप्पणी नहीं।**\n\nमूल:\n"${existingText}"`;
+        } else {
+          return `Refine the following ${isWishes ? 'wishes' : 'message'} for ${name}${relationPhrase} celebrating ${eventDisplay}. Improve wording, add emojis, keep the same language. **Output ONLY the refined ${isWishes ? 'wishes' : 'message'}. Do not include any extra text.**\n\nOriginal:\n"${existingText}"`;
+        }
+      }
+
+      function getRandomDifferentMessage(messages, avoidText) {
+        if (!messages.length) return null;
+        if (messages.length === 1) return messages[0];
+        for (let attempt = 0; attempt < 8; attempt++) {
+          const idx = Math.floor(Math.random() * messages.length);
+          const candidate = messages[idx];
+          if (candidate !== avoidText) return candidate;
+        }
+        return messages[Math.floor(Math.random() * messages.length)];
+      }
+
+      async function handleAIClick(targetTextarea, isWishes) {
+        const t = translations[currentLang];
+        if (!validateEventWithElement().valid) { showModal(t.aiErrors.missingEvent); return; }
+        if (!validateMoodWithElement().valid) { showModal(t.aiErrors.missingMood); return; }
+        if (!validateNameWithElement().valid) { showModal(t.aiErrors.missingName); return; }
+        if (eventSelect.value === 'festival' && !validateFestivalWithElement().valid) { showModal(t.aiErrors.missingFestival); return; }
+
+        const name = nameInput.value.trim();
+        const relation = creatingForInput.value.trim();
+        const age = document.getElementById('age').value;
+        const festival = festivalInput.value.trim();
+        const event = eventSelect.value;
+        const mood = moodSelect.value;
+        const fieldKey = isWishes ? 'wishes' : 'story';
+        const isDirty = isWishes ? dirtyFlags.wishes : dirtyFlags.story;
+        const existingText = targetTextarea.value.trim();
+
+        // 1. User-written content -> refine via AI (always, regardless of prewrite quota)
+        if (existingText !== '' && isDirty) {
+          const prompt = buildRefinementPrompt(existingText, isWishes);
+          if (!prompt) return;
+          const btn = targetTextarea.parentElement.querySelector('.ai-neon-btn');
+          const originalLabel = btn.innerHTML;
+          btn.innerHTML = '<div class="loading-spinner-small"></div>';
+          btn.disabled = true;
+          try {
+            const refined = await callGeminiWithRetry(prompt);
+            targetTextarea.value = refined;
+            autoResize(targetTextarea);
+            if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
+          } catch (error) {
+            let msg = t.aiErrors.genericFail + error.message;
+            if (error.message.includes('quota') || error.message.includes('429')) msg = t.aiErrors.quotaExceeded;
+            showModal(msg);
+          } finally {
+            btn.innerHTML = originalLabel;
+            btn.disabled = false;
+          }
+          return;
+        }
+
+        // 2. Prewritten available and under quota -> use prewritten
+        const preMessages = getPreWrittenMessages(event, mood, name, relation, age, festival);
+        if (preMessages.length > 0 && prewriteUsage[fieldKey] < 4) {
+          const btn = targetTextarea.parentElement.querySelector('.ai-neon-btn');
+          const originalLabel = btn.innerHTML;
+          btn.innerHTML = '<div class="loading-spinner-small"></div>';
+          btn.disabled = true;
+          await new Promise(r => setTimeout(r, 6000));
+          const otherTextarea = isWishes ? storyTextarea : wishesTextarea;
+          const avoid = otherTextarea.value.trim();
+          const chosen = getRandomDifferentMessage(preMessages, avoid);
+          targetTextarea.value = chosen;
+          autoResize(targetTextarea);
+          prewriteUsage[fieldKey]++;
+          if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
+          btn.innerHTML = originalLabel;
+          btn.disabled = false;
+          return;
+        }
+
+        // 3. Fallback: clear and generate fresh via AI
+        targetTextarea.value = '';
+        const prompt = isWishes ? buildWishesPrompt() : buildStoryPrompt();
+        if (!prompt) return;
+        const btn = targetTextarea.parentElement.querySelector('.ai-neon-btn');
+        const originalLabel = btn.innerHTML;
+        btn.innerHTML = '<div class="loading-spinner-small"></div>';
+        btn.disabled = true;
+        try {
+          const generated = await callGeminiWithRetry(prompt);
+          targetTextarea.value = generated;
+          autoResize(targetTextarea);
+          if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
+        } catch (error) {
+          let msg = t.aiErrors.genericFail + error.message;
+          if (error.message.includes('quota') || error.message.includes('429')) msg = t.aiErrors.quotaExceeded;
+          showModal(msg);
+        } finally {
+          btn.innerHTML = originalLabel;
+          btn.disabled = false;
+        }
+      }
+
+      document.getElementById('aiStoryBtn').addEventListener('click', (e) => { e.preventDefault(); handleAIClick(storyTextarea, false); });
+      document.getElementById('aiWishesBtn').addEventListener('click', (e) => { e.preventDefault(); handleAIClick(wishesTextarea, true); });
+
+      // Submit
+      document.getElementById('submitBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!showFirstValidationError()) return;
+        const data = {
+          event: eventSelect.value,
+          festival: eventSelect.value === 'festival' ? festivalInput.value.trim() : null,
+          mood: moodSelect.value,
+          creatingFor: creatingForInput.value.trim() || null,
+          name: nameInput.value.trim(),
+          age: document.getElementById('age').value,
+          story: storyTextarea.value,
+          wishes: wishesTextarea.value,
+          memories: []
+        };
+        localStorage.setItem("userData", JSON.stringify(data));
+        window.location.href = "generated/preview.html";
+      });
+      document.getElementById('signinBtn').addEventListener('click', () => showModal(translations[currentLang].signinAlert));
+
+      // Theme & mobile
+      const body = document.body;
+      const themeIcon = document.getElementById('themeIcon');
+      function setTheme(isDark) {
+        if (isDark) { body.classList.add('dark'); themeIcon.classList.remove('fa-sun'); themeIcon.classList.add('fa-moon'); localStorage.setItem('greeter-theme', 'dark'); }
+        else { body.classList.remove('dark'); themeIcon.classList.remove('fa-moon'); themeIcon.classList.add('fa-sun'); localStorage.setItem('greeter-theme', 'light'); }
+      }
+      window.toggleTheme = () => setTheme(!body.classList.contains('dark'));
+      document.getElementById('modeToggle').addEventListener('click', window.toggleTheme);
+      (localStorage.getItem('greeter-theme') === 'dark') ? setTheme(true) : setTheme(false);
+      window.addEventListener('scroll', () => document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 10));
+      const navLinks = document.getElementById('navLinks');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      window.toggleMobileMenu = () => {
+        navLinks.classList.toggle('show');
+        const icon = menuBtn.querySelector('i');
+        icon.classList.toggle('fa-bars', !navLinks.classList.contains('show'));
+        icon.classList.toggle('fa-times', navLinks.classList.contains('show'));
+      };
+      menuBtn.addEventListener('click', window.toggleMobileMenu);
+      document.addEventListener('click', (e) => {
+        if (navLinks.classList.contains('show') && !navLinks.contains(e.target) && !menuBtn.contains(e.target)) {
+          window.toggleMobileMenu();
+        }
+      });
+      document.querySelectorAll('.nav-links a').forEach(link => link.addEventListener('click', () => {
+        if (navLinks.classList.contains('show')) { navLinks.classList.remove('show'); menuBtn.querySelector('i').classList.replace('fa-times', 'fa-bars'); }
+      }));
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>⭐ Birthday Stars · Greeter.com (हिंदी/English)</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Poppins:wght@300;400;600&family=Pacifico&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --sky: #eaf4ff;
+      --cloud: #f0f8ff;
+      --mist: #dbeeff;
+      --aurora: #c8f0e0;
+      --lilac: #e8dff8;
+      --peach: #ffecd6;
+      --gold: #ffe8a0;
+      --azure: #5b9bd5;
+      --deep: #1e4a7a;
+      --text: #1c3250;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(180deg,
+          #dbeeff 0%,
+          #eaf4ff 35%,
+          #f0fff8 65%,
+          #fff9ed 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #starCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .cloud-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .cloud {
+      position: absolute;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.55);
+      filter: blur(8px);
+      animation: drift var(--t) ease-in-out var(--d) infinite alternate;
+    }
+
+    @keyframes drift {
+      from {
+        transform: translateX(-30px);
+      }
+
+      to {
+        transform: translateX(30px);
+      }
+    }
+
+    .aurora {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 220px;
+      pointer-events: none;
+      z-index: 2;
+      background: linear-gradient(0deg,
+          rgba(200, 240, 224, 0.5) 0%,
+          rgba(232, 223, 248, 0.35) 50%,
+          transparent 100%);
+      animation: aurPulse 6s ease-in-out infinite alternate;
+      filter: blur(20px);
+    }
+
+    @keyframes aurPulse {
+      from {
+        opacity: 0.6;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .page {
+      position: relative;
+      z-index: 5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 70px 24px 80px;
+    }
+
+    .star-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(91, 155, 213, 0.25);
+      border-radius: 50px;
+      padding: 7px 22px;
+      font-size: 0.8rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--azure);
+      font-weight: 600;
+      margin-bottom: 22px;
+      animation: riseIn 0.45s ease both;
+    }
+
+    @keyframes riseIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(3rem, 10vw, 5.5rem);
+      background: linear-gradient(135deg, #1e4a7a 0%, #5b9bd5 50%, #a78bdf 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15;
+      animation: riseIn 0.5s 0.05s ease both;
+    }
+
+    .name-tag {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 8px 24px;
+      margin: 14px 0;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1.1rem, 4vw, 1.6rem);
+      color: var(--azure);
+      animation: riseIn 0.5s 0.1s ease both;
+      border: 1px solid rgba(91, 155, 213, 0.2);
+    }
+
+    .star-card {
+      width: min(380px, 94vw);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(91, 155, 213, 0.2);
+      border-radius: 28px;
+      padding: 36px 30px;
+      margin: 22px auto;
+      animation: riseIn 0.5s 0.15s ease both;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .star-card::before {
+      content: '⭐';
+      position: absolute;
+      right: 20px;
+      top: 16px;
+      font-size: 4rem;
+      opacity: 0.1;
+      animation: spinSlow 8s linear infinite;
+    }
+
+    @keyframes spinSlow {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .card-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--azure);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .card-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: var(--deep);
+      margin-bottom: 14px;
+    }
+
+    .card-body {
+      line-height: 1.85;
+      color: #3a5a80;
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+    }
+
+    .card-sign {
+      margin-top: 20px;
+      font-family: 'Pacifico', cursive;
+      font-size: 1.3rem;
+      color: var(--azure);
+      text-align: right;
+    }
+
+    .ribbon-section {
+      width: min(700px, 95vw);
+      margin: 0 auto 36px;
+      animation: riseIn 0.5s 0.2s ease both;
+    }
+
+    .ribbon-head {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.8rem;
+      color: var(--deep);
+      margin-bottom: 20px;
+    }
+
+    .ribbon-row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .wish-chip {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(91, 155, 213, 0.2);
+      border-radius: 50px;
+      padding: 12px 22px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--deep);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+
+    .wish-chip:hover {
+      background: white;
+      transform: translateY(-4px);
+    }
+
+    .story-card {
+      max-width: 640px;
+      width: 90%;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(91, 155, 213, 0.15);
+      border-radius: 24px;
+      padding: 36px 32px;
+      margin: 0 auto 36px;
+      animation: riseIn 0.5s 0.25s ease both;
+      text-align: left;
+    }
+
+    .story-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--azure);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .story-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--deep);
+      margin-bottom: 12px;
+    }
+
+    .story-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.15rem;
+      line-height: 1.9;
+      color: #3a5a80;
+    }
+
+    .photo-section {
+      width: min(700px, 95vw);
+      margin: 0 auto 36px;
+      animation: riseIn 0.5s 0.3s ease both;
+    }
+
+    .photo-head {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.8rem;
+      color: var(--deep);
+      margin-bottom: 20px;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .photo-tile {
+      aspect-ratio: 1;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(91, 155, 213, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      transition: all 0.35s ease;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .photo-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .photo-tile:hover {
+      transform: translateY(-6px) scale(1.04);
+    }
+
+    .cel-wrap {
+      animation: riseIn 0.5s 0.35s ease both;
+      margin-bottom: 16px;
+    }
+
+    .cel-btn {
+      background: linear-gradient(135deg, var(--azure) 0%, var(--deep) 100%);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 18px 52px;
+      font-family: 'Pacifico', cursive;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .cel-btn:hover {
+      transform: translateY(-4px) scale(1.04);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: linear-gradient(135deg, var(--azure), var(--deep));
+      color: white;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-family: 'Pacifico', cursive;
+      font-size: 1.2rem;
+      z-index: 999;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s;
+      opacity: 0;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .footer {
+      font-size: 0.78rem;
+      color: var(--azure);
+      opacity: 0.6;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="starCanvas"></canvas>
+  <div class="cloud-layer" id="clouds"></div>
+  <div class="aurora"></div>
+  <div class="page">
+    <div class="star-badge" id="starBadge">⭐ Wishing Upon a Star ⭐</div>
+    <h1 id="heroTitle">Happy Birthday!</h1>
+    <div class="name-tag" id="nameTag">✦ You are the brightest star ✦</div>
+    <div class="star-card">
+      <div class="card-label" id="cardLabel">✦ Birthday Message</div>
+      <div class="card-heading" id="cardHead">To the Star of the Day</div>
+      <p class="card-body" id="cardBody">Like the stars that paint the night sky, you illuminate every corner of this
+        world. On this beautiful day, I want you to know how truly special you are — a light that never dims, a soul
+        that inspires all who know you.</p>
+      <div class="card-sign" id="cardSign">With love ✦</div>
+    </div>
+    <div class="ribbon-section">
+      <div class="ribbon-head" id="ribbonHead">✨ Birthday Wishes for You</div>
+      <div class="ribbon-row">
+        <div class="wish-chip"><span class="chip-icon">🌙</span><span id="wish1">Sweet Dreams</span></div>
+        <div class="wish-chip"><span class="chip-icon">⭐</span><span id="wish2">Endless Stars</span></div>
+        <div class="wish-chip"><span class="chip-icon">🌈</span><span id="wish3">Colorful Days</span></div>
+        <div class="wish-chip"><span class="chip-icon">💫</span><span id="wish4">Shining Joy</span></div>
+        <div class="wish-chip"><span class="chip-icon">🕊️</span><span id="wish5">Peaceful Bliss</span></div>
+      </div>
+    </div>
+    <div class="story-card">
+      <div class="story-label" id="storyLabel">✦ Our Chapter Together</div>
+      <div class="story-title" id="storyTitle">A Story Written in Stars</div>
+      <p class="story-text" id="storyText">Somewhere in the universe, the stars aligned the day you were born. Since
+        then, every chapter of your story has been written in gold — full of laughter, love, and moments that shine
+        forever. Here is to yet another beautiful year ahead!</p>
+    </div>
+    <div class="photo-section">
+      <div class="photo-head" id="photoHead">🌟 Memory Constellation</div>
+      <div class="photo-grid" id="gallery">
+        <div class="photo-tile">⭐</div>
+        <div class="photo-tile">🌙</div>
+        <div class="photo-tile">☁️</div>
+        <div class="photo-tile">🌈</div>
+        <div class="photo-tile">💫</div>
+        <div class="photo-tile">✨</div>
+      </div>
+    </div>
+    <div class="cel-wrap"><button class="cel-btn" id="celBtn">⭐ Celebrate! ⭐</button></div>
+    <p class="footer">Made with ♡ · Greeter.com</p>
+  </div>
+  <div class="toast" id="toast">⭐ Happy Birthday! ⭐</div>
+
+  <script>
+    (function () {
+      // ----- Language detection (same as birthday1.html) -----
+      function getLang() {
+        let urlParam = new URLSearchParams(location.search).get('lang');
+        if (urlParam === 'hi' || urlParam === 'en') return urlParam;
+        return localStorage.getItem('greeter_lang') || 'en';
+      }
+      let currentLang = getLang();
+
+      const translations = {
+        en: {
+          starBadge: "⭐ Wishing Upon a Star ⭐", heroTitle: "Happy Birthday!", nameTag: "✦ You are the brightest star ✦",
+          cardLabel: "✦ Birthday Message", cardHead: "To the Star of the Day",
+          cardBody: "Like the stars that paint the night sky, you illuminate every corner of this world. On this beautiful day, I want you to know how truly special you are — a light that never dims, a soul that inspires all who know you.",
+          cardSign: "With love ✦",
+          ribbonHead: "✨ Birthday Wishes for You",
+          wish1: "Sweet Dreams", wish2: "Endless Stars", wish3: "Colorful Days", wish4: "Shining Joy", wish5: "Peaceful Bliss",
+          storyLabel: "✦ Our Chapter Together", storyTitle: "A Story Written in Stars",
+          storyText: "Somewhere in the universe, the stars aligned the day you were born. Since then, every chapter of your story has been written in gold — full of laughter, love, and moments that shine forever. Here is to yet another beautiful year ahead!",
+          photoHead: "🌟 Memory Constellation", celBtn: "⭐ Celebrate! ⭐", toastMsg: "⭐ Happy Birthday! ⭐"
+        },
+        hi: {
+          starBadge: "⭐ सितारे से दुआ ⭐", heroTitle: "जन्मदिन मुबारक हो!", nameTag: "✦ तुम सबसे चमकीले सितारे हो ✦",
+          cardLabel: "✦ जन्मदिन का संदेश", cardHead: "दिन के सितारे के नाम",
+          cardBody: "जैसे तारे रात के आसमान को रोशन करते हैं, वैसे ही तुम इस दुनिया के हर कोने को रोशन करते हो। इस खूबसूरत दिन पर मैं तुम्हें बताना चाहता/चाहती हूँ कि तुम कितने खास हो — एक ऐसी रोशनी जो कभी कम नहीं होती, एक ऐसी आत्मा जो सबको प्रेरित करती है।",
+          cardSign: "प्यार से ✦",
+          ribbonHead: "✨ तुम्हारे लिए जन्मदिन की शुभकामनाएँ",
+          wish1: "मीठे सपने", wish2: "अनगिनत सितारे", wish3: "रंग-बिरंगे दिन", wish4: "चमकती खुशियाँ", wish5: "सुकून भरी खुशियाँ",
+          storyLabel: "✦ हमारा साथ", storyTitle: "सितारों में लिखी कहानी",
+          storyText: "ब्रह्मांड में कहीं, जिस दिन तुम पैदा हुए, सितारे एक लाइन में आ गए। तब से, तुम्हारी कहानी का हर अध्याय सोने में लिखा गया है — हँसी, प्यार और चमकते पलों से भरा। एक और खूबसूरत साल की शुरुआत!",
+          photoHead: "🌟 यादों का तारामंडल", celBtn: "⭐ जश्न मनाएं! ⭐", toastMsg: "⭐ जन्मदिन मुबारक! ⭐"
+        }
+      };
+
+      function applyLanguage() {
+        let t = translations[currentLang];
+        document.getElementById('starBadge').innerText = t.starBadge;
+        document.getElementById('heroTitle').innerText = t.heroTitle;
+        document.getElementById('nameTag').innerText = t.nameTag;
+        document.getElementById('cardLabel').innerText = t.cardLabel;
+        document.getElementById('cardHead').innerText = t.cardHead;
+        document.getElementById('cardBody').innerText = t.cardBody;
+        document.getElementById('cardSign').innerText = t.cardSign;
+        document.getElementById('ribbonHead').innerText = t.ribbonHead;
+        document.getElementById('wish1').innerText = t.wish1;
+        document.getElementById('wish2').innerText = t.wish2;
+        document.getElementById('wish3').innerText = t.wish3;
+        document.getElementById('wish4').innerText = t.wish4;
+        document.getElementById('wish5').innerText = t.wish5;
+        document.getElementById('storyLabel').innerText = t.storyLabel;
+        document.getElementById('storyTitle').innerText = t.storyTitle;
+        document.getElementById('storyText').innerText = t.storyText;
+        document.getElementById('photoHead').innerText = t.photoHead;
+        document.getElementById('celBtn').innerText = t.celBtn;
+        document.getElementById('toast').innerText = t.toastMsg;
+      }
+
+      // Load user data from localStorage (same as birthday1.html)
+      let userData = {};
+      try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+
+      function refreshAll() {
+        applyLanguage();
+        if (userData.name) {
+          document.getElementById('heroTitle').innerText = (currentLang === 'hi' ? 'जन्मदिन मुबारक, ' : 'Happy Birthday, ') + userData.name;
+        }
+        if (userData.story) document.getElementById('storyText').innerText = userData.story;
+        if (userData.wishes) document.getElementById('cardBody').innerText = userData.wishes;
+        if (userData.memories && userData.memories.length) {
+          let gallery = document.getElementById('gallery');
+          gallery.innerHTML = '';
+          userData.memories.forEach(m => {
+            let div = document.createElement('div'); div.className = 'photo-tile';
+            if (m.img) div.innerHTML = `<img src="${m.img}" alt="memory">`;
+            else div.innerText = m.text || '⭐';
+            gallery.appendChild(div);
+          });
+        }
+      }
+
+      refreshAll();
+
+      // Listen for storage changes (language or userData updates from another tab)
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'greeter_lang') {
+          currentLang = e.newValue || 'en';
+          refreshAll();
+        }
+        if (e.key === 'userData') {
+          try { userData = JSON.parse(e.newValue || '{}'); } catch (e) { }
+          refreshAll();
+        }
+      });
+
+      // Also check URL param changes (if user navigates with ?lang=)
+      window.addEventListener('popstate', () => {
+        let newLang = getLang();
+        if (newLang !== currentLang) {
+          currentLang = newLang;
+          refreshAll();
+        }
+      });
+
+      // Confetti celebration
+      document.getElementById('celBtn').addEventListener('click', () => {
+        let toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+        canvasConfetti({ particleCount: 200, spread: 140, origin: { y: 0.35 }, startVelocity: 16 });
+        for (let i = 0; i < 3; i++) setTimeout(() => canvasConfetti({ particleCount: 80, spread: 90, origin: { y: 0.5, x: Math.random() } }), i * 200);
+      });
+
+      // Stars + shooting stars canvas
+      (function () {
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [], shoots = [];
+        function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+        for (let i = 0; i < 80; i++) stars.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight * 0.6, r: 0.5 + Math.random() * 2.5, op: 0.2 + Math.random() * 0.6, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 1.5 });
+        function newShoot() { return { x: Math.random() * innerWidth, y: Math.random() * innerHeight * 0.4, vx: 4 + Math.random() * 6, vy: 2 + Math.random() * 4, len: 80 + Math.random() * 120, life: 1 }; }
+        setInterval(() => { if (Math.random() < 0.4) shoots.push(newShoot()); }, 2200);
+        function loop(t) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          stars.forEach(s => { let op = s.op * (0.5 + 0.5 * Math.sin(t * 0.001 * s.speed + s.phase)); ctx.globalAlpha = op; ctx.fillStyle = '#5b9bd5'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill(); });
+          shoots.forEach((sh, i) => { ctx.globalAlpha = sh.life * 0.7; let grad = ctx.createLinearGradient(sh.x, sh.y, sh.x - sh.len, sh.y - sh.len / 2); grad.addColorStop(0, '#fff'); grad.addColorStop(1, 'transparent'); ctx.strokeStyle = grad; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(sh.x, sh.y); ctx.lineTo(sh.x - sh.len, sh.y - sh.len / 2); ctx.stroke(); sh.x += sh.vx; sh.y += sh.vy; sh.life -= 0.025; if (sh.life <= 0) shoots.splice(i, 1); });
+          requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+      })();
+
+      // Clouds
+      (function () {
+        const layer = document.getElementById('clouds');
+        for (let i = 0; i < 5; i++) {
+          let c = document.createElement('div'); c.className = 'cloud';
+          let w = 140 + Math.random() * 200, h = 40 + Math.random() * 60;
+          c.style.cssText = `left:${Math.random() * 100}vw; top:${5 + Math.random() * 30}vh; width:${w}px; height:${h}px; --t:${8 + Math.random() * 10}s; --d:${Math.random() * 4}s; opacity:${0.3 + Math.random() * 0.4};`;
+          layer.appendChild(c);
+        }
+      })();
+    })();
+  </script>
+</body>
+
+</html>

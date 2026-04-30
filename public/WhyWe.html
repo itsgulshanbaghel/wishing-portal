@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>What makes Greeter different | Professional surprise builder</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* ---------- GLOBAL & RESET (from ContactUs + enhancements) ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #f9f7ff;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a1025;
+      --text-secondary: #4a3b66;
+      --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+      --accent-solid: #7b5df6;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --navbar-bg: rgba(255, 255, 255, 0.75);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
+      --glow: rgba(123, 93, 246, 0.15);
+      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+      --border-light: #ece7f5;
+      --input-bg: rgba(255, 255, 255, 0.9);
+    }
+
+    body.dark {
+      --bg-primary: #0c0719;
+      --bg-secondary: #1a1230;
+      --text-primary: #f0edff;
+      --text-secondary: #b9aed6;
+      --card-bg: rgba(30, 20, 55, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --navbar-bg: rgba(18, 12, 38, 0.85);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 30px 50px -15px #00000055;
+      --glow: rgba(123, 93, 246, 0.25);
+      --border-light: #2a2442;
+      --input-bg: rgba(30, 20, 55, 0.9);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: var(--mode-transition);
+      overflow-x: hidden;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -2;
+      transition: var(--mode-transition);
+    }
+
+    body.dark .bg-gradient {
+      background: radial-gradient(circle at 20% 30%, #2d1b4e40, #0a0614 90%);
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ---------- NAVBAR (glass, sticky, from ContactUs) ---------- */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 28px;
+      margin: 16px 0 12px;
+      backdrop-filter: blur(16px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      transition: var(--mode-transition);
+      flex-wrap: nowrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+      flex-shrink: 1;
+      white-space: nowrap;
+    }
+
+    .logo-icon {
+      background: var(--accent-gradient);
+      width: 44px;
+      height: 44px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 12px 20px -8px var(--glow);
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+      transition: 0.25s;
+      position: relative;
+      padding: 6px 0;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2.5px;
+      background: var(--accent-gradient);
+      transition: width 0.3s;
+      border-radius: 4px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: #ff7a2f;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .mode-toggle,
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      width: 44px;
+      height: 44px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mode-toggle .fa-sun {
+      color: #fbbf24;
+      font-size: 1.2rem;
+    }
+
+    body.dark .mode-toggle .fa-moon {
+      color: #cbd5e1;
+    }
+
+    .lang-toggle {
+      width: auto;
+      padding: 0 18px;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .mode-toggle:hover,
+    .lang-toggle:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 9px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 40px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+    }
+
+    /* ---------- WHY WE SPECIFIC STYLES (feature grid, compare table, pills, CTA) ---------- */
+    .hero {
+      text-align: center;
+      padding: 48px 0 32px;
+    }
+
+    .badge {
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      padding: 6px 20px;
+      border-radius: 40px;
+      display: inline-block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--accent-solid);
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 8vw, 3.8rem);
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin: 50px 0 40px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 28px 22px;
+      border: 1px solid var(--card-border);
+      transition: all 0.25s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-solid);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-icon {
+      font-size: 44px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .feature-card h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .compare-section {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 36px;
+      padding: 40px 32px;
+      margin: 50px 0;
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .section-sub {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 36px;
+      font-size: 1rem;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 24px;
+    }
+
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      min-width: 600px;
+      background: var(--bg-secondary);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .comp-table th,
+    .comp-table td {
+      padding: 18px 24px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .comp-table th {
+      background: var(--accent-gradient);
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .comp-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .comp-table td:first-child {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .check {
+      color: #10b981;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .check i {
+      margin-right: 8px;
+    }
+
+    .cross {
+      color: #ef4444;
+    }
+
+    .cross i {
+      margin-right: 8px;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin: 40px 0 50px;
+    }
+
+    .pill {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 10px 28px;
+      border-radius: 60px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      backdrop-filter: blur(4px);
+      transition: 0.2s;
+    }
+
+    .pill i {
+      margin-right: 8px;
+      color: var(--accent-solid);
+    }
+
+    .pill:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .pill:hover i {
+      color: white;
+    }
+
+    .cta-banner {
+      background: var(--accent-gradient);
+      border-radius: 48px;
+      padding: 52px 32px;
+      text-align: center;
+      margin: 50px 0 60px;
+    }
+
+    .cta-banner h2 {
+      font-size: 2rem;
+      color: white;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .cta-banner p {
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 28px;
+      font-size: 1rem;
+    }
+
+    .btn-white {
+      background: white;
+      color: #7b5df6;
+      border: none;
+      padding: 14px 36px;
+      border-radius: 60px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      transition: 0.2s;
+      font-size: 1rem;
+    }
+
+    .btn-white:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ---------- FOOTER (from ContactUs, improved) ---------- */
+    .footer {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--card-border);
+      border-radius: 40px 40px 0 0;
+      margin-top: 40px;
+      padding: 48px 32px 32px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .footer-brand p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      max-width: 260px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 60px;
+    }
+
+    .footer-col a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent-solid);
+    }
+
+    .copyright {
+      text-align: center;
+      padding-top: 32px;
+      margin-top: 32px;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .social-icons a {
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: 0.2s;
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+    }
+
+    .social-icons a .fa-facebook-f {
+      color: #1877f2;
+    }
+
+    .social-icons a .fa-instagram {
+      color: #e4405f;
+    }
+
+    .social-icons a .fa-twitter {
+      color: #1da1f2;
+    }
+
+    .social-icons a .fa-whatsapp {
+      color: #25d366;
+    }
+
+    .social-icons a:hover {
+      transform: translateY(-3px);
+    }
+
+    .social-icons a:hover .fab {
+      color: white !important;
+    }
+
+    .social-icons a:has(.fa-facebook-f):hover {
+      background: #1877f2;
+      border-color: #1877f2;
+    }
+
+    .social-icons a:has(.fa-instagram):hover {
+      background: #e4405f;
+      border-color: #e4405f;
+    }
+
+    .social-icons a:has(.fa-twitter):hover {
+      background: #1da1f2;
+      border-color: #1da1f2;
+    }
+
+    .social-icons a:has(.fa-whatsapp):hover {
+      background: #25d366;
+      border-color: #25d366;
+    }
+
+    /* ---------- RESPONSIVE (navbar + footer + whywe components) ---------- */
+    @media (max-width: 1024px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .navbar {
+        padding: 10px 20px;
+        gap: 12px;
+      }
+
+      .logo {
+        font-size: 1.2rem;
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        gap: 20px;
+      }
+
+      .nav-links a {
+        font-size: 0.85rem;
+        padding: 4px 0;
+      }
+
+      .btn-outline {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        gap: 6px;
+      }
+
+      .mode-toggle,
+      .lang-toggle {
+        width: 40px;
+        height: 40px;
+      }
+
+      .lang-toggle {
+        width: auto;
+        padding: 0 12px;
+        font-size: 0.8rem;
+        gap: 6px;
+      }
+
+      .nav-actions {
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .navbar {
+        padding: 10px 18px;
+      }
+
+      .logo {
+        font-size: clamp(0.9rem, 4vw, 1.3rem);
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 85px;
+        left: 20px;
+        right: 20px;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(24px);
+        border-radius: 32px;
+        padding: 28px 20px;
+        flex-direction: column;
+        gap: 18px;
+        text-align: center;
+        z-index: 1000;
+        border: 1px solid var(--card-border);
+        box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transform: translateY(-15px);
+        pointer-events: none;
+        transition: 0.3s;
+      }
+
+      .nav-links.show {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .nav-links a {
+        font-size: 1.1rem;
+        padding: 10px 0;
+      }
+
+      .nav-links a::after {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .nav-actions .btn-outline {
+        display: none;
+      }
+
+      .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        margin: 35px 0 30px;
+      }
+
+      .feature-card {
+        padding: 18px 14px;
+      }
+
+      .feature-icon {
+        font-size: 30px;
+        margin-bottom: 12px;
+      }
+
+      .feature-card h3 {
+        font-size: 1rem;
+        margin-bottom: 6px;
+      }
+
+      .feature-card p {
+        font-size: 0.75rem;
+        line-height: 1.4;
+      }
+
+      .compare-section {
+        padding: 28px 20px;
+        margin: 35px 0;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+      }
+
+      .pill-list {
+        gap: 10px;
+        margin: 30px 0 40px;
+      }
+
+      .pill {
+        padding: 6px 18px;
+        font-size: 0.75rem;
+      }
+
+      .cta-banner {
+        padding: 36px 24px;
+        margin: 40px 0 50px;
+      }
+
+      .cta-banner h2 {
+        font-size: 1.5rem;
+      }
+
+      .btn-white {
+        padding: 12px 28px;
+        font-size: 0.9rem;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .footer-brand {
+        margin: 0 auto;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .footer-brand p {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 280px;
+      }
+
+      .footer-links {
+        flex-direction: row;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      .footer-col {
+        text-align: center;
+        min-width: 120px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .lang-toggle span {
+        display: none;
+      }
+
+      .lang-toggle {
+        width: 44px;
+        padding: 0;
+        justify-content: center;
+      }
+
+      .feature-grid {
+        gap: 10px;
+      }
+
+      .feature-card {
+        padding: 14px 10px;
+      }
+
+      .feature-icon {
+        font-size: 26px;
+      }
+
+      .feature-card h3 {
+        font-size: 0.9rem;
+      }
+
+      .feature-card p {
+        font-size: 0.7rem;
+      }
+
+      .comp-table th,
+      .comp-table td {
+        padding: 12px 16px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+  <div class="container">
+    <!-- ========== NEW HEADER (from ContactUs) ========== -->
+    <nav class="navbar">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" id="navHome">Home</a>
+        <a href="create.html" id="navCreate">Create</a>
+        <a href="WhyWe.html" id="navWhy">Why Greeter</a>
+        <a href="privacy.html" id="navShowcase">Privacy</a>
+        <a href="ContactUs.html" id="navPricing">Contact Us</a>
+      </div>
+      <div class="nav-actions">
+        <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
+        <div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button>
+        <div class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div>
+      </div>
+    </nav>
+
+    <!-- ========== MAIN WHY WE CONTENT (original feature, comparison, etc) ========== -->
+    <div class="hero">
+      <div class="badge" id="heroBadge"><i class="fas fa-crown"></i> The professional surprise builder</div>
+      <h1 id="heroTitle">What makes Greeter different</h1>
+      <p class="hero-desc" id="heroDesc">Cinematic effects, AI‑powered messaging, and a full creative studio — no code,
+        no compromise.</p>
+    </div>
+    <div class="feature-grid" id="featureGrid"></div>
+
+    <div class="compare-section">
+      <h2 class="section-title" id="compareTitle">Greeter vs. traditional builders</h2>
+      <p class="section-sub" id="compareSub">See why people choose Greeter</p>
+      <div class="table-wrapper">
+        <table class="comp-table" id="compTable">
+          <thead id="compTableHead"></thead>
+          <tbody id="compTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="pill-list" id="pillList"></div>
+
+    <div class="cta-banner">
+      <h2 id="ctaTitle">Ready to create something unforgettable?</h2>
+      <p id="ctaDesc">Free, no credit card, no hidden fees. Start surprising your loved ones in minutes.</p>
+      <a href="create.html" class="btn-white" id="ctaBtn"><i class="fas fa-arrow-right"></i> Launch your first
+        surprise</a>
+    </div>
+
+    <!-- ========== NEW FOOTER (from ContactUs) ========== -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="/" class="logo" style="margin-bottom: 16px; display: inline-flex;">
+            <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+          </a>
+          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
+            and festivals — no coding needed.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4 id="exploreTitle">Explore</h4>
+            <ul>
+              <li><a href="create.html" id="exploreTemplates">Create</a></li>
+              <li><a href="WhyWe.html" id="exploreFeatures">Why Greeter</a></li>
+              <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
+              <li><a href="#" id="explorePricing">Pricing</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4 id="supportTitle">Support</h4>
+            <ul>
+              <li><a href="ContactUs.html" id="supportHelp">Help Center</a></li>
+              <li><a href="privacy.html" id="supportPrivacy">Privacy Policy</a></li>
+              <li><a href="terms&cond.html" id="supportTerms">Terms of Use</a></li>
+              <li><a href="ContactUs.html" id="supportContact">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-social">
+          <h4 id="followTitle">Follow us</h4>
+          <div class="social-icons">
+            <a href="#" id="footerFacebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" id="footerInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" id="footerWhatsApp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" id="footerTwitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">
+        <p id="copyrightText">© 2026 Greeter · Make every moment magical</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ---------- COMPLETE TRANSLATIONS (original WhyWe content + new navbar/footer) ----------
+    const translations = {
+      en: {
+        // nav & footer
+        nav: ["Home", "Create", "Why Greeter", "Privacy", "Contact Us"],
+        signin: "Sign in",
+        heroBadge: "✨ The professional surprise builder",
+        heroTitle: "What makes Greeter different !",
+        heroDesc: "Cinematic effects, AI‑powered messaging, and a full creative studio — no code, no compromise.",
+        features: [
+          { title: "Customizable Features", desc: "23+ live effects: curtain reveal, fireworks, floating balloons, exploding gifts — everything is interactive." },
+          { title: "AI‑powered stories", desc: "Describe event & mood, our AI writes unique, heartfelt messages. English & Hindi." },
+          { title: "Scratch cards", desc: "Interactive scratch-to-reveal cards. Add a hidden message or surprise image — fun and engaging." },
+          { title: "Fireworks click", desc: "Explosive confetti & fireworks burst anywhere on screen with a single click." },
+          { title: "Password protection", desc: "Hide content behind a secret password. Only the right person unlocks the magic." },
+          { title: "Bilingual Themes", desc: "English / Hindi toggle + light/dark mode. Your surprise speaks the recipient's language." },
+          { title: "Drag‑drop media", desc: "Upload images, add resizable text boxes, reposition anything — live preview." },
+          { title: "Custom templates", desc: "Upload your own .html files — your designs, our platform." }
+        ],
+        compareTitle: "Greeter vs. traditional builders",
+        compareSub: "See why people choose Greeter",
+        compareHeaders: ["Feature", "Greeter", "Other platforms"],
+        compareRows: [
+          ["Live preview + instant editing", "Yes", "Static / code only"],
+          ["Interactive Features", "Fully Customizable", "Basic stickers / GIFs"],
+          ["AI message generation", "Smart & contextual", "None"],
+          ["Upload custom HTML templates", "Yes, supported", "Not supported"],
+          ["Password‑protected content", "Lock website", "Not available"],
+          ["English / Hindi interface", "Full translation", "Usually English only"],
+          ["Upload images & custom text boxes", "Full drag‑drop", "Fixed slots only"],
+          ["Features Customization", "Supported", "Not available"]
+        ],
+        pills: ["Real‑time resizer", "Background audio", "Falling hearts on scroll", "Surprise gift boxes", "Text edit mode", "Fireworks click", "Custom template upload"],
+        ctaTitle: "Ready to create something unforgettable?",
+        ctaDesc: "Free, no credit card, no hidden fees. Start surprising your loved ones in minutes.",
+        ctaBtn: "Launch your first surprise",
+        footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
+        exploreTitle: "Explore",
+        exploreLinks: ["Create", "Why Greeter", "How it Works", "Pricing"],
+        supportTitle: "Support",
+        supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
+        followTitle: "Follow us",
+        copyright: "© 2026 Greeter · Make every moment magical"
+      },
+      hi: {
+        nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"],
+        signin: "लॉगिन करें",
+        heroBadge: "✨ पेशेवर सरप्राइज़ बनाने वाला",
+        heroTitle: "Greeter को क्या खास बनाता है !",
+        heroDesc: "सिनेमा जैसे इफेक्ट, AI से लिखे संदेश, और पूरा क्रिएटिव स्टूडियो — बिना कोड के, बिना किसी समझौते के।",
+        features: [
+          { title: "अपनी मर्जी के फीचर", desc: "23+ लाइव इफेक्ट: पर्दा खुलना, पटाखे, उड़ते गुब्बारे, फटने वाले गिफ्ट — सब कुछ इंटरैक्टिव है।" },
+          { title: "AI से संदेश लिखाए", desc: "इवेंट और मूड बताइए, हमारा AI दिल को छू लेने वाला संदेश लिखता है। अंग्रेजी और हिंदी दोनों में।" },
+          { title: "स्क्रैच कार्ड", desc: "खरोंचने वाले कार्ड। कोई छिपा हुआ संदेश या तस्वीर डालें — मजेदार और दिलचस्प।" },
+          { title: "पटाखे वाला क्लिक", desc: "एक क्लिक से पूरी स्क्रीन पर रंग-बिरंगे कागज़ के टुकड़े और पटाखे फूटेंगे।" },
+          { title: "पासवर्ड लगाएं", desc: "सामग्री को गुप्त पासवर्ड के पीछे छुपाएं। सिर्फ सही व्यक्ति ही जादू खोल पाएगा।" },
+          { title: "दो भाषाएँ + थीम", desc: "अंग्रेजी / हिंदी बटन + उजला/अंधेरा मोड। आपका सरप्राइज़ सामने वाले की भाषा बोलेगा।" },
+          { title: "खींचकर डालें (Drag‑drop)", desc: "तस्वीरें डालें, टेक्स्ट बॉक्स बदलें, जहाँ मन करे वहाँ लगाएं — सब कुछ लाइव दिखेगा।" },
+          { title: "अपने टेम्पलेट", desc: "अपनी .html फ़ाइलें अपलोड करें — आपके डिज़ाइन, हमारा प्लेटफ़ॉर्म।" }
+        ],
+        compareTitle: "Greeter और दूसरे प्लेटफॉर्म मैं अंतर !",
+        compareSub: "देखिए क्यों लोग Greeter को चुनते हैं",
+        compareHeaders: ["सुविधा", "Greeter", "दूसरे प्लेटफॉर्म"],
+        compareRows: [
+          ["लाइव देखें + तुरंत बदलाव", "हाँ", "बिना कोड के कुछ नहीं"],
+          ["इंटरैक्टिव फीचर", "पूरी तरह बदल सकते हैं", "बस स्टिकर / GIF"],
+          ["AI से संदेश बनाना", "समझदार और सही मौके के हिसाब से", "कोई नहीं"],
+          ["अपने HTML टेम्पलेट डालना", "हाँ, बिल्कुल", "नहीं डाल सकते"],
+          ["पासवर्ड से सुरक्षा", "वेबसाइट लॉक करें", "उपलब्ध नहीं"],
+          ["अंग्रेजी / हिंदी इंटरफेस", "पूरा अनुवाद", "आमतौर पर सिर्फ अंग्रेजी"],
+          ["तस्वीरें और टेक्सट बॉक्स डालना", "पूरी आज़ादी (खींचकर डालें)", "सिर्फ तय जगहों पर"],
+          ["फीचर बदलने की सुविधा", "हाँ, मिलती है", "उपलब्ध नहीं"]
+        ],
+        pills: ["तुरंत आकार बदलें", "पीछे से संगीत", "ऊपर-नीचे करते ही दिल गिरें", "गिफ्ट बॉक्स का सरप्राइज़", "टेक्स्ट बदलने का मोड", "क्लिक पर पटाखे", "खुद का टेम्पलेट डालें"],
+        ctaTitle: "कुछ यादगार बनाने के लिए तैयार हैं?",
+        ctaDesc: "बिल्कुल मुफ्त, कोई क्रेडिट कार्ड नहीं, कोई छिपा खर्च नहीं। कुछ ही मिनटों में अपनों को सरप्राइज़ दें।",
+        ctaBtn: "अपना पहला सरप्राइज़ बनाएँ",
+        footerBrand: "जन्मदिन, शादी का प्रस्ताव, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
+        exploreTitle: "देखिए",
+        exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "कीमतें"],
+        supportTitle: "सहायता",
+        supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
+        followTitle: "हमें फॉलो करें",
+        copyright: "© 2026 Greeter · हर पल जादुई बनाएँ"
+      }
+    };
+
+    let currentLang = localStorage.getItem('greeter_lang') || 'en';
+    const icons = ['fa-sliders-h', 'fa-brain', 'fa-ticket-alt', 'fa-fire', 'fa-lock', 'fa-globe-asia', 'fa-arrows-alt', 'fa-cloud-upload-alt'];
+
+    function applyLanguage(lang) {
+      const t = translations[lang];
+      if (!t) return;
+      // navbar
+      document.getElementById('navHome').innerText = t.nav[0];
+      document.getElementById('navCreate').innerText = t.nav[1];
+      document.getElementById('navWhy').innerText = t.nav[2];
+      document.getElementById('navShowcase').innerText = t.nav[3];
+      document.getElementById('navPricing').innerText = t.nav[4];
+      document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
+      // hero
+      document.getElementById('heroBadge').innerHTML = `<i class="fas fa-crown"></i> ${t.heroBadge}`;
+      document.getElementById('heroTitle').innerText = t.heroTitle;
+      document.getElementById('heroDesc').innerText = t.heroDesc;
+      // feature grid
+      const featureGrid = document.getElementById('featureGrid');
+      featureGrid.innerHTML = '';
+      t.features.forEach((feat, idx) => {
+        const card = document.createElement('div'); card.className = 'feature-card';
+        card.innerHTML = `<div class="feature-icon"><i class="fas ${icons[idx % icons.length]}"></i></div><h3>${feat.title}</h3><p>${feat.desc}</p>`;
+        featureGrid.appendChild(card);
+      });
+      // comparison table
+      document.getElementById('compareTitle').innerText = t.compareTitle;
+      document.getElementById('compareSub').innerText = t.compareSub;
+      const thead = document.getElementById('compTableHead');
+      const tbody = document.getElementById('compTableBody');
+      thead.innerHTML = `<tr>${t.compareHeaders.map(h => `<th>${h}</th>`).join('')}</tr>`;
+      tbody.innerHTML = t.compareRows.map(row => `<tr><td>${row[0]}</td><td class="check"><i class="fas fa-check-circle"></i> ${row[1]}</td><td class="cross"><i class="fas fa-times-circle"></i> ${row[2]}</td></tr>`).join('');
+      // pills
+      const pillContainer = document.getElementById('pillList');
+      pillContainer.innerHTML = t.pills.map(p => `<span class="pill"><i class="fas fa-check-circle"></i> ${p}</span>`).join('');
+      // CTA
+      document.getElementById('ctaTitle').innerText = t.ctaTitle;
+      document.getElementById('ctaDesc').innerText = t.ctaDesc;
+      document.getElementById('ctaBtn').innerHTML = `<i class="fas fa-arrow-right"></i> ${t.ctaBtn}`;
+      // footer
+      document.getElementById('footerBrandText').innerText = t.footerBrand;
+      document.getElementById('exploreTitle').innerText = t.exploreTitle;
+      document.getElementById('supportTitle').innerText = t.supportTitle;
+      document.getElementById('followTitle').innerText = t.followTitle;
+      document.getElementById('copyrightText').innerText = t.copyright;
+      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+      t.exploreLinks.forEach((txt, i) => { if (document.getElementById(exploreIds[i])) document.getElementById(exploreIds[i]).innerText = txt; });
+      const supportIds = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
+      t.supportLinks.forEach((txt, i) => { if (document.getElementById(supportIds[i])) document.getElementById(supportIds[i]).innerText = txt; });
+      // lang toggle button text
+      const langSpan = document.querySelector('#langToggleBtn span');
+      if (langSpan) langSpan.innerText = lang === 'en' ? 'हिन्दी' : 'English';
+      localStorage.setItem('greeter_lang', lang);
+      currentLang = lang;
+    }
+
+    // language toggle
+    document.getElementById('langToggleBtn').addEventListener('click', () => { applyLanguage(currentLang === 'en' ? 'hi' : 'en'); });
+
+    // dark mode (from contactus)
+    function setTheme(isDark) {
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      if (isDark) {
+        body.classList.add('dark');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('greeter-theme', 'dark');
+      } else {
+        body.classList.remove('dark');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('greeter-theme', 'light');
+      }
+    }
+    window.toggleTheme = () => { setTheme(!document.body.classList.contains('dark')); };
+    const savedTheme = localStorage.getItem('greeter-theme') || 'light';
+    setTheme(savedTheme === 'dark');
+    document.getElementById('modeToggle').addEventListener('click', window.toggleTheme);
+
+    // mobile menu (contactus style)
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const navLinksDiv = document.getElementById('navLinks');
+    function closeMobileMenu() { navLinksDiv.classList.remove('show'); if (menuBtn) { const icon = menuBtn.querySelector('i'); icon.classList.remove('fa-times'); icon.classList.add('fa-bars'); } }
+    function openMobileMenu() { navLinksDiv.classList.add('show'); if (menuBtn) { const icon = menuBtn.querySelector('i'); icon.classList.remove('fa-bars'); icon.classList.add('fa-times'); } }
+    if (menuBtn) {
+      menuBtn.addEventListener('click', (e) => { e.stopPropagation(); navLinksDiv.classList.contains('show') ? closeMobileMenu() : openMobileMenu(); });
+    }
+    document.addEventListener('click', (e) => { if (!navLinksDiv.contains(e.target) && !menuBtn?.contains(e.target) && navLinksDiv.classList.contains('show')) closeMobileMenu(); });
+    window.addEventListener('resize', () => { if (window.innerWidth > 768 && navLinksDiv.classList.contains('show')) closeMobileMenu(); });
+
+    // signin alert & social placeholder
+    document.getElementById('signinBtn')?.addEventListener('click', () => alert(currentLang === 'en' ? "Sign in feature coming soon!" : "लॉगिन सुविधा जल्द आ रही है!"));
+    document.querySelectorAll('.social-icons a, .footer-social a').forEach(link => {
+      link.addEventListener('click', (e) => { e.preventDefault(); alert(currentLang === 'en' ? "Social media integration coming soon." : "सोशल मीडिया इंटीग्रेशन जल्द आ रहा है।"); });
+    });
+
+    // initial load
+    applyLanguage(localStorage.getItem('greeter_lang') || 'en');
+  </script>
+</body>
+
+</html>

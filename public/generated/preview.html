@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Select Template · Greeter.com</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    /* ---------- CSS VARIABLES (LIGHT/DARK MODE) ---------- */
+    :root {
+      --bg-primary: #f9f7ff;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a1025;
+      --text-secondary: #4a3b66;
+      --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+      --accent-solid: #7b5df6;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --navbar-bg: rgba(255, 255, 255, 0.6);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
+      --glow: rgba(123, 93, 246, 0.15);
+      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+      --resizer-bg: #e0d9f0;
+      --sidebar-bg: rgba(255, 255, 255, 0.5);
+      --popup-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    body.dark {
+      --bg-primary: #0a0614;
+      --bg-secondary: #1e1635;
+      --text-primary: #f5f0ff;
+      --text-secondary: #cbbff0;
+      --accent-gradient: linear-gradient(145deg, #a78bfa 0%, #fb923c 100%);
+      --accent-solid: #a78bfa;
+      --card-bg: rgba(30, 20, 55, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --navbar-bg: rgba(15, 10, 30, 0.7);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 30px 50px -15px #00000070;
+      --glow: rgba(167, 139, 250, 0.3);
+      --resizer-bg: #3a2a5e;
+      --sidebar-bg: rgba(25, 18, 45, 0.7);
+      --popup-bg: rgba(30, 20, 55, 0.95);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: var(--mode-transition);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 769px) {
+      body {
+        overflow: hidden;
+      }
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.12), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.12), transparent 50%);
+      pointer-events: none;
+      z-index: -2;
+      transition: var(--mode-transition);
+    }
+
+    body.dark .bg-gradient {
+      background: radial-gradient(circle at 20% 30%, #4c2a8e30, #0a0614 90%),
+        radial-gradient(circle at 80% 70%, #b4530930, transparent 70%);
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 20px;
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      width: 100%;
+    }
+
+    /* ---------- NAVBAR (from index.html) ---------- */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 28px;
+      margin: 16px 0 12px;
+      backdrop-filter: blur(16px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      transition: var(--mode-transition);
+      flex-wrap: nowrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+      flex-shrink: 1;
+      white-space: nowrap;
+    }
+
+    .logo-icon {
+      background: var(--accent-gradient);
+      width: 44px;
+      height: 44px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 12px 20px -8px var(--glow);
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+      transition: 0.25s;
+      position: relative;
+      padding: 6px 0;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2.5px;
+      background: var(--accent-gradient);
+      transition: width 0.3s;
+      border-radius: 4px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: #ff7a2f;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .mode-toggle,
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      width: 44px;
+      height: 44px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mode-toggle .fa-sun {
+      color: #fbbf24;
+      font-size: 1.2rem;
+    }
+
+    body.dark .mode-toggle .fa-moon {
+      color: #cbd5e1;
+    }
+
+    .lang-toggle {
+      width: auto;
+      padding: 0 18px;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .mode-toggle:hover,
+    .lang-toggle:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 9px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 40px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+    }
+
+    /* ---------- MODAL ---------- */
+    .custom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.2s, opacity 0.2s;
+    }
+
+    .custom-modal.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: var(--bg-secondary);
+      border-radius: 32px;
+      max-width: 480px;
+      width: 90%;
+      padding: 28px 28px 24px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--card-border);
+      position: relative;
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+
+    .custom-modal.show .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      width: 32px;
+      height: 32px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .modal-close:hover {
+      background: var(--accent-solid);
+      color: white;
+    }
+
+    .modal-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: var(--accent-solid);
+    }
+
+    .modal-message {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .modal-link-box {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border-radius: 60px;
+      padding: 4px 4px 4px 18px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 16px;
+    }
+
+    .modal-link-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px 0;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .modal-copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      width: 40px;
+      height: 40px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 18px;
+    }
+
+    .modal-copy-btn:hover {
+      background: var(--accent-solid);
+      color: white;
+    }
+
+    .modal-button {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 12px var(--glow);
+      width: 100%;
+    }
+
+    .modal-button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    /* ---------- MAIN SPLIT LAYOUT ---------- */
+    .split-layout {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+
+    .preview-panel {
+      flex: 2.9;
+      display: flex;
+      flex-direction: column;
+      min-width: 300px;
+      padding-right: 4px;
+    }
+
+    .preview-box {
+      flex: 1;
+      background: var(--bg-secondary);
+      border-radius: 32px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--card-border);
+      overflow: auto;
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-box iframe {
+      border: none;
+      background: white;
+      width: 100%;
+      height: 100%;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .actions button {
+      flex: 1;
+      padding: 15px 18px;
+      border: none;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1rem;
+      font-family: inherit;
+      background: var(--accent-gradient);
+      color: white;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 12px 24px -8px var(--glow);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .actions button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 30px -8px var(--glow);
+    }
+
+    .resizer {
+      width: 8px;
+      cursor: col-resize;
+      background: var(--resizer-bg);
+      flex-shrink: 0;
+      position: relative;
+      transition: background 0.2s, box-shadow 0.1s;
+      z-index: 20;
+      border-radius: 8px;
+      margin: 0 4px;
+    }
+
+    .resizer::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 3px;
+      height: 40px;
+      background: repeating-linear-gradient(to bottom, var(--accent-solid) 0px, var(--accent-solid) 4px, transparent 4px, transparent 8px);
+      border-radius: 2px;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .resizer:hover {
+      background: var(--accent-solid);
+      box-shadow: 0 0 8px var(--glow);
+    }
+
+    .resizer.active-drag {
+      background: #ff4da6;
+      box-shadow: 0 0 14px #ff4da6;
+    }
+
+    body.resizing-active {
+      cursor: col-resize !important;
+    }
+
+    body.resizing-active .preview-panel iframe {
+      pointer-events: none;
+      filter: brightness(0.98);
+    }
+
+    .resizer-mobile {
+      display: none;
+    }
+
+    .sidebar {
+      flex: 1.3;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(16px);
+      padding: 20px 16px;
+      overflow-y: auto;
+      border-radius: 32px;
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-sm);
+      margin-left: 4px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin: 0 0 12px 0;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      line-height: 1.3;
+    }
+
+    .event-bar {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-bottom: 6px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      flex-shrink: 0;
+      align-items: center;
+      cursor: grab;
+      scroll-behavior: smooth;
+    }
+
+    .event-bar:active {
+      cursor: grabbing;
+    }
+
+    .event-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .event-chip {
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+      font-size: 0.9rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .event-chip:hover {
+      background: var(--accent-solid);
+      color: white;
+      border-color: transparent;
+      transform: translateY(-2px);
+    }
+
+    .event-chip.active {
+      background: var(--accent-gradient);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 8px 20px var(--glow);
+    }
+
+    .template-card {
+      background: var(--bg-secondary);
+      backdrop-filter: blur(4px);
+      margin-bottom: 20px;
+      border-radius: 22px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.25s;
+      border: 1.5px solid var(--card-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .template-card iframe {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      display: block;
+      border: none;
+      pointer-events: none;
+      background: #f0ecfe;
+      overflow: hidden;
+    }
+
+    body.dark .template-card iframe {
+      background: #2a1e4a;
+    }
+
+    .template-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-solid);
+      box-shadow: 0 16px 28px -10px var(--glow);
+    }
+
+    .template-card.active {
+      border: 2.5px solid var(--accent-solid);
+      box-shadow: 0 0 20px var(--glow);
+      background: linear-gradient(145deg, rgba(123, 93, 246, 0.15), rgba(255, 122, 47, 0.08));
+    }
+
+      .upload-placeholder-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(4px);
+        border: 2px dashed var(--card-border);
+        border-radius: 22px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        transition: all 0.2s;
+        flex: 0 0 auto;
+        width: 160px;
+        aspect-ratio: 16 / 9;
+        gap: 8px;
+      }
+
+    .upload-placeholder-card i {
+      font-size: 32px;
+      color: var(--accent-solid);
+    }
+
+    .upload-placeholder-card span {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .upload-placeholder-card:hover {
+      border-color: var(--accent-solid);
+      background: var(--accent-solid);
+      transform: translateY(-3px);
+    }
+
+    .upload-placeholder-card:hover i,
+    .upload-placeholder-card:hover span {
+      color: white;
+    }
+
+    .add-template {
+      margin-top: 16px;
+      padding: 16px 14px;
+      text-align: center;
+      border: 2px dashed var(--card-border);
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+      background: var(--card-bg);
+      flex-shrink: 0;
+    }
+
+    .add-template:hover {
+      background: rgba(123, 93, 246, 0.2);
+      border-color: var(--accent-solid);
+      color: var(--accent-solid);
+    }
+
+    .mobile-continue-btn {
+      display: none;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .footer {
+      padding: 12px 0 12px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--card-border);
+      flex-shrink: 0;
+      font-size: 0.8rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .social i {
+      font-size: 20px;
+      margin-left: 16px;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .social i:hover {
+      color: #ff7a2f;
+      transform: translateY(-3px);
+    }
+
+    /* ---------- MOBILE STYLES (max-width: 768px) ---------- */
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh;
+      }
+
+      .container {
+        padding: 0 12px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .navbar {
+        padding: 8px 16px;
+        flex-wrap: wrap;
+        min-height: 60px;
+      }
+
+      .logo {
+        font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      }
+
+      .logo-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+      }
+
+      .nav-actions {
+        gap: 8px;
+      }
+
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 85px;
+        left: 20px;
+        right: 20px;
+        background: var(--popup-bg);
+        backdrop-filter: blur(24px);
+        border-radius: 32px;
+        padding: 28px 20px;
+        flex-direction: column;
+        gap: 18px;
+        text-align: center;
+        z-index: 10002;
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow-lg);
+        opacity: 0;
+        transform: translateY(-15px);
+        pointer-events: none;
+        transition: 0.3s;
+      }
+
+      .nav-links.show {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .nav-actions .btn-outline {
+        display: none;
+      }
+
+      .split-layout {
+        flex: 1;
+        flex-direction: column;
+        gap: 8px;
+        margin: 8px 0;
+        min-height: 0;
+      }
+
+      .preview-panel {
+        flex: 0 0 auto;
+        min-height: 200px;
+        padding-right: 0;
+        height: 50vh;
+      }
+
+      .sidebar {
+        margin-left: 0;
+        flex: 1;
+        min-height: 200px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      .resizer {
+        display: none;
+      }
+
+      .resizer-mobile {
+        display: block;
+        height: 8px;
+        cursor: row-resize;
+        background: var(--resizer-bg);
+        flex-shrink: 0;
+        position: relative;
+        transition: background 0.2s;
+        z-index: 20;
+        border-radius: 8px;
+        margin: 2px 0;
+      }
+
+      .resizer-mobile::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 3px;
+        background: repeating-linear-gradient(to right, var(--accent-solid) 0px, var(--accent-solid) 4px, transparent 4px, transparent 8px);
+        border-radius: 2px;
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .resizer-mobile:hover {
+        background: var(--accent-solid);
+      }
+
+      .resizer-mobile.active-drag {
+        background: #ff4da6;
+      }
+
+      .event-bar {
+        display: none !important;
+      }
+
+      .sidebar>.sidebar-title {
+        display: none;
+      }
+
+      .sidebar-header-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        flex-shrink: 0;
+      }
+
+      .sidebar-header-mobile .sidebar-title {
+        margin-bottom: 0;
+        font-size: 1.2rem;
+        background: none;
+        color: var(--text-primary);
+        -webkit-background-clip: unset;
+        background-clip: unset;
+      }
+
+      .inline-event-select {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--card-border);
+        border-radius: 30px;
+        padding: 6px 28px 6px 14px;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.85rem;
+        font-family: 'Inter', sans-serif;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234a3b66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 14px;
+        cursor: pointer;
+        max-width: 130px;
+      }
+
+      body.dark .inline-event-select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23cbbff0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      }
+
+      .inline-event-select:focus {
+        outline: none;
+        border-color: var(--accent-solid);
+      }
+
+      .template-list-container {
+        overflow-x: auto;
+        overflow-y: visible;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-solid) var(--card-border);
+        flex: 1;
+      }
+
+      .template-list-container::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      .template-list-container::-webkit-scrollbar-thumb {
+        background: var(--accent-solid);
+        border-radius: 4px;
+      }
+
+      #templateList {
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        width: max-content;
+        padding: 4px 2px;
+      }
+
+      .template-card {
+        flex: 0 0 auto;
+        width: 160px;
+        margin-bottom: 0;
+      }
+
+      .template-card iframe {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+      }
+
+      .add-template {
+        display: none !important;
+      }
+
+      #customizeBtn {
+        display: none !important;
+      }
+
+      .mobile-continue-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--accent-gradient);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 60px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        margin-top: 16px;
+        width: 100%;
+        box-shadow: 0 4px 10px var(--glow);
+        transition: 0.2s;
+        flex-shrink: 0;
+      }
+
+      .mobile-continue-btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.05);
+      }
+
+      .footer {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        margin-top: 16px;
+        padding: 12px 0;
+        flex-shrink: 0;
+      }
+
+      .menu-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(12px);
+        z-index: 9999;
+        display: none;
+      }
+
+      body.menu-open .menu-backdrop {
+        display: block;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 6px 12px;
+      }
+
+      .logo {
+        font-size: 0.8rem;
+      }
+
+      .logo-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+      }
+
+      .nav-actions {
+        gap: 4px;
+      }
+
+      .lang-toggle span {
+        display: none;
+      }
+
+      .lang-toggle {
+        width: 36px;
+        padding: 0;
+        justify-content: center;
+      }
+
+      .preview-panel {
+        height: 45vh;
+      }
+
+      .sidebar {
+        padding: 10px;
+      }
+
+      .template-card {
+        width: 140px;
+      }
+
+      .upload-placeholder-card {
+        width: 140px;
+      }
+
+      .mobile-continue-btn {
+        font-size: 0.85rem;
+        padding: 10px 18px;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .resizer-mobile {
+        display: none !important;
+      }
+
+      .sidebar-header-mobile {
+        display: none !important;
+      }
+
+      .mobile-continue-btn {
+        display: none !important;
+      }
+    }
+
+    @media (max-height: 600px) and (max-width: 768px) {
+      .preview-panel {
+        height: 45vh;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+  <div class="menu-backdrop" id="menuBackdrop" onclick="closeMobileMenu()"></div>
+  <div class="container">
+    <nav class="navbar">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="../index.html" id="navHome">Home</a>
+        <a href="../create.html" id="navCreate">Create</a>
+        <a href="../WhyWe.html" id="navWhy">Why Greeter</a>
+        <a href="../privacy.html" id="navShowcase">Privacy</a>
+        <a href="../ContactUs.html" id="navPricing">Contact Us</a>
+      </div>
+      <div class="nav-actions">
+        <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
+        <div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button>
+        <div class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div>
+      </div>
+    </nav>
+
+    <div class="split-layout" id="splitLayout">
+      <div class="preview-panel" id="previewPanel">
+        <div class="preview-box" id="previewBox">
+          <iframe id="previewFrame" title="Template preview"></iframe>
+        </div>
+        <div class="actions">
+          <button id="customizeBtn"><i class="fas fa-paint-brush"></i> Customize</button>
+        </div>
+      </div>
+
+      <div class="resizer" id="resizer" aria-label="Drag to resize sidebar"></div>
+      <div class="resizer-mobile" id="resizerMobile" aria-label="Drag to adjust panel height"></div>
+
+      <div class="sidebar">
+        <h3 class="sidebar-title" id="sidebarTitle"><i class="fas fa-palette"></i> Template gallery</h3>
+        <div class="sidebar-header-mobile">
+          <h3 class="sidebar-title"><i class="fas fa-palette"></i> <span id="mobileSidebarTitleText">Template
+              gallery</span></h3>
+          <select class="inline-event-select" id="inlineEventSelect">
+            <option value="birthday">🎂 Birthday</option>
+            <option value="proposal">💍 Proposal</option>
+            <option value="anniversary">❤️ Anniversary</option>
+            <option value="festival">🎉 Festival</option>
+          </select>
+        </div>
+        <div class="event-bar" id="eventCategoryBar">
+          <div class="event-chip active" data-event="birthday" id="eventChipBirthday">🎂 Birthday</div>
+          <div class="event-chip" data-event="proposal" id="eventChipProposal">💍 Proposal</div>
+          <div class="event-chip" data-event="anniversary" id="eventChipAnniversary">❤️ Anniversary</div>
+          <div class="event-chip" data-event="festival" id="eventChipFestival">🎉 Festival</div>
+        </div>
+        <div class="template-list-container" id="templateListContainer">
+          <div id="templateList"></div>
+        </div>
+        <button id="mobileContinueBtn" class="mobile-continue-btn"><i class="fas fa-check-circle"></i> Select &
+          Continue</button>
+        <div class="add-template" id="uploadTemplateBtn">
+          <i class="fas fa-cloud-upload-alt" style="margin-right: 8px;"></i> Upload custom template (.html)
+        </div>
+        <input type="file" id="fileInput" accept=".html">
+      </div>
+    </div>
+
+    <div class="footer">
+      <div id="copyrightText">© 2026 Greeter · Make every moment magical</div>
+      <div class="footer-links">
+        <a href="../index.html" id="footerTemplates">Templates</a>
+        <a href="#" id="footerFeatures">Features</a>
+        <a href="#" id="footerShowcase">Showcase</a>
+        <a href="../ContactUs.html" id="footerHelp">Help</a>
+        <a href="../privacy.html" id="footerPrivacy">Privacy</a>
+      </div>
+      <div class="social">
+        <i class="fab fa-instagram" id="shareInstagram"></i>
+        <i class="fab fa-whatsapp" id="shareWhatsApp"></i>
+        <i class="fab fa-facebook-f" id="shareFacebook"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="custom-modal" id="customModal">
+    <div class="modal-card">
+      <div class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></div>
+      <div class="modal-icon"><i class="fas fa-info-circle"></i></div>
+      <div class="modal-message" id="modalMessage"></div>
+      <div id="modalLinkContainer" style="display: none;">
+        <div class="modal-link-box">
+          <input type="text" id="modalLinkInput" readonly>
+          <button class="modal-copy-btn" id="modalCopyBtn"><i class="far fa-copy"></i></button>
+        </div>
+      </div>
+      <button class="modal-button" onclick="closeModal()">OK</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // ---------- MODAL ----------
+      const modal = document.getElementById('customModal');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalLinkContainer = document.getElementById('modalLinkContainer');
+      const modalLinkInput = document.getElementById('modalLinkInput');
+      function showModal(message, link = null) {
+        modalMessage.innerText = message;
+        if (link) {
+          modalLinkInput.value = link;
+          modalLinkContainer.style.display = 'block';
+        } else {
+          modalLinkContainer.style.display = 'none';
+        }
+        modal.classList.add('show');
+      }
+      window.closeModal = function () { modal.classList.remove('show'); };
+      document.getElementById('modalCopyBtn').addEventListener('click', function () {
+        modalLinkInput.select();
+        navigator.clipboard?.writeText(modalLinkInput.value).then(() => {
+          const originalText = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-check"></i>';
+          setTimeout(() => { this.innerHTML = originalText; }, 1500);
+        });
+      });
+      modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+
+      // ---------- MOBILE MENU ----------
+      const navLinks = document.getElementById('navLinks');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      const bodyEl = document.body;
+      const menuBackdrop = document.getElementById('menuBackdrop');
+      window.toggleMobileMenu = function () {
+        navLinks.classList.toggle('show');
+        bodyEl.classList.toggle('menu-open');
+        const icon = menuBtn.querySelector('i');
+        if (navLinks.classList.contains('show')) {
+          icon.classList.remove('fa-bars');
+          icon.classList.add('fa-times');
+        } else {
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        }
+      };
+      window.closeMobileMenu = function () {
+        navLinks.classList.remove('show');
+        bodyEl.classList.remove('menu-open');
+        const icon = menuBtn.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      };
+      menuBtn.addEventListener('click', toggleMobileMenu);
+      menuBackdrop.addEventListener('click', closeMobileMenu);
+      document.querySelectorAll('.nav-links a').forEach(link => link.addEventListener('click', closeMobileMenu));
+
+      // ---------- THEME ----------
+      const themeIcon = document.getElementById('themeIcon');
+      function setTheme(isDark) {
+        const body = document.body;
+        if (isDark) {
+          body.classList.add('dark');
+          themeIcon.classList.remove('fa-sun');
+          themeIcon.classList.add('fa-moon');
+          localStorage.setItem('greeter-theme', 'dark');
+        } else {
+          body.classList.remove('dark');
+          themeIcon.classList.remove('fa-moon');
+          themeIcon.classList.add('fa-sun');
+          localStorage.setItem('greeter-theme', 'light');
+        }
+      }
+      window.toggleTheme = () => setTheme(!document.body.classList.contains('dark'));
+      const savedTheme = localStorage.getItem('greeter-theme');
+      if (savedTheme === 'dark') setTheme(true);
+      else setTheme(false);
+      document.getElementById('modeToggle').addEventListener('click', toggleTheme);
+
+      // ---------- TRANSLATIONS ----------
+      const translations = {
+        en: {
+          navHome: "Home", navCreate: "Create", navWhy: "Why Greeter", navPrivacy: "Privacy", navContact: "Contact Us",
+          signin: "Sign in", sidebarTitle: "Template gallery", customizeBtn: "Customize", uploadBtn: "Upload custom template (.html)",
+          copyright: "© 2026 Greeter · Make every moment magical",
+          footer: ["Templates", "Features", "Showcase", "Help", "Privacy"],
+          eventChips: ["Birthday", "Proposal", "Anniversary", "Festival"],
+          alertNoTemplate: "🎯 Please select a template first",
+          alertCustomizeFirst: "✨ Select a template first before customizing!",
+          alertUploadInvalid: "Please upload a valid .html template file",
+          alertSignin: "Sign in feature coming soon!",
+          shareInsta: "📸 Copy this link to share on Instagram:"
+        },
+        hi: {
+          navHome: "होम", navCreate: "सरप्राइज़ बनाएं", navWhy: "Greeter ही क्यों", navPrivacy: "गोपनीयता", navContact: "संपर्क करें",
+          signin: "लॉगिन करें", sidebarTitle: "टेम्पलेट गैलरी", customizeBtn: "अपनी मर्जी से सजाएं", uploadBtn: "कस्टम टेम्पलेट अपलोड करें (.html)",
+          copyright: "© 2026 Greeter · हर पल जादुई बनाएं",
+          footer: ["टेम्पलेट", "फीचर्स", "शोकेस", "मदद", "प्राइवेसी"],
+          eventChips: ["जन्मदिन", "प्रपोज़ल", "सालगिरह", "त्योहार"],
+          alertNoTemplate: "🎯 कृपया पहले कोई टेम्पलेट चुनें",
+          alertCustomizeFirst: "✨ कस्टमाइज़ करने से पहले टेम्पलेट चुनें!",
+          alertUploadInvalid: "कृपया मान्य .html टेम्पलेट फ़ाइल अपलोड करें",
+          alertSignin: "लॉगिन सुविधा जल्द आ रही है!",
+          shareInsta: "📸 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:"
+        }
+      };
+      let currentLang = localStorage.getItem('greeter_lang') || 'en';
+      function applyLanguage(lang) {
+        const t = translations[lang];
+        if (!t) return;
+        document.getElementById('navHome').innerText = t.navHome;
+        document.getElementById('navCreate').innerText = t.navCreate;
+        document.getElementById('navWhy').innerText = t.navWhy;
+        document.getElementById('navShowcase').innerText = t.navPrivacy;
+        document.getElementById('navPricing').innerText = t.navContact;
+        document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
+        const desktopTitle = document.querySelector('#sidebarTitle');
+        if (desktopTitle) desktopTitle.innerHTML = `<i class="fas fa-palette"></i> ${t.sidebarTitle}`;
+        const mobileTitleSpan = document.getElementById('mobileSidebarTitleText');
+        if (mobileTitleSpan) mobileTitleSpan.innerText = t.sidebarTitle;
+        document.getElementById('customizeBtn').innerHTML = `<i class="fas fa-paint-brush"></i> ${t.customizeBtn}`;
+        document.getElementById('uploadTemplateBtn').innerHTML = `<i class="fas fa-cloud-upload-alt" style="margin-right: 8px;"></i> ${t.uploadBtn}`;
+        document.getElementById('copyrightText').innerText = t.copyright;
+        const footerLinkIds = ['footerTemplates', 'footerFeatures', 'footerShowcase', 'footerHelp', 'footerPrivacy'];
+        footerLinkIds.forEach((id, idx) => { if (document.getElementById(id)) document.getElementById(id).innerText = t.footer[idx]; });
+        const chips = ['eventChipBirthday', 'eventChipProposal', 'eventChipAnniversary', 'eventChipFestival'];
+        chips.forEach((id, idx) => { const el = document.getElementById(id); if (el) el.innerHTML = (idx === 0 ? '🎂 ' : idx === 1 ? '💍 ' : idx === 2 ? '❤️ ' : '🎉 ') + t.eventChips[idx]; });
+        const inlineSelect = document.getElementById('inlineEventSelect');
+        if (inlineSelect) {
+          inlineSelect.options[0].text = '🎂 ' + t.eventChips[0];
+          inlineSelect.options[1].text = '💍 ' + t.eventChips[1];
+          inlineSelect.options[2].text = '❤️ ' + t.eventChips[2];
+          inlineSelect.options[3].text = '🎉 ' + t.eventChips[3];
+        }
+        document.getElementById('langToggleBtn').innerHTML = `<i class="fas fa-globe"></i><span>${lang === 'en' ? 'हिन्दी' : 'English'}</span>`;
+        localStorage.setItem('greeter_lang', lang);
+        if (window.currentSelectedPath) {
+          const previewFrame = document.getElementById('previewFrame');
+          if (previewFrame) previewFrame.src = window.currentSelectedPath + "?mode=preview&lang=" + lang;
+        }
+      }
+      function toggleLanguage() { currentLang = currentLang === 'en' ? 'hi' : 'en'; applyLanguage(currentLang); }
+      applyLanguage(currentLang);
+      document.getElementById('langToggleBtn').addEventListener('click', toggleLanguage);
+      function getLocalizedString(key) { return translations[currentLang][key] || (currentLang === 'hi' ? translations.en[key] : ''); }
+
+      // ---------- PREVIEW LOGIC ----------
+      let userData = null;
+      try {
+        userData = JSON.parse(localStorage.getItem("userData"));
+        if (!userData) userData = { event: "birthday", mood: "romantic", name: "Friend" };
+      } catch (e) { userData = { event: "birthday", mood: "romantic", name: "Guest" }; }
+      let selectedTemplate = "";
+      let templates = [];
+      let currentEvent = userData.event || 'birthday';
+      window.currentSelectedPath = null;
+
+      async function loadAvailableTemplates(event) {
+        const templatesList = [];
+        let i = 1;
+        while (true) {
+          const path = `../templates/${event}${i}.html`;
+          try {
+            const response = await fetch(path, { method: 'HEAD' });
+            if (response.ok) { templatesList.push(path); i++; }
+            else break;
+          } catch (e) { break; }
+        }
+        return templatesList;
+      }
+      function scrollActiveEventIntoView() {
+        const activeChip = document.querySelector('.event-chip.active');
+        const eventBar = document.getElementById('eventCategoryBar');
+        if (activeChip && eventBar) activeChip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+      async function loadTemplatesForEvent(event) {
+        currentEvent = event;
+        templates = await loadAvailableTemplates(event);
+        if (templates.length === 0) templates = await loadAvailableTemplates('birthday');
+        renderTemplates();
+        document.querySelectorAll('.event-chip').forEach(chip => chip.classList.toggle('active', chip.dataset.event === event));
+        const inlineSelect = document.getElementById('inlineEventSelect');
+        if (inlineSelect) inlineSelect.value = event;
+        scrollActiveEventIntoView();
+      }
+      function renderTemplates() {
+        const listContainer = document.getElementById("templateList");
+        if (!listContainer) return;
+        listContainer.innerHTML = "";
+        templates.forEach((tplPath) => {
+          const card = document.createElement("div");
+          card.className = "template-card";
+          card.innerHTML = `<iframe loading="lazy" src="${tplPath}?mode=preview" title="template preview" scrolling="no" style="overflow: hidden;"></iframe>`;
+          card.onclick = (e) => { e.stopPropagation(); selectTemplate(tplPath, card); };
+          listContainer.appendChild(card);
+        });
+        // Mobile upload placeholder
+        if (window.innerWidth <= 768) {
+          const uploadCard = document.createElement("div");
+          uploadCard.className = "upload-placeholder-card";
+          uploadCard.innerHTML = `<i class="fas fa-cloud-upload-alt"></i><span>Upload template</span>`;
+          uploadCard.onclick = (e) => {
+            e.stopPropagation();
+            document.getElementById("fileInput").click();
+          };
+          listContainer.appendChild(uploadCard);
+        }
+        if (templates.length > 0) selectTemplate(templates[0], listContainer.children[0]);
+      }
+      function selectTemplate(path, element) {
+        if (!path) return;
+        selectedTemplate = path;
+        window.currentSelectedPath = path;
+        const previewFrame = document.getElementById("previewFrame");
+        if (previewFrame) {
+          previewFrame.src = path + "?mode=preview&lang=" + currentLang;
+          previewFrame.onload = () => {
+            try { if (previewFrame.contentWindow) previewFrame.contentWindow.localStorage.setItem("userData", JSON.stringify(userData)); } catch (e) { }
+          };
+        }
+        document.querySelectorAll(".template-card").forEach(card => card.classList.remove("active"));
+        if (element && element.classList && element.classList.contains("template-card")) {
+          element.classList.add("active");
+          if (window.innerWidth <= 768) {
+            const container = document.querySelector('.template-list-container');
+            if (container) container.scrollTo({ left: element.offsetLeft - 20, behavior: 'smooth' });
+          } else {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar && element) sidebar.scrollTo({ top: element.offsetTop - 100, behavior: 'smooth' });
+          }
+        }
+      }
+      document.querySelectorAll('.event-chip').forEach(chip => chip.addEventListener('click', async () => await loadTemplatesForEvent(chip.dataset.event)));
+      const inlineSelect = document.getElementById('inlineEventSelect');
+      if (inlineSelect) inlineSelect.addEventListener('change', async (e) => await loadTemplatesForEvent(e.target.value));
+      function uploadTemplate() { document.getElementById("fileInput").click(); }
+      document.getElementById("fileInput").addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file && file.name.endsWith(".html")) {
+          file.text().then(content => {
+            const dataUrl = 'data:text/html;base64,' + btoa(content);
+            templates.push(dataUrl);
+            renderTemplates();
+            const newCards = document.querySelectorAll(".template-card");
+            if (newCards.length) selectTemplate(dataUrl, newCards[newCards.length - 1]);
+          }).catch(() => showModal(getLocalizedString('alertUploadInvalid')));
+        } else showModal(getLocalizedString('alertUploadInvalid'));
+        e.target.value = null;
+      });
+
+      function proceedToCustomize() {
+        if (!selectedTemplate) {
+          showModal(getLocalizedString('alertNoTemplate'));
+          return;
+        }
+        localStorage.setItem("selectedTemplate", selectedTemplate);
+        localStorage.setItem("userData", JSON.stringify(userData));
+        window.location.href = "customize.html";
+      }
+
+      document.getElementById('customizeBtn').onclick = proceedToCustomize;
+      const mobileContinue = document.getElementById('mobileContinueBtn');
+      if (mobileContinue) mobileContinue.onclick = proceedToCustomize;
+      document.getElementById('uploadTemplateBtn').onclick = uploadTemplate;
+      document.getElementById('signinBtn').onclick = () => showModal(getLocalizedString('alertSignin'));
+
+      // ---------- SHARE ----------
+      function shareFooter(platform) {
+        const url = window.location.href;
+        const title = encodeURIComponent('Greeter.com - Create magical greeting websites');
+        if (platform === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        else if (platform === 'whatsapp') window.open(`https://api.whatsapp.com/send?text=${title}%20${encodeURIComponent(url)}`, '_blank');
+        else if (platform === 'instagram') showModal(getLocalizedString('shareInsta'), url);
+      }
+      document.getElementById('shareFacebook').onclick = () => shareFooter('facebook');
+      document.getElementById('shareWhatsApp').onclick = () => shareFooter('whatsapp');
+      document.getElementById('shareInstagram').onclick = () => shareFooter('instagram');
+
+      // ---------- RESIZERS (Desktop & Mobile) ----------
+      const desktopResizer = document.getElementById("resizer");
+      const leftPanel = document.getElementById("previewPanel");
+      const splitContainer = document.querySelector(".split-layout");
+      let isResizingDesktop = false, startClientX = 0, startWidthPx = 0, storedRatio = 0.65;
+      const MIN_LEFT = 320;
+      function clampWidth(w) { return Math.min(Math.max(w, MIN_LEFT), window.innerWidth - 340); }
+      function startResizeDesktop(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        if (!leftPanel) return;
+        leftPanel.style.transition = '';
+        startWidthPx = leftPanel.getBoundingClientRect().width;
+        startClientX = e.clientX;
+        isResizingDesktop = true;
+        document.body.classList.add("resizing-active");
+        desktopResizer.classList.add("active-drag");
+        document.body.style.cursor = "col-resize";
+      }
+      function onMouseMoveDesktop(e) {
+        if (!isResizingDesktop) return;
+        e.preventDefault();
+        let newWidth = startWidthPx + (e.clientX - startClientX);
+        newWidth = clampWidth(newWidth);
+        leftPanel.style.flex = `0 0 ${newWidth}px`;
+      }
+      function stopResizeDesktop() {
+        if (!isResizingDesktop) return;
+        isResizingDesktop = false;
+        document.body.classList.remove("resizing-active");
+        desktopResizer.classList.remove("active-drag");
+        document.body.style.cursor = "";
+      }
+      function resetToDefault() {
+        if (!leftPanel) return;
+        const containerW = splitContainer.getBoundingClientRect().width;
+        let target = storedRatio * containerW;
+        target = clampWidth(target);
+        leftPanel.style.transition = "flex-basis 0.25s ease";
+        leftPanel.style.flex = `0 0 ${target}px`;
+        setTimeout(() => leftPanel.style.transition = '', 250);
+      }
+      if (desktopResizer) {
+        desktopResizer.addEventListener("mousedown", startResizeDesktop);
+        desktopResizer.addEventListener("dblclick", resetToDefault);
+      }
+      document.addEventListener("mousemove", onMouseMoveDesktop);
+      document.addEventListener("mouseup", stopResizeDesktop);
+      window.addEventListener("mouseleave", stopResizeDesktop);
+
+      const mobileResizer = document.getElementById("resizerMobile");
+      const splitLayout = document.getElementById("splitLayout");
+      const previewPanel = document.getElementById("previewPanel");
+      let isResizingMobile = false, startY = 0, startHeight = 0;
+      function initMobileResizer() {
+        if (!mobileResizer || !previewPanel || !splitLayout) return;
+        function startResizeMobile(e) {
+          e.preventDefault();
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          startY = clientY;
+          startHeight = previewPanel.getBoundingClientRect().height;
+          isResizingMobile = true;
+          mobileResizer.classList.add("active-drag");
+          document.body.style.cursor = "row-resize";
+          document.body.classList.add("resizing-active");
+        }
+        function onMoveMobile(e) {
+          if (!isResizingMobile) return;
+          e.preventDefault();
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          const deltaY = clientY - startY;
+          let newHeight = startHeight + deltaY;
+          const splitHeight = splitLayout.getBoundingClientRect().height;
+          const minHeight = 150, maxHeight = splitHeight - 150;
+          newHeight = Math.min(Math.max(newHeight, minHeight), maxHeight);
+          previewPanel.style.height = newHeight + "px";
+          previewPanel.style.flex = "none";
+        }
+        function stopResizeMobile() {
+          if (!isResizingMobile) return;
+          isResizingMobile = false;
+          mobileResizer.classList.remove("active-drag");
+          document.body.style.cursor = "";
+          document.body.classList.remove("resizing-active");
+        }
+        mobileResizer.addEventListener("mousedown", startResizeMobile);
+        mobileResizer.addEventListener("touchstart", startResizeMobile, { passive: false });
+        document.addEventListener("mousemove", onMoveMobile);
+        document.addEventListener("touchmove", onMoveMobile, { passive: false });
+        document.addEventListener("mouseup", stopResizeMobile);
+        document.addEventListener("touchend", stopResizeMobile);
+        mobileResizer.addEventListener("dblclick", () => {
+          const splitHeight = splitLayout.getBoundingClientRect().height;
+          previewPanel.style.height = (splitHeight * 0.45) + "px";
+          previewPanel.style.flex = "none";
+        });
+      }
+      window.addEventListener("load", initMobileResizer);
+      function captureDefaultRatio() {
+        if (leftPanel && splitContainer) {
+          const leftW = leftPanel.getBoundingClientRect().width;
+          const contW = splitContainer.getBoundingClientRect().width;
+          if (contW > 0) storedRatio = leftW / contW;
+        }
+      }
+      window.addEventListener("load", captureDefaultRatio);
+      window.addEventListener("resize", () => {
+        if (!isResizingDesktop && leftPanel && window.innerWidth > 768) {
+          leftPanel.style.flex = `0 0 ${clampWidth(leftPanel.getBoundingClientRect().width)}px`;
+        }
+      });
+      (async () => await loadTemplatesForEvent(currentEvent))();
+      window.addEventListener('load', () => {
+        scrollActiveEventIntoView();
+        const inlineSelectEl = document.getElementById('inlineEventSelect');
+        if (inlineSelectEl) inlineSelectEl.value = currentEvent;
+      });
+    })();
+  </script>
+</body>
+
+</html>

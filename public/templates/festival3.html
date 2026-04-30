@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🎄 Merry Christmas · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Poppins:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --red: #c41e3a;
+            --green: #2e5a2e;
+            --gold: #ffd700;
+            --cream: #fdf8ed;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, #1a3a1a, #0f2a0f);
+            color: var(--cream);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Snowflake */
+        .snow {
+            position: fixed;
+            pointer-events: none;
+            color: white;
+            font-size: 1rem;
+            animation: fall linear forwards;
+            z-index: 1;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        .tree-icon {
+            font-size: 70px;
+            filter: drop-shadow(0 0 15px var(--gold));
+            animation: treeFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes treeFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            font-family: 'Mountains of Christmas', cursive;
+            font-size: clamp(2.5rem, 9vw, 4.5rem);
+            color: var(--gold);
+            margin: 16px 0 8px;
+        }
+
+        .festival-name {
+            font-size: 1.2rem;
+            letter-spacing: 0.2em;
+            margin-bottom: 32px;
+        }
+
+        .glass-card {
+            background: rgba(30, 50, 30, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 32px;
+            margin: 24px auto;
+            max-width: 700px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 32px 0;
+        }
+
+        .memory-card {
+            width: 160px;
+            background: rgba(255, 255, 240, 0.15);
+            border-radius: 20px;
+            padding: 12px;
+            transition: transform 0.3s;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-img {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 16px;
+            background: rgba(255, 215, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            overflow: hidden;
+        }
+
+        .memory-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .memory-caption {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            color: var(--gold);
+        }
+
+        .gift-box {
+            margin: 20px auto;
+            font-size: 80px;
+            cursor: pointer;
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+
+        .gift-box:hover {
+            transform: scale(1.1);
+        }
+
+        .gift-reveal {
+            display: none;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        .edit-tools {
+            display: none;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        body.edit-mode .edit-tools {
+            display: flex;
+        }
+
+        body.edit-mode .memory-card {
+            cursor: pointer;
+        }
+
+        .edit-btn {
+            background: rgba(255, 215, 0, 0.3);
+            border: 1px solid var(--gold);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            .memory-card {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <div class="tree-icon">🎄</div>
+        <h1>Merry <span id="festivalPlaceholder">Christmas</span></h1>
+        <div class="festival-name" id="festivalNameDisplay"></div>
+
+        <div class="glass-card">
+            <p class="story-text" id="storyText"></p>
+        </div>
+
+        <div class="gallery" id="galleryContainer"></div>
+
+        <div class="gift-box" id="giftBox">🎁</div>
+        <div class="gift-reveal" id="giftReveal">
+            <p id="giftMessage"></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const EDIT_MODE = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+            if (EDIT_MODE) document.body.classList.add('edit-mode');
+
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            const festival = userData.festival || 'Christmas';
+            const name = userData.name || 'Dear One';
+            const story = userData.story || `May the magic of ${festival} fill your heart with peace, joy, and the warmth of loved ones. You are the greatest gift of all.`;
+            const wishes = userData.wishes || `Wishing you a ${festival} sparkling with happiness and wrapped in love. 🎄✨`;
+            const memories = userData.memories || [];
+
+            document.getElementById('festivalPlaceholder').innerText = festival;
+            document.getElementById('festivalNameDisplay').innerHTML = `To ${name} 🎅`;
+            document.getElementById('storyText').innerHTML = story;
+            document.getElementById('giftMessage').innerHTML = wishes;
+
+            const gallery = document.getElementById('galleryContainer');
+            function renderGallery() {
+                gallery.innerHTML = '';
+                memories.forEach((mem, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'memory-img';
+                    if (mem.img && mem.img.startsWith('data:image')) {
+                        const img = document.createElement('img');
+                        img.src = mem.img;
+                        imgDiv.appendChild(img);
+                    } else {
+                        imgDiv.innerHTML = '🎄';
+                    }
+                    const cap = document.createElement('div');
+                    cap.className = 'memory-caption';
+                    cap.innerText = mem.text || '✨';
+                    card.appendChild(imgDiv);
+                    card.appendChild(cap);
+                    if (EDIT_MODE) {
+                        const tools = document.createElement('div');
+                        tools.className = 'edit-tools';
+                        const uploadBtn = document.createElement('button');
+                        uploadBtn.className = 'edit-btn';
+                        uploadBtn.innerHTML = '📷';
+                        uploadBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = (ev) => {
+                                const file = ev.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (re) => {
+                                        mem.img = re.target.result;
+                                        localStorage.setItem('userData', JSON.stringify(userData));
+                                        renderGallery();
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            };
+                            input.click();
+                        };
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'edit-btn';
+                        removeBtn.innerHTML = '🗑️';
+                        removeBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            memories.splice(idx, 1);
+                            localStorage.setItem('userData', JSON.stringify(userData));
+                            renderGallery();
+                        };
+                        tools.appendChild(uploadBtn);
+                        tools.appendChild(removeBtn);
+                        card.appendChild(tools);
+                    }
+                    gallery.appendChild(card);
+                });
+                if (EDIT_MODE) {
+                    const addCard = document.createElement('div');
+                    addCard.className = 'memory-card';
+                    addCard.innerHTML = '<div class="memory-img" style="font-size:2rem;">+</div><div class="memory-caption">Add Memory</div>';
+                    addCard.onclick = () => {
+                        memories.push({ img: null, text: 'Festive Memory' });
+                        localStorage.setItem('userData', JSON.stringify(userData));
+                        renderGallery();
+                    };
+                    gallery.appendChild(addCard);
+                }
+            }
+            renderGallery();
+
+            // Gift box reveal
+            const giftBox = document.getElementById('giftBox');
+            const giftReveal = document.getElementById('giftReveal');
+            let revealed = false;
+            giftBox.addEventListener('click', () => {
+                if (!revealed) {
+                    revealed = true;
+                    giftReveal.style.display = 'block';
+                    confetti({ particleCount: 200, spread: 100, colors: ['#c41e3a', '#ffd700', '#2e5a2e'], origin: { y: 0.6 } });
+                    giftBox.style.animation = 'none';
+                }
+            });
+
+            // Snowfall
+            function createSnow() {
+                const snow = document.createElement('div');
+                snow.className = 'snow';
+                snow.innerHTML = ['❄️', '⛄', '🎄', '✨'][Math.floor(Math.random() * 4)];
+                snow.style.left = Math.random() * 100 + '%';
+                snow.style.fontSize = (Math.random() * 20 + 12) + 'px';
+                snow.style.animationDuration = (Math.random() * 5 + 4) + 's';
+                document.body.appendChild(snow);
+                setTimeout(() => snow.remove(), 9000);
+            }
+            setInterval(createSnow, 400);
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌊 Ocean Birthday · Greeter.com (हिंदी/English)</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --deep-ocean: #0a2f6c;
+            --wave-light: #4aa3df;
+            --sand: #f9e2b7;
+            --coral: #ff8c69;
+            --seafoam: #a8e6cf;
+            --text-dark: #1e3b5c;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(145deg, #c8e8ff 0%, #7ab8e0 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--text-dark);
+        }
+
+        #bubbleCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .page {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 24px 80px;
+            text-align: center;
+        }
+
+        .badge {
+            background: rgba(255, 255, 240, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 50px;
+            padding: 6px 20px;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: var(--deep-ocean);
+            font-weight: 600;
+            margin-bottom: 20px;
+            animation: fadeUp 0.8s ease;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 10vw, 5rem);
+            color: #fff9e8;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeUp 0.9s ease;
+        }
+
+        .name-tag {
+            background: rgba(255, 255, 245, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 30px;
+            padding: 6px 24px;
+            margin: 12px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            animation: fadeUp 1s ease;
+        }
+
+        .message-card {
+            width: min(360px, 90vw);
+            background: rgba(255, 250, 235, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 32px 28px;
+            margin: 20px auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 240, 0.8);
+            animation: fadeUp 1.1s ease;
+            text-align: left;
+        }
+
+        .message-card h3 {
+            color: var(--coral);
+            font-size: 1.8rem;
+            font-family: 'Playfair Display', serif;
+            border-left: 4px solid var(--coral);
+            padding-left: 12px;
+            margin-bottom: 16px;
+        }
+
+        .message-card p {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .signature {
+            text-align: right;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: var(--deep-ocean);
+        }
+
+        .wish-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .wish-item {
+            background: rgba(255, 255, 245, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 60px;
+            padding: 10px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            cursor: default;
+        }
+
+        .wish-item:hover {
+            transform: translateY(-4px);
+            background: white;
+        }
+
+        .story-card {
+            max-width: 600px;
+            background: rgba(255, 250, 235, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 32px;
+            margin: 20px auto;
+            text-align: left;
+        }
+
+        .story-card h3 {
+            color: var(--coral);
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 12px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1;
+            background: rgba(255, 250, 235, 0.7);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .celebrate-btn {
+            background: linear-gradient(135deg, var(--coral), #ffaa80);
+            border: none;
+            border-radius: 60px;
+            padding: 16px 48px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .celebrate-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--deep-ocean);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            transition: 0.4s;
+            opacity: 0;
+            z-index: 999;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        footer {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bubbleCanvas"></canvas>
+    <div class="page">
+        <div class="badge" id="badge">🌊 WAVES OF JOY 🌊</div>
+        <h1 id="heroTitle">Happy Birthday!</h1>
+        <div class="name-tag" id="nameTag">✨ a tide of happiness for you ✨</div>
+        <div class="message-card">
+            <h3 id="msgTitle">🌊 Message in a Bottle</h3>
+            <p id="msgBody">Like the endless ocean, your love and kindness know no bounds. On this special day, may the
+                waves bring you everything your heart desires. You are a treasure as deep and precious as the sea.</p>
+            <div class="signature" id="signature">With warm waves of love ✨</div>
+        </div>
+        <div class="wish-row">
+            <div class="wish-item"><span>🐚</span> <span id="wish1">Peaceful heart</span></div>
+            <div class="wish-item"><span>🌊</span> <span id="wish2">Endless smiles</span></div>
+            <div class="wish-item"><span>⭐</span> <span id="wish3">Shining dreams</span></div>
+            <div class="wish-item"><span>🎂</span> <span id="wish4">Sweet moments</span></div>
+        </div>
+        <div class="story-card">
+            <h3 id="storyTitle">📖 Our Ocean Tale</h3>
+            <p id="storyText">We met like two waves in the vast sea — unexpected and beautiful. Every memory with you is
+                a seashell I keep close. Thank you for being my anchor and my sail. Happy birthday, my sunshine.</p>
+        </div>
+        <div class="gallery" id="gallery">
+            <div class="gallery-item">🐠</div>
+            <div class="gallery-item">🐚</div>
+            <div class="gallery-item">🌊</div>
+            <div class="gallery-item">⭐</div>
+            <div class="gallery-item">🎂</div>
+            <div class="gallery-item">💙</div>
+        </div>
+        <button class="celebrate-btn" id="celebrateBtn">🎉 Celebrate! 🎉</button>
+        <footer>Made with ♡ · Greeter.com</footer>
+    </div>
+    <div class="toast" id="toast">🌊 Happy Birthday! 🎂</div>
+
+    <script>
+        (function () {
+            function getLang() {
+                let urlLang = new URLSearchParams(location.search).get('lang');
+                if (urlLang === 'hi' || urlLang === 'en') return urlLang;
+                return localStorage.getItem('greeter_lang') || 'en';
+            }
+            let lang = getLang();
+            const t = {
+                en: {
+                    badge: "🌊 WAVES OF JOY 🌊", heroTitle: "Happy Birthday!", nameTag: "✨ a tide of happiness for you ✨",
+                    msgTitle: "🌊 Message in a Bottle",
+                    msgBody: "Like the endless ocean, your love and kindness know no bounds. On this special day, may the waves bring you everything your heart desires. You are a treasure as deep and precious as the sea.",
+                    signature: "With warm waves of love ✨",
+                    wish1: "Peaceful heart", wish2: "Endless smiles", wish3: "Shining dreams", wish4: "Sweet moments",
+                    storyTitle: "📖 Our Ocean Tale",
+                    storyText: "We met like two waves in the vast sea — unexpected and beautiful. Every memory with you is a seashell I keep close. Thank you for being my anchor and my sail. Happy birthday, my sunshine.",
+                    toastMsg: "🌊 Happy Birthday! 🎂"
+                },
+                hi: {
+                    badge: "🌊 खुशियों की लहरें 🌊", heroTitle: "जन्मदिन मुबारक!", nameTag: "✨ आपके लिए खुशियों का ज्वार ✨",
+                    msgTitle: "🌊 बोतल में संदेश",
+                    msgBody: "अनंत समुद्र की तरह, तुम्हारा प्यार और दया असीम है। इस खास दिन पर, लहरें तुम्हारे दिल की हर ख्वाहिश लेकर आएँ। तुम समुद्र की तरह गहरा और अनमोल खजाना हो।",
+                    signature: "प्यार की गर्म लहरों के साथ ✨",
+                    wish1: "शांत दिल", wish2: "अंतहीन मुस्कान", wish3: "चमकते सपने", wish4: "मीठे पल",
+                    storyTitle: "📖 हमारी समुद्री कहानी",
+                    storyText: "हम दो लहरों की तरह मिले — अप्रत्याशित और सुंदर। तुम्हारे साथ हर याद एक सीप है जो मैं संभालकर रखता/रखती हूँ। मेरे सूरज, जन्मदिन मुबारक।",
+                    toastMsg: "🌊 जन्मदिन मुबारक! 🎂"
+                }
+            };
+            function applyLang() {
+                let tr = t[lang];
+                document.getElementById('badge').innerText = tr.badge;
+                document.getElementById('heroTitle').innerText = tr.heroTitle;
+                document.getElementById('nameTag').innerText = tr.nameTag;
+                document.getElementById('msgTitle').innerText = tr.msgTitle;
+                document.getElementById('msgBody').innerText = tr.msgBody;
+                document.getElementById('signature').innerText = tr.signature;
+                document.getElementById('wish1').innerText = tr.wish1;
+                document.getElementById('wish2').innerText = tr.wish2;
+                document.getElementById('wish3').innerText = tr.wish3;
+                document.getElementById('wish4').innerText = tr.wish4;
+                document.getElementById('storyTitle').innerText = tr.storyTitle;
+                document.getElementById('storyText').innerText = tr.storyText;
+                document.getElementById('toast').innerText = tr.toastMsg;
+            }
+            // Load userData
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            function refreshUI() {
+                applyLang();
+                if (userData.name) document.getElementById('heroTitle').innerText = (lang === 'hi' ? 'जन्मदिन मुबारक, ' : 'Happy Birthday, ') + userData.name;
+                if (userData.story) document.getElementById('storyText').innerText = userData.story;
+                if (userData.wishes) document.getElementById('msgBody').innerText = userData.wishes;
+                if (userData.memories && userData.memories.length) {
+                    let gal = document.getElementById('gallery');
+                    gal.innerHTML = '';
+                    userData.memories.forEach(m => {
+                        let div = document.createElement('div'); div.className = 'gallery-item';
+                        if (m.img) div.innerHTML = `<img src="${m.img}" alt="memory">`;
+                        else div.innerText = m.text || '🐚';
+                        gal.appendChild(div);
+                    });
+                }
+            }
+            refreshUI();
+            // storage listener
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'greeter_lang') { lang = e.newValue || 'en'; refreshUI(); }
+                if (e.key === 'userData') { try { userData = JSON.parse(e.newValue || '{}'); } catch (e) { } refreshUI(); }
+            });
+            window.addEventListener('popstate', () => { let newLang = getLang(); if (newLang !== lang) { lang = newLang; refreshUI(); } });
+            // confetti
+            document.getElementById('celebrateBtn').addEventListener('click', () => {
+                let toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+                canvasConfetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#4aa3df', '#ff8c69', '#a8e6cf'] });
+                for (let i = 0; i < 3; i++) setTimeout(() => canvasConfetti({ particleCount: 80, spread: 70, origin: { x: Math.random(), y: 0.4 } }), i * 200);
+            });
+            // bubbles canvas
+            (function () {
+                const canvas = document.getElementById('bubbleCanvas');
+                const ctx = canvas.getContext('2d');
+                let bubbles = [];
+                function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+                resize(); window.addEventListener('resize', resize);
+                for (let i = 0; i < 25; i++) bubbles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: 3 + Math.random() * 12, vx: (Math.random() - 0.5) * 0.3, vy: -0.5 - Math.random() * 1.2, opacity: 0.3 + Math.random() * 0.5 });
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    bubbles.forEach(b => {
+                        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255,255,245,${b.opacity * 0.6})`;
+                        ctx.fill();
+                        ctx.strokeStyle = `rgba(255,255,255,0.8)`;
+                        ctx.lineWidth = 1; ctx.stroke();
+                        b.x += b.vx; b.y += b.vy;
+                        if (b.y + b.r < 0) b.y = canvas.height + b.r;
+                        if (b.x > canvas.width) b.x = 0; if (b.x < 0) b.x = canvas.width;
+                    });
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            })();
+        })();
+    </script>
+</body>
+
+</html>

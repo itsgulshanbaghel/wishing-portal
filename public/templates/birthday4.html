@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>🎉 Celebration Spectacular · Greeter.com</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, #1a0b2e, #0f0520);
+            color: #fff0e0;
+            overflow-x: hidden;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            scroll-snap-align: start;
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .particle-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 215, 0, 0.6);
+            border-radius: 50%;
+            animation: floatParticle linear infinite;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.8;
+            }
+
+            90% {
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(-20vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .glass-card {
+            background: rgba(20, 15, 40, 0.65);
+            backdrop-filter: blur(16px);
+            border-radius: 48px;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+            text-align: center;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: #ffaa44;
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 4rem;
+            background: linear-gradient(135deg, #FFD966, #FFA500, #FF69B4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255, 200, 0, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #ffd966;
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        button {
+            background: linear-gradient(145deg, #ff9a3c, #ff5e00);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            margin: 0.5rem;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .memories-wrapper {
+            display: flex;
+            overflow-x: auto;
+            gap: 24px;
+            padding: 20px 10px;
+            scroll-snap-type: x mandatory;
+            margin-top: 1rem;
+        }
+
+        .memory-card {
+            flex: 0 0 auto;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 32px;
+            border: 2px solid #ffb347;
+            padding: 16px;
+            scroll-snap-align: start;
+            transition: transform 0.2s;
+            text-align: left;
+            position: relative;
+            width: 280px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-8px);
+            border-color: #ffdd88;
+        }
+
+        .memory-remove {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(220, 20, 60, 0.9);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 10;
+            border: none;
+        }
+
+        .memory-remove:hover {
+            background: #ff3333;
+            transform: scale(1.1);
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 165, 0, 0.8);
+            border-radius: 12px;
+            cursor: nw-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+            transition: 0.1s;
+        }
+
+        .resize-handle:hover {
+            background: #ff7a2f;
+            transform: scale(1.05);
+        }
+
+        .image-slot {
+            width: 100%;
+            background: #2a1a3a;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #ffb347;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1 1 auto;
+            min-height: 150px;
+        }
+
+        .image-slot img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #2a1a3a;
+            color: #ffb347;
+            font-size: 1rem;
+            text-align: center;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .image-placeholder i {
+            font-size: 2.5rem;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .img-btn {
+            background: #ff7a2f;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .img-btn i {
+            font-size: 0.8rem;
+        }
+
+        .gift-box {
+            font-size: 5rem;
+            cursor: pointer;
+            transition: 0.2s;
+            animation: bounce 2s infinite;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .balloon {
+            position: fixed;
+            bottom: -100px;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: rise 8s linear forwards;
+        }
+
+        @keyframes rise {
+            to {
+                transform: translateY(-120vh);
+            }
+        }
+
+        .curtain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            display: flex;
+            pointer-events: none;
+        }
+
+        .curtain-panel {
+            flex: 1;
+            background: repeating-linear-gradient(90deg, #7a2e2e, #c44c4c);
+            transition: transform 1.5s ease-in-out;
+            pointer-events: auto;
+        }
+
+        .curtain-left {
+            transform-origin: left;
+        }
+
+        .curtain-right {
+            transform-origin: right;
+        }
+
+        .curtain.open .curtain-left {
+            transform: translateX(-100%);
+        }
+
+        .curtain.open .curtain-right {
+            transform: translateX(100%);
+        }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            section {
+                padding: 1rem;
+            }
+
+            .glass-card {
+                padding: 1.5rem;
+                max-width: 95%;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+
+            button {
+                padding: 8px 20px;
+                font-size: 0.9rem;
+            }
+
+            .gift-box {
+                font-size: 3.5rem;
+            }
+
+            .memory-card {
+                width: 240px;
+                height: 360px;
+            }
+
+            .resize-handle {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+            }
+
+            .image-placeholder {
+                font-size: 0.8rem;
+                min-height: 120px;
+            }
+
+            .image-placeholder i {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="particle-bg" id="particleBg"></div>
+    <div class="curtain" id="curtain">
+        <div class="curtain-panel curtain-left"></div>
+        <div class="curtain-panel curtain-right"></div>
+    </div>
+
+    <main>
+        <section id="hero" class="fade-up">
+            <div class="glass-card">
+                <h1 id="heroTitle">Happy Birthday!</h1>
+                <p id="heroSub" style="font-size: 1.3rem; margin: 1rem 0;">✨ A spectacular celebration just for you ✨
+                </p>
+                <button id="viewMemoriesBtn"><i class="fas fa-images"></i> <span id="viewMemoriesText">View
+                        Memories</span></button>
+                <button id="confettiBtn"><i class="fas fa-party-horn"></i> <span id="partyBtnText">Party
+                        Time!</span></button>
+            </div>
+        </section>
+
+        <section id="storySection" class="fade-up">
+            <div class="glass-card">
+                <h2 id="storyHeading">💖 A Special Message</h2>
+                <p id="storyText"></p>
+            </div>
+        </section>
+
+        <section id="gallerySection" class="fade-up">
+            <div class="glass-card">
+                <h2 id="galleryHeading">📸 Cherished Memories</h2>
+                <div id="memoriesWrapper" class="memories-wrapper"></div>
+                <div style="margin-top: 1.5rem;" id="addMemoryContainer">
+                    <button id="addMemoryBtn" style="background: #ffaa44; color: #1a0b2e;"><i
+                            class="fas fa-plus-circle"></i> <span id="addMemoryText">Add New Memory</span></button>
+                </div>
+            </div>
+        </section>
+
+        <section id="wishesSection" class="fade-up">
+            <div class="glass-card">
+                <h2 id="wishesHeading">🎂 Birthday Wishes</h2>
+                <p id="wishesText"></p>
+            </div>
+        </section>
+
+        <section id="surpriseSection" class="fade-up">
+            <div class="glass-card">
+                <h2 id="surpriseHeading">🎁 Open Your Surprise</h2>
+                <div class="gift-box" id="giftBox">🎁</div>
+                <div id="giftReveal" style="display: none; margin-top: 1rem;">
+                    <h3 id="giftMessage" style="color: #ffdd88;">✨ You are the greatest gift of all! ✨</h3>
+                    <button id="finalConfettiBtn"><i class="fas fa-star"></i> <span id="celebrateText">Celebrate
+                            Now</span></button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); border-radius: 60px; padding: 10px 20px; cursor: pointer; z-index: 1000;"
+        id="musicToggle">
+        <i class="fas fa-music"></i> <span id="musicText">Play Music</span>
+    </div>
+
+    <audio id="bgMusic" loop src="https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            // ==================== LANGUAGE ====================
+            let currentLang = 'en';
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlLang = urlParams.get('lang');
+            const savedLang = localStorage.getItem('greeter_lang');
+            if (urlLang === 'hi' || urlLang === 'en') currentLang = urlLang;
+            else if (savedLang === 'hi' || savedLang === 'en') currentLang = savedLang;
+            else currentLang = 'en';
+
+            const translations = {
+                en: {
+                    heroTitle: (n) => `Happy Birthday, ${n}!`,
+                    heroSub: "✨ A spectacular celebration just for you ✨",
+                    viewMemories: "View Memories",
+                    partyBtn: "Party Time!",
+                    storyHeading: "💖 A Special Message",
+                    galleryHeading: "📸 Cherished Memories",
+                    wishesHeading: "🎂 Birthday Wishes",
+                    surpriseHeading: "🎁 Open Your Surprise",
+                    giftMessage: "✨ You are the greatest gift of all! ✨",
+                    celebrateText: "Celebrate Now",
+                    addMemory: "Add New Memory",
+                    musicPlay: "Play Music",
+                    musicPause: "Pause",
+                    storyDefault: (n) => `Every year on this day, the world became brighter because you were born. Your smile lights up every room, and your kindness touches every heart. Today we celebrate YOU! 🎉`,
+                    wishesDefault: (n) => `May your day be filled with laughter, love, and all the cake you can eat! May this year bring you endless joy and unforgettable adventures. Happy Birthday! 🎂✨`,
+                    memoryDefault: [
+                        { year: "✨ 2022", caption: "First magical moment" },
+                        { year: "🎈 2023", caption: "Adventures together" },
+                        { year: "⭐️ 2024", caption: "Starlight memories" }
+                    ],
+                    uploadBtn: "Upload",
+                    replaceBtn: "Replace",
+                    removeImg: "Remove Image",
+                    newMemoryYear: "🆕 New",
+                    newMemoryCaption: "Your memory here",
+                    imagePlaceholder: '<i class="fas fa-cloud-upload-alt"></i><span>📸 Upload any image here</span>'
+                },
+                hi: {
+                    heroTitle: (n) => `जन्मदिन मुबारक हो, ${n}!`,
+                    heroSub: "✨ आपके लिए एक शानदार जश्न ✨",
+                    viewMemories: "यादें देखें",
+                    partyBtn: "पार्टी का मज़ा लें!",
+                    storyHeading: "💖 एक खास पैगाम",
+                    galleryHeading: "📸 प्यारी यादें",
+                    wishesHeading: "🎂 जन्मदिन की शुभकामनाएं",
+                    surpriseHeading: "🎁 अपना तोहफा खोलें",
+                    giftMessage: "✨ आप सबसे अनमोल तोहफा हो! ✨",
+                    celebrateText: "जश्न मनाएं",
+                    addMemory: "नई याद जोड़ें",
+                    musicPlay: "संगीत चलाएं",
+                    musicPause: "रोकें",
+                    storyDefault: (n) => `हर साल इस दिन, दुनिया और रोशन हो जाती है क्योंकि आप पैदा हुए। आपकी मुस्कान हर कमरे को रोशन कर देती है, और आपकी मिठास हर दिल को छू जाती है। आज हम आपका जश्न मना रहे हैं! 🎉`,
+                    wishesDefault: (n) => `आपका दिन हँसी, प्यार और ढेर सारा केक से भरा हो! यह साल आपके लिए ढेरों खुशियाँ और नए सफर लेकर आए। जन्मदिन मुबारक हो! 🎂✨`,
+                    memoryDefault: [
+                        { year: "✨ 2022", caption: "पहला जादुई पल" },
+                        { year: "🎈 2023", caption: "साथ में सफर" },
+                        { year: "⭐️ 2024", caption: "तारों भरी यादें" }
+                    ],
+                    uploadBtn: "अपलोड",
+                    replaceBtn: "बदलें",
+                    removeImg: "तस्वीर हटाएं",
+                    newMemoryYear: "🆕 नई याद",
+                    newMemoryCaption: "अपनी याद यहाँ लिखें",
+                    imagePlaceholder: '<i class="fas fa-cloud-upload-alt"></i><span>📸 यहाँ कोई भी तस्वीर अपलोड करें</span>'
+                }
+            };
+
+            const t = translations[currentLang];
+
+            // ==================== USER DATA ====================
+            let userData = {};
+            try {
+                const stored = localStorage.getItem("userData");
+                if (stored) userData = JSON.parse(stored);
+            } catch (e) { }
+
+            const userName = userData.name || (currentLang === 'hi' ? "प्यारे दोस्त" : "Dear Friend");
+            const userStory = userData.story || t.storyDefault(userName);
+            const userWishes = userData.wishes || t.wishesDefault(userName);
+
+            // ==================== MEMORIES SYSTEM ====================
+            let memories = userData.memories || [];
+            let memoryImages = [];
+            let cardSizes = []; // { width, height }
+
+            if (!memories.length) {
+                memories = t.memoryDefault.map(m => ({ ...m, img: null }));
+            }
+            memories.forEach((mem, idx) => {
+                memoryImages[idx] = mem.img || null;
+                cardSizes[idx] = { width: mem.width || 280, height: mem.height || 400 };
+            });
+
+            function saveMemories() {
+                memories.forEach((mem, i) => {
+                    mem.img = memoryImages[i];
+                    if (cardSizes[i]) {
+                        mem.width = cardSizes[i].width;
+                        mem.height = cardSizes[i].height;
+                    }
+                });
+                userData.memories = memories;
+                localStorage.setItem("userData", JSON.stringify(userData));
+            }
+
+            function removeMemoryCard(index) {
+                memories.splice(index, 1);
+                memoryImages.splice(index, 1);
+                cardSizes.splice(index, 1);
+                saveMemories();
+                renderMemories();
+            }
+
+            // Determine edit mode
+            const isEditMode = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+
+            // ========== RESIZE LOGIC – ONLY WHILE DRAGGING ==========
+            let resizeData = null; // { card, idx, startW, startH, startX, startY, onMove, onUp }
+
+            function startResize(e, card, idx) {
+                e.preventDefault();
+                e.stopPropagation();
+                // If already resizing, don't start another
+                if (resizeData) return;
+
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startW = card.offsetWidth;
+                const startH = card.offsetHeight;
+
+                function onMove(moveEvent) {
+                    if (!resizeData) return;
+                    moveEvent.preventDefault();
+                    const dx = moveEvent.clientX - resizeData.startX;
+                    const dy = moveEvent.clientY - resizeData.startY;
+                    let newW = Math.max(200, resizeData.startW + dx);
+                    let newH = Math.max(200, resizeData.startH + dy);
+                    resizeData.card.style.width = newW + 'px';
+                    resizeData.card.style.height = newH + 'px';
+                }
+
+                function onUp() {
+                    if (!resizeData) return;
+                    // Save final size
+                    const newW = parseInt(resizeData.card.style.width);
+                    const newH = parseInt(resizeData.card.style.height);
+                    if (!isNaN(newW) && !isNaN(newH)) {
+                        cardSizes[resizeData.idx] = { width: newW, height: newH };
+                        saveMemories();
+                    }
+                    // Remove global listeners
+                    window.removeEventListener('mousemove', resizeData.onMove);
+                    window.removeEventListener('mouseup', resizeData.onUp);
+                    window.removeEventListener('touchmove', resizeData.onMove);
+                    window.removeEventListener('touchend', resizeData.onUp);
+                    document.body.style.cursor = '';
+                    resizeData = null;
+                }
+
+                resizeData = { card, idx, startW, startH, startX, startY, onMove, onUp };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+                window.addEventListener('touchmove', onMove);
+                window.addEventListener('touchend', onUp);
+                document.body.style.cursor = 'nw-resize';
+            }
+
+            function renderMemories() {
+                const wrapper = document.getElementById("memoriesWrapper");
+                if (!wrapper) return;
+                wrapper.innerHTML = "";
+
+                memories.forEach((mem, idx) => {
+                    const card = document.createElement("div");
+                    card.className = "memory-card";
+                    const size = cardSizes[idx] || { width: 280, height: 400 };
+                    card.style.width = size.width + 'px';
+                    card.style.height = size.height + 'px';
+
+                    if (isEditMode) {
+                        const removeBtn = document.createElement("button");
+                        removeBtn.className = "memory-remove";
+                        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                        removeBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            removeMemoryCard(idx);
+                        };
+                        card.appendChild(removeBtn);
+                    }
+
+                    const imageSlot = document.createElement("div");
+                    imageSlot.className = "image-slot";
+                    const img = document.createElement("img");
+                    const placeholder = document.createElement("div");
+                    placeholder.className = "image-placeholder";
+                    placeholder.innerHTML = t.imagePlaceholder;
+
+                    if (memoryImages[idx]) {
+                        img.src = memoryImages[idx];
+                        img.style.display = "block";
+                        placeholder.style.display = "none";
+                    } else {
+                        img.style.display = "none";
+                        placeholder.style.display = "flex";
+                    }
+                    imageSlot.appendChild(placeholder);
+                    imageSlot.appendChild(img);
+                    card.appendChild(imageSlot);
+
+                    const yearDiv = document.createElement("div");
+                    yearDiv.innerText = mem.year;
+                    yearDiv.style.fontWeight = "bold";
+                    yearDiv.style.marginTop = "12px";
+                    const captionDiv = document.createElement("div");
+                    captionDiv.innerText = mem.caption;
+                    captionDiv.style.fontSize = "0.9rem";
+                    card.appendChild(yearDiv);
+                    card.appendChild(captionDiv);
+
+                    if (isEditMode) {
+                        const actions = document.createElement("div");
+                        actions.className = "image-actions";
+
+                        const uploadBtn = document.createElement("button");
+                        uploadBtn.className = "img-btn";
+                        uploadBtn.innerHTML = `<i class="fas fa-upload"></i> ${t.uploadBtn}`;
+                        const replaceBtn = document.createElement("button");
+                        replaceBtn.className = "img-btn";
+                        replaceBtn.innerHTML = `<i class="fas fa-sync-alt"></i> ${t.replaceBtn}`;
+                        const removeImageBtn = document.createElement("button");
+                        removeImageBtn.className = "img-btn";
+                        removeImageBtn.innerHTML = `<i class="fas fa-trash-alt"></i> ${t.removeImg}`;
+
+                        const fileInput = document.createElement("input");
+                        fileInput.type = "file";
+                        fileInput.accept = "image/*";
+                        fileInput.style.display = "none";
+
+                        const updateImage = (dataUrl) => {
+                            memoryImages[idx] = dataUrl;
+                            img.src = dataUrl;
+                            img.style.display = "block";
+                            placeholder.style.display = "none";
+                            saveMemories();
+                        };
+
+                        fileInput.onchange = (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => updateImage(ev.target.result);
+                                reader.readAsDataURL(file);
+                            }
+                        };
+
+                        uploadBtn.onclick = () => fileInput.click();
+                        replaceBtn.onclick = () => fileInput.click();
+                        removeImageBtn.onclick = () => {
+                            memoryImages[idx] = null;
+                            img.style.display = "none";
+                            placeholder.style.display = "flex";
+                            saveMemories();
+                        };
+
+                        actions.appendChild(uploadBtn);
+                        actions.appendChild(replaceBtn);
+                        actions.appendChild(removeImageBtn);
+                        card.appendChild(actions);
+                        card.appendChild(fileInput);
+
+                        const resizeHandle = document.createElement("div");
+                        resizeHandle.className = "resize-handle";
+                        resizeHandle.innerHTML = '<i class="fas fa-arrows-alt"></i>';
+                        resizeHandle.addEventListener("mousedown", (e) => startResize(e, card, idx));
+                        resizeHandle.addEventListener("touchstart", (e) => startResize(e, card, idx));
+                        card.appendChild(resizeHandle);
+                    }
+                    wrapper.appendChild(card);
+                });
+            }
+
+            function addMemory() {
+                if (!isEditMode) return;
+                memories.push({ year: t.newMemoryYear, caption: t.newMemoryCaption, img: null });
+                memoryImages.push(null);
+                cardSizes.push({ width: 280, height: 400 });
+                saveMemories();
+                renderMemories();
+            }
+
+            // ==================== CONFETTI ====================
+            function burstConfetti(intensity = "high") {
+                if (typeof canvasConfetti !== 'function') return;
+                const count = intensity === "high" ? 350 : 150;
+                canvasConfetti({ particleCount: count, spread: 100, origin: { y: 0.6 }, colors: ['#ffd966', '#ffaa44', '#ff69b4'] });
+                canvasConfetti({ particleCount: count / 2, spread: 140, origin: { y: 0.5, x: 0.2 }, startVelocity: 15 });
+                canvasConfetti({ particleCount: count / 2, spread: 140, origin: { y: 0.5, x: 0.8 }, startVelocity: 15 });
+                setTimeout(() => canvasConfetti({ particleCount: 100, spread: 70, origin: { y: 0.7 }, decay: 0.9 }), 200);
+            }
+
+            // ==================== ANIMATIONS ====================
+            let balloonInterval = null;
+            function startBalloons() {
+                if (balloonInterval) clearInterval(balloonInterval);
+                balloonInterval = setInterval(() => {
+                    const balloon = document.createElement("div");
+                    balloon.className = "balloon";
+                    const emojis = ["🎈", "🎉", "🎊", "💖", "✨", "🎂"];
+                    balloon.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+                    balloon.style.left = Math.random() * 100 + "%";
+                    balloon.style.fontSize = (30 + Math.random() * 30) + "px";
+                    balloon.style.animationDuration = (5 + Math.random() * 4) + "s";
+                    document.body.appendChild(balloon);
+                    setTimeout(() => balloon.remove(), 8000);
+                }, 1500);
+            }
+
+            function initParticles() {
+                const container = document.getElementById("particleBg");
+                for (let i = 0; i < 80; i++) {
+                    const particle = document.createElement("div");
+                    particle.className = "particle";
+                    const size = 4 + Math.random() * 12;
+                    particle.style.width = size + "px";
+                    particle.style.height = size + "px";
+                    particle.style.left = Math.random() * 100 + "%";
+                    particle.style.animationDuration = 5 + Math.random() * 10 + "s";
+                    particle.style.animationDelay = Math.random() * 5 + "s";
+                    particle.style.background = `hsl(${30 + Math.random() * 50}, 100%, 60%)`;
+                    container.appendChild(particle);
+                }
+            }
+
+            function updateUI() {
+                document.getElementById("heroTitle").innerHTML = t.heroTitle(userName);
+                document.getElementById("heroSub").innerHTML = t.heroSub;
+                document.getElementById("viewMemoriesText").innerText = t.viewMemories;
+                document.getElementById("partyBtnText").innerText = t.partyBtn;
+                document.getElementById("storyHeading").innerHTML = t.storyHeading;
+                document.getElementById("galleryHeading").innerHTML = t.galleryHeading;
+                document.getElementById("wishesHeading").innerHTML = t.wishesHeading;
+                document.getElementById("surpriseHeading").innerHTML = t.surpriseHeading;
+                document.getElementById("giftMessage").innerHTML = t.giftMessage;
+                document.getElementById("celebrateText").innerText = t.celebrateText;
+                document.getElementById("addMemoryText").innerText = t.addMemory;
+                document.getElementById("musicText").innerText = t.musicPlay;
+                document.getElementById("storyText").innerHTML = userStory;
+                document.getElementById("wishesText").innerHTML = userWishes;
+
+                const addMemoryContainer = document.getElementById("addMemoryContainer");
+                if (addMemoryContainer) addMemoryContainer.style.display = isEditMode ? "block" : "none";
+                renderMemories();
+            }
+
+            function openCurtainAndRemove() {
+                const curtain = document.getElementById("curtain");
+                if (!curtain) return;
+                curtain.classList.add("open");
+                setTimeout(() => { curtain.style.display = "none"; }, 1600);
+            }
+
+            // ==================== MUSIC ====================
+            const music = document.getElementById("bgMusic");
+            const musicToggle = document.getElementById("musicToggle");
+            const musicTextSpan = document.getElementById("musicText");
+            let musicPlaying = false;
+            musicToggle.addEventListener("click", () => {
+                if (musicPlaying) {
+                    music.pause();
+                    musicPlaying = false;
+                    musicTextSpan.innerText = t.musicPlay;
+                } else {
+                    music.volume = 0.2;
+                    music.play().catch(e => console.log("Autoplay blocked"));
+                    musicPlaying = true;
+                    musicTextSpan.innerText = t.musicPause;
+                }
+            });
+
+            // ==================== EVENT LISTENERS ====================
+            document.getElementById("viewMemoriesBtn")?.addEventListener("click", () => {
+                document.getElementById("gallerySection").scrollIntoView({ behavior: "smooth" });
+            });
+            document.getElementById("confettiBtn")?.addEventListener("click", (e) => { e.preventDefault(); burstConfetti("high"); });
+            document.getElementById("addMemoryBtn")?.addEventListener("click", addMemory);
+            const giftBox = document.getElementById("giftBox");
+            const giftReveal = document.getElementById("giftReveal");
+            if (giftBox) giftBox.addEventListener("click", () => { giftBox.style.display = "none"; giftReveal.style.display = "block"; burstConfetti("high"); });
+            document.getElementById("finalConfettiBtn")?.addEventListener("click", (e) => { e.preventDefault(); burstConfetti("high"); });
+
+            // ==================== SCROLL ANIMATION ====================
+            const fadeElements = document.querySelectorAll(".fade-up");
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("visible"); });
+            }, { threshold: 0.2 });
+            fadeElements.forEach(el => observer.observe(el));
+
+            // ==================== INITIALIZE ====================
+            updateUI();
+            initParticles();
+            startBalloons();
+            openCurtainAndRemove();
+            setTimeout(() => { if (typeof canvasConfetti === 'function') canvasConfetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } }); }, 500);
+            localStorage.setItem('greeter_lang', currentLang);
+        })();
+    </script>
+</body>
+
+</html>

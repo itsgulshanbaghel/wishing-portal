@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌈 Rainbow Birthday · Greeter.com (हिंदी/English)</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Baloo+2:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --rainbow-red: #ff6b6b;
+            --rainbow-orange: #ff9f4a;
+            --rainbow-yellow: #ffd93d;
+            --rainbow-green: #6bcb77;
+            --rainbow-blue: #4d96ff;
+            --rainbow-purple: #b37bff;
+        }
+
+        body {
+            font-family: 'Comfortaa', cursive;
+            background: linear-gradient(135deg, #fff0f5 0%, #e8f0ff 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #rainbowCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .page {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 24px 80px;
+            text-align: center;
+        }
+
+        .magic-badge {
+            background: linear-gradient(90deg, var(--rainbow-red), var(--rainbow-orange), var(--rainbow-yellow), var(--rainbow-green), var(--rainbow-blue), var(--rainbow-purple));
+            border-radius: 60px;
+            padding: 6px 24px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        h1 {
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(3.5rem, 12vw, 5.5rem);
+            background: linear-gradient(135deg, var(--rainbow-red), var(--rainbow-orange), var(--rainbow-yellow), var(--rainbow-green), var(--rainbow-blue), var(--rainbow-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: bounceIn 0.9s ease;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(30px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .sub {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 50px;
+            padding: 8px 28px;
+            margin: 12px 0;
+            font-weight: 600;
+            font-size: 1rem;
+            animation: slideUp 1s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .rainbow-card {
+            width: min(360px, 90vw);
+            background: white;
+            border-radius: 60px 30px 60px 30px;
+            padding: 36px 28px;
+            margin: 20px auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid transparent;
+            background-image: linear-gradient(white, white), linear-gradient(135deg, var(--rainbow-red), var(--rainbow-purple));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            animation: slideUp 1.1s ease;
+            text-align: left;
+        }
+
+        .rainbow-card h3 {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.8rem;
+            color: var(--rainbow-purple);
+            margin-bottom: 16px;
+        }
+
+        .rainbow-card p {
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        .sign {
+            text-align: right;
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.2rem;
+            color: var(--rainbow-blue);
+        }
+
+        .wish-rainbow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px auto;
+        }
+
+        .wish-unicorn {
+            background: linear-gradient(145deg, #ffe6f0, #ffe0f5);
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            cursor: default;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .wish-unicorn:hover {
+            transform: scale(1.05) rotate(-1deg);
+            background: white;
+        }
+
+        .story-rainbow {
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 48px;
+            padding: 32px;
+            margin: 20px auto;
+            border-bottom: 8px solid var(--rainbow-yellow);
+        }
+
+        .gallery-rainbow {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .rainbow-mem {
+            background: linear-gradient(145deg, #fff5e6, #ffe6f0);
+            border-radius: 28px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .rainbow-mem img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rainbow-mem:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+
+        .celebrate-btn {
+            background: linear-gradient(135deg, var(--rainbow-pink, #ff88aa), var(--rainbow-purple));
+            border: none;
+            border-radius: 60px;
+            padding: 14px 44px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: 0.2s;
+        }
+
+        .celebrate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: linear-gradient(135deg, var(--rainbow-purple), var(--rainbow-pink));
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            transition: 0.4s;
+            opacity: 0;
+            z-index: 999;
+            font-weight: bold;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="rainbowCanvas"></canvas>
+    <div class="page">
+        <div class="magic-badge" id="badge">🌈 RAINBOW MAGIC 🌈</div>
+        <h1 id="heroTitle">Happy Birthday!</h1>
+        <div class="sub" id="subText">✨ a splash of colors for you ✨</div>
+        <div class="rainbow-card">
+            <h3 id="cardTitle">🦄 A Magical Wish</h3>
+            <p id="cardMsg">You are the rainbow after every storm, the sparkle in every smile. May your life be painted
+                with all the colors of happiness. Today, magic is real — because you exist.</p>
+            <div class="sign" id="cardSign">— with unicorn hugs 🦄</div>
+        </div>
+        <div class="wish-rainbow">
+            <div class="wish-unicorn"><span>🌈</span> <span id="w1">Colorful days</span></div>
+            <div class="wish-unicorn"><span>🦄</span> <span id="w2">Magical moments</span></div>
+            <div class="wish-unicorn"><span>✨</span> <span id="w3">Sparkling joy</span></div>
+            <div class="wish-unicorn"><span>🎨</span> <span id="w4">Endless creativity</span></div>
+        </div>
+        <div class="story-rainbow">
+            <h3 id="storyTitle">📖 Our Rainbow Story</h3>
+            <p id="storyText">You brought color into my black-and-white world. Every memory with you is a beautiful
+                shade of happiness. Thank you for being my rainbow. Happy birthday, my sunshine.</p>
+        </div>
+        <div class="gallery-rainbow" id="gallery">
+            <div class="rainbow-mem">🌈</div>
+            <div class="rainbow-mem">🦄</div>
+            <div class="rainbow-mem">✨</div>
+            <div class="rainbow-mem">🎨</div>
+            <div class="rainbow-mem">🌸</div>
+            <div class="rainbow-mem">⭐</div>
+        </div>
+        <button class="celebrate-btn" id="celebrateBtn">🎉 Celebrate! 🎉</button>
+        <footer>Made with ♡ · Greeter.com</footer>
+    </div>
+    <div class="toast" id="toast">🌈 Happy Birthday! 🎂</div>
+
+    <script>
+        (function () {
+            function getLang() {
+                let urlLang = new URLSearchParams(location.search).get('lang');
+                if (urlLang === 'hi' || urlLang === 'en') return urlLang;
+                return localStorage.getItem('greeter_lang') || 'en';
+            }
+            let lang = getLang();
+            const t = {
+                en: {
+                    badge: "🌈 RAINBOW MAGIC 🌈", heroTitle: "Happy Birthday!", subText: "✨ a splash of colors for you ✨",
+                    cardTitle: "🦄 A Magical Wish",
+                    cardMsg: "You are the rainbow after every storm, the sparkle in every smile. May your life be painted with all the colors of happiness. Today, magic is real — because you exist.",
+                    cardSign: "— with unicorn hugs 🦄",
+                    w1: "Colorful days", w2: "Magical moments", w3: "Sparkling joy", w4: "Endless creativity",
+                    storyTitle: "📖 Our Rainbow Story",
+                    storyText: "You brought color into my black-and-white world. Every memory with you is a beautiful shade of happiness. Thank you for being my rainbow. Happy birthday, my sunshine.",
+                    toastMsg: "🌈 Happy Birthday! 🎂"
+                },
+                hi: {
+                    badge: "🌈 रेनबो मैजिक 🌈", heroTitle: "जन्मदिन मुबारक!", subText: "✨ तुम्हारे लिए रंगों की बौछार ✨",
+                    cardTitle: "🦄 एक जादुई दुआ",
+                    cardMsg: "तुम हर तूफान के बाद की इंद्रधनुष हो, हर मुस्कान की चमक। तुम्हारी ज़िंदगी खुशियों के सारे रंगों से रंगी हो। आज जादू असली है — क्योंकि तुम हो।",
+                    cardSign: "— यूनिकॉर्न के गले लगाते हुए 🦄",
+                    w1: "रंग-बिरंगे दिन", w2: "जादुई पल", w3: "चमकती खुशियाँ", w4: "असीम रचनात्मकता",
+                    storyTitle: "📖 हमारी रेनबो कहानी",
+                    storyText: "तुमने मेरी काली-सफेद दुनिया में रंग भर दिए। तुम्हारे साथ हर याद खुशी का एक खूबसूरत रंग है। मेरी इंद्रधनुष बनने के लिए शुक्रिया। जन्मदिन मुबारक, मेरी धूप।",
+                    toastMsg: "🌈 जन्मदिन मुबारक! 🎂"
+                }
+            };
+            function applyLang() {
+                let tr = t[lang];
+                document.getElementById('badge').innerText = tr.badge;
+                document.getElementById('heroTitle').innerText = tr.heroTitle;
+                document.getElementById('subText').innerText = tr.subText;
+                document.getElementById('cardTitle').innerText = tr.cardTitle;
+                document.getElementById('cardMsg').innerText = tr.cardMsg;
+                document.getElementById('cardSign').innerText = tr.cardSign;
+                document.getElementById('w1').innerText = tr.w1;
+                document.getElementById('w2').innerText = tr.w2;
+                document.getElementById('w3').innerText = tr.w3;
+                document.getElementById('w4').innerText = tr.w4;
+                document.getElementById('storyTitle').innerText = tr.storyTitle;
+                document.getElementById('storyText').innerText = tr.storyText;
+                document.getElementById('toast').innerText = tr.toastMsg;
+            }
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            function refreshUI() {
+                applyLang();
+                if (userData.name) document.getElementById('heroTitle').innerText = (lang === 'hi' ? 'जन्मदिन मुबारक, ' : 'Happy Birthday, ') + userData.name;
+                if (userData.story) document.getElementById('storyText').innerText = userData.story;
+                if (userData.wishes) document.getElementById('cardMsg').innerText = userData.wishes;
+                if (userData.memories && userData.memories.length) {
+                    let gal = document.getElementById('gallery');
+                    gal.innerHTML = '';
+                    userData.memories.forEach(m => {
+                        let div = document.createElement('div'); div.className = 'rainbow-mem';
+                        if (m.img) div.innerHTML = `<img src="${m.img}" alt="memory">`;
+                        else div.innerText = m.text || '🌈';
+                        gal.appendChild(div);
+                    });
+                }
+            }
+            refreshUI();
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'greeter_lang') { lang = e.newValue || 'en'; refreshUI(); }
+                if (e.key === 'userData') { try { userData = JSON.parse(e.newValue || '{}'); } catch (e) { } refreshUI(); }
+            });
+            window.addEventListener('popstate', () => { let newLang = getLang(); if (newLang !== lang) { lang = newLang; refreshUI(); } });
+            // confetti + rainbow burst
+            document.getElementById('celebrateBtn').addEventListener('click', () => {
+                let toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+                canvasConfetti({ particleCount: 300, spread: 120, origin: { y: 0.5 }, colors: ['#ff6b6b', '#ff9f4a', '#ffd93d', '#6bcb77', '#4d96ff', '#b37bff'], startVelocity: 18 });
+                for (let i = 0; i < 4; i++) setTimeout(() => canvasConfetti({ particleCount: 80, spread: 90, origin: { x: 0.2 + i * 0.2, y: 0.6 } }), i * 150);
+            });
+            // floating rainbow particles
+            (function () {
+                const canvas = document.getElementById('rainbowCanvas');
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const colors = ['#ff6b6b', '#ff9f4a', '#ffd93d', '#6bcb77', '#4d96ff', '#b37bff'];
+                function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+                resize(); window.addEventListener('resize', resize);
+                for (let i = 0; i < 60; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                        r: 3 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)],
+                        vy: 0.3 + Math.random() * 0.8, vx: (Math.random() - 0.5) * 0.4,
+                        opacity: 0.4 + Math.random() * 0.5
+                    });
+                }
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        ctx.globalAlpha = p.opacity;
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fill();
+                        p.x += p.vx; p.y += p.vy;
+                        if (p.y > canvas.height + 30) p.y = -30;
+                        if (p.x > canvas.width + 30) p.x = -30;
+                        if (p.x < -30) p.x = canvas.width + 30;
+                    });
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            })();
+        })();
+    </script>
+</body>
+
+</html>

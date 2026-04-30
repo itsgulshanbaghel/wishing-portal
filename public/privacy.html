@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Privacy Policy · Greeter.com</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #f9f7ff;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a1025;
+      --text-secondary: #4a3b66;
+      --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+      --accent-solid: #7b5df6;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --navbar-bg: rgba(255, 255, 255, 0.75);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
+      --glow: rgba(123, 93, 246, 0.15);
+      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+      --border-light: #ece7f5;
+      --input-bg: rgba(255, 255, 255, 0.9);
+      --fb-blue: #1877f2;
+      --insta-pink: #e4405f;
+      --twitter-blue: #1da1f2;
+      --whatsapp-green: #25d366;
+      --linkedin-blue: #0077b5;
+    }
+
+    body.dark {
+      --bg-primary: #0c0719;
+      --bg-secondary: #1a1230;
+      --text-primary: #f0edff;
+      --text-secondary: #b9aed6;
+      --card-bg: rgba(30, 20, 55, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --navbar-bg: rgba(18, 12, 38, 0.85);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 30px 50px -15px #00000055;
+      --glow: rgba(123, 93, 246, 0.25);
+      --border-light: #2a2442;
+      --input-bg: rgba(30, 20, 55, 0.9);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: var(--mode-transition);
+      overflow-x: hidden;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -2;
+      transition: var(--mode-transition);
+    }
+
+    body.dark .bg-gradient {
+      background: radial-gradient(circle at 20% 30%, #2d1b4e40, #0a0614 90%);
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ===== NAVBAR (glass, sticky, from ContactUs) ===== */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 28px;
+      margin: 16px 0 12px;
+      backdrop-filter: blur(16px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      transition: var(--mode-transition);
+      flex-wrap: nowrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+      flex-shrink: 1;
+      white-space: nowrap;
+    }
+
+    .logo-icon {
+      background: var(--accent-gradient);
+      width: 44px;
+      height: 44px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 12px 20px -8px var(--glow);
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+      transition: 0.25s;
+      position: relative;
+      padding: 6px 0;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2.5px;
+      background: var(--accent-gradient);
+      transition: width 0.3s;
+      border-radius: 4px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: #ff7a2f;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .mode-toggle,
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      width: 44px;
+      height: 44px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mode-toggle .fa-sun {
+      color: #fbbf24;
+      font-size: 1.2rem;
+    }
+
+    body.dark .mode-toggle .fa-moon {
+      color: #cbd5e1;
+    }
+
+    .lang-toggle {
+      width: auto;
+      padding: 0 18px;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .mode-toggle:hover,
+    .lang-toggle:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 9px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 40px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+    }
+
+    /* ----- POLICY CARD (professional, black text) ----- */
+    .policy-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 36px;
+      padding: 48px 40px;
+      margin: 40px 0;
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .policy-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .policy-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .policy-section {
+      margin-bottom: 28px;
+    }
+
+    .policy-section h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .policy-section p,
+    .policy-section li {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .policy-section ul {
+      padding-left: 24px;
+      margin: 8px 0;
+    }
+
+    .policy-section li {
+      margin-bottom: 6px;
+    }
+
+    hr {
+      margin: 28px 0;
+      border: none;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .contact-email {
+      color: var(--text-secondary);
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .contact-email:hover {
+      color: var(--accent-solid);
+    }
+
+    /* ===== FOOTER (exactly from ContactUs) ===== */
+    .footer {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--card-border);
+      border-radius: 40px 40px 0 0;
+      margin-top: 40px;
+      padding: 48px 32px 32px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .footer-brand p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      max-width: 260px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 60px;
+    }
+
+    .footer-col a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent-solid);
+    }
+
+    .copyright {
+      text-align: center;
+      padding-top: 32px;
+      margin-top: 32px;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+
+    .footer-social .social-icons a {
+      width: 44px;
+      height: 44px;
+      background: var(--card-bg);
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: 0.2s;
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+      backdrop-filter: blur(4px);
+      margin: 0 4px;
+    }
+
+    .footer-social .social-icons a .fa-facebook-f {
+      color: #1877f2;
+    }
+
+    .footer-social .social-icons a .fa-instagram {
+      color: #e4405f;
+    }
+
+    .footer-social .social-icons a .fa-twitter {
+      color: #1da1f2;
+    }
+
+    .footer-social .social-icons a .fa-whatsapp {
+      color: #25d366;
+    }
+
+    .footer-social .social-icons a:hover {
+      transform: translateY(-3px);
+    }
+
+    .footer-social .social-icons a:has(.fa-facebook-f):hover {
+      background: #1877f2;
+      border-color: #1877f2;
+    }
+
+    .footer-social .social-icons a:has(.fa-instagram):hover {
+      background: #e4405f;
+      border-color: #e4405f;
+    }
+
+    .footer-social .social-icons a:has(.fa-twitter):hover {
+      background: #1da1f2;
+      border-color: #1da1f2;
+    }
+
+    .footer-social .social-icons a:has(.fa-whatsapp):hover {
+      background: #25d366;
+      border-color: #25d366;
+    }
+
+    .footer-brand .logo {
+      display: inline-flex;
+      margin-bottom: 16px;
+    }
+
+    .footer-col h4 {
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .footer-col li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* ----- RESPONSIVE (ContactUs alignment) ----- */
+    @media (max-width: 1024px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .navbar {
+        padding: 10px 20px;
+        gap: 12px;
+      }
+
+      .logo {
+        font-size: 1.2rem;
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        gap: 20px;
+      }
+
+      .nav-links a {
+        font-size: 0.85rem;
+        padding: 4px 0;
+      }
+
+      .btn-outline {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        gap: 6px;
+      }
+
+      .mode-toggle,
+      .lang-toggle {
+        width: 40px;
+        height: 40px;
+      }
+
+      .lang-toggle {
+        width: auto;
+        padding: 0 12px;
+        font-size: 0.8rem;
+        gap: 6px;
+      }
+
+      .nav-actions {
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .navbar {
+        padding: 10px 18px;
+      }
+
+      .logo {
+        font-size: clamp(0.9rem, 4vw, 1.3rem);
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 85px;
+        left: 20px;
+        right: 20px;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(24px);
+        border-radius: 32px;
+        padding: 28px 20px;
+        flex-direction: column;
+        gap: 18px;
+        text-align: center;
+        z-index: 1000;
+        border: 1px solid var(--card-border);
+        box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transform: translateY(-15px);
+        pointer-events: none;
+        transition: 0.3s;
+      }
+
+      .nav-links.show {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .nav-links a {
+        font-size: 1.1rem;
+        padding: 10px 0;
+      }
+
+      .nav-links a::after {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .nav-actions .btn-outline {
+        display: none;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .footer-brand {
+        margin: 0 auto;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .footer-brand p {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 280px;
+      }
+
+      .footer-links {
+        flex-direction: row;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      .footer-col {
+        text-align: center;
+        min-width: 120px;
+        flex-shrink: 0;
+      }
+
+      .footer-col ul {
+        padding-left: 0;
+        list-style: none;
+        text-align: center;
+      }
+
+      .footer-col li {
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-col h4 {
+        margin-bottom: 0.75rem;
+      }
+
+      .footer-social {
+        text-align: center;
+        width: 100%;
+      }
+
+      .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .lang-toggle span {
+        display: none;
+      }
+
+      .lang-toggle {
+        width: 44px;
+        padding: 0;
+        justify-content: center;
+      }
+
+      .footer-inner {
+        gap: 1.5rem;
+      }
+
+      .footer-links {
+        gap: 1.5rem;
+      }
+
+      .footer-col {
+        min-width: 110px;
+      }
+
+      .policy-card {
+        padding: 32px 24px;
+      }
+
+      .policy-header h1 {
+        font-size: 1.6rem;
+      }
+
+      .policy-section h2 {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+  <div class="container">
+    <!-- ========== NEW NAVBAR (copied from ContactUs.html) ========== -->
+    <nav class="navbar">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" id="navHome">Home</a>
+        <a href="create.html" id="navCreate">Create</a>
+        <a href="WhyWe.html" id="navWhy">Why Greeter</a>
+        <a href="privacy.html" id="navShowcase">Privacy</a>
+        <a href="ContactUs.html" id="navPricing">Contact Us</a>
+      </div>
+      <div class="nav-actions">
+        <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
+        <div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button>
+        <div class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div>
+      </div>
+    </nav>
+
+    <!-- PRIVACY POLICY CONTENT (unchanged sections from original privacy.html) -->
+    <div class="policy-card">
+      <div class="policy-header">
+        <h1 id="policyTitle">PRIVACY POLICY</h1>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s1Title">1. SCOPE AND ACCEPTANCE</h2>
+        <p id="s1Text">This Privacy Policy (“Policy”) governs the collection, processing, and storage of personal data
+          by Greeter.com (“Company”, “we”, “our”, “us”) through the website accessible at greeter.com (“Site”) and any
+          associated services, tools, or functionalities (collectively, “Services”). By accessing or using the Services,
+          you explicitly acknowledge that you have read, understood, and consent to the data practices described herein.
+          If you do not agree, you must immediately discontinue use of the Services.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s2Title">2. CONTROLLER AND CONTACT</h2>
+        <p id="s2Text">The data controller responsible for your personal information is Greeter.com, reachable via
+          electronic mail at <a href="mailto:privacy@greeter.com" class="contact-email"
+            id="contactEmailLink">privacy@greeter.com</a>. All inquiries regarding data protection or requests to
+          exercise your rights under applicable law shall be directed to this address.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s3Title">3. CATEGORIES OF PERSONAL DATA COLLECTED</h2>
+        <p id="s3Text">In the course of providing the Services, we may collect, process, and retain the following
+          categories of personal information:</p>
+        <ul id="s3List">
+          <li><strong>Identifiers:</strong> Name, email address, IP address, unique device identifiers, and similar
+            identifiers.</li>
+          <li><strong>User Content:</strong> Text, images, messages, and any customizations you upload, create, or
+            otherwise make available through the Services (including but not limited to surprise websites and associated
+            metadata).</li>
+          <li><strong>Usage Data:</strong> Information about your interaction with the Site, such as pages visited,
+            features engaged, time spent, clickstream data, and referring/exit pages.</li>
+          <li><strong>Technical Information:</strong> Browser type and version, operating system, screen resolution,
+            language preferences, and similar technical parameters.</li>
+          <li><strong>Inferred Data:</strong> Preferences and behavioral patterns derived from your usage of the
+            Services, which we may use to improve functionality and personalize experiences.</li>
+        </ul>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s4Title">4. LEGAL BASES FOR PROCESSING</h2>
+        <p id="s4Text">Our processing of your personal data is justified on one or more of the following legal grounds:
+          (i) performance of a contract with you (e.g., delivering the surprise website you create); (ii) compliance
+          with a legal obligation; (iii) legitimate interests pursued by us (e.g., improving security, preventing fraud,
+          enhancing user experience); or (iv) your explicit consent, where required by applicable law.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s5Title">5. PURPOSES OF PROCESSING</h2>
+        <p id="s5Text">We process personal data for the following business and operational purposes:</p>
+        <ul id="s5List">
+          <li>Provision, maintenance, and improvement of the Services, including generation and hosting of user-created
+            surprise websites.</li>
+          <li>Security monitoring, fraud detection, and prevention of unauthorized access or malicious activities.</li>
+          <li>Communication with you regarding account status, service updates, support requests, and transactional
+            notifications.</li>
+          <li>Analytics and performance measurement to understand how users interact with the Site and to optimize user
+            experience.</li>
+          <li>Compliance with legal and regulatory obligations, including responses to lawful requests from public
+            authorities.</li>
+          <li>Enforcement of our Terms of Service and other policies.</li>
+        </ul>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s6Title">6. DISCLOSURE OF PERSONAL DATA</h2>
+        <p id="s6Text">We do not sell, rent, or trade your personal information. We may share your data with limited
+          categories of third parties only under the following circumstances:</p>
+        <ul id="s6List">
+          <li><strong>Service Providers:</strong> Vendors who perform functions on our behalf (e.g., cloud hosting,
+            analytics, customer support) under contractual obligations of confidentiality and data protection.</li>
+          <li><strong>Legal Compliance:</strong> When required by law, court order, or governmental regulation, or to
+            protect the rights, property, or safety of the Company, our users, or the public.</li>
+          <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, reorganization, or sale of
+            assets, provided that the recipient agrees to respect this Policy.</li>
+          <li><strong>With Explicit Consent:</strong> When you have provided your unambiguous consent to a specific
+            sharing arrangement.</li>
+        </ul>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s7Title">7. COOKIES AND TRACKING TECHNOLOGIES</h2>
+        <p id="s7Text">We utilize cookies, web beacons, local storage, and similar technologies to enhance
+          functionality, analyze usage, and personalize content. These technologies may collect information such as IP
+          address, browser characteristics, and interaction data. Essential cookies are necessary for core operations;
+          functional and analytics cookies are used to improve performance. You may configure your browser to refuse
+          cookies, but doing so may impair certain features of the Services. Third-party analytics providers (e.g.,
+          Google Analytics) may deploy their own cookies subject to their respective privacy policies.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s8Title">8. DATA RETENTION AND STORAGE</h2>
+        <p id="s8Text">Personal data is retained only as long as necessary to fulfill the purposes outlined in this
+          Policy, unless a longer retention period is required by law. User-created surprise websites, including any
+          uploaded images and messages, are stored temporarily for sharing purposes and may be automatically deleted
+          after a defined period of inactivity (currently 90 days). After deletion, data cannot be recovered. Backups
+          may persist for a limited period but are subject to standard rotation and deletion schedules.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s9Title">9. SECURITY MEASURES</h2>
+        <p id="s9Text">We implement administrative, technical, and physical safeguards designed to protect against
+          unauthorized access, alteration, disclosure, or destruction of personal data. These include encryption of data
+          in transit (TLS 1.2+), firewalls, access controls, and regular security assessments. Nevertheless, no method
+          of transmission over the Internet or electronic storage is 100% secure. You acknowledge that inherent risks
+          exist and assume responsibility for maintaining the confidentiality of any passwords or authentication
+          credentials associated with your use of the Services.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s10Title">10. YOUR RIGHTS (GDPR / CCPA / OTHER REGIMES)</h2>
+        <p id="s10Text">Depending on your jurisdiction, you may have certain rights with respect to your personal data,
+          including:</p>
+        <ul id="s10List">
+          <li>Right to access: obtain confirmation of whether we process your data and request a copy.</li>
+          <li>Right to rectification: correct inaccurate or incomplete data.</li>
+          <li>Right to erasure (“right to be forgotten”): request deletion under certain conditions.</li>
+          <li>Right to restriction of processing: limit how we use your data in specific circumstances.</li>
+          <li>Right to data portability: receive your data in a structured, machine-readable format.</li>
+          <li>Right to object: object to processing based on legitimate interests or for direct marketing.</li>
+          <li>Right to withdraw consent: where processing is based on consent, you may withdraw it without affecting
+            lawfulness of prior processing.</li>
+        </ul>
+        <p id="s10Contact">To exercise any of these rights, contact us at <a href="mailto:privacy@greeter.com"
+            class="contact-email">privacy@greeter.com</a>. We will respond within the timeframes prescribed by
+          applicable law (typically 30 days). You also have the right to lodge a complaint with a supervisory authority
+          in your country of residence.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s11Title">11. CHILDREN’S PRIVACY</h2>
+        <p id="s11Text">The Services are not intended for individuals under the age of 13 (or such higher age as
+          required by local law). We do not knowingly collect personal information from children. If you believe a child
+          has provided us with data, please contact us immediately so that we may delete such information.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s12Title">12. THIRD‑PARTY LINKS AND SERVICES</h2>
+        <p id="s12Text">The Site may contain links to external websites, plugins, or applications not operated by us.
+          This Policy does not apply to those third parties, and we are not responsible for their privacy practices. We
+          encourage you to review the policies of any third‑party service you interact with.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s13Title">13. AMENDMENTS TO THIS POLICY</h2>
+        <p id="s13Text">We reserve the right to modify this Policy at any time. Material changes will be communicated by
+          updating the version date at the top of this page and, where reasonably practicable, via a notice on the Site
+          or by email. Your continued use of the Services after the effective date of any modifications constitutes
+          acceptance of the revised Policy.</p>
+      </div>
+
+      <div class="policy-section">
+        <h2 id="s14Title">14. GOVERNING LAW</h2>
+        <p id="s14Text">This Policy and any disputes arising hereunder shall be governed by the laws of the jurisdiction
+          in which Greeter.com is established, without regard to conflict of law principles, unless otherwise required
+          by mandatory local law.</p>
+      </div>
+
+      <hr>
+      <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;" id="footerNote">For any
+        privacy‑related inquiries, please contact our Data Protection Officer at <a href="mailto:privacy@greeter.com"
+          class="contact-email">privacy@greeter.com</a>.</p>
+    </div>
+
+    <!-- ========== NEW FOOTER (copied from ContactUs.html, exactly with all elements) ========== -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="/" class="logo" style="margin-bottom: 16px; display: inline-flex;">
+            <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+          </a>
+          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
+            and festivals — no coding needed.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4 id="exploreTitle">Explore</h4>
+            <ul>
+              <li><a href="create.html" id="exploreTemplates">Create</a></li>
+              <li><a href="WhyWe.html" id="exploreFeatures">Why Greeter</a></li>
+              <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
+              <li><a href="#" id="explorePricing">Pricing</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4 id="supportTitle">Support</h4>
+            <ul>
+              <li><a href="ContactUs.html" id="supportHelp">Help Center</a></li>
+              <li><a href="privacy.html" id="supportPrivacy">Privacy Policy</a></li>
+              <li><a href="terms&cond.html" id="supportTerms">Terms of Use</a></li>
+              <li><a href="ContactUs.html" id="supportContact">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-social">
+          <h4 id="followTitle">Follow us</h4>
+          <div class="social-icons">
+            <a href="#" id="footerFacebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" id="footerInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" id="footerWhatsApp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" id="footerTwitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">
+        <p id="copyrightText">© 2026 Greeter · Make every moment magical</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // === COMBINED TRANSLATIONS (nav & footer from ContactUs + full privacy sections) ===
+    const translations = {
+      en: {
+        // Navbar (5 items)
+        nav: ["Home", "Create", "Why Greeter", "Privacy", "Contact Us"],
+        signin: "Sign in",
+        // Privacy policy sections (unchanged from original)
+        policyTitle: "PRIVACY POLICY",
+        s1Title: "1. SCOPE AND ACCEPTANCE",
+        s1Text: "This Privacy Policy governs the collection, processing, and storage of personal data by Greeter.com through the website accessible at greeter.com and any associated services, tools, or functionalities. By accessing or using the Services, you explicitly acknowledge that you have read, understood, and consent to the data practices described herein. If you do not agree, you must immediately discontinue use of the Services.",
+        s2Title: "2. CONTROLLER AND CONTACT",
+        s2Text: "The data controller responsible for your personal information is Greeter.com, reachable via electronic mail at privacy@greeter.com. All inquiries regarding data protection or requests to exercise your rights under applicable law shall be directed to this address.",
+        s3Title: "3. CATEGORIES OF PERSONAL DATA COLLECTED",
+        s3Text: "In the course of providing the Services, we may collect, process, and retain the following categories of personal information:",
+        s3ListItems: [
+          "<strong>Identifiers:</strong> Name, email address, IP address, unique device identifiers, and similar identifiers.",
+          "<strong>User Content:</strong> Text, images, messages, and any customizations you upload, create, or otherwise make available through the Services (including but not limited to surprise websites and associated metadata).",
+          "<strong>Usage Data:</strong> Information about your interaction with the Site, such as pages visited, features engaged, time spent, clickstream data, and referring/exit pages.",
+          "<strong>Technical Information:</strong> Browser type and version, operating system, screen resolution, language preferences, and similar technical parameters.",
+          "<strong>Inferred Data:</strong> Preferences and behavioral patterns derived from your usage of the Services, which we may use to improve functionality and personalize experiences."
+        ],
+        s4Title: "4. LEGAL BASES FOR PROCESSING",
+        s4Text: "Our processing of your personal data is justified on one or more of the following legal grounds: (i) performance of a contract with you (e.g., delivering the surprise website you create); (ii) compliance with a legal obligation; (iii) legitimate interests pursued by us (e.g., improving security, preventing fraud, enhancing user experience); or (iv) your explicit consent, where required by applicable law.",
+        s5Title: "5. PURPOSES OF PROCESSING",
+        s5Text: "We process personal data for the following business and operational purposes:",
+        s5ListItems: [
+          "Provision, maintenance, and improvement of the Services, including generation and hosting of user-created surprise websites.",
+          "Security monitoring, fraud detection, and prevention of unauthorized access or malicious activities.",
+          "Communication with you regarding account status, service updates, support requests, and transactional notifications.",
+          "Analytics and performance measurement to understand how users interact with the Site and to optimize user experience.",
+          "Compliance with legal and regulatory obligations, including responses to lawful requests from public authorities.",
+          "Enforcement of our Terms of Service and other policies."
+        ],
+        s6Title: "6. DISCLOSURE OF PERSONAL DATA",
+        s6Text: "We do not sell, rent, or trade your personal information. We may share your data with limited categories of third parties only under the following circumstances:",
+        s6ListItems: [
+          "<strong>Service Providers:</strong> Vendors who perform functions on our behalf (e.g., cloud hosting, analytics, customer support) under contractual obligations of confidentiality and data protection.",
+          "<strong>Legal Compliance:</strong> When required by law, court order, or governmental regulation, or to protect the rights, property, or safety of the Company, our users, or the public.",
+          "<strong>Business Transfers:</strong> In connection with a merger, acquisition, reorganization, or sale of assets, provided that the recipient agrees to respect this Policy.",
+          "<strong>With Explicit Consent:</strong> When you have provided your unambiguous consent to a specific sharing arrangement."
+        ],
+        s7Title: "7. COOKIES AND TRACKING TECHNOLOGIES",
+        s7Text: "We utilize cookies, web beacons, local storage, and similar technologies to enhance functionality, analyze usage, and personalize content. These technologies may collect information such as IP address, browser characteristics, and interaction data. Essential cookies are necessary for core operations; functional and analytics cookies are used to improve performance. You may configure your browser to refuse cookies, but doing so may impair certain features of the Services. Third-party analytics providers may deploy their own cookies subject to their respective privacy policies.",
+        s8Title: "8. DATA RETENTION AND STORAGE",
+        s8Text: "Personal data is retained only as long as necessary to fulfill the purposes outlined in this Policy, unless a longer retention period is required by law. User-created surprise websites, including any uploaded images and messages, are stored temporarily for sharing purposes and may be automatically deleted after a defined period of inactivity (currently 90 days). After deletion, data cannot be recovered. Backups may persist for a limited period but are subject to standard rotation and deletion schedules.",
+        s9Title: "9. SECURITY MEASURES",
+        s9Text: "We implement administrative, technical, and physical safeguards designed to protect against unauthorized access, alteration, disclosure, or destruction of personal data. These include encryption of data in transit (TLS 1.2+), firewalls, access controls, and regular security assessments. Nevertheless, no method of transmission over the Internet or electronic storage is 100% secure. You acknowledge that inherent risks exist and assume responsibility for maintaining the confidentiality of any passwords or authentication credentials associated with your use of the Services.",
+        s10Title: "10. YOUR RIGHTS (GDPR / CCPA / OTHER REGIMES)",
+        s10Text: "Depending on your jurisdiction, you may have certain rights with respect to your personal data, including:",
+        s10ListItems: [
+          "Right to access: obtain confirmation of whether we process your data and request a copy.",
+          "Right to rectification: correct inaccurate or incomplete data.",
+          "Right to erasure (“right to be forgotten”): request deletion under certain conditions.",
+          "Right to restriction of processing: limit how we use your data in specific circumstances.",
+          "Right to data portability: receive your data in a structured, machine-readable format.",
+          "Right to object: object to processing based on legitimate interests or for direct marketing.",
+          "Right to withdraw consent: where processing is based on consent, you may withdraw it without affecting lawfulness of prior processing."
+        ],
+        s10Contact: "To exercise any of these rights, contact us at privacy@greeter.com. We will respond within the timeframes prescribed by applicable law (typically 30 days). You also have the right to lodge a complaint with a supervisory authority in your country of residence.",
+        s11Title: "11. CHILDREN’S PRIVACY",
+        s11Text: "The Services are not intended for individuals under the age of 13 (or such higher age as required by local law). We do not knowingly collect personal information from children. If you believe a child has provided us with data, please contact us immediately so that we may delete such information.",
+        s12Title: "12. THIRD‑PARTY LINKS AND SERVICES",
+        s12Text: "The Site may contain links to external websites, plugins, or applications not operated by us. This Policy does not apply to those third parties, and we are not responsible for their privacy practices. We encourage you to review the policies of any third‑party service you interact with.",
+        s13Title: "13. AMENDMENTS TO THIS POLICY",
+        s13Text: "We reserve the right to modify this Policy at any time. Material changes will be communicated by updating the version date at the top of this page and, where reasonably practicable, via a notice on the Site or by email. Your continued use of the Services after the effective date of any modifications constitutes acceptance of the revised Policy.",
+        s14Title: "14. GOVERNING LAW",
+        s14Text: "This Policy and any disputes arising hereunder shall be governed by the laws of the jurisdiction in which Greeter.com is established, without regard to conflict of law principles, unless otherwise required by mandatory local law.",
+        footerNote: "For any privacy‑related inquiries, please contact our Data Protection Officer at privacy@greeter.com.",
+        // Footer texts
+        footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
+        exploreTitle: "Explore",
+        exploreLinks: ["Create", "Why Greeter", "How it Works", "Pricing"],
+        supportTitle: "Support",
+        supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
+        followTitle: "Follow us",
+        copyright: "© 2026 Greeter · Make every moment magical"
+      },
+      hi: {
+        nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"],
+        signin: "लॉगिन करें",
+        policyTitle: "गोपनीयता नीति",
+        s1Title: "1. दायरा और स्वीकृति",
+        s1Text: "यह गोपनीयता नीति Greeter.com द्वारा किसी भी संबद्ध सेवाओं, उपकरणों या कार्यक्षमताओं के माध्यम से व्यक्तिगत डेटा के संग्रह, प्रसंस्करण और भंडारण को नियंत्रित करती है। सेवाओं का उपयोग करके, आप स्पष्ट रूप से स्वीकार करते हैं कि आपने इस नीति को पढ़, समझ लिया है और इसमें वर्णित डेटा प्रथाओं के लिए सहमति देते हैं। यदि आप सहमत नहीं हैं, तो आपको सेवाओं का उपयोग तुरंत बंद कर देना चाहिए।",
+        s2Title: "2. नियंत्रक और संपर्क",
+        s2Text: "आपकी व्यक्तिगत जानकारी के लिए जिम्मेदार डेटा नियंत्रक Greeter.com है, जो ईमेल privacy@greeter.com पर पहुँचा जा सकता है। डेटा संरक्षण से संबंधित सभी पूछताछ या लागू कानून के तहत अपने अधिकारों का प्रयोग करने के अनुरोध इस पते पर भेजे जाएंगे।",
+        s3Title: "3. एकत्रित व्यक्तिगत डेटा की श्रेणियाँ",
+        s3Text: "सेवाएँ प्रदान करने के दौरान, हम व्यक्तिगत जानकारी की निम्नलिखित श्रेणियाँ एकत्र, प्रक्रिया और बनाए रख सकते हैं:",
+        s3ListItems: [
+          "<strong>पहचानकर्ता:</strong> नाम, ईमेल पता, IP पता, अद्वितीय डिवाइस पहचानकर्ता, और समान पहचानकर्ता।",
+          "<strong>उपयोगकर्ता सामग्री:</strong> टेक्स्ट, छवियाँ, संदेश, और कोई भी कस्टमाइज़ेशन जो आप अपलोड, बनाते या सेवाओं के माध्यम से उपलब्ध कराते हैं (जिसमें सरप्राइज़ वेबसाइट और संबद्ध मेटाडेटा शामिल हैं, लेकिन इन्हीं तक सीमित नहीं)।",
+          "<strong>उपयोग डेटा:</strong> साइट के साथ आपकी अंतःक्रिया के बारे में जानकारी, जैसे देखे गए पृष्ठ, उपयोग की गई सुविधाएँ, बिताया गया समय, क्लिकस्ट्रीम डेटा, और संदर्भित/निकास पृष्ठ।",
+          "<strong>तकनीकी जानकारी:</strong> ब्राउज़र प्रकार और संस्करण, ऑपरेटिंग सिस्टम, स्क्रीन रिज़ॉल्यूशन, भाषा प्राथमिकताएँ, और समान तकनीकी पैरामीटर।",
+          "<strong>अनुमानित डेटा:</strong> सेवाओं के आपके उपयोग से प्राप्त प्राथमिकताएँ और व्यवहारिक पैटर्न, जिनका उपयोग हम कार्यक्षमता में सुधार और अनुभवों को व्यक्तिगत बनाने के लिए कर सकते हैं।"
+        ],
+        s4Title: "4. प्रसंस्करण के कानूनी आधार",
+        s4Text: "आपके व्यक्तिगत डेटा का हमारा प्रसंस्करण निम्नलिखित कानूनी आधारों में से एक या अधिक पर उचित है: (i) आपके साथ अनुबंध का निष्पादन (जैसे, आपके द्वारा बनाई गई सरप्राइज़ वेबसाइट वितरित करना); (ii) कानूनी दायित्व का अनुपालन; (iii) हमारे द्वारा अपनाए गए वैध हित (जैसे, सुरक्षा में सुधार, धोखाधड़ी की रोकथाम, उपयोगकर्ता अनुभव को बढ़ाना); या (iv) आपकी स्पष्ट सहमति, जहाँ लागू कानून द्वारा आवश्यक हो।",
+        s5Title: "5. प्रसंस्करण के उद्देश्य",
+        s5Text: "हम व्यक्तिगत डेटा को निम्नलिखित व्यावसायिक और परिचालन उद्देश्यों के लिए संसाधित करते हैं:",
+        s5ListItems: [
+          "सेवाओं का प्रावधान, रखरखाव और सुधार, जिसमें उपयोगकर्ता-निर्मित सरप्राइज़ वेबसाइटों का निर्माण और होस्टिंग शामिल है।",
+          "सुरक्षा निगरानी, धोखाधड़ी का पता लगाना, और अनधिकृत पहुँच या दुर्भावनापूर्ण गतिविधियों की रोकथाम।",
+          "खाते की स्थिति, सेवा अपडेट, सहायता अनुरोधों, और लेनदेन अधिसूचनाओं के संबंध में आपसे संचार।",
+          "विश्लेषण और प्रदर्शन मापन यह समझने के लिए कि उपयोगकर्ता साइट के साथ कैसे अंतःक्रिया करते हैं और उपयोगकर्ता अनुभव को अनुकूलित करने के लिए।",
+          "कानूनी और विनियामक दायित्वों का अनुपालन, जिसमें सार्वजनिक प्राधिकरणों से वैध अनुरोधों का जवाब देना शामिल है।",
+          "हमारी सेवा की शर्तों और अन्य नीतियों का प्रवर्तन।"
+        ],
+        s6Title: "6. व्यक्तिगत डेटा का प्रकटीकरण",
+        s6Text: "हम आपकी व्यक्तिगत जानकारी नहीं बेचते, किराए पर नहीं देते या व्यापार नहीं करते। हम आपका डेटा केवल निम्नलिखित परिस्थितियों में तृतीय पक्षों की सीमित श्रेणियों के साथ साझा कर सकते हैं:",
+        s6ListItems: [
+          "<strong>सेवा प्रदाता:</strong> विक्रेता जो हमारी ओर से कार्य करते हैं (जैसे, क्लाउड होस्टिंग, एनालिटिक्स, ग्राहक सहायता) गोपनीयता और डेटा संरक्षण की संविदात्मक देनदारियों के तहत।",
+          "<strong>कानूनी अनुपालन:</strong> जब कानून, अदालत के आदेश, या सरकारी विनियमन द्वारा आवश्यक हो, या कंपनी, हमारे उपयोगकर्ताओं, या जनता के अधिकारों, संपत्ति या सुरक्षा की रक्षा के लिए।",
+          "<strong>व्यावसायिक हस्तांतरण:</strong> विलय, अधिग्रहण, पुनर्गठन, या परिसंपत्तियों की बिक्री के संबंध में, बशर्ते कि प्राप्तकर्ता इस नीति का सम्मान करने के लिए सहमत हो।",
+          "<strong>स्पष्ट सहमति के साथ:</strong> जब आपने किसी विशिष्ट साझाकरण व्यवस्था के लिए अपनी स्पष्ट सहमति प्रदान की हो।"
+        ],
+        s7Title: "7. कुकीज़ और ट्रैकिंग तकनीकें",
+        s7Text: "हम कार्यक्षमता बढ़ाने, उपयोग का विश्लेषण करने और सामग्री को व्यक्तिगत बनाने के लिए कुकीज़, वेब बीकन, लोकल स्टोरेज और समान तकनीकों का उपयोग करते हैं। ये तकनीकें IP पता, ब्राउज़र विशेषताएँ, और अंतःक्रिया डेटा जैसी जानकारी एकत्र कर सकती हैं। आवश्यक कुकीज़ मुख्य संचालन के लिए आवश्यक हैं; कार्यात्मक और एनालिटिक्स कुकीज़ का उपयोग प्रदर्शन में सुधार के लिए किया जाता है। आप कुकीज़ को अस्वीकार करने के लिए अपने ब्राउज़र को कॉन्फ़िगर कर सकते हैं, लेकिन ऐसा करने से सेवाओं की कुछ सुविधाएँ ख़राब हो सकती हैं। तृतीय-पक्ष एनालिटिक्स प्रदाता अपनी संबंधित गोपनीयता नीतियों के अधीन अपनी स्वयं की कुकीज़ तैनात कर सकते हैं।",
+        s8Title: "8. डेटा प्रतिधारण और भंडारण",
+        s8Text: "व्यक्तिगत डेटा केवल तब तक बनाए रखा जाता है जब तक कि इस नीति में उल्लिखित उद्देश्यों को पूरा करने के लिए आवश्यक हो, जब तक कि कानून द्वारा लंबी अवधि की आवश्यकता न हो। उपयोगकर्ता-निर्मित सरप्राइज़ वेबसाइटें, जिनमें अपलोड की गई कोई भी छवियाँ और संदेश शामिल हैं, साझा करने के उद्देश्यों के लिए अस्थायी रूप से संग्रहीत की जाती हैं और निष्क्रियता की निर्धारित अवधि (वर्तमान में 90 दिन) के बाद स्वतः हटाई जा सकती हैं। हटाने के बाद, डेटा पुनर्प्राप्त नहीं किया जा सकता है। बैकअप सीमित अवधि के लिए बने रह सकते हैं लेकिन मानक रोटेशन और विलोपन कार्यक्रमों के अधीन हैं।",
+        s9Title: "9. सुरक्षा उपाय",
+        s9Text: "हम व्यक्तिगत डेटा के अनधिकृत पहुँच, परिवर्तन, प्रकटीकरण या विनाश से बचाने के लिए प्रशासनिक, तकनीकी और भौतिक सुरक्षा उपायों को लागू करते हैं। इनमें परिवहन में डेटा का एन्क्रिप्शन (TLS 1.2+), फ़ायरवॉल, पहुँच नियंत्रण, और नियमित सुरक्षा मूल्यांकन शामिल हैं। फिर भी, इंटरनेट पर संचरण या इलेक्ट्रॉनिक भंडारण का कोई भी तरीका 100% सुरक्षित नहीं है। आप स्वीकार करते हैं कि अंतर्निहित जोखिम मौजूद हैं और सेवाओं के आपके उपयोग से जुड़े किसी भी पासवर्ड या प्रमाणीकरण क्रेडेंशियल की गोपनीयता बनाए रखने की जिम्मेदारी लेते हैं।",
+        s10Title: "10. आपके अधिकार (GDPR / CCPA / अन्य व्यवस्थाएँ)",
+        s10Text: "आपके अधिकार क्षेत्र के आधार पर, आपके पास अपने व्यक्तिगत डेटा के संबंध में कुछ अधिकार हो सकते हैं, जिनमें शामिल हैं:",
+        s10ListItems: [
+          "अभिगम का अधिकार: पुष्टि प्राप्त करना कि क्या हम आपके डेटा को संसाधित करते हैं और एक प्रति का अनुरोध करना।",
+          "सुधार का अधिकार: गलत या अधूरे डेटा को सही करना।",
+          "मिटाने का अधिकार (“भूलने का अधिकार”): कुछ शर्तों के तहत विलोपन का अनुरोध करना।",
+          "प्रसंस्करण के प्रतिबंध का अधिकार: सीमित करना कि हम आपके डेटा का उपयोग विशिष्ट परिस्थितियों में कैसे करते हैं।",
+          "डेटा पोर्टेबिलिटी का अधिकार: अपने डेटा को संरचित, मशीन-पठनीय प्रारूप में प्राप्त करना।",
+          "आपत्ति का अधिकार: वैध हितों या प्रत्यक्ष विपणन के आधार पर प्रसंस्करण पर आपत्ति करना।",
+          "सहमति वापस लेने का अधिकार: जहाँ प्रसंस्करण सहमति पर आधारित है, आप इसे पिछले प्रसंस्करण की वैधता को प्रभावित किए बिना वापस ले सकते हैं।"
+        ],
+        s10Contact: "इन अधिकारों का प्रयोग करने के लिए, हमसे privacy@greeter.com पर संपर्क करें। हम लागू कानून द्वारा निर्धारित समय सीमा (आमतौर पर 30 दिन) के भीतर जवाब देंगे। आपको अपने निवास देश में एक पर्यवेक्षी प्राधिकरण के पास शिकायत दर्ज कराने का भी अधिकार है।",
+        s11Title: "11. बच्चों की गोपनीयता",
+        s11Text: "सेवाएँ 13 वर्ष से कम आयु के व्यक्तियों (या स्थानीय कानून द्वारा आवश्यक उच्च आयु) के लिए अभिप्रेत नहीं हैं। हम जानबूझकर बच्चों से व्यक्तिगत जानकारी एकत्र नहीं करते हैं। यदि आपको लगता है कि किसी बच्चे ने हमें डेटा प्रदान किया है, तो कृपया तुरंत हमसे संपर्क करें ताकि हम ऐसी जानकारी को हटा सकें।",
+        s12Title: "12. तृतीय-पक्ष लिंक और सेवाएँ",
+        s12Text: "साइट में बाहरी वेबसाइटों, प्लगइन्स, या एप्लिकेशन के लिंक हो सकते हैं जो हमारे द्वारा संचालित नहीं हैं। यह नीति उन तृतीय पक्षों पर लागू नहीं होती है, और हम उनकी गोपनीयता प्रथाओं के लिए जिम्मेदार नहीं हैं। हम आपको किसी भी तृतीय-पक्ष सेवा के साथ अंतःक्रिया करने से पहले उनकी नीतियों की समीक्षा करने के लिए प्रोत्साहित करते हैं।",
+        s13Title: "13. इस नीति में संशोधन",
+        s13Text: "हम किसी भी समय इस नीति को संशोधित करने का अधिकार सुरक्षित रखते हैं। भौतिक परिवर्तनों को इस पृष्ठ के शीर्ष पर संस्करण तिथि को अद्यतन करके और, जहाँ उचित रूप से व्यावहारिक हो, साइट पर एक नोटिस या ईमेल के माध्यम से संप्रेषित किया जाएगा। किसी भी संशोधन की प्रभावी तिथि के बाद सेवाओं का आपका निरंतर उपयोग संशोधित नीति की स्वीकृति का गठन करता है।",
+        s14Title: "14. शासी कानून",
+        s14Text: "यह नीति और इसके तहत उत्पन्न होने वाले किसी भी विवाद पर उस क्षेत्राधिकार के कानूनों द्वारा शासित होगा जिसमें Greeter.com स्थापित है, बिना कानून संघर्ष सिद्धांतों के संदर्भ के, जब तक कि अनिवार्य स्थानीय कानून द्वारा अन्यथा आवश्यक न हो।",
+        footerNote: "किसी भी गोपनीयता से संबंधित पूछताछ के लिए, कृपया हमारे डेटा संरक्षण अधिकारी से privacy@greeter.com पर संपर्क करें।",
+        footerBrand: "जन्मदिन, प्रपोज़ल, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
+        exploreTitle: "देखिए",
+        exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "कीमतें"],
+        supportTitle: "सहायता",
+        supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
+        followTitle: "हमें फॉलो करें",
+        copyright: "© 2026 Greeter · हर पल जादुई बनाएँ"
+      }
+    };
+
+    let currentLang = localStorage.getItem('greeter_lang') || 'en';
+
+    function applyLanguage(lang) {
+      const t = translations[lang];
+      if (!t) return;
+      // Navbar
+      document.getElementById('navHome').innerText = t.nav[0];
+      document.getElementById('navCreate').innerText = t.nav[1];
+      document.getElementById('navWhy').innerText = t.nav[2];
+      document.getElementById('navShowcase').innerText = t.nav[3];
+      document.getElementById('navPricing').innerText = t.nav[4];
+      document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
+      // Privacy policy sections
+      document.getElementById('policyTitle').innerText = t.policyTitle;
+      document.getElementById('s1Title').innerText = t.s1Title; document.getElementById('s1Text').innerText = t.s1Text;
+      document.getElementById('s2Title').innerText = t.s2Title; document.getElementById('s2Text').innerHTML = t.s2Text.replace('privacy@greeter.com', '<a href="mailto:privacy@greeter.com" class="contact-email">privacy@greeter.com</a>');
+      document.getElementById('s3Title').innerText = t.s3Title; document.getElementById('s3Text').innerText = t.s3Text;
+      const s3List = document.getElementById('s3List'); if (s3List) s3List.innerHTML = t.s3ListItems.map(item => `<li>${item}</li>`).join('');
+      document.getElementById('s4Title').innerText = t.s4Title; document.getElementById('s4Text').innerText = t.s4Text;
+      document.getElementById('s5Title').innerText = t.s5Title; document.getElementById('s5Text').innerText = t.s5Text;
+      const s5List = document.getElementById('s5List'); if (s5List) s5List.innerHTML = t.s5ListItems.map(item => `<li>${item}</li>`).join('');
+      document.getElementById('s6Title').innerText = t.s6Title; document.getElementById('s6Text').innerText = t.s6Text;
+      const s6List = document.getElementById('s6List'); if (s6List) s6List.innerHTML = t.s6ListItems.map(item => `<li>${item}</li>`).join('');
+      document.getElementById('s7Title').innerText = t.s7Title; document.getElementById('s7Text').innerText = t.s7Text;
+      document.getElementById('s8Title').innerText = t.s8Title; document.getElementById('s8Text').innerText = t.s8Text;
+      document.getElementById('s9Title').innerText = t.s9Title; document.getElementById('s9Text').innerText = t.s9Text;
+      document.getElementById('s10Title').innerText = t.s10Title; document.getElementById('s10Text').innerText = t.s10Text;
+      const s10List = document.getElementById('s10List'); if (s10List) s10List.innerHTML = t.s10ListItems.map(item => `<li>${item}</li>`).join('');
+      document.getElementById('s10Contact').innerHTML = t.s10Contact.replace('privacy@greeter.com', '<a href="mailto:privacy@greeter.com" class="contact-email">privacy@greeter.com</a>');
+      document.getElementById('s11Title').innerText = t.s11Title; document.getElementById('s11Text').innerText = t.s11Text;
+      document.getElementById('s12Title').innerText = t.s12Title; document.getElementById('s12Text').innerText = t.s12Text;
+      document.getElementById('s13Title').innerText = t.s13Title; document.getElementById('s13Text').innerText = t.s13Text;
+      document.getElementById('s14Title').innerText = t.s14Title; document.getElementById('s14Text').innerText = t.s14Text;
+      document.getElementById('footerNote').innerHTML = t.footerNote.replace('privacy@greeter.com', '<a href="mailto:privacy@greeter.com" class="contact-email">privacy@greeter.com</a>');
+      // Footer (exactly from ContactUs)
+      document.getElementById('footerBrandText').innerText = t.footerBrand;
+      document.getElementById('exploreTitle').innerText = t.exploreTitle;
+      document.getElementById('supportTitle').innerText = t.supportTitle;
+      document.getElementById('followTitle').innerText = t.followTitle;
+      document.getElementById('copyrightText').innerText = t.copyright;
+      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+      t.exploreLinks.forEach((txt, idx) => { if (document.getElementById(exploreIds[idx])) document.getElementById(exploreIds[idx]).innerText = txt; });
+      const supportIds = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
+      t.supportLinks.forEach((txt, idx) => { if (document.getElementById(supportIds[idx])) document.getElementById(supportIds[idx]).innerText = txt; });
+      // Update lang toggle button text
+      const langSpan = document.querySelector('#langToggleBtn span');
+      if (langSpan) langSpan.innerText = lang === 'en' ? 'हिन्दी' : 'English';
+      localStorage.setItem('greeter_lang', lang);
+      currentLang = lang;
+    }
+
+    document.getElementById('langToggleBtn').addEventListener('click', () => {
+      applyLanguage(currentLang === 'en' ? 'hi' : 'en');
+    });
+
+    // Theme toggle
+    function setTheme(isDark) {
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      if (isDark) {
+        body.classList.add('dark');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('greeter-theme', 'dark');
+      } else {
+        body.classList.remove('dark');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('greeter-theme', 'light');
+      }
+    }
+    window.toggleTheme = () => setTheme(!document.body.classList.contains('dark'));
+    const savedTheme = localStorage.getItem('greeter-theme') || 'light';
+    setTheme(savedTheme === 'dark');
+    document.getElementById('modeToggle').addEventListener('click', window.toggleTheme);
+
+    // Mobile menu (identical to ContactUs)
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const navLinksDiv = document.getElementById('navLinks');
+    function closeMobileMenu() {
+      navLinksDiv.classList.remove('show');
+      if (menuBtn) {
+        const icon = menuBtn.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    }
+    function openMobileMenu() {
+      navLinksDiv.classList.add('show');
+      if (menuBtn) {
+        const icon = menuBtn.querySelector('i');
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+      }
+    }
+    if (menuBtn) {
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (navLinksDiv.classList.contains('show')) closeMobileMenu();
+        else openMobileMenu();
+      });
+    }
+    document.addEventListener('click', (event) => {
+      const isClickInsideMenu = navLinksDiv.contains(event.target);
+      const isClickOnToggle = menuBtn && menuBtn.contains(event.target);
+      if (!isClickInsideMenu && !isClickOnToggle && navLinksDiv.classList.contains('show')) closeMobileMenu();
+    });
+    window.addEventListener('resize', () => { if (window.innerWidth > 768 && navLinksDiv.classList.contains('show')) closeMobileMenu(); });
+    document.querySelectorAll('#navLinks a').forEach(link => { link.addEventListener('click', closeMobileMenu); });
+
+    // Sign in alert
+    document.getElementById('signinBtn').addEventListener('click', () => {
+      alert(currentLang === 'en' ? "Sign in feature coming soon!" : "लॉगिन सुविधा जल्द आ रही है!");
+    });
+
+    // Social links placeholder alert
+    document.querySelectorAll('.footer-social .social-icons a').forEach(link => {
+      link.addEventListener('click', (e) => { e.preventDefault(); alert(currentLang === 'en' ? "Social media integration coming soon." : "सोशल मीडिया इंटीग्रेशन जल्द आ रहा है।"); });
+    });
+
+    // Initialize
+    applyLanguage(localStorage.getItem('greeter_lang') || 'en');
+  </script>
+</body>
+
+</html>

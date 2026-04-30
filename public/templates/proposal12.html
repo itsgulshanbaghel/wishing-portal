@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>From My Heart · A Proposal</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #fefaf5;
+            font-family: 'Inter', sans-serif;
+            color: #2c241f;
+            overflow-x: hidden;
+        }
+
+        /* soft background canvas */
+        #softCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: #e0a878;
+            width: 0%;
+            z-index: 200;
+            transition: width 0.1s;
+        }
+
+        .chapter {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .chapter.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1,
+        h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 12vw, 5.5rem);
+            color: #b5623b;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 7vw, 3.2rem);
+            color: #8b4a2c;
+            margin-bottom: 20px;
+        }
+
+        .sub {
+            font-size: 1rem;
+            color: #8e6b58;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 36px 32px;
+            max-width: 680px;
+            width: 100%;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0e2d4;
+            margin: 16px 0;
+            text-align: left;
+        }
+
+        .letter-body {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            line-height: 1.7;
+            color: #2c241f;
+            min-height: 160px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: #b5623b;
+            animation: blink 0.8s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0
+            }
+        }
+
+        .timeline-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 30px 0 20px;
+        }
+
+        .timeline-item {
+            background: #fef7f0;
+            border-radius: 60px;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #f0dccc;
+        }
+
+        .timeline-item.active {
+            background: #e0a878;
+            color: white;
+            border-color: #e0a878;
+        }
+
+        .timeline-detail {
+            background: #fefaf5;
+            border-radius: 32px;
+            padding: 24px;
+            margin-top: 12px;
+            font-style: italic;
+            color: #5e3e2c;
+        }
+
+        .reasons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .reason-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: 0.4s;
+            border-bottom: 3px solid #e0a878;
+        }
+
+        .reason-card.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .promise-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: white;
+            border-radius: 60px;
+            padding: 14px 24px;
+            margin: 12px auto;
+            max-width: 560px;
+            opacity: 0;
+            transform: translateX(-15px);
+            transition: 0.4s;
+        }
+
+        .promise-row.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .btn-yes {
+            background: #b5623b;
+            border: none;
+            padding: 14px 48px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            font-family: 'Cormorant Garamond', serif;
+            color: white;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(181, 98, 59, 0.3);
+        }
+
+        .btn-yes:hover {
+            transform: scale(1.02);
+            background: #9b4f2e;
+        }
+
+        .btn-no {
+            background: transparent;
+            border: 1px solid #cdb6a6;
+            padding: 12px 32px;
+            border-radius: 60px;
+            margin-left: 16px;
+            cursor: pointer;
+            color: #5e3e2c;
+        }
+
+        .celebration {
+            position: fixed;
+            inset: 0;
+            background: rgba(254, 250, 245, 0.96);
+            backdrop-filter: blur(12px);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.4s;
+        }
+
+        .celebration.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 28px 20px;
+            }
+
+            .reasons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="softCanvas"></canvas>
+    <div class="progress" id="progressBar"></div>
+
+    <!-- Chapter 1: Introduction -->
+    <section class="chapter visible" id="ch1">
+        <div class="sub">A love story</div>
+        <h1 id="mainTitle">For You, My Everything</h1>
+        <div class="sub" id="mainSub" style="margin-top: 12px;">From my heart to yours</div>
+        <div style="margin-top: 48px; font-size: 0.8rem;">↓</div>
+    </section>
+
+    <!-- Chapter 2: How we began (timeline) -->
+    <section class="chapter" id="ch2">
+        <div class="sub">Chapter one</div>
+        <h2 id="timelineHeading">How we began</h2>
+        <div class="timeline-row" id="timelineContainer"></div>
+        <div class="timeline-detail" id="timelineDetail">
+            <p id="timelineText">From the very first moment, something felt different.</p>
+        </div>
+    </section>
+
+    <!-- Chapter 3: Love letter -->
+    <section class="chapter" id="ch3">
+        <div class="sub">Chapter two</div>
+        <h2 id="letterHeading">A letter for you</h2>
+        <div class="card">
+            <div class="letter-body" id="letterBody"></div>
+            <div style="margin-top: 28px; text-align: right; font-style: italic;" id="letterSign">Yours,</div>
+        </div>
+    </section>
+
+    <!-- Chapter 4: Reasons -->
+    <section class="chapter" id="ch4">
+        <div class="sub">Chapter three</div>
+        <h2 id="reasonsHeading">Why I love you</h2>
+        <div class="reasons-grid" id="reasonsGrid"></div>
+    </section>
+
+    <!-- Chapter 5: Promises -->
+    <section class="chapter" id="ch5">
+        <div class="sub">Chapter four</div>
+        <h2 id="promisesHeading">My promises</h2>
+        <div id="promisesList"></div>
+    </section>
+
+    <!-- Chapter 6: The question -->
+    <section class="chapter" id="ch6">
+        <div style="font-size: 3rem; margin-bottom: 20px;">💌</div>
+        <div class="sub" id="proposalPre">After all these moments...</div>
+        <h2 id="proposalQuestion">Will you marry me?</h2>
+        <div style="margin-top: 32px;">
+            <button class="btn-yes" id="yesBtn">Yes, a thousand times 💍</button>
+            <button class="btn-no" id="noBtn">I need a moment...</button>
+        </div>
+    </section>
+
+    <div id="celebrationOverlay" class="celebration">
+        <div style="font-size: 4rem;">💖🎉💖</div>
+        <h2 id="celebTitle">She said YES!</h2>
+        <p id="celebMsg" style="margin: 20px; max-width: 400px;">This is only the beginning of forever.</p>
+        <button class="btn-yes" id="closeCeleb">Begin forever ♡</button>
+    </div>
+
+    <script>
+        (function () {
+            function getLang() {
+                try {
+                    const p = new URLSearchParams(location.search).get('lang');
+                    if (p === 'hi' || p === 'en') return p;
+                    const ls = localStorage.getItem('greeter_lang');
+                    if (ls === 'hi' || ls === 'en') return ls;
+                } catch (e) { }
+                return 'en';
+            }
+            const lang = getLang();
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            const params = new URLSearchParams(location.search);
+            const userName = params.get('name') || userData.name || (lang === 'hi' ? 'मेरी जान' : 'My Love');
+            const userStory = params.get('story') || userData.story || '';
+            const userWish = params.get('wishes') || userData.wishes || '';
+
+            const T = {
+                en: {
+                    mainTitle: 'For You, My Everything',
+                    mainSub: 'From my heart to yours',
+                    timelineHeading: 'How we began',
+                    timelineNodes: [
+                        { name: 'First glance', desc: 'The second I saw you, I knew you were special. Something stirred inside me.' },
+                        { name: 'First talk', desc: 'Your words felt like home. Hours disappeared and I only wanted more.' },
+                        { name: 'Falling', desc: 'Somewhere between a laugh and a silence, I fell completely for you.' },
+                        { name: 'Now', desc: 'Every day with you has only deepened what I feel. You are my person.' }
+                    ],
+                    letterHeading: 'A letter for you',
+                    letterBody: "My dearest {name}, there are no perfect words, only honest ones. You have changed my life simply by being in it. I love the way you think, the way you care, the way you exist. I want to wake up next to you, share ordinary days and extraordinary dreams. You are my heart outside my body.",
+                    letterSign: 'Yours, always',
+                    reasonsHeading: 'Why I love you',
+                    reasons: [
+                        { icon: '❤️', title: 'Your kindness', text: 'You care deeply, without expecting anything back.' },
+                        { icon: '😊', title: 'Your smile', text: 'It turns my worst days into something bearable.' },
+                        { icon: '🧠', title: 'Your mind', text: 'I love how you see the world, and how you talk to me.' },
+                        { icon: '🤲', title: 'Your presence', text: 'Just being near you feels like safety.' }
+                    ],
+                    promisesHeading: 'My promises',
+                    promises: [
+                        '🤍 I will choose you every single day.',
+                        '🤍 I will listen, truly listen, to everything you feel.',
+                        '🤍 I will stand by you in hard times and celebrate every small win.',
+                        '🤍 I will grow with you, laugh with you, and never take you for granted.'
+                    ],
+                    proposalPre: 'After all these moments...',
+                    proposalQuestion: 'Will you marry me?',
+                    yesText: 'Yes, a thousand times 💍',
+                    noSillies: ['Are you sure? 💕', 'Please?', 'Say yes 🥺', 'Yes?', 'Forever?'],
+                    celebTitle: 'She said YES!',
+                    celebMsg: 'This is only the beginning of forever.'
+                },
+                hi: {
+                    mainTitle: 'तुम्हारे लिए, मेरी हर चीज़',
+                    mainSub: 'मेरे दिल से तुम्हारे दिल तक',
+                    timelineHeading: 'हमारी कहानी कैसे शुरू हुई',
+                    timelineNodes: [
+                        { name: 'पहली नज़र', desc: 'तुम्हें देखते ही मुझे लगा कुछ खास है।' },
+                        { name: 'पहली बात', desc: 'तुम्हारी बातें घर जैसी लगीं। घंटे बीत गए और मैं और चाहता था।' },
+                        { name: 'गहराता प्यार', desc: 'किसी हँसी और खामोशी के बीच, मैं तुमसे पूरी तरह प्यार कर बैठा।' },
+                        { name: 'आज', desc: 'तुम्हारे साथ हर दिन ने मेरे प्यार को और गहरा किया। तुम हो मेरे।' }
+                    ],
+                    letterHeading: 'तुम्हारे नाम एक पत्र',
+                    letterBody: "मेरे प्यारे {name}, सही शब्द नहीं मिलते, सिर्फ सच्चे मिलते हैं। तुमने मेरी ज़िंदगी को बदल दिया। मुझे प्यार है तुम्हारी सोच से, तुम्हारे एहसास से। मैं तुम्हारे संग हर सुबह जगना चाहता हूँ। तुम मेरे दिल बाहर हो।",
+                    letterSign: 'हमेशा तुम्हारा,',
+                    reasonsHeading: 'प्यार के कारण',
+                    reasons: [
+                        { icon: '❤️', title: 'तुम्हारी दयालुता', text: 'बिना उम्मीद के, तुम देती हो।' },
+                        { icon: '😊', title: 'तुम्हारी मुस्कान', text: 'बुरे दिनों में रोशनी देती है।' },
+                        { icon: '🧠', title: 'तुम्हारा दिमाग़', text: 'मुझे पसंद है तुम कैसे सोचती हो।' },
+                        { icon: '🤲', title: 'तुम्हारा साथ', text: 'तुम्हारे पास रहना सुकून है।' }
+                    ],
+                    promisesHeading: 'मेरे वादे',
+                    promises: [
+                        '🤍 हर दिन तुम्हें चुनूंगा।',
+                        '🤍 तुम्हारी हर बात सुनूंगा, सच में सुनूंगा।',
+                        '🤍 मुश्किल में संग रहूंगा, हर छोटी जीत मनाऊंगा।',
+                        '🤍 तुम्हारे साथ बढूंगा, हंसूंगा, और कभी हल्के में न लूंगा।'
+                    ],
+                    proposalPre: 'इन सब पलों के बाद...',
+                    proposalQuestion: 'क्या तुम मुझसे शादी करोगी?',
+                    yesText: 'हाँ, हज़ार बार 💍',
+                    noSillies: ['सच में? 💕', 'प्लीज़?', 'हाँ बोलो 🥺', 'हाँ?', 'हमेशा?'],
+                    celebTitle: 'उसने हाँ कहा!',
+                    celebMsg: 'हमेशा की शुरुआत है ये।'
+                }
+            };
+            const t = T[lang];
+
+            // fill text
+            document.getElementById('mainTitle').innerText = t.mainTitle;
+            document.getElementById('mainSub').innerText = t.mainSub;
+            document.getElementById('timelineHeading').innerText = t.timelineHeading;
+            document.getElementById('letterHeading').innerText = t.letterHeading;
+            document.getElementById('letterSign').innerHTML = t.letterSign;
+            document.getElementById('reasonsHeading').innerText = t.reasonsHeading;
+            document.getElementById('promisesHeading').innerText = t.promisesHeading;
+            document.getElementById('proposalPre').innerText = t.proposalPre;
+            document.getElementById('proposalQuestion').innerText = t.proposalQuestion;
+            document.getElementById('yesBtn').innerText = t.yesText;
+            document.getElementById('celebTitle').innerHTML = t.celebTitle;
+            document.getElementById('celebMsg').innerText = userWish || t.celebMsg;
+
+            // timeline
+            const timelineContainer = document.getElementById('timelineContainer');
+            t.timelineNodes.forEach((node, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'timeline-item' + (idx === 0 ? ' active' : '');
+                btn.innerText = node.name;
+                btn.dataset.idx = idx;
+                timelineContainer.appendChild(btn);
+            });
+            const timelineText = document.getElementById('timelineText');
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            function setTimeline(idx) {
+                timelineItems.forEach((item, i) => {
+                    if (i == idx) item.classList.add('active');
+                    else item.classList.remove('active');
+                });
+                timelineText.innerText = t.timelineNodes[idx].desc;
+            }
+            timelineItems.forEach((item, i) => item.addEventListener('click', () => setTimeline(i)));
+            setTimeline(0);
+            // auto rotate
+            let autoIdx = 0;
+            const interval = setInterval(() => {
+                autoIdx = (autoIdx + 1) % t.timelineNodes.length;
+                setTimeline(autoIdx);
+            }, 4500);
+            timelineContainer.addEventListener('mouseenter', () => clearInterval(interval));
+
+            // letter typewriter
+            const letterBodyDiv = document.getElementById('letterBody');
+            let typed = false;
+            const finalLetter = userStory || t.letterBody.replace('{name}', userName);
+            function typewriteLetter() {
+                if (typed) return;
+                typed = true;
+                letterBodyDiv.innerHTML = '';
+                let i = 0;
+                const cursorSpan = document.createElement('span');
+                cursorSpan.className = 'cursor';
+                letterBodyDiv.appendChild(cursorSpan);
+                const iv = setInterval(() => {
+                    letterBodyDiv.insertBefore(document.createTextNode(finalLetter[i]), cursorSpan);
+                    i++;
+                    if (i >= finalLetter.length) { clearInterval(iv); cursorSpan.remove(); }
+                }, 28);
+            }
+
+            // reasons
+            const reasonsGrid = document.getElementById('reasonsGrid');
+            const reasonCards = [];
+            t.reasons.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'reason-card';
+                card.innerHTML = `<div style="font-size: 2rem;">${r.icon}</div><h3 style="margin:12px 0 6px;">${r.title}</h3><p style="color:#5e3e2c;">${r.text}</p>`;
+                reasonsGrid.appendChild(card);
+                reasonCards.push(card);
+            });
+
+            // promises
+            const promisesContainer = document.getElementById('promisesList');
+            const promiseRows = [];
+            t.promises.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'promise-row';
+                row.innerHTML = `<span style="font-size:1.6rem;">🤍</span><span>${p}</span>`;
+                promisesContainer.appendChild(row);
+                promiseRows.push(row);
+            });
+
+            // intersection observer
+            const chapters = document.querySelectorAll('.chapter');
+            let ch3done = false, ch4done = false, ch5done = false;
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('visible');
+                    const id = entry.target.id;
+                    if (id === 'ch3' && !ch3done) { ch3done = true; typewriteLetter(); }
+                    if (id === 'ch4' && !ch4done) {
+                        ch4done = true;
+                        reasonCards.forEach((c, i) => setTimeout(() => c.classList.add('revealed'), i * 120));
+                    }
+                    if (id === 'ch5' && !ch5done) {
+                        ch5done = true;
+                        promiseRows.forEach((r, i) => setTimeout(() => r.classList.add('revealed'), i * 130));
+                    }
+                });
+            }, { threshold: 0.25 });
+            chapters.forEach(c => observer.observe(c));
+
+            // progress bar
+            window.addEventListener('scroll', () => {
+                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                const percent = (window.scrollY / maxScroll) * 100;
+                document.getElementById('progressBar').style.width = percent + '%';
+            });
+
+            // yes / no
+            const celebrationDiv = document.getElementById('celebrationOverlay');
+            let sillyIndex = 0;
+            const noBtn = document.getElementById('noBtn');
+            noBtn.addEventListener('click', () => {
+                const sillies = t.noSillies;
+                if (sillyIndex < sillies.length) {
+                    noBtn.innerText = sillies[sillyIndex++];
+                    if (sillyIndex === sillies.length) setTimeout(() => document.getElementById('yesBtn').click(), 400);
+                }
+            });
+            document.getElementById('yesBtn').addEventListener('click', () => {
+                celebrationDiv.classList.add('show');
+                canvasConfetti({ particleCount: 280, spread: 100, origin: { y: 0.6 }, colors: ['#e0a878', '#b5623b', '#f5d0b5'], startVelocity: 20 });
+                for (let i = 0; i < 4; i++) setTimeout(() => canvasConfetti({ particleCount: 120, angle: 60, spread: 70, origin: { x: 0 } }), i * 200);
+            });
+            document.getElementById('closeCeleb').addEventListener('click', () => {
+                celebrationDiv.classList.remove('show');
+            });
+
+            // soft canvas (gentle particles)
+            const canvas = document.getElementById('softCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resize);
+            resize();
+            for (let i = 0; i < 60; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 1 + Math.random() * 3,
+                    alpha: 0.1 + Math.random() * 0.3,
+                    speedY: 0.2 + Math.random() * 0.4,
+                });
+            }
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(181, 98, 59, ${p.alpha})`;
+                    ctx.fill();
+                    p.y += p.speedY;
+                    if (p.y > canvas.height) p.y = -10;
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+    </script>
+</body>
+
+</html>
