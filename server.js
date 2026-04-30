@@ -46,8 +46,8 @@ app.post('/api/config', async (req, res) => {
         if (!html) return res.status(400).json({ error: 'HTML is required' });
         const id = Math.random().toString(36).substring(2, 12);
         const data = JSON.stringify({ html, config });
-        const buffer = Buffer.from(data, 'utf8');
-        const result = await cloudinary.uploader.upload(buffer, {
+        const dataUri = `data:application/json;base64,${Buffer.from(data).toString('base64')}`;
+        const result = await cloudinary.uploader.upload(dataUri, {
             resource_type: 'raw',
             public_id: id,
             folder: 'configs'
