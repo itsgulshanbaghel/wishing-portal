@@ -4,10 +4,18 @@ const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const https = require('https');
+const cloudinary = require('cloudinary').v2;
 
 console.log('__dirname:', __dirname);
 
 dotenv.config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,17 +39,19 @@ const upload = multer({ dest: uploadsDir });
 // Favicon — suppress 404
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-// Configs directory for shared links
-const configsDir = path.join(__dirname, 'configs');
-if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir, { recursive: true });
-
 // Save shared config + HTML
-app.post('/api/config', (req, res) => {
+app.post('/api/config', async (req, res) => {
     try {
         const { html, config } = req.body;
         if (!html) return res.status(400).json({ error: 'HTML is required' });
         const id = Math.random().toString(36).substring(2, 12);
-        fs.writeFileSync(path.join(configsDir, `${id}.json`), JSON.stringify({ html, config }), 'utf8');
+        const data = JSON.stringify({ html, config });
+        const buffer = Buffer.from(data, 'utf8');
+        const result = await cloudinary.uploader.upload(buffer, {
+            resource_type: 'raw',
+            public_id: id,
+            folder: 'configs'
+        });
         res.json({ id });
     } catch (err) {
         console.error('Error saving config:', err);
@@ -50,13 +60,26 @@ app.post('/api/config', (req, res) => {
 });
 
 // Retrieve shared config + HTML
-app.get('/api/config/:id', (req, res) => {
+app.get('/api/config/:id', async (req, res) => {
     try {
         const safeName = req.params.id.replace(/[^a-z0-9]/gi, '');
-        const filePath = path.join(configsDir, `${safeName}.json`);
-        if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Not found' });
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        res.json(data);
+        const url = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/configs/${safeName}`;
+        https.get(url, (resp) => {
+            let data = '';
+            resp.on('data', (chunk) => {
+                data += chunk;
+            });
+            resp.on('end', () => {
+                try {
+                    const json = JSON.parse(data);
+                    res.json(json);
+                } catch (err) {
+                    res.status(500).json({ error: 'Failed to parse' });
+                }
+            });
+        }).on('error', (err) => {
+            res.status(404).json({ error: 'Not found' });
+        });
     } catch (err) {
         console.error('Error reading config:', err);
         res.status(500).json({ error: 'Failed to read' });
