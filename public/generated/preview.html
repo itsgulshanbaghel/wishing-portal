@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>Select Template · Greeter.com</title>
+  <title>Select Template · Greeter</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1121,7 +1121,7 @@
   <div class="container">
     <nav class="navbar">
       <a href="../index.html" class="logo">
-        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
       </a>
       <div class="nav-links" id="navLinks">
         <a href="../index.html" id="navHome">Home</a>
@@ -1481,7 +1481,7 @@
       // ---------- SHARE ----------
       function shareFooter(platform) {
         const url = window.location.href;
-        const title = encodeURIComponent('Greeter.com - Create magical greeting websites');
+        const title = encodeURIComponent('Greeter - Create magical greeting websites');
         if (platform === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
         else if (platform === 'whatsapp') window.open(`https://api.whatsapp.com/send?text=${title}%20${encodeURIComponent(url)}`, '_blank');
         else if (platform === 'instagram') showModal(getLocalizedString('shareInsta'), url);

@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>Share Your Surprise · Greeter.com</title>
+  <title>Share Your Surprise · Greeter</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -658,7 +658,7 @@
       <div class="nav-left">
         <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
         <a href="../index.html" class="logo">
-          <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
         </a>
       </div>
       <div class="nav-links" id="navLinks">
@@ -859,7 +859,7 @@
       nativeShareBtn.addEventListener('click', () => {
         if (!fullLink) return;
         navigator.share({
-          title: 'Greeter.com',
+          title: 'Greeter',
           text: currentLang === 'en' ? 'Check out this magical surprise website!' : 'यह जादुई सरप्राइज़ वेबसाइट देखें!',
           url: fullLink
         }).catch(() => { });
@@ -869,7 +869,7 @@
       function shareOn(platform) {
         if (!fullLink) return;
         const url = encodeURIComponent(fullLink);
-        const title = encodeURIComponent('Greeter.com – A magical surprise for you!');
+        const title = encodeURIComponent('Greeter – A magical surprise for you!');
         let shareUrl = '';
         switch (platform) {
           case 'whatsapp': shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`; break;

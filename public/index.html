@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Greeter.com · Create Memorable websites for every occasion</title>
+    <title>Greeter · Create Memorable websites for every occasion</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -1294,7 +1294,7 @@
         <!-- HEADER -->
         <nav class="navbar">
             <a href="index.html" class="logo">
-                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
             </a>
             <div class="nav-links" id="navLinks">
                 <a href="index.html" id="navHome">Home</a>
@@ -1442,7 +1442,7 @@
             <div class="footer-inner">
                 <div class="footer-brand"><a href="index.html" class="logo"
                         style="margin-bottom: 16px; display: inline-flex;">
-                        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+                        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
                     </a>
                     <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals,
                         anniversaries and festivals — no coding needed.</p>
@@ -1667,12 +1667,12 @@
         copyLinkBtn.addEventListener('click', copyPageLink);
         const nativeShareBtn = document.getElementById('nativeShareBtn');
         if (navigator.share) nativeShareBtn.style.display = 'flex';
-        nativeShareBtn.addEventListener('click', () => { navigator.share({ title: 'Greeter.com', text: 'Create Memorable websites', url: window.location.href }).catch(() => { }); closeSharePopup(); });
+        nativeShareBtn.addEventListener('click', () => {         navigator.share({ title: 'Greeter', text: 'Create Memorable websites', url: window.location.href }).catch(() => { }); closeSharePopup(); });
         document.querySelectorAll('.share-icon-item').forEach(item => {
             item.addEventListener('click', () => {
                 const platform = item.dataset.platform;
                 const url = encodeURIComponent(window.location.href);
-                const title = encodeURIComponent('Greeter.com');
+                const title = encodeURIComponent('Greeter');
                 let shareUrl = '';
                 if (platform === 'facebook') shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
                 else if (platform === 'twitter') shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
@@ -1689,7 +1689,7 @@
 
         // Footer social actions
         document.getElementById('footerFacebook')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`); });
-        document.getElementById('footerWhatsApp')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://wa.me/?text=${encodeURIComponent('Greeter.com - Create Memorable websites')}%20${encodeURIComponent(window.location.href)}`); });
+        document.getElementById('footerWhatsApp')?.addEventListener('click', (e) => { e.preventDefault();                 window.open(`https://wa.me/?text=${encodeURIComponent('Greeter - Create Memorable websites')}%20${encodeURIComponent(window.location.href)}`); });
         document.getElementById('footerTwitter')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`); });
         document.getElementById('footerInstagram')?.addEventListener('click', (e) => { e.preventDefault(); alert(translations[currentLang].copyAlert); });
 

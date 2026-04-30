@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>Share Your Surprise · Greeter.com</title>
+  <title>Share Your Surprise · Greeter</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -897,7 +897,7 @@
     <!-- ========== NAVBAR ========== -->
     <nav class="navbar">
       <a href="../index.html" class="logo">
-        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
       </a>
       <div class="nav-links" id="navLinks">
         <a href="../index.html" id="navHome">Home</a>
@@ -991,7 +991,7 @@
       <div class="footer-inner">
         <div class="footer-brand">
           <a href="../index.html" class="logo" style="margin-bottom: 16px; display: inline-flex;">
-            <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+                    <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
           </a>
           <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
             and festivals — no coding needed.</p>
@@ -1064,7 +1064,7 @@
       nativeShareBtn.addEventListener('click', () => {
         if (!fullLink) return;
         navigator.share({
-          title: 'Greeter.com',
+          title: 'Greeter',
           text: currentLang === 'en' ? 'Check out this magical surprise website!' : 'यह जादुई सरप्राइज़ वेबसाइट देखें!',
           url: fullLink
         }).catch(() => { });
@@ -1074,7 +1074,7 @@
       function shareOn(platform) {
         if (!fullLink) return;
         const url = encodeURIComponent(fullLink);
-        const title = encodeURIComponent('Greeter.com – A magical surprise for you!');
+        const title = encodeURIComponent('Greeter – A magical surprise for you!');
         let shareUrl = '';
         switch (platform) {
           case 'whatsapp': shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`; break;
@@ -1218,7 +1218,7 @@
 
       // Footer social share (same as index)
       document.getElementById('footerFacebook')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`); });
-      document.getElementById('footerWhatsApp')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://wa.me/?text=${encodeURIComponent('Greeter.com - Create Memorable websites')}%20${encodeURIComponent(window.location.href)}`); });
+      document.getElementById('footerWhatsApp')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://wa.me/?text=${encodeURIComponent('Greeter - Create Memorable websites')}%20${encodeURIComponent(window.location.href)}`); });
       document.getElementById('footerTwitter')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`); });
       document.getElementById('footerInstagram')?.addEventListener('click', (e) => { e.preventDefault(); alert(translations[currentLang].copyAlert); });
     })();

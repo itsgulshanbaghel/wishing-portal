@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>Create Your Surprise · Greeter.com</title>
+  <title>Create Your Surprise · Greeter</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -941,7 +941,7 @@
   <div class="container">
     <nav class="navbar" id="navbar">
       <a href="index.html" class="logo">
-        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
       </a>
       <div class="nav-links" id="navLinks">
         <a href="index.html" id="navHome">Home</a>
@@ -1038,7 +1038,7 @@
     <footer class="footer">
       <div class="footer-inner">
         <div class="footer-brand"><a href="index.html" class="logo" style="margin-bottom: 16px; display: inline-flex;">
-            <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com
+                    <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
           </a>
           <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals,
             anniversaries and festivals — no coding needed.</p>
@@ -1613,8 +1613,8 @@
       // Share buttons
       const pageUrl = encodeURIComponent(window.location.href);
       document.getElementById('shareFacebook')?.addEventListener('click', () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`, '_blank'));
-      document.getElementById('shareWhatsApp')?.addEventListener('click', () => window.open(`https://wa.me/?text=${encodeURIComponent('Create Your Surprise on Greeter.com')}%20${pageUrl}`, '_blank'));
-      document.getElementById('shareInstagram')?.addEventListener('click', () => { const msg = translations[currentLang].shareMessages.instaAlert; if (navigator.share) navigator.share({ title: 'Greeter.com', text: 'Create a magical surprise website!', url: window.location.href }).catch(() => { }); else showModal(msg, window.location.href); });
+      document.getElementById('shareWhatsApp')?.addEventListener('click', () => window.open(`https://wa.me/?text=${encodeURIComponent('Create Your Surprise on Greeter')}%20${pageUrl}`, '_blank'));
+      document.getElementById('shareInstagram')?.addEventListener('click', () => { const msg = translations[currentLang].shareMessages.instaAlert; if (navigator.share) navigator.share({ title: 'Greeter', text: 'Create a magical surprise website!', url: window.location.href }).catch(() => { }); else showModal(msg, window.location.href); });
 
 
       // Backend API
