@@ -64,22 +64,15 @@ app.get('/api/config/:id', async (req, res) => {
     try {
         const safeName = req.params.id.replace(/[^a-z0-9]/gi, '');
         const url = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/configs/${safeName}`;
-        https.get(url, (resp) => {
-            let data = '';
-            resp.on('data', (chunk) => {
-                data += chunk;
-            });
-            resp.on('end', () => {
-                try {
-                    const json = JSON.parse(data);
-                    res.json(json);
-                } catch (err) {
-                    res.status(500).json({ error: 'Failed to parse' });
-                }
-            });
-        }).on('error', (err) => {
-            res.status(404).json({ error: 'Not found' });
-        });
+        const response = await fetch(url);
+        if (!response.ok) return res.status(404).json({ error: 'Not found' });
+        const data = await response.text();
+        try {
+            const json = JSON.parse(data);
+            res.json(json);
+        } catch (err) {
+            res.status(500).json({ error: 'Failed to parse' });
+        }
     } catch (err) {
         console.error('Error reading config:', err);
         res.status(500).json({ error: 'Failed to read' });
