@@ -2126,7 +2126,7 @@
       let FEATURE_MAP = {};
       let magicLoaded = false;
 
-      fetch('/api/magic').then(r => r.json()).then(data => {
+      fetch('https://wishing-portal.onrender.com/api/magic').then(r => r.json()).then(data => {
         try {
           const decoded = atob(data.magic);
           window._magicRaw = data.magic; // Preserve raw base64 for standalone injection
@@ -3835,7 +3835,7 @@
           };
 
           // Save to server for cross-browser sharing
-          fetch('/api/config', {
+          fetch('https://wishing-portal.onrender.com/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ html, config })
@@ -3983,7 +3983,7 @@
         }
 
         // Try server first, fall back to localStorage
-        fetch('/api/config/' + encodeURIComponent(viewId))
+        fetch('https://wishing-portal.onrender.com/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
           .then(data => { applySharedView(data.html, data.config); })
           .catch(() => {
