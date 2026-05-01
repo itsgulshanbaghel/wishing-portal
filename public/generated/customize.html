@@ -3664,7 +3664,28 @@
           // The shared page will re-enable all features in the correct order.
           let html = "";
           try {
+            // Ensure all contentEditable changes are committed
+            if (doc.body && doc.body.contentEditable === 'true') {
+              // Force commit any pending changes
+              const selection = doc.getSelection();
+              if (selection.rangeCount > 0) {
+                selection.removeAllRanges();
+              }
+            }
+
+            // Remove any template scripts that might interfere
+            const scripts = doc.querySelectorAll('script');
+            scripts.forEach(script => {
+              const src = script.src || '';
+              const content = script.textContent || '';
+              // Remove template-specific scripts that might overwrite content
+              if (src.includes('template') || content.includes('applyLanguage') || content.includes('DOMContentLoaded')) {
+                script.remove();
+              }
+            });
+
             html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+
             // Check HTML size to prevent crashes
             const htmlSizeBytes = new Blob([html]).size;
             if (htmlSizeBytes > 10 * 1024 * 1024) { // 10MB limit
@@ -3698,7 +3719,7 @@
   }
 </style>
 `;
-          const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";localStorage.setItem("greeter_lang",lang);localStorage.setItem("customizer_lang",lang);var urlParams=new URLSearchParams(window.location.search);if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);window.history.replaceState({},"",newUrl);}})();</scr' + 'ipt>';
+          const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";try{localStorage.setItem("greeter_lang",lang);}catch(e){}var urlParams=new URLSearchParams(window.location.search);if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);try{window.history.replaceState({},"",newUrl);}catch(e){}}})();</scr' + 'ipt>';
           const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } window.addEventListener("load",function(){ setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }, 10); }); })();</scr' + 'ipt>';
 
           const ctaHtml = `
@@ -3768,10 +3789,25 @@
           ctaContainer.innerHTML = ctaHtml;
           container.appendChild(ctaContainer);
 
+          // Get features.js content for embedding
+          let featuresContent = "";
+          try {
+            const response = await fetch('https://wishing-portal.onrender.com/api/magic');
+            const data = await response.json();
+            featuresContent = atob(data.magic);
+          } catch (e) {
+            console.error("Failed to load features for embedding:", e);
+            // Fallback: try to get from current window
+            if (window.FEATURE_MAP) {
+              featuresContent = 'window.FEATURE_MAP = ' + JSON.stringify(window.FEATURE_MAP) + ';';
+            }
+          }
+
           const config = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
             customData: Array.from(customData.entries()),
-            userName: getUserName()
+            userName: getUserName(),
+            featuresContent: featuresContent
           };
 
           const magicRuntime = `
@@ -3779,11 +3815,20 @@
 (function(){
   try {
     const config = ${JSON.stringify(config).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
-    const magicRaw = "${window._magicRaw || ""}";
     window._magicConfig = config;
     const activeFeatureStates = new Map(config.activeFeatures || []);
     const customData = new Map(config.customData || []);
     const userName = config.userName || 'Loved One';
+
+    // Load features from embedded content
+    if (config.featuresContent) {
+      try {
+        window.FEATURE_MAP = new Function('return ' + config.featuresContent)();
+        window._magicReady = true;
+      } catch(e) {
+        console.error("Failed to load embedded features:", e);
+      }
+    }
 
     window.escapeHtml = function(str) { return (str||"").replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); };
     window.getUserName = () => userName;
@@ -3815,62 +3860,64 @@
     };
     window.refreshAll = function() {
       if (!window.FEATURE_MAP) {
-        console.warn('FEATURE_MAP not loaded yet');
+        console.warn('FEATURE_MAP not loaded yet, retrying...');
+        // Retry after a short delay
+        setTimeout(() => {
+          if (window.FEATURE_MAP) {
+            window.refreshAll();
+          } else {
+            console.error('FEATURE_MAP still not available after retry');
+          }
+        }, 500);
         return;
       }
-      const lockActive = activeFeatureStates.get('lock');
-      if (lockActive) {
-        const data = customData.get('lock') || {};
-        window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
 
-        const handler = () => {
-          window.removeEventListener('lockUnlocked', handler);
-          // Respect toggle order for other features
+      try {
+        const lockActive = activeFeatureStates.get('lock');
+        if (lockActive) {
+          const data = customData.get('lock') || {};
+          window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+
+          const handler = () => {
+            window.removeEventListener('lockUnlocked', handler);
+            // Respect toggle order for other features
+            for (const [id, active] of activeFeatureStates.entries()) {
+              if (id !== 'lock' && active) {
+                const data = customData.get(id) || {};
+                window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+              }
+            }
+          };
+          window.addEventListener('lockUnlocked', handler);
+        } else {
+          // Respect toggle order by iterating over the Map
           for (const [id, active] of activeFeatureStates.entries()) {
-            if (id !== 'lock' && active) {
+            if (active) {
               const data = customData.get(id) || {};
               window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
             }
           }
-        };
-        window.addEventListener('lockUnlocked', handler);
-      } else {
-        // Respect toggle order by iterating over the Map
-        for (const [id, active] of activeFeatureStates.entries()) {
-          if (active) {
-            const data = customData.get(id) || {};
-            window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-          }
         }
+      } catch (e) {
+        console.error('Error in refreshAll:', e);
       }
     };
     function initMagic() {
-      if (magicRaw) {
-        try {
-          const decoded = atob(magicRaw);
-          window.FEATURE_MAP = new Function('return ' + decoded)();
-          window._magicReady = true;
-          window.refreshAll();
-        } catch(e) {
-          console.error("Magic init failed", e);
-          // Fallback: try to load features from API
-          fetch('https://wishing-portal.onrender.com/api/magic')
-            .then(r => r.json())
-            .then(data => {
-              try {
-                const decoded = atob(data.magic);
-                window.FEATURE_MAP = new Function('return ' + decoded)();
-                window._magicReady = true;
-                window.refreshAll();
-              } catch(e2) { console.error("Fallback magic init failed", e2); }
-            })
-            .catch(e2 => console.error("Fallback API failed", e2));
-        }
+      // Features are now embedded directly, just refresh
+      if (window.FEATURE_MAP) {
+        window._magicReady = true;
+        window.refreshAll();
       } else {
-        console.warn('No magicRaw provided, features may not work');
+        console.warn('Features not available, functionality may be limited');
       }
     }
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMagic); } else { initMagic(); }
+    // Initialize immediately since features are embedded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMagic);
+    } else {
+      // Small delay to ensure DOM is ready
+      setTimeout(initMagic, 10);
+    }
   } catch(e) {
     console.error('Magic runtime initialization failed:', e);
   }
@@ -4049,17 +4096,31 @@
               throw new Error('Invalid HTML content');
             }
 
-            // Store config in a place where the reloaded page can find it
-            if (storedConfig) {
-              const configStr = typeof storedConfig === 'string' ? storedConfig : JSON.stringify(storedConfig);
-              sessionStorage.setItem('magic_hydration_config', configStr);
-            }
+          // Store config in a place where the reloaded page can find it
+          if (storedConfig) {
+            const configStr = typeof storedConfig === 'string' ? storedConfig : JSON.stringify(storedConfig);
+            sessionStorage.setItem('magic_hydration_config', configStr);
+          }
 
-            // Fully replace the document. This removes the 'box' (iframe) completely.
-            // The page will now be ONLY the template content.
-            document.open();
-            document.write(storedHtml);
-            document.close();
+          // Fully replace the document. This removes the 'box' (iframe) completely.
+          // The page will now be ONLY the template content.
+          document.open();
+          document.write(storedHtml);
+          document.close();
+
+          // Ensure features are loaded and applied immediately after document write
+          setTimeout(() => {
+            if (window._magicConfig && window._magicConfig.featuresContent && !window.FEATURE_MAP) {
+              try {
+                window.FEATURE_MAP = new Function('return ' + window._magicConfig.featuresContent)();
+                if (window.refreshAll) {
+                  window.refreshAll();
+                }
+              } catch (e) {
+                console.error('Error loading embedded features in shared view:', e);
+              }
+            }
+          }, 100);
           } catch (e) {
             console.error('Error applying shared view:', e);
             document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; font-family:Inter,sans-serif;"><h1>❌ Error loading page</h1><p style="margin-top:12px; color:#666;">Something went wrong while loading the magic. Please try again.</p></div>';
