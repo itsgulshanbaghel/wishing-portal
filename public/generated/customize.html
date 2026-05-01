@@ -3792,15 +3792,14 @@
           // Get features.js content for embedding
           let featuresContent = "";
           try {
-            const response = await fetch('https://wishing-portal.onrender.com/api/magic');
-            const data = await response.json();
-            featuresContent = atob(data.magic);
-          } catch (e) {
-            console.error("Failed to load features for embedding:", e);
-            // Fallback: try to get from current window
+            // Use the current window.FEATURE_MAP directly
             if (window.FEATURE_MAP) {
               featuresContent = 'window.FEATURE_MAP = ' + JSON.stringify(window.FEATURE_MAP) + ';';
+            } else {
+              console.warn("FEATURE_MAP not available, features may not work in generated website");
             }
+          } catch (e) {
+            console.error("Failed to prepare features for embedding:", e);
           }
 
           const config = {
