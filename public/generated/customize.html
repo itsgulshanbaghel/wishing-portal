@@ -3792,14 +3792,17 @@
           // Get features.js content for embedding
           let featuresContent = "";
           try {
-            // Use the current window.FEATURE_MAP directly
-            if (window.FEATURE_MAP) {
-              featuresContent = 'window.FEATURE_MAP = ' + JSON.stringify(window.FEATURE_MAP) + ';';
-            } else {
-              console.warn("FEATURE_MAP not available, features may not work in generated website");
+            // Get the actual features.js source code from the server synchronously
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'https://wishing-portal.onrender.com/api/magic', false); // Synchronous for generation
+            xhr.send();
+            if (xhr.status === 200) {
+              const data = JSON.parse(xhr.responseText);
+              featuresContent = atob(data.magic);
             }
           } catch (e) {
-            console.error("Failed to prepare features for embedding:", e);
+            console.error("Failed to load features for embedding:", e);
+            featuresContent = ""; // Will cause features to not work
           }
 
           const config = {
@@ -3822,11 +3825,17 @@
     // Load features from embedded content
     if (config.featuresContent) {
       try {
-        window.FEATURE_MAP = new Function('return ' + config.featuresContent)();
+        // Execute the features code directly to create window.FEATURE_MAP
+        eval(config.featuresContent);
         window._magicReady = true;
+        console.log("Features loaded successfully, applying features...");
+        // Apply features immediately
+        window.refreshAll();
       } catch(e) {
         console.error("Failed to load embedded features:", e);
       }
+    } else {
+      console.warn("No features content available");
     }
 
     window.escapeHtml = function(str) { return (str||"").replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); };
@@ -3858,6 +3867,7 @@
       }
     };
     window.refreshAll = function() {
+      console.log('refreshAll called, FEATURE_MAP:', !!window.FEATURE_MAP, 'activeFeatures:', activeFeatureStates.size);
       if (!window.FEATURE_MAP) {
         console.warn('FEATURE_MAP not loaded yet, retrying...');
         // Retry after a short delay
@@ -3872,8 +3882,10 @@
       }
 
       try {
+        console.log('Applying features...');
         const lockActive = activeFeatureStates.get('lock');
         if (lockActive) {
+          console.log('Lock feature is active');
           const data = customData.get('lock') || {};
           window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
 
@@ -3882,6 +3894,7 @@
             // Respect toggle order for other features
             for (const [id, active] of activeFeatureStates.entries()) {
               if (id !== 'lock' && active) {
+                console.log('Applying feature:', id);
                 const data = customData.get(id) || {};
                 window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
               }
@@ -3892,11 +3905,13 @@
           // Respect toggle order by iterating over the Map
           for (const [id, active] of activeFeatureStates.entries()) {
             if (active) {
+              console.log('Applying feature:', id);
               const data = customData.get(id) || {};
               window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
             }
           }
         }
+        console.log('All features applied');
       } catch (e) {
         console.error('Error in refreshAll:', e);
       }
@@ -4106,20 +4121,6 @@
           document.open();
           document.write(storedHtml);
           document.close();
-
-          // Ensure features are loaded and applied immediately after document write
-          setTimeout(() => {
-            if (window._magicConfig && window._magicConfig.featuresContent && !window.FEATURE_MAP) {
-              try {
-                window.FEATURE_MAP = new Function('return ' + window._magicConfig.featuresContent)();
-                if (window.refreshAll) {
-                  window.refreshAll();
-                }
-              } catch (e) {
-                console.error('Error loading embedded features in shared view:', e);
-              }
-            }
-          }, 100);
           } catch (e) {
             console.error('Error applying shared view:', e);
             document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; font-family:Inter,sans-serif;"><h1>❌ Error loading page</h1><p style="margin-top:12px; color:#666;">Something went wrong while loading the magic. Please try again.</p></div>';
