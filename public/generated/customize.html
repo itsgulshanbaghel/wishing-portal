@@ -3660,9 +3660,24 @@
           // Scroll iframe to top so shared page always loads from the starting section
           try { if (frame.contentWindow) frame.contentWindow.scrollTo(0, 0); } catch (e) { }
 
-          // We take a clean snapshot of the template. 
+          // We take a clean snapshot of the template.
           // The shared page will re-enable all features in the correct order.
-          let html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+          let html = "";
+          try {
+            html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+            // Check HTML size to prevent crashes
+            const htmlSizeBytes = new Blob([html]).size;
+            if (htmlSizeBytes > 10 * 1024 * 1024) { // 10MB limit
+              showModal("The page is too large to generate a link. Try disabling some features or using fewer images.");
+              refreshAll();
+              return;
+            }
+          } catch (e) {
+            console.error("Error generating HTML snapshot:", e);
+            showModal("Failed to generate page content. Please try again.");
+            refreshAll();
+            return;
+          }
 
           // Prevent the template script from overwriting edited text in the generated HTML
           html = html.replace(/applyLanguage\w*\(\);/g, '');
@@ -3762,77 +3777,103 @@
           const magicRuntime = `
 <script>
 (function(){
-  const config = ${JSON.stringify(config).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
-  const magicRaw = "${window._magicRaw || ""}";
-  window._magicConfig = config;
-  const activeFeatureStates = new Map(config.activeFeatures);
-  const customData = new Map(config.customData);
-  const userName = config.userName;
-  
-  window.escapeHtml = function(str) { return (str||"").replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); };
-  window.getUserName = () => userName;
-  window.insertSectionBeforeFinal = function(doc, sectionElement) {
-    const container = doc.getElementById('sections-container') || doc.body;
-    const finalMessage = doc.getElementById('magic-final-surprise-section');
-    const cta = doc.getElementById('magic-cta-section');
-    const anchor = finalMessage || cta;
-    if (anchor && anchor.parentNode === container) { container.insertBefore(sectionElement, anchor); } else { container.appendChild(sectionElement); }
-  };
-  window.applyFeature = function(id, active, name, text, images, emoji, audio) {
-    if (!window.FEATURE_MAP || !window.FEATURE_MAP[id]) return;
-    const feature = window.FEATURE_MAP[id];
-    if (active && feature.enable) {
-      try { 
-        if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
-          feature.enable(document, window, emoji);
-        } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
-          feature.enable(document, window, name, text, images);
-        } else if (id === "magicMusic") {
-          feature.enable(document, window, name, text, audio);
-        } else {
-          feature.enable(document, window, name, text);
-        }
-      } catch(e) { console.error("Error enabling " + id, e); }
-    }
-  };
-  window.refreshAll = function() {
-    const lockActive = activeFeatureStates.get('lock');
-    if (lockActive) {
-      const data = customData.get('lock') || {};
-      window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+  try {
+    const config = ${JSON.stringify(config).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
+    const magicRaw = "${window._magicRaw || ""}";
+    window._magicConfig = config;
+    const activeFeatureStates = new Map(config.activeFeatures || []);
+    const customData = new Map(config.customData || []);
+    const userName = config.userName || 'Loved One';
 
-      const handler = () => {
-        window.removeEventListener('lockUnlocked', handler);
-        // Respect toggle order for other features
+    window.escapeHtml = function(str) { return (str||"").replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); };
+    window.getUserName = () => userName;
+    window.insertSectionBeforeFinal = function(doc, sectionElement) {
+      if (!doc) return;
+      const container = doc.getElementById('sections-container') || doc.body;
+      if (!container) return;
+      const finalMessage = doc.getElementById('magic-final-surprise-section');
+      const cta = doc.getElementById('magic-cta-section');
+      const anchor = finalMessage || cta;
+      if (anchor && anchor.parentNode === container) { container.insertBefore(sectionElement, anchor); } else { container.appendChild(sectionElement); }
+    };
+    window.applyFeature = function(id, active, name, text, images, emoji, audio) {
+      if (!window.FEATURE_MAP || !window.FEATURE_MAP[id]) return;
+      const feature = window.FEATURE_MAP[id];
+      if (active && feature.enable) {
+        try {
+          if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
+            feature.enable(document, window, emoji);
+          } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
+            feature.enable(document, window, name, text, images);
+          } else if (id === "magicMusic") {
+            feature.enable(document, window, name, text, audio);
+          } else {
+            feature.enable(document, window, name, text);
+          }
+        } catch(e) { console.error("Error enabling " + id, e); }
+      }
+    };
+    window.refreshAll = function() {
+      if (!window.FEATURE_MAP) {
+        console.warn('FEATURE_MAP not loaded yet');
+        return;
+      }
+      const lockActive = activeFeatureStates.get('lock');
+      if (lockActive) {
+        const data = customData.get('lock') || {};
+        window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+
+        const handler = () => {
+          window.removeEventListener('lockUnlocked', handler);
+          // Respect toggle order for other features
+          for (const [id, active] of activeFeatureStates.entries()) {
+            if (id !== 'lock' && active) {
+              const data = customData.get(id) || {};
+              window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            }
+          }
+        };
+        window.addEventListener('lockUnlocked', handler);
+      } else {
+        // Respect toggle order by iterating over the Map
         for (const [id, active] of activeFeatureStates.entries()) {
-          if (id !== 'lock' && active) {
+          if (active) {
             const data = customData.get(id) || {};
             window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
           }
         }
-      };
-      window.addEventListener('lockUnlocked', handler);
-    } else {
-      // Respect toggle order by iterating over the Map
-      for (const [id, active] of activeFeatureStates.entries()) {
-        if (active) {
-          const data = customData.get(id) || {};
-          window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+      }
+    };
+    function initMagic() {
+      if (magicRaw) {
+        try {
+          const decoded = atob(magicRaw);
+          window.FEATURE_MAP = new Function('return ' + decoded)();
+          window._magicReady = true;
+          window.refreshAll();
+        } catch(e) {
+          console.error("Magic init failed", e);
+          // Fallback: try to load features from API
+          fetch('https://wishing-portal.onrender.com/api/magic')
+            .then(r => r.json())
+            .then(data => {
+              try {
+                const decoded = atob(data.magic);
+                window.FEATURE_MAP = new Function('return ' + decoded)();
+                window._magicReady = true;
+                window.refreshAll();
+              } catch(e2) { console.error("Fallback magic init failed", e2); }
+            })
+            .catch(e2 => console.error("Fallback API failed", e2));
         }
+      } else {
+        console.warn('No magicRaw provided, features may not work');
       }
     }
-  };
-  function initMagic() {
-    if (magicRaw) {
-      try {
-        const decoded = atob(magicRaw);
-        window.FEATURE_MAP = new Function('return ' + decoded)();
-        window._magicReady = true;
-        window.refreshAll();
-      } catch(e) { console.error("Magic init failed", e); }
-    }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMagic); } else { initMagic(); }
+  } catch(e) {
+    console.error('Magic runtime initialization failed:', e);
   }
-  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMagic); } else { initMagic(); }
 })();
 </scr` + `ipt>
 `;
@@ -3868,7 +3909,13 @@
             body: JSON.stringify({ html, config })
           })
             .then(r => {
-              if (!r.ok) throw new Error('Server error');
+              if (!r.ok) {
+                // Check if it's a size issue
+                if (r.status === 413) {
+                  throw new Error('Page too large for server');
+                }
+                throw new Error('Server error');
+              }
               return r.json();
             })
             .then(data => {
@@ -3881,11 +3928,11 @@
             .catch((err) => {
               console.error("Server save failed, falling back to local storage", err);
               const fallbackId = Math.random().toString(36).substring(2, 12);
-              if (saveLocally(fallbackId)) {
-                window.location.href = `share.html?view=${fallbackId}`;
-              } else {
+              if (err.message === 'Page too large for server' || !saveLocally(fallbackId)) {
                 linkInput.value = "Error: Page too large to share";
-                showModal("The page is too large to generate a link automatically. Try disabling some features or using fewer images.");
+                showModal("The page is too large to share automatically. Try disabling some features or using fewer images.");
+              } else {
+                window.location.href = `share.html?view=${fallbackId}`;
               }
             })
             .finally(() => {
@@ -3996,17 +4043,27 @@
             return;
           }
 
-          // Store config in a place where the reloaded page can find it
-          if (storedConfig) {
-            const configStr = typeof storedConfig === 'string' ? storedConfig : JSON.stringify(storedConfig);
-            sessionStorage.setItem('magic_hydration_config', configStr);
-          }
+          try {
+            // Validate HTML before applying
+            if (typeof storedHtml !== 'string' || storedHtml.length === 0) {
+              throw new Error('Invalid HTML content');
+            }
 
-          // Fully replace the document. This removes the 'box' (iframe) completely.
-          // The page will now be ONLY the template content.
-          document.open();
-          document.write(storedHtml);
-          document.close();
+            // Store config in a place where the reloaded page can find it
+            if (storedConfig) {
+              const configStr = typeof storedConfig === 'string' ? storedConfig : JSON.stringify(storedConfig);
+              sessionStorage.setItem('magic_hydration_config', configStr);
+            }
+
+            // Fully replace the document. This removes the 'box' (iframe) completely.
+            // The page will now be ONLY the template content.
+            document.open();
+            document.write(storedHtml);
+            document.close();
+          } catch (e) {
+            console.error('Error applying shared view:', e);
+            document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; font-family:Inter,sans-serif;"><h1>❌ Error loading page</h1><p style="margin-top:12px; color:#666;">Something went wrong while loading the magic. Please try again.</p></div>';
+          }
         }
 
         // Try server first, fall back to localStorage
