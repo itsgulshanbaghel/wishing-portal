@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>✨ Enchanted Customizer · Greeter</title>
+  <title>✨ Customizer Pro · Greeter</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
 
@@ -313,6 +313,27 @@
         font-size: 26px;
         gap: 10px;
       }
+    }
+
+    .logo img {
+      height: clamp(32px, 10vw, 55px);
+      width: auto;
+    }
+
+    .logo .logo-light {
+      display: block;
+    }
+
+    body.dark .logo .logo-light {
+      display: none;
+    }
+
+    .logo .logo-dark {
+      display: none;
+    }
+
+    body.dark .logo .logo-dark {
+      display: block;
     }
 
     .logo-icon {
@@ -1609,14 +1630,19 @@
   </style>
 </head>
 
-  <body>
+<body>
   <div class="bg-gradient"></div>
   <div class="menu-backdrop" id="menuBackdrop" onclick="closeMobileMenu()"></div>
   <div class="container">
     <!-- Navbar -->
     <nav class="navbar">
       <a href="../index.html" class="logo">
-                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
+        <img
+          src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
+          alt="Greeter Logo" class="logo-light">
+        <img
+          src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
+          alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
         <a href="../index.html" id="navHome">Home</a>
@@ -1833,7 +1859,7 @@
       const translations = window.translations = {
         en: {
           nav: ["Home", "Create", "Why Greeter", "Privacy", "Contact Us"], signin: "Sign in",
-          panelTitle: "✨ Magic Atelier", panelSubtitle: "", backBtn: "Back", generateBtn: "Generate & Share",
+          panelTitle: "✨ Customizer", panelSubtitle: "", backBtn: "Back", generateBtn: "Generate & Share",
           copyright: "© 2026 Greeter · Make every moment magical", footer: ["Templates", "Features", "Showcase", "Help", "Privacy"],
           sharePopupTitle: "🎉 Your website is ready!", sharePopupDesc: "Share this magic with everyone",
           nativeShareText: "Share via device apps", openTabText: "Open in New Tab", copyAlert: "Link copied!",
@@ -1842,7 +1868,7 @@
           catOpening: "\uD83C\uDFAD Intro", catFloral: "\uD83C\uDF38 Floral & Nature", catPlayful: "\uD83C\uDF88 Playful Interactions",
           catHeart: "\uD83D\uDC8C Heart & Messages", catFinale: "\u2728 Grand Finale",
           featLock: "\uD83D\uDD12 Lock", featCurtainReveal: "\uD83C\uDFAD Curtain Reveal", featWelcomeTyping: "\uD83D\uDCAC Welcome Message", featFireworksText: "\uD83C\uDF86 Fireworks Text",
-          featFlowerRain: "\uD83C\uDF38 Flower Rain", featCanvasStarfall: "\uD83C\uDF0C Stardust", featFlyingSwans: "\uD83D\uDD4A Flying Birds",
+          featFlowerRain: "\uD83C\uDF38 Flower Rain", featCanvasStarfall: "\uD83C\uDF0C Stardust", featFlyingSwans: "🕊️ Flying Birds",
           featBalloonParty: "\uD83C\uDF88 Classic Balloons", featFloatingBalloonsNamed: "\uD83C\uDF88 Named Balloons", featFireworksClick: "\u2728 Click Fireworks",
           featBombExplosion: "\uD83D\uDCA3 Bomb", featGiftBoxOpen: "\uD83C\uDF81 Gift Box", featTextFormation: "\u270D\uFE0F Typing Card",
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
@@ -1904,7 +1930,7 @@
         },
         hi: {
           nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"], signin: "लॉगिन करें",
-          panelTitle: "✨ जादुई स्टूडियो", panelSubtitle: "", backBtn: "पीछे जाएं", generateBtn: "बनाएं और शेयर करें",
+          panelTitle: "✨कस्टमाइज़ करें ", panelSubtitle: "", backBtn: "पीछे जाएं", generateBtn: "बनाएं और शेयर करें",
           copyright: "© 2026 Greeter · हर पल जादुई बनाएं", footer: ["टेम्पलेट", "फीचर्स", "शोकेस", "मदद", "प्राइवेसी"],
           sharePopupTitle: "🎉 आपकी वेबसाइट तैयार है!", sharePopupDesc: "ये जादू सबके साथ शेयर करें",
           nativeShareText: "दूसरे ऐप्स से शेयर करें", openTabText: "नए टैब में खोलें", copyAlert: "लिंक कॉपी हो गया!",
@@ -2024,7 +2050,8 @@
 
       // Theme & Nav
       const body = document.body, themeIcon = document.getElementById('themeIcon');
-      window.toggleTheme = () => { const isDark = !body.classList.contains('dark'); body.classList.toggle('dark', isDark); themeIcon.className = isDark ? 'fas fa-moon' : 'fas fa-sun'; localStorage.setItem('greeter-theme', isDark ? 'dark' : 'light');
+      window.toggleTheme = () => {
+        const isDark = !body.classList.contains('dark'); body.classList.toggle('dark', isDark); themeIcon.className = isDark ? 'fas fa-moon' : 'fas fa-sun'; localStorage.setItem('greeter-theme', isDark ? 'dark' : 'light');
         // Update preview iframe theme
         const previewFrame = document.getElementById('frame');
         if (previewFrame && previewFrame.src) {

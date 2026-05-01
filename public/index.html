@@ -154,6 +154,27 @@
             flex-shrink: 0;
         }
 
+        .logo img {
+            height: 56px;
+            flex-shrink: 0;
+        }
+
+        .light-logo {
+            display: block;
+        }
+
+        .dark-logo {
+            display: none;
+        }
+
+        body.dark .light-logo {
+            display: none;
+        }
+
+        body.dark .dark-logo {
+            display: block;
+        }
+
         .nav-links {
             display: flex;
             gap: 32px;
@@ -202,9 +223,9 @@
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             backdrop-filter: blur(8px);
-            width: 44px;
-            height: 44px;
-            border-radius: 40px;
+            width: 36px;
+            height: 36px;
+            border-radius: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -214,7 +235,7 @@
 
         .mode-toggle .fa-sun {
             color: #fbbf24;
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
 
         body.dark .mode-toggle .fa-moon {
@@ -223,9 +244,9 @@
 
         .lang-toggle {
             width: auto;
-            padding: 0 18px;
-            gap: 8px;
-            font-size: 0.85rem;
+            padding: 0 14px;
+            gap: 6px;
+            font-size: 0.8rem;
             font-weight: 500;
             white-space: nowrap;
         }
@@ -263,10 +284,10 @@
             display: none;
             align-items: center;
             justify-content: center;
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             background: var(--card-bg);
-            border-radius: 40px;
+            border-radius: 32px;
             cursor: pointer;
             border: 1px solid var(--card-border);
         }
@@ -1060,6 +1081,7 @@
                 padding: 8px 16px;
                 flex-wrap: wrap;
                 min-height: 60px;
+                justify-content: center;
             }
 
             .logo {
@@ -1070,6 +1092,10 @@
                 width: 28px;
                 height: 28px;
                 font-size: 16px;
+            }
+
+            .logo img {
+                height: 40px;
             }
 
             .nav-actions {
@@ -1116,19 +1142,27 @@
                 flex-direction: column;
                 gap: 12px;
                 width: 100%;
+                align-items: center;
             }
 
             .btn-primary,
             .btn-secondary {
-                padding: 16px 24px;
+                padding: 16px 16px;
                 font-size: 1.05rem;
-                width: 100%;
+                width: auto;
+                max-width: 320px;
                 justify-content: center;
             }
 
             .hero-title {
-                font-size: clamp(32px, 8vw, 42px);
+                font-size: clamp(32px, 7vw, 38px);
                 line-height: 1.2;
+            }
+
+            .hero-description {
+                font-size: clamp(0.9rem, 3vw, 1rem);
+                text-align: center;
+                padding: 0 20px;
             }
 
             .hero-visual {
@@ -1219,6 +1253,7 @@
         @media (max-width: 480px) {
             .navbar {
                 padding: 6px 12px;
+                justify-content: center;
             }
 
             .logo {
@@ -1229,6 +1264,10 @@
                 width: 24px;
                 height: 24px;
                 font-size: 14px;
+            }
+
+            .logo img {
+                height: 36px;
             }
 
             .nav-actions {
@@ -1243,6 +1282,24 @@
                 width: 36px;
                 padding: 0;
                 justify-content: center;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                padding: 14px 14px;
+                font-size: 1rem;
+                width: auto;
+                max-width: 280px;
+            }
+
+            .hero-title {
+                font-size: clamp(28px, 6vw, 32px);
+            }
+
+            .hero-description {
+                font-size: 0.85rem;
+                text-align: center;
+                padding: 0 20px;
             }
 
             .steps-container {
@@ -1294,7 +1351,8 @@
         <!-- HEADER -->
         <nav class="navbar">
             <a href="index.html" class="logo">
-                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
+                <img class="light-logo" src="assets/Light_logo.png" alt="Greeter Logo">
+                <img class="dark-logo" src="assets/Dark_logo.png" alt="Greeter Logo">
             </a>
             <div class="nav-links" id="navLinks">
                 <a href="index.html" id="navHome">Home</a>
@@ -1430,8 +1488,8 @@
         <!-- CTA -->
         <div class="cta-banner">
             <h1 class="cta-headline" id="ctaHeadline">Ready to create something unforgettable?</h1>
-            <p style="font-size: 1.2rem; margin-bottom: 32px;" id="ctaSub">Join 50,000+ people who made their loved ones
-                smile.</p><button class="btn-primary" style="font-size: 1.3rem; padding: 20px 48px;"
+            <p style="font-size: 1.2rem; margin-bottom: 32px;" id="ctaSub">Join 6000+ people who made their loved ones
+                smile.</p><button class="btn-primary" style="font-size: 1.3rem; padding: 20px 48px; background: red;"
                 onclick="startFlow('personal')" id="ctaBtn"><i class="fas fa-gem"></i> Start creating — it's
                 free</button>
             <p style="margin-top: 24px;" id="ctaFine"><i class="fas fa-lock"></i> No credit card · Cancel anytime</p>
@@ -1442,7 +1500,8 @@
             <div class="footer-inner">
                 <div class="footer-brand"><a href="index.html" class="logo"
                         style="margin-bottom: 16px; display: inline-flex;">
-                        <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
+                        <img class="light-logo" src="assets/Light_logo.png" alt="Greeter Logo">
+                        <img class="dark-logo" src="assets/Dark_logo.png" alt="Greeter Logo">
                     </a>
                     <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals,
                         anniversaries and festivals — no coding needed.</p>
@@ -1528,7 +1587,7 @@
         const translations = {
             en: {
                 nav: ["Home", "Create", "Why Greeter", "Privacy", "Contact Us"], signin: "Sign in",
-                heroBadge: "✨ AI + Handcrafted templates", heroTitlePre: "Turn moments into ", heroTitleSpan: "Interactive", heroTitlePost: " websites",
+                heroBadge: "✨ AI + Customizable templates", heroTitlePre: "Turn moments into ", heroTitleSpan: "Interactive", heroTitlePost: " websites",
                 heroDesc: "No coding. Choose a mood, customize with animations, and share a unique site for proposals, birthdays, festivals — in minutes.",
                 btnPerson: "Create for a person", btnEvent: "Create for an event", freeText: "Free to start · No card required",
                 mockTitles: ["Proposal", "Birthday", "Anniversary", "Festival"], mockDescs: ["Ask someone to say-yes! ✨", "Colorful Balloons/Flowers", "Timeline of love", "Diwali · Christmas"],
@@ -1537,7 +1596,7 @@
                 stepsTitle: "How Greeter works — 4 simple steps", stepsDesc: "No design skills? Our AI & templates do the heavy lifting.",
                 step: [["Enter details", "Name, event, and personal story — we’ll handle the rest."], ["Pick a mood", "Funny, emotional, romantic, roast — set the vibe."], ["Customize", "Edit animations, colors, and add your media."], ["Share & impress", "Get a link — WhatsApp, Instagram, or SMS."]],
                 proof: ["Websites created", "Rating from 3k+ reviews", "Average setup time"],
-                ctaHead: "Ready to create something unforgettable?", ctaSub: "Join 50,000+ people who made their loved ones smile.", ctaBtn: "Start creating — it's free", ctaFine: "No credit card · Absolutely Free to Start",
+                ctaHead: "Ready to create something unforgettable?", ctaSub: "Join 6000+ people who made their loved ones smile.", ctaBtn: "Start creating — it's free", ctaFine: "No credit card · Absolutely Free to Start",
                 footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
                 exploreTitle: "Explore", exploreLinks: ["Create", "Why Greeter", "How it Works", "Pricing"],
                 supportTitle: "Support", supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
@@ -1546,7 +1605,7 @@
             },
             hi: {
                 nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"], signin: "लॉगिन करें",
-                heroBadge: "✨ AI + खुद के बनाए टेम्पलेट", heroTitlePre: "हर पल को बनाएं ", heroTitleSpan: "दिलचस्प", heroTitlePost: " वेबसाइट",
+                heroBadge: "✨ AI + खुद के बनाए टेम्पलेट", heroTitlePre: "हर पल बनाएं यादगार ", heroTitleSpan: "दिलचस्प", heroTitlePost: " वेबसाइट",
                 heroDesc: "कोडिंग की ज़रूरत नहीं। मूड चुनो, एनिमेशन से सजाओ, और प्रपोज़ल, जन्मदिन, त्योहारों के लिए अनोखी साइट बनाकर शेयर करो — बस कुछ मिनटों में।",
                 btnPerson: "किसी व्यक्ति के लिए बनाएं", btnEvent: "किसी इवेंट के लिए बनाएं", freeText: "बिलकुल - मुफ्त में शुरू करें",
                 mockTitles: ["प्रपोज़ल", "जन्मदिन", "सालगिरह", "त्योहार"], mockDescs: ["किसी को -हाँ के लिए पूछे ✨", "रंग-बिरंगे गुब्बारे 🎈", "प्यार की टाइमलाइन👩🏻‍❤️‍👨🏻", "दिवाली · ईद · क्रिसमस🎉"],
@@ -1555,7 +1614,7 @@
                 stepsTitle: "Greeter कैसे काम करता है — 4 आसान चरण", stepsDesc: "डिज़ाइन नहीं आता? हमारा AI और टेम्पलेट सब संभाल लेंगे।",
                 step: [["जानकारी दें", "नाम, मौका और अपनी कहानी — बाकी हम कर देंगे।"], ["मूड चुनें", "मज़ाकिया, इमोशनल, रोमांटिक, रोस्ट — जैसा मूड हो वैसा चुनो।"], ["अपनी मर्जी से सजाएं", "रंग, एनिमेशन और अपनी फोटो या वीडियो डालो।"], ["शेयर करो और वाह कराओ", "लिंक मिलेगा — व्हाट्सएप, इंस्टाग्राम या एसएमएस से भेजो।"]],
                 proof: ["वेबसाइट बन चुकी हैं", "3k+ रिव्यू से रेटिंग", "बनने में औसत समय"],
-                ctaHead: "कुछ अनोखा बनाने के लिए तैयार हो?", ctaSub: "50,000+ लोगों के साथ जुड़ो जिन्होंने अपनों को खुश कर दिया।", ctaBtn: "अभी बनाना शुरू करो — बिल्कुल मुफ्त", ctaFine: "कोई क्रेडिट कार्ड नहीं · बिलकुल फ्री में शुरू करें",
+                ctaHead: "कुछ अनोखा बनाने के लिए तैयार हो?", ctaSub: "6000+ लोगों के साथ जुड़ो जिन्होंने अपनों को खुश कर दिया।", ctaBtn: "अभी बनाना शुरू करो — बिल्कुल मुफ्त", ctaFine: "कोई क्रेडिट कार्ड नहीं · बिलकुल फ्री में शुरू करें",
                 footerBrand: "जन्मदिन, प्रपोज़ल, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
                 exploreTitle: "देखिए", exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "कीमतें"],
                 supportTitle: "सहायता", supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
@@ -1645,9 +1704,9 @@
             if (entries[0].isIntersecting && !window.counted) {
                 window.counted = true;
                 const animate = (el, end, isFloat) => { let start = 0; const step = () => { start += end / 45; if (start < end) { el.innerText = isFloat ? start.toFixed(1) : Math.floor(start); requestAnimationFrame(step); } else el.innerText = isFloat ? end.toFixed(1) : end; }; requestAnimationFrame(step); };
-                animate(document.getElementById('stat1'), 50, false);
-                animate(document.getElementById('stat2'), 4.9, true);
-                animate(document.getElementById('stat3'), 2, false);
+                animate(document.getElementById('stat1'), 6, false);
+                animate(document.getElementById('stat2'), 4.8, true);
+                animate(document.getElementById('stat3'), 3, false);
             }
         }, { threshold: 0.5 });
         if (document.getElementById('proofStrip')) countObserver.observe(document.getElementById('proofStrip'));
@@ -1667,7 +1726,7 @@
         copyLinkBtn.addEventListener('click', copyPageLink);
         const nativeShareBtn = document.getElementById('nativeShareBtn');
         if (navigator.share) nativeShareBtn.style.display = 'flex';
-        nativeShareBtn.addEventListener('click', () => {         navigator.share({ title: 'Greeter', text: 'Create Memorable websites', url: window.location.href }).catch(() => { }); closeSharePopup(); });
+        nativeShareBtn.addEventListener('click', () => { navigator.share({ title: 'Greeter', text: 'Create Memorable websites', url: window.location.href }).catch(() => { }); closeSharePopup(); });
         document.querySelectorAll('.share-icon-item').forEach(item => {
             item.addEventListener('click', () => {
                 const platform = item.dataset.platform;
@@ -1689,7 +1748,7 @@
 
         // Footer social actions
         document.getElementById('footerFacebook')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`); });
-        document.getElementById('footerWhatsApp')?.addEventListener('click', (e) => { e.preventDefault();                 window.open(`https://wa.me/?text=${encodeURIComponent('Greeter - Create Memorable websites')}%20${encodeURIComponent(window.location.href)}`); });
+        document.getElementById('footerWhatsApp')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://wa.me/?text=${encodeURIComponent('Greeter - Create Memorable websites')}%20${encodeURIComponent(window.location.href)}`); });
         document.getElementById('footerTwitter')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`); });
         document.getElementById('footerInstagram')?.addEventListener('click', (e) => { e.preventDefault(); alert(translations[currentLang].copyAlert); });
 

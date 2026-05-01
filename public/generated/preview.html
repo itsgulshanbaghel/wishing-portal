@@ -142,6 +142,27 @@
       white-space: nowrap;
     }
 
+    .logo img {
+      height: clamp(32px, 10vw, 55px);
+      width: auto;
+    }
+
+    .logo .logo-light {
+      display: block;
+    }
+
+    body.dark .logo .logo-light {
+      display: none;
+    }
+
+    .logo .logo-dark {
+      display: none;
+    }
+
+    body.dark .logo .logo-dark {
+      display: block;
+    }
+
     .logo-icon {
       background: var(--accent-gradient);
       width: 44px;
@@ -652,23 +673,23 @@
       background: linear-gradient(145deg, rgba(123, 93, 246, 0.15), rgba(255, 122, 47, 0.08));
     }
 
-      .upload-placeholder-card {
-        background: var(--card-bg);
-        backdrop-filter: blur(4px);
-        border: 2px dashed var(--card-border);
-        border-radius: 22px;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        transition: all 0.2s;
-        flex: 0 0 auto;
-        width: 160px;
-        aspect-ratio: 16 / 9;
-        gap: 8px;
-      }
+    .upload-placeholder-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(4px);
+      border: 2px dashed var(--card-border);
+      border-radius: 22px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.2s;
+      flex: 0 0 auto;
+      width: 160px;
+      aspect-ratio: 16 / 9;
+      gap: 8px;
+    }
 
     .upload-placeholder-card i {
       font-size: 32px;
@@ -1121,7 +1142,12 @@
   <div class="container">
     <nav class="navbar">
       <a href="../index.html" class="logo">
-                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
+        <img
+          src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
+          alt="Greeter Logo" class="logo-light">
+        <img
+          src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
+          alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
         <a href="../index.html" id="navHome">Home</a>
@@ -1184,9 +1210,9 @@
     <div class="footer">
       <div id="copyrightText">© 2026 Greeter · Make every moment magical</div>
       <div class="footer-links">
-        <a href="../index.html" id="footerTemplates">Templates</a>
-        <a href="#" id="footerFeatures">Features</a>
-        <a href="#" id="footerShowcase">Showcase</a>
+        <a href="#" id="footerTemplates">Templates</a>
+        <a href="customize.html" id="footerFeatures">Features</a>
+        <a href="index.html" id="footerShowcase">Showcase</a>
         <a href="../ContactUs.html" id="footerHelp">Help</a>
         <a href="../privacy.html" id="footerPrivacy">Privacy</a>
       </div>

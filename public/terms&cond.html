@@ -120,6 +120,27 @@
       white-space: nowrap;
     }
 
+    .logo img {
+      height: clamp(32px, 10vw, 55px);
+      width: auto;
+    }
+
+    .logo .logo-light {
+      display: block;
+    }
+
+    body.dark .logo .logo-light {
+      display: none;
+    }
+
+    .logo .logo-dark {
+      display: none;
+    }
+
+    body.dark .logo .logo-dark {
+      display: block;
+    }
+
     .logo-icon {
       background: var(--accent-gradient);
       width: 44px;
@@ -659,7 +680,10 @@
     <!-- ========== HEADER (exactly from ContactUs) ========== -->
     <nav class="navbar">
       <a href="index.html" class="logo">
-                <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
+                <img src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
+                    alt="Greeter Logo" class="logo-light">
+                <img src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
+                    alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
         <a href="index.html" id="navHome">Home</a>
@@ -818,7 +842,10 @@
       <div class="footer-inner">
         <div class="footer-brand">
           <a href="/" class="logo" style="margin-bottom: 16px; display: inline-flex;">
-                    <div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter
+                    <img src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
+                        alt="Greeter Logo" class="logo-light">
+                    <img src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
+                        alt="Greeter Logo" class="logo-dark">
           </a>
           <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
             and festivals — no coding needed.</p>

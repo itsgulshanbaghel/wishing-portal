@@ -106,6 +106,27 @@
       white-space: nowrap;
     }
     @media (min-width: 640px) { .logo { font-size: 26px; gap: 10px; } }
+    .logo img {
+      height: clamp(32px, 10vw, 55px);
+      width: auto;
+    }
+
+    .logo .logo-light {
+      display: block;
+    }
+
+    body.dark .logo .logo-light {
+      display: none;
+    }
+
+    .logo .logo-dark {
+      display: none;
+    }
+
+    body.dark .logo .logo-dark {
+      display: block;
+    }
+
     .logo-icon {
       background: var(--accent-gradient);
       width: 38px; height: 38px;
@@ -350,7 +371,12 @@
 <div class="bg-gradient"></div>
 <div class="container">
   <nav class="navbar" id="navbar">
-    <a href="index.html" class="logo"><div class="logo-icon"><i class="fas fa-magic"></i></div>Greeter.com</a>
+    <a href="index.html" class="logo">
+      <img src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
+          alt="Greeter Logo" class="logo-light">
+      <img src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
+          alt="Greeter Logo" class="logo-dark">
+    </a>
     <div class="nav-links" id="navLinks"><a href="#">Templates</a><a href="#">Showcase</a><a href="#">Pricing</a><a href="#">Blog</a></div>
     <div class="nav-actions">
       <div class="lang-toggle" id="langToggleBtn">हिन्दी</div>
@@ -426,7 +452,13 @@
   </div>
 
   <div class="footer">
-    <div><div class="logo" style="margin-bottom: 8px; justify-content: center;"><div class="logo-icon" style="width: 36px; height: 36px;"><i class="fas fa-magic"></i></div><span style="background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">Greeter.com</span></div><p id="copyrightText">© 2026 Greeter · Make every moment magical</p></div>
+    <div><div class="logo" style="margin-bottom: 8px; justify-content: center;">
+      <img src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
+          alt="Greeter Logo" class="logo-light">
+      <img src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
+          alt="Greeter Logo" class="logo-dark">
+      <span style="background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">Greeter.com</span>
+    </div><p id="copyrightText">© 2026 Greeter · Make every moment magical</p></div>
     <div class="footer-links"><a href="#" id="footerTemplates">Templates</a><a href="#" id="footerFeatures">Features</a><a href="#" id="footerShowcase">Showcase</a><a href="#" id="footerHelp">Help</a><a href="#" id="footerPrivacy">Privacy</a></div>
     <div class="social"><div class="platform-logo instagram-logo" id="shareInstagram"></div><div class="platform-logo whatsapp-logo" id="shareWhatsApp"></div><div class="platform-logo facebook-logo" id="shareFacebook"></div></div>
   </div>
