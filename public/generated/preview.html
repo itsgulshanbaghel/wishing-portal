@@ -646,6 +646,33 @@
       box-shadow: var(--shadow-sm);
     }
 
+    .template-card {
+      position: relative;
+    }
+
+    .template-card .loading-skeleton {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(90deg, #f0ecfe 25%, #e0d9f0 50%, #f0ecfe 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 22px;
+      border: 1.5px solid var(--card-border);
+    }
+
+    body.dark .template-card .loading-skeleton {
+      background: linear-gradient(90deg, #2a1e4a 25%, #3a2a5e 50%, #2a1e4a 75%);
+      background-size: 200% 100%;
+    }
+
+    @keyframes loading-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
     .template-card iframe {
       width: 100%;
       height: auto;
@@ -655,6 +682,12 @@
       pointer-events: none;
       background: #f0ecfe;
       overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .template-card iframe.loaded {
+      opacity: 1;
     }
 
     body.dark .template-card iframe {
@@ -1397,15 +1430,29 @@
 
       async function loadAvailableTemplates(event) {
         const templatesList = [];
+        const promises = [];
         let i = 1;
-        while (true) {
+        const maxTemplates = 50; // Reasonable limit to prevent infinite loops
+
+        // Generate all potential paths
+        while (i <= maxTemplates) {
           const path = `../templates/${event}${i}.html`;
-          try {
-            const response = await fetch(path, { method: 'HEAD' });
-            if (response.ok) { templatesList.push(path); i++; }
-            else break;
-          } catch (e) { break; }
+          promises.push(
+            fetch(path, { method: 'HEAD' })
+              .then(response => response.ok ? path : null)
+              .catch(() => null)
+          );
+          i++;
         }
+
+        // Wait for all checks to complete
+        const results = await Promise.all(promises);
+
+        // Filter out nulls and sort by index
+        results.forEach(result => {
+          if (result) templatesList.push(result);
+        });
+
         return templatesList;
       }
       function scrollActiveEventIntoView() {
@@ -1423,14 +1470,55 @@
         if (inlineSelect) inlineSelect.value = event;
         scrollActiveEventIntoView();
       }
+      // Lazy loading setup
+      const lazyLoadObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const iframe = entry.target;
+            const src = iframe.dataset.src;
+            if (src && !iframe.src) {
+              iframe.src = src;
+              lazyLoadObserver.unobserve(iframe);
+            }
+          }
+        });
+      }, { rootMargin: '50px' });
+
       function renderTemplates() {
         const listContainer = document.getElementById("templateList");
         if (!listContainer) return;
         listContainer.innerHTML = "";
-        templates.forEach((tplPath) => {
+        templates.forEach((tplPath, index) => {
           const card = document.createElement("div");
           card.className = "template-card";
-          card.innerHTML = `<iframe loading="lazy" src="${tplPath}?mode=preview" title="template preview" scrolling="no" style="overflow: hidden;"></iframe>`;
+          const iframeSrc = `${tplPath}?mode=preview`;
+          const iframe = document.createElement("iframe");
+          iframe.title = "template preview";
+          iframe.scrolling = "no";
+          iframe.style.overflow = "hidden";
+
+          // Add loading skeleton
+          const skeleton = document.createElement("div");
+          skeleton.className = "loading-skeleton";
+          card.appendChild(skeleton);
+
+          // Preload first 3 templates immediately
+          if (index < 3) {
+            iframe.src = iframeSrc;
+            iframe.loading = "eager";
+          } else {
+            iframe.dataset.src = iframeSrc;
+            iframe.loading = "lazy";
+            lazyLoadObserver.observe(iframe);
+          }
+
+          // Handle iframe load
+          iframe.onload = () => {
+            iframe.classList.add("loaded");
+            if (skeleton.parentNode) skeleton.remove();
+          };
+
+          card.appendChild(iframe);
           card.onclick = (e) => { e.stopPropagation(); selectTemplate(tplPath, card); };
           listContainer.appendChild(card);
         });
