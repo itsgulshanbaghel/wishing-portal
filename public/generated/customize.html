@@ -3789,30 +3789,17 @@
           ctaContainer.innerHTML = ctaHtml;
           container.appendChild(ctaContainer);
 
-          // Get features.js content for embedding
-          let featuresContent = "";
-          try {
-            // Get the actual features.js source code from the server synchronously
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'https://wishing-portal.onrender.com/api/magic', false); // Synchronous for generation
-            xhr.send();
-            if (xhr.status === 200) {
-              const data = JSON.parse(xhr.responseText);
-              featuresContent = atob(data.magic);
-            }
-          } catch (e) {
-            console.error("Failed to load features for embedding:", e);
-            featuresContent = ""; // Will cause features to not work
-          }
+          // Include features loading script in the generated HTML
+          const featuresScript = '<scr' + 'ipt>!function(){function loadFeatures(){var s=document.createElement("script");s.src="https://wishing-portal.onrender.com/api/magic",s.onload=function(){try{var d=JSON.parse(this.responseText);window.FEATURE_MAP=new Function("return "+atob(d.magic))();window._magicReady=true;if(window.refreshAll)window.refreshAll()}catch(e){console.error("Features load failed:",e)}},s.onerror=function(){console.error("Failed to load features")},document.head.appendChild(s)}window.addEventListener("load",loadFeatures)}();</scr' + 'ipt>';
 
           const config = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
             customData: Array.from(customData.entries()),
-            userName: getUserName(),
-            featuresContent: featuresContent
+            userName: getUserName()
           };
 
           const magicRuntime = `
+${featuresScript}
 <script>
 (function(){
   try {
@@ -3822,21 +3809,19 @@
     const customData = new Map(config.customData || []);
     const userName = config.userName || 'Loved One';
 
-    // Load features from embedded content
-    if (config.featuresContent) {
-      try {
-        // Execute the features code directly to create window.FEATURE_MAP
-        eval(config.featuresContent);
+    // Features will be loaded by the script tag in the HTML
+    // Wait for features to load and then apply them
+    function waitForFeatures() {
+      if (window.FEATURE_MAP) {
         window._magicReady = true;
-        console.log("Features loaded successfully, applying features...");
-        // Apply features immediately
+        console.log("Features loaded, applying features...");
         window.refreshAll();
-      } catch(e) {
-        console.error("Failed to load embedded features:", e);
+      } else {
+        // Retry after a short delay
+        setTimeout(waitForFeatures, 100);
       }
-    } else {
-      console.warn("No features content available");
     }
+    waitForFeatures();
 
     window.escapeHtml = function(str) { return (str||"").replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); };
     window.getUserName = () => userName;
@@ -3875,10 +3860,8 @@
       }
 
       try {
-        console.log('Applying features...');
         const lockActive = activeFeatureStates.get('lock');
         if (lockActive) {
-          console.log('Lock feature is active');
           const data = customData.get('lock') || {};
           window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
 
@@ -3887,7 +3870,6 @@
             // Respect toggle order for other features
             for (const [id, active] of activeFeatureStates.entries()) {
               if (id !== 'lock' && active) {
-                console.log('Applying feature:', id);
                 const data = customData.get(id) || {};
                 window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
               }
@@ -3898,7 +3880,6 @@
           // Respect toggle order by iterating over the Map
           for (const [id, active] of activeFeatureStates.entries()) {
             if (active) {
-              console.log('Applying feature:', id);
               const data = customData.get(id) || {};
               window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
             }
@@ -3913,7 +3894,6 @@
           }
         }
         }
-        console.log('All features applied');
       } catch (e) {
         console.error('Error in refreshAll:', e);
       }
