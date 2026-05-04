@@ -896,7 +896,13 @@
 
       // ----- Back to customize -----
       document.getElementById('backToCustomizeBtn').addEventListener('click', () => {
-        window.location.href = './customize.html';
+        if (document.referrer && document.referrer.includes('customize.html')) {
+          window.history.back();
+        } else if (viewId) {
+          window.location.href = './generated/customize.html?id=' + encodeURIComponent(viewId);
+        } else {
+          window.location.href = './generated/customize.html';
+        }
       });
 
       // ----- Go back (history) -----

@@ -2077,6 +2077,54 @@
         return getEventData().name || "Loved One";
       }
       let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null;
+
+      // Immediate load from localStorage for seamless UI hydration
+      try {
+        const saved = localStorage.getItem('greeter_customizer_state');
+        if (saved) {
+          const state = JSON.parse(saved);
+          activeFeatureStates = new Map(state.activeFeatures || []);
+          customData = new Map(state.customData || []);
+        }
+      } catch (e) { console.error("Initial load failed:", e); }
+
+      function saveCustomizerState() {
+        try {
+          const state = {
+            activeFeatures: Array.from(activeFeatureStates.entries()),
+            customData: Array.from(customData.entries())
+          };
+          localStorage.setItem('greeter_customizer_state', JSON.stringify(state));
+        } catch (e) {
+          console.error("Failed to save state:", e);
+        }
+      }
+
+      function loadCustomizerState() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const configId = urlParams.get('id');
+
+          if (configId) {
+            // Load from server if ID is present
+            fetch('https://wishing-portal.onrender.com/api/config/' + encodeURIComponent(configId))
+              .then(r => r.json())
+              .then(data => {
+                if (data.config) {
+                  activeFeatureStates = new Map(data.config.activeFeatures || []);
+                  customData = new Map(data.config.customData || []);
+                  saveCustomizerState(); // Persist this as the new WIP state
+                  refreshAll();
+                  if (window.featureCategoriesRendered) renderCategoriesWithLanguage(translations[currentLang]);
+                }
+              })
+              .catch(e => console.error("Failed to fetch config:", e));
+          }
+        } catch (e) {
+          console.error("Failed to load state:", e);
+        }
+      }
+
       function getIframeDocument() { try { const f = document.getElementById("frame"); if (f?.contentDocument) return f.contentDocument; if (f?.contentWindow) return f.contentWindow.document; } catch (e) { } return null; }
       function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); }
       window.escapeHtml = escapeHtml;
@@ -2245,6 +2293,7 @@
           }
           magicLoaded = true;
           window._magicReady = true;
+          loadCustomizerState();
           if (typeof debouncedRefreshAll === 'function') debouncedRefreshAll();
         } catch (e) { console.error("Failed to load magic", e); }
         // Add resizableImages feature if not present
@@ -3026,8 +3075,15 @@
                       const existing = customData.get("addImages") || {};
                       existing.images = (existing.images || []).concat(urls);
                       customData.set("addImages", existing);
-                      const nameVal = getUserName();
-                      applyFeature("addImages", true, nameVal, "", existing.images);
+                      
+                      const parentRow = plusIcon.closest('.toggle-row');
+                      if (parentRow && !parentRow.classList.contains('active')) {
+                        parentRow.click();
+                      } else {
+                        const nameVal = getUserName();
+                        applyFeature("addImages", true, nameVal, "", existing.images);
+                        saveCustomizerState();
+                      }
                     });
                   };
                   fileInput.click();
@@ -3046,6 +3102,7 @@
                   let section = doc.getElementById('resizable-text-section');
                   if (!section) {
                     activeFeatureStates.set("addTextBox", true);
+                    saveCustomizerState();
                     applyFeature("addTextBox", true, getUserName(), "", []);
                     section = doc.getElementById('resizable-text-section');
                   }
@@ -3129,6 +3186,7 @@
                         }
                         const nameVal = getUserName();
                         applyFeature("magicMusic", true, nameVal, "", [], "", existing.audio);
+                        saveCustomizerState();
                       };
                       reader.readAsDataURL(file);
                     }
@@ -3177,6 +3235,7 @@
                 customData.set(id, ex);
                 const nameVal = getUserName();
                 refreshFeatureIfActive(id, nameVal, ex.text, ex.images, ex.emoji);
+                saveCustomizerState();
               });
             }
             if (hasCustom && ["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
@@ -3195,6 +3254,7 @@
                 customData.set(id, ex);
                 const nameVal = getUserName();
                 refreshFeatureIfActive(id, nameVal, ex.text, ex.images, ex.emoji);
+                saveCustomizerState();
               });
             }
             if (hasCustom && ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "resizableImages"].includes(id)) {
@@ -3383,6 +3443,7 @@
               }
               if (openPanelId && openPanelId !== customPanel) closeOpenPanel();
               adjustIframePadding(activeFeatureStates);
+              saveCustomizerState();
             };
           });
           section.appendChild(grid);
@@ -3720,7 +3781,7 @@
 </style>
 `;
           const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";try{localStorage.setItem("greeter_lang",lang);}catch(e){}var urlParams=new URLSearchParams(window.location.search);if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);try{window.history.replaceState({},"",newUrl);}catch(e){}}})();</scr' + 'ipt>';
-          const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } window.addEventListener("load",function(){ setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }, 10); }); })();</scr' + 'ipt>';
+          const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } function scrollToTop(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; } scrollToTop(); window.addEventListener("load", scrollToTop); setTimeout(scrollToTop, 10); setTimeout(scrollToTop, 100); setTimeout(scrollToTop, 500); })();</scr' + 'ipt>';
 
           const ctaHtml = `
 <style>
@@ -3790,7 +3851,7 @@
           container.appendChild(ctaContainer);
 
           // Include features loading script in the generated HTML
-          const featuresScript = '<scr' + 'ipt>!function(){function loadFeatures(){var s=document.createElement("script");s.src="https://wishing-portal.onrender.com/api/magic",s.onload=function(){try{var d=JSON.parse(this.responseText);window.FEATURE_MAP=new Function("return "+atob(d.magic))();window._magicReady=true;if(window.refreshAll)window.refreshAll()}catch(e){console.error("Features load failed:",e)}},s.onerror=function(){console.error("Failed to load features")},document.head.appendChild(s)}window.addEventListener("load",loadFeatures)}();</scr' + 'ipt>';
+          const featuresScript = '<scr' + 'ipt>!function(){function loadFeatures(){fetch("https://wishing-portal.onrender.com/api/magic").then(r=>r.json()).then(d=>{try{window.FEATURE_MAP=new Function("return "+atob(d.magic))();window._magicReady=true;if(window.refreshAll)window.refreshAll()}catch(e){console.error("Features load failed:",e)}}).catch(e=>console.error("Failed to fetch features:",e))}window.addEventListener("load",loadFeatures)}();</scr' + 'ipt>';
 
           const config = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
@@ -3834,6 +3895,8 @@ ${featuresScript}
       const anchor = finalMessage || cta;
       if (anchor && anchor.parentNode === container) { container.insertBefore(sectionElement, anchor); } else { container.appendChild(sectionElement); }
     };
+    window.scrollToElement = function(doc, element) { console.log("Auto-scroll suppressed in shared view"); };
+    window.injectFontsIfNeeded = function(doc) { if (!doc || doc.getElementById('greeter-google-fonts')) return; const link = doc.createElement('link'); link.id = 'greeter-google-fonts'; link.rel = 'stylesheet'; link.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;500;700&display=swap'; doc.head.appendChild(link); const faLink = doc.createElement('link'); faLink.rel = 'stylesheet'; faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'; doc.head.appendChild(faLink); };
     window.applyFeature = function(id, active, name, text, images, emoji, audio) {
       if (!window.FEATURE_MAP || !window.FEATURE_MAP[id]) return;
       const feature = window.FEATURE_MAP[id];
@@ -3884,15 +3947,6 @@ ${featuresScript}
               window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
             }
           }
-        };
-        window.addEventListener('lockUnlocked', handler);
-      } else {
-        for (const [id, active] of activeFeatureStates.entries()) {
-          if (active) {
-            const data = customData.get(id) || {};
-            window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-          }
-        }
         }
       } catch (e) {
         console.error('Error in refreshAll:', e);
