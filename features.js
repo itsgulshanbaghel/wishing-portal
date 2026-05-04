@@ -534,7 +534,7 @@
             const c = d.createElement("div"); c.id = "magic-balloon-root"; c.style.cssText = "position:fixed; inset:0; pointer-events:none; z-index:2147483100;";
             d.body.appendChild(c);
             const popAudio = d.createElement('audio');
-            popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
+            popAudio.src = 'assets/Ballon-Pop.mp3';
             popAudio.volume = 0.5;
             popAudio.preload = 'auto';
             popAudio.style.display = 'none';
@@ -557,7 +557,7 @@
             const c = d.createElement("div"); c.id = "magic-named-balloons"; c.style.cssText = "position:fixed; inset:0; pointer-events:none; z-index:2147483100;";
             d.body.appendChild(c);
             const popAudio = d.createElement('audio');
-            popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
+            popAudio.src = 'assets/Ballon-Pop.mp3';
             popAudio.volume = 0.5;
             popAudio.preload = 'auto';
             popAudio.style.display = 'none';
