@@ -42,10 +42,10 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 // Save shared config + HTML
 app.post('/api/config', async (req, res) => {
     try {
-        const { html, config } = req.body;
+        const { html, config, userData } = req.body;
         if (!html) return res.status(400).json({ error: 'HTML is required' });
         const id = Math.random().toString(36).substring(2, 12);
-        const data = JSON.stringify({ html, config });
+        const data = JSON.stringify({ html, config, userData });
         const dataUri = `data:application/json;base64,${Buffer.from(data).toString('base64')}`;
         const result = await cloudinary.uploader.upload(dataUri, {
             resource_type: 'raw',
