@@ -3814,8 +3814,10 @@
       }
     };
     window.refreshAll = function() {
+      window._magicIsFeatureRunning = true;
       if (!window.FEATURE_MAP) {
         console.warn('FEATURE_MAP not loaded yet');
+        window._magicIsFeatureRunning = false;
         return;
       }
       const lockActive = activeFeatureStates.get('lock');
@@ -3835,7 +3837,6 @@
         };
         window.addEventListener('lockUnlocked', handler);
       } else {
-        // Respect toggle order by iterating over the Map
         for (const [id, active] of activeFeatureStates.entries()) {
           if (active) {
             const data = customData.get(id) || {};
@@ -3843,6 +3844,7 @@
           }
         }
       }
+      window._magicIsFeatureRunning = false;
     };
     function initMagic() {
       if (magicRaw) {
@@ -3895,6 +3897,8 @@
             try {
               localStorage.setItem('final_magic_' + id, html);
               localStorage.setItem('magic_config_' + id, JSON.stringify(config));
+              const ud = localStorage.getItem('userData');
+              if (ud) localStorage.setItem('userData_' + id, ud);
               return true;
             } catch (e) {
               console.error("Local storage quota exceeded", e);
@@ -3902,11 +3906,17 @@
             }
           };
 
+          let userData = null;
+          try {
+            const udStr = localStorage.getItem('userData');
+            if (udStr) userData = JSON.parse(udStr);
+          } catch(e) {}
+
           // Save to server for cross-browser sharing
           fetch('https://wishing-portal.onrender.com/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html, config })
+            body: JSON.stringify({ html, config, userData })
           })
             .then(r => {
               if (!r.ok) {
@@ -4037,7 +4047,7 @@
           frame.style.width = '100vw';
         }
 
-        function applySharedView(storedHtml, storedConfig) {
+        function applySharedView(storedHtml, storedConfig, storedUserData) {
           if (!storedHtml) {
             document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; font-family:Inter,sans-serif;"><h1>❌ Invalid or expired link</h1><p style="margin-top:12px; color:#666;">The magic has faded. Please ask the sender for a new link.</p></div>';
             return;
@@ -4054,6 +4064,43 @@
               const configStr = typeof storedConfig === 'string' ? storedConfig : JSON.stringify(storedConfig);
               sessionStorage.setItem('magic_hydration_config', configStr);
             }
+            
+            // Store userData in localStorage before document rewrite
+            if (storedUserData) {
+              const userDataStr = typeof storedUserData === 'string' ? storedUserData : JSON.stringify(storedUserData);
+              localStorage.setItem('userData', userDataStr);
+            }
+
+            // PREVENT TEMPLATE SCRIPTS FROM OVERWRITING MANUALLY EDITED DOM
+            window._magicAnimationsStarted = false;
+            window._magicIsFeatureRunning = false;
+            const origText = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'innerText');
+            const origContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
+            const origHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+            
+            if (origText) {
+              Object.defineProperty(HTMLElement.prototype, 'innerText', {
+                set: function(val) { if (!window._magicAnimationsStarted && !window._magicIsFeatureRunning) return; origText.set.call(this, val); },
+                get: origText.get
+              });
+            }
+            if (origContent) {
+              Object.defineProperty(Node.prototype, 'textContent', {
+                set: function(val) { if (!window._magicAnimationsStarted && !window._magicIsFeatureRunning) return; origContent.set.call(this, val); },
+                get: origContent.get
+              });
+            }
+            if (origHTML) {
+              Object.defineProperty(Element.prototype, 'innerHTML', {
+                set: function(val) { if (!window._magicAnimationsStarted && !window._magicIsFeatureRunning) return; origHTML.set.call(this, val); },
+                get: origHTML.get
+              });
+            }
+            
+            window.addEventListener('load', () => {
+              setTimeout(() => { window._magicAnimationsStarted = true; }, 100);
+            });
+            setTimeout(() => { window._magicAnimationsStarted = true; }, 1000);
 
             // Fully replace the document. This removes the 'box' (iframe) completely.
             // The page will now be ONLY the template content.
@@ -4069,11 +4116,12 @@
         // Try server first, fall back to localStorage
         fetch('https://wishing-portal.onrender.com/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
-          .then(data => { applySharedView(data.html, data.config); })
+          .then(data => { applySharedView(data.html, data.config, data.userData); })
           .catch(() => {
             const storedHtml = localStorage.getItem('final_magic_' + viewId);
             const storedConfig = localStorage.getItem('magic_config_' + viewId);
-            applySharedView(storedHtml, storedConfig);
+            const storedUserData = localStorage.getItem('userData_' + viewId);
+            applySharedView(storedHtml, storedConfig, storedUserData);
           });
       })();
 
