@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🎂 Birthday Bliss · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Quicksand:wght@300;400;500;600&family=Great+Vibes&family=Caveat:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cream: #fff9f0;
+            --candle: #f7c56e;
+            --sunset: #ffb347;
+            --rose: #e86f6f;
+            --moss: #a3c9a8;
+            --lavender: #d9c8e8;
+            --warm-brown: #7a4e3a;
+            --text-dark: #4a2e2a;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--cream);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* watercolor dreamscape */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(247, 197, 110, 0.2), transparent 60%),
+                radial-gradient(circle at 90% 70%, rgba(232, 111, 111, 0.15), transparent 65%),
+                radial-gradient(circle at 40% 80%, rgba(163, 201, 168, 0.2), transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .page {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        /* 🎈 floating balloons & stars */
+        .float-party {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-item {
+            position: absolute;
+            bottom: -40px;
+            font-size: var(--size);
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.1;
+            }
+
+            20% {
+                opacity: 0.7;
+            }
+
+            80% {
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(-120vh) rotate(12deg);
+                opacity: 0;
+            }
+        }
+
+        /* hero */
+        .hero-ornament {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.5rem;
+            color: var(--rose);
+            letter-spacing: 0.15em;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(3.8rem, 12vw, 6.2rem);
+            color: var(--warm-brown);
+            line-height: 1.2;
+        }
+
+        .cake-icon {
+            font-size: 3rem;
+            margin: 8px 0;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+        }
+
+        .name-sub {
+            font-family: 'Lora', serif;
+            font-size: clamp(1.1rem, 3vw, 1.6rem);
+            font-style: italic;
+            color: var(--rose);
+            margin-bottom: 32px;
+        }
+
+        /* flipbook */
+        .book-wrap {
+            perspective: 1200px;
+            width: min(340px, 90vw);
+            height: min(420px, 65vw);
+            max-height: 420px;
+            margin: 0 auto 32px;
+            cursor: pointer;
+        }
+
+        .book {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.7s cubic-bezier(0.23, 0.98, 0.32, 1);
+        }
+
+        .book.flipped {
+            transform: rotateY(-180deg);
+        }
+
+        .book-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            border-radius: 6px 20px 20px 6px;
+            overflow: hidden;
+            box-shadow: 0 18px 35px rgba(122, 78, 58, 0.25), 0 0 0 1px rgba(232, 111, 111, 0.2);
+        }
+
+        .book-front {
+            background: linear-gradient(145deg, #ffe6c9 0%, #ffddb0 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+
+        .book-spine {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 24px;
+            background: linear-gradient(90deg, rgba(232, 111, 111, 0.4), rgba(232, 111, 111, 0.1));
+            border-radius: 6px 0 0 6px;
+        }
+
+        .book-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.6rem;
+            color: var(--warm-brown);
+            margin-bottom: 12px;
+        }
+
+        .book-subtitle {
+            font-family: 'Caveat', cursive;
+            font-size: 1.1rem;
+            color: var(--rose);
+        }
+
+        .book-icon {
+            font-size: 58px;
+            margin-bottom: 12px;
+        }
+
+        .book-hint {
+            margin-top: 22px;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            background: rgba(255, 245, 220, 0.7);
+            padding: 5px 12px;
+            border-radius: 40px;
+        }
+
+        .book-back {
+            background: #fffef7;
+            transform: rotateY(180deg);
+            border-radius: 20px 6px 6px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 28px;
+        }
+
+        .inside-message {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .inside-sign {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.9rem;
+            color: var(--rose);
+            margin-top: 20px;
+        }
+
+        /* gallery strip (memories) */
+        .gallery-strip {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 12px 0 24px;
+            max-width: 700px;
+            width: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: var(--rose) #ffe0c4;
+        }
+
+        .gallery-strip::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .gallery-strip::-webkit-scrollbar-track {
+            background: #ffe0c4;
+            border-radius: 10px;
+        }
+
+        .gallery-strip::-webkit-scrollbar-thumb {
+            background: var(--rose);
+            border-radius: 10px;
+        }
+
+        .mem-thumb {
+            flex: 0 0 auto;
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            background: var(--bg, #fff0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            box-shadow: 0 8px 18px rgba(122, 78, 58, 0.12);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid white;
+        }
+
+        .mem-thumb:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 22px rgba(232, 111, 111, 0.2);
+        }
+
+        .mem-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* story card */
+        .story-section {
+            background: rgba(255, 235, 215, 0.5);
+            backdrop-filter: blur(6px);
+        }
+
+        .story-card {
+            max-width: 600px;
+            width: 90%;
+            background: white;
+            border-radius: 32px;
+            padding: 40px 36px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(232, 111, 111, 0.2);
+        }
+
+        .story-top {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.8rem;
+            color: var(--rose);
+            margin-bottom: 14px;
+        }
+
+        .story-body {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            line-height: 1.9;
+        }
+
+        /* wish & candle section */
+        .wish-section {
+            background: linear-gradient(120deg, #fff2e0, #ffead4);
+        }
+
+        .wish-card {
+            max-width: 560px;
+            width: 90%;
+            background: rgba(255, 250, 240, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 45px rgba(122, 78, 58, 0.2);
+            border: 1px solid rgba(255, 225, 190, 0.8);
+        }
+
+        .wish-emoji {
+            font-size: 68px;
+            margin-bottom: 8px;
+        }
+
+        .wish-head {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.3rem;
+            color: var(--warm-brown);
+            margin-bottom: 18px;
+        }
+
+        .wish-text {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            line-height: 1.9;
+            margin-bottom: 32px;
+        }
+
+        .btn-celebrate {
+            padding: 14px 40px;
+            background: var(--rose);
+            border: none;
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            font-size: 1rem;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(232, 111, 111, 0.5);
+            transition: all 0.25s;
+        }
+
+        .btn-celebrate:hover {
+            transform: translateY(-3px);
+            background: #d45a5a;
+            box-shadow: 0 14px 28px rgba(232, 111, 111, 0.6);
+        }
+
+        /* mini surprise modal */
+        .surprise-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: #fff3e6;
+            color: var(--warm-brown);
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-family: 'Caveat', cursive;
+            font-size: 1.3rem;
+            font-weight: bold;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+            border-left: 6px solid var(--rose);
+        }
+
+        .surprise-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        @media (max-width: 550px) {
+            .surprise-toast {
+                font-size: 1rem;
+                white-space: normal;
+                width: 80%;
+                text-align: center;
+            }
+
+            .book-wrap {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="float-party" id="floatParty"></div>
+    <div class="surprise-toast" id="toastMsg">🎉 Happy Birthday! 🎂</div>
+
+    <!-- hero section -->
+    <div class="page">
+        <div class="hero-ornament">✨ another beautiful year ✨</div>
+        <h1 id="heroTitle">Happy Birthday</h1>
+        <div class="cake-icon">🎂🎈</div>
+        <div class="name-sub" id="nameSub">celebrating you, today and always</div>
+
+        <!-- flipbook -->
+        <div class="book-wrap">
+            <div class="book" id="book">
+                <div class="book-face book-front">
+                    <div class="book-spine"></div>
+                    <div class="book-icon">🎁🎂</div>
+                    <div class="book-title" id="bookTitle">Birthday Wishes</div>
+                    <div class="book-subtitle">open for a sweet surprise</div>
+                    <div class="book-hint">✨ tap to open ✨</div>
+                </div>
+                <div class="book-face book-back">
+                    <div class="inside-message" id="insideMsg">
+                        Every year, you make the world brighter. This birthday, may all your dreams dance a little
+                        closer.
+                    </div>
+                    <div class="inside-sign" id="insideSign">with love, always ♡</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- memory gallery strip -->
+        <div class="gallery-strip" id="gallery">
+            <!-- default emoji memories will be replaced dynamically -->
+            <div class="mem-thumb" style="--bg:#ffd9b5">🎂</div>
+            <div class="mem-thumb" style="--bg:#fbc8b5">🎈</div>
+            <div class="mem-thumb" style="--bg:#ffe0b5">🎁</div>
+            <div class="mem-thumb" style="--bg:#d9f0ec">🌟</div>
+            <div class="mem-thumb" style="--bg:#f5d0e8">💖</div>
+            <div class="mem-thumb" style="--bg:#c9e4de">📸</div>
+        </div>
+    </div>
+
+    <!-- story section (personal birthday story) -->
+    <div class="page story-section">
+        <div class="story-card">
+            <div class="story-top">💫 Our Favorite Chapter 💫</div>
+            <div class="story-body" id="storyBody">
+                Your birthday is the day the world received a little more magic. You bring laughter, kindness, and
+                unforgettable memories. Here's to another year of adventures together.
+            </div>
+        </div>
+    </div>
+
+    <!-- wish + celebration section -->
+    <div class="page wish-section">
+        <div class="wish-card">
+            <div class="wish-emoji">🕯️✨</div>
+            <div class="wish-head" id="wishHead">Make a Wish</div>
+            <div class="wish-text" id="wishText">May your heart be full, your smile never fade, and every candle brings
+                joy. You deserve the universe.</div>
+            <button class="btn-celebrate" id="celBtn">🎉 Light the Candles 🕯️</button>
+        </div>
+    </div>
+
+    <!-- Container for dynamic sections -->
+    <div id="sections-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            // ---------- language & userData ----------
+            function getLang() {
+                try {
+                    const urlParam = new URLSearchParams(location.search).get('lang');
+                    if (urlParam === 'hi' || urlParam === 'en') return urlParam;
+                    return localStorage.getItem('greeter_lang') || 'en';
+                } catch { return 'en'; }
+            }
+
+            const translations = {
+                en: {
+                    heroTitle: 'Happy Birthday',
+                    nameSubTemplate: '{name}, today is all about you ✨',
+                    bookTitle: 'Birthday Wishes,\n{name}',
+                    insideMsg: 'You are a beautiful soul, and each moment with you is a gift. May your birthday sparkle with love and laughter.',
+                    insideSign: 'Forever yours ♡',
+                    storyTop: '💫 Our Favorite Chapter 💫',
+                    storyBody: 'Your birthday is the day the world received a little more magic. You bring laughter, kindness, and unforgettable memories. Here\'s to another year of adventures together.',
+                    wishHead: 'Make a Wish',
+                    wishText: 'May your heart be full, your smile never fade, and every candle brings joy. You deserve the universe.',
+                    celebrateBtn: '🎉 Light the Candles 🕯️',
+                    toastMessage: '🎂 Happy Birthday! May all your wishes come true 🎈'
+                },
+                hi: {
+                    heroTitle: 'जन्मदिन मुबारक हो',
+                    nameSubTemplate: '{name}, आज का दिन सिर्फ तुम्हारे लिए है ✨',
+                    bookTitle: 'जन्मदिन की शुभकामनाएं,\n{name}',
+                    insideMsg: 'तुम एक खूबसूरत रूह हो, और तुम्हारे साथ हर पल एक उपहार है। तुम्हारा जन्मदिन प्यार और हंसी से भरा हो।',
+                    insideSign: 'हमेशा तुम्हारा ♡',
+                    storyTop: '💫 हमारा प्यारा अध्याय 💫',
+                    storyBody: 'तुम्हारा जन्मदिन वह दिन है जब दुनिया को थोड़ा और जादू मिला। तुम हंसी, दया और अविस्मरणीय यादें लाते हो। एक और साल साथ बिताने के लिए शुभकामनाएं।',
+                    wishHead: 'इच्छा करो',
+                    wishText: 'तुम्हारा दिल हमेशा भरा रहे, तुम्हारी मुस्कान कभी न छीने, और हर मोमबत्ती खुशियाँ लाए। तुम ब्रह्मांड के हकदार हो।',
+                    celebrateBtn: '🎉 मोमबत्तियाँ जलाएं 🕯️',
+                    toastMessage: '🎂 जन्मदिन मुबारक! तुम्हारी सभी इच्छाएँ पूरी हों 🎈'
+                }
+            };
+
+            let lang = getLang();
+            let t = translations[lang];
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const userName = userData.name || (lang === 'hi' ? 'मेरे प्यार' : 'My Sunshine');
+            const userStory = userData.story || t.storyBody;
+            const userWish = userData.wishes || t.wishText;
+            const userMemories = userData.memories || [];
+
+            // DOM elements
+            const heroTitleEl = document.getElementById('heroTitle');
+            const nameSubEl = document.getElementById('nameSub');
+            const bookTitleEl = document.getElementById('bookTitle');
+            const insideMsgEl = document.getElementById('insideMsg');
+            const insideSignEl = document.getElementById('insideSign');
+            const storyTopEl = document.querySelector('.story-top');
+            const storyBodyEl = document.getElementById('storyBody');
+            const wishHeadEl = document.getElementById('wishHead');
+            const wishTextEl = document.getElementById('wishText');
+            const celBtn = document.getElementById('celBtn');
+            const toastMsgDiv = document.getElementById('toastMsg');
+
+            function applyLanguageAndData() {
+                t = translations[lang];
+                // hero
+                heroTitleEl.innerText = t.heroTitle + ', ' + userName;
+                nameSubEl.innerText = t.nameSubTemplate.replace('{name}', userName);
+                // book
+                bookTitleEl.innerText = t.bookTitle.replace('{name}', userName);
+                insideMsgEl.innerText = userStory.length > 40 ? userStory.substring(0, 140) : userStory;
+                insideSignEl.innerText = t.insideSign;
+                // story section
+                storyTopEl.innerText = t.storyTop;
+                storyBodyEl.innerText = userStory;
+                // wish section
+                wishHeadEl.innerText = t.wishHead;
+                wishTextEl.innerText = userWish;
+                celBtn.innerText = t.celebrateBtn;
+            }
+
+            // populate gallery from user memories or fallback
+            function loadGallery() {
+                const galleryContainer = document.getElementById('gallery');
+                if (!galleryContainer) return;
+                if (userMemories && userMemories.length > 0) {
+                    galleryContainer.innerHTML = '';
+                    userMemories.forEach(mem => {
+                        const thumb = document.createElement('div');
+                        thumb.className = 'mem-thumb';
+                        if (mem.img && mem.img.trim() !== '') {
+                            thumb.innerHTML = `<img src="${mem.img}" alt="memory">`;
+                        } else {
+                            thumb.innerText = mem.text || '🎈';
+                        }
+                        galleryContainer.appendChild(thumb);
+                    });
+                } else {
+                    // default fallback with birthday emojis (keep default but ensure they show)
+                    if (galleryContainer.children.length === 0 || galleryContainer.children.length < 4) {
+                        const defaultMems = ['🎂', '🎈', '🎁', '🌟', '💖', '📸'];
+                        galleryContainer.innerHTML = '';
+                        defaultMems.forEach(icon => {
+                            const div = document.createElement('div');
+                            div.className = 'mem-thumb';
+                            div.style.setProperty('--bg', '#ffe0c4');
+                            div.innerText = icon;
+                            galleryContainer.appendChild(div);
+                        });
+                    }
+                }
+            }
+
+            // ---------- floating balloons & stars (birthday vibe) ----------
+            const floatContainer = document.getElementById('floatParty');
+            const partyItems = ['🎈', '🎂', '✨', '🌟', '🎉', '💝', '🎁'];
+            function spawnFloater() {
+                const el = document.createElement('div');
+                el.className = 'floating-item';
+                const size = 18 + Math.random() * 28;
+                el.style.setProperty('--size', size + 'px');
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.animationDuration = 7 + Math.random() * 9 + 's';
+                el.style.animationDelay = '0s';
+                el.innerText = partyItems[Math.floor(Math.random() * partyItems.length)];
+                floatContainer.appendChild(el);
+                setTimeout(() => el.remove(), 12000);
+            }
+            setInterval(spawnFloater, 1400);
+
+            // book flip
+            const bookDiv = document.getElementById('book');
+            if (bookDiv) {
+                bookDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    bookDiv.classList.toggle('flipped');
+                });
+            }
+
+            // confetti celebration + toast message
+            function triggerCelebration() {
+                // show toast
+                toastMsgDiv.innerText = t.toastMessage;
+                toastMsgDiv.classList.add('show');
+                setTimeout(() => toastMsgDiv.classList.remove('show'), 2800);
+                // confetti burst
+                const colors = ['#ffb347', '#e86f6f', '#f7c56e', '#a3c9a8', '#ff9f7c'];
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        canvasConfetti({ particleCount: 120, spread: 80, origin: { y: 0.6, x: 0.2 + i * 0.3 }, colors, angle: 70, startVelocity: 18 });
+                        canvasConfetti({ particleCount: 80, spread: 55, origin: { y: 0.5, x: 0.8 - i * 0.1 }, colors, angle: 110, startVelocity: 20 });
+                    }, i * 220);
+                }
+                canvasConfetti({ particleCount: 200, spread: 100, origin: { y: 0.4 }, colors, startVelocity: 15, ticks: 180 });
+                // extra random pops
+                setTimeout(() => {
+                    canvasConfetti({ particleCount: 300, spread: 120, origin: { y: 0.7 }, colors: ['#ffb347', '#e86f6f'], startVelocity: 12 });
+                }, 400);
+            }
+
+            if (celBtn) {
+                celBtn.addEventListener('click', triggerCelebration);
+            }
+
+            // watch for language changes (storage or focus)
+            function refreshLanguage() {
+                const newLang = getLang();
+                if (newLang !== lang) {
+                    lang = newLang;
+                    applyLanguageAndData();
+                    // also refresh wish text if custom wish exists, story exists
+                    const freshUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    if (freshUserData.story) storyBodyEl.innerText = freshUserData.story;
+                    if (freshUserData.wishes) wishTextEl.innerText = freshUserData.wishes;
+                    if (freshUserData.name) {
+                        heroTitleEl.innerText = translations[lang].heroTitle + ', ' + freshUserData.name;
+                        nameSubEl.innerText = translations[lang].nameSubTemplate.replace('{name}', freshUserData.name);
+                        bookTitleEl.innerText = translations[lang].bookTitle.replace('{name}', freshUserData.name);
+                    }
+                    insideMsgEl.innerText = (freshUserData.story || translations[lang].insideMsg).substring(0, 140);
+                    toastMsgDiv.innerText = translations[lang].toastMessage;
+                }
+            }
+
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'greeter_lang' || e.key === 'customizer_lang' || e.key === 'userData') {
+                    refreshLanguage();
+                    // reload gallery if memories changed
+                    const updated = JSON.parse(localStorage.getItem('userData') || '{}');
+                    if (updated.memories) {
+                        const gal = document.getElementById('gallery');
+                        if (gal) {
+                            if (updated.memories.length > 0) {
+                                gal.innerHTML = '';
+                                updated.memories.forEach(mem => {
+                                    const div = document.createElement('div');
+                                    div.className = 'mem-thumb';
+                                    if (mem.img) div.innerHTML = `<img src="${mem.img}" alt="memory">`;
+                                    else div.innerText = mem.text || '♡';
+                                    gal.appendChild(div);
+                                });
+                            }
+                        }
+                    }
+                }
+            });
+
+            window.addEventListener('focus', () => {
+                const newLangCheck = getLang();
+                if (newLangCheck !== lang) {
+                    lang = newLangCheck;
+                    applyLanguageAndData();
+                    const fresh = JSON.parse(localStorage.getItem('userData') || '{}');
+                    if (fresh.story) storyBodyEl.innerText = fresh.story;
+                    if (fresh.wishes) wishTextEl.innerText = fresh.wishes;
+                    if (fresh.memories && fresh.memories.length) {
+                        const gal = document.getElementById('gallery');
+                        if (gal) {
+                            gal.innerHTML = '';
+                            fresh.memories.forEach(mem => {
+                                const div = document.createElement('div');
+                                div.className = 'mem-thumb';
+                                if (mem.img) div.innerHTML = `<img src="${mem.img}" alt="memory">`;
+                                else div.innerText = mem.text || '🎈';
+                                gal.appendChild(div);
+                            });
+                        }
+                    }
+                }
+            });
+
+            // initial load of gallery and texts
+            loadGallery();
+            applyLanguageAndData();
+            // override story/wish from userData if present (since apply uses default story from translations but we want custom)
+            if (userStory && storyBodyEl) storyBodyEl.innerText = userStory;
+            if (userWish && wishTextEl) wishTextEl.innerText = userWish;
+            if (insideMsgEl && userStory) insideMsgEl.innerText = userStory.length > 140 ? userStory.substring(0, 137) + '...' : userStory;
+
+            // small extra: update inside sign from userData custom note? not required but nice.
+            if (userData.customNote) {
+                insideSignEl.innerText = userData.customNote;
+            }
+        })();
+    </script>
+</body>
+
+</html>

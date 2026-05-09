@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <title>🌸 Garden of Love · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;800&family=Pacifico&family=Dancing+Script:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #fff5f9;
+            color: #4a2535;
+            overflow-x: hidden;
+            scroll-behavior: smooth
+        }
+
+        /* Floral border SVG pattern */
+        .fl-border {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            border: 14px solid transparent;
+            background: linear-gradient(#fff5f9, #fff5f9) padding-box, repeating-conic-gradient(#ffb3c6 0deg 45deg, #ffcfe2 45deg 90deg) border-box
+        }
+
+        /* Floating petals */
+        .petal-field {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden
+        }
+
+        .fl-petal {
+            position: absolute;
+            top: -30px;
+            font-size: var(--sz, 20px);
+            animation: fall linear infinite;
+            animation-duration: var(--dur, 8s);
+            animation-delay: var(--delay, 0s);
+            opacity: .7
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg) translateX(0);
+                opacity: .7
+            }
+
+            100% {
+                transform: translateY(110vh) rotate(360deg) translateX(var(--drift, 30px));
+                opacity: 0
+            }
+        }
+
+        section {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            text-align: center
+        }
+
+        /* Hero */
+        .garden-tag {
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(.9rem, 2.5vw, 1.2rem);
+            color: #e86da0;
+            letter-spacing: .08em;
+            margin-bottom: 14px
+        }
+
+        h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(2.8rem, 9vw, 5.5rem);
+            color: #c9184a;
+            line-height: 1.2;
+            margin-bottom: 8px;
+            text-shadow: 0 4px 12px rgba(201, 24, 74, .15)
+        }
+
+        .name-bl {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            color: #e86da0;
+            margin-bottom: 36px
+        }
+
+        /* Flower ring */
+        .flower-ring {
+            font-size: 72px;
+            animation: bloom 4s ease-in-out infinite;
+            margin: 0 auto 28px;
+            display: block;
+            filter: drop-shadow(0 0 12px rgba(255, 179, 198, .6))
+        }
+
+        @keyframes bloom {
+
+            0%,
+            100% {
+                transform: scale(1) rotate(-3deg)
+            }
+
+            50% {
+                transform: scale(1.1) rotate(3deg)
+            }
+        }
+
+        /* Glass card */
+        .garden-card {
+            max-width: 640px;
+            width: 100%;
+            background: rgba(255, 245, 249, .85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 179, 198, .4);
+            border-radius: 32px;
+            padding: 36px 32px;
+            box-shadow: 0 12px 40px rgba(201, 24, 74, .1);
+            margin-bottom: 32px
+        }
+
+        .garden-card p {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(1.1rem, 2.8vw, 1.4rem);
+            line-height: 1.9;
+            color: #6b3a4a
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap
+        }
+
+        .btn-bloom {
+            padding: 14px 44px;
+            background: linear-gradient(135deg, #c9184a, #ff758c);
+            border: none;
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            border-radius: 60px;
+            box-shadow: 0 8px 24px rgba(201, 24, 74, .35);
+            transition: .3s;
+            letter-spacing: .05em
+        }
+
+        .btn-bloom:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 14px 32px rgba(201, 24, 74, .5)
+        }
+
+        .btn-soft {
+            padding: 14px 44px;
+            background: rgba(255, 179, 198, .2);
+            border: 2px solid rgba(255, 179, 198, .5);
+            color: #c9184a;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 60px;
+            transition: .3s;
+            letter-spacing: .05em
+        }
+
+        .btn-soft:hover {
+            background: rgba(255, 179, 198, .4);
+            transform: translateY(-2px)
+        }
+
+        /* Gallery */
+        #galSec {
+            background: linear-gradient(180deg, #fff0f5 0%, #fce4ec 100%)
+        }
+
+        .sec-h {
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            color: #c9184a;
+            margin-bottom: 6px
+        }
+
+        .sec-s {
+            font-size: .85rem;
+            color: rgba(107, 58, 74, .55);
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            margin-bottom: 24px
+        }
+
+        .gal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 16px;
+            max-width: 860px;
+            width: 100%;
+            margin: 0 auto
+        }
+
+        .ph-slot {
+            position: relative;
+            aspect-ratio: 4/5;
+            background: rgba(255, 179, 198, .12);
+            border: 2px solid rgba(255, 179, 198, .35);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: .3s
+        }
+
+        .ph-slot:hover {
+            border-color: rgba(201, 24, 74, .4);
+            background: rgba(255, 179, 198, .2);
+            transform: scale(1.02)
+        }
+
+        .ph-slot img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none
+        }
+
+        .ph-slot img.vis {
+            display: block
+        }
+
+        .ph-ph {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: rgba(201, 24, 74, .4);
+            font-size: .75rem;
+            letter-spacing: .08em
+        }
+
+        .ph-ph i {
+            font-size: 2rem
+        }
+
+        .slot-acts {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            opacity: 0;
+            transition: .2s;
+            z-index: 10
+        }
+
+        .ph-slot:hover .slot-acts {
+            opacity: 1
+        }
+
+        .sa-b {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 20px;
+            font-size: .7rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif
+        }
+
+        .sa-u {
+            background: #c9184a;
+            color: white
+        }
+
+        .sa-r {
+            background: #6b3a4a;
+            color: white
+        }
+
+        /* Wishes */
+        #wishSec {
+            background: linear-gradient(135deg, #fce4ec 0%, #fff5f9 100%)
+        }
+
+        .wish-card {
+            max-width: 560px;
+            width: 90%;
+            background: white;
+            border-radius: 28px;
+            padding: 44px 36px;
+            box-shadow: 0 12px 40px rgba(201, 24, 74, .12);
+            border: 2px solid rgba(255, 179, 198, .3);
+            text-align: center
+        }
+
+        .wish-em {
+            font-size: 56px;
+            margin-bottom: 14px
+        }
+
+        .wish-h {
+            font-family: 'Pacifico', cursive;
+            font-size: 2rem;
+            color: #c9184a;
+            margin-bottom: 14px
+        }
+
+        .wish-p {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: #6b3a4a;
+            margin-bottom: 24px
+        }
+
+        /* Cel */
+        #cel {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: rgba(255, 245, 249, .97);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px
+        }
+
+        #cel.show {
+            display: flex
+        }
+
+        .cel-em {
+            font-size: 80px;
+            animation: pop .6s cubic-bezier(.175, .885, .32, 1.275)
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(0)
+            }
+
+            to {
+                transform: scale(1)
+            }
+        }
+
+        .cel-h {
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(2rem, 7vw, 4rem);
+            color: #c9184a;
+            margin: 20px 0 10px
+        }
+
+        .cel-p {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.2rem;
+            color: #6b3a4a;
+            margin-bottom: 20px
+        }
+
+        .cel-cl {
+            padding: 12px 28px;
+            background: #c9184a;
+            border: none;
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(201, 24, 74, .35)
+        }
+
+        @media(max-width:600px) {
+            .gal-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px
+            }
+
+            .garden-card {
+                padding: 24px 18px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="fl-border"></div>
+    <div class="petal-field" id="petalField"></div>
+
+    <section id="hero">
+        <div class="garden-tag" id="tagTxt">a garden of love</div>
+        <span class="flower-ring">🌸</span>
+        <h1 id="h1">Will You Be Mine?</h1>
+        <div class="name-bl" id="nameBl">My Dearest Flower</div>
+        <div class="garden-card">
+            <p id="storyP">In all the gardens I have wandered, no flower has ever bloomed as beautifully as you do in my
+                life. You are my spring, every season.</p>
+        </div>
+        <div class="btn-row">
+            <button class="btn-bloom" id="yesBtn">Yes, Always! 🌸</button>
+            <button class="btn-soft" id="noBtn">Maybe... 🌷</button>
+        </div>
+    </section>
+
+    <section id="galSec">
+        <div class="sec-h" id="secH">Our Garden</div>
+        <div class="sec-s" id="secS">blooming moments</div>
+        <div class="gal-grid" id="galGrid"></div>
+    </section>
+
+    <section id="wishSec">
+        <div class="wish-card">
+            <div class="wish-em">💐</div>
+            <div class="wish-h" id="wishH">My Promise</div>
+            <div class="wish-p" id="wishP">I will be your sunlight, your rain, and your warmth. Will you let me tend to
+                your heart, forever?</div>
+            <div class="btn-row" style="margin-top:0">
+                <button class="btn-bloom" id="celBtn">Celebrate Together 🌸</button>
+            </div>
+        </div>
+    </section>
+
+    <div id="cel">
+        <div class="cel-em">💐</div>
+        <div class="cel-h" id="celH">She Said YES! 🌸</div>
+        <div class="cel-p" id="celP">Our garden is just beginning to bloom</div>
+        <button class="cel-cl" onclick="document.getElementById('cel').classList.remove('show')">Grow Together
+            →</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script>
+        (function () {
+            function getLang() { try { const p = new URLSearchParams(location.search).get('lang'); if (p) return p; return localStorage.getItem('greeter_lang') || 'en' } catch { return 'en' } }
+            const T = { en: { tag: 'a garden of love', h1: 'Will You Be Mine?', secH: 'Our Garden', secS: 'blooming moments', wishH: 'My Promise', yesBtn: 'Yes, Always! 🌸', noBtn: 'Maybe... 🌷', celBtn: 'Celebrate Together 🌸', celH: 'She Said YES! 🌸', celP: 'Our garden is just beginning to bloom', upload: 'Upload', remove: 'Remove', story: 'In all the gardens I have wandered, no flower has ever bloomed as beautifully as you do in my life. You are my spring, every season.', wishes: 'I will be your sunlight, your rain, and your warmth. Will you let me tend to your heart, forever?' }, hi: { tag: 'प्यार का बाग', h1: 'क्या तुम मेरी हो जाओगी?', secH: 'हमारा बगीचा', secS: 'खिलते पल', wishH: 'मेरा वादा', yesBtn: 'हाँ, हमेशा! 🌸', noBtn: 'शायद... 🌷', celBtn: 'जश्न मनाएं 🌸', celH: 'उसने हाँ कहा! 🌸', celP: 'हमारा बाग अभी खिलना शुरू हुआ', upload: 'अपलोड', remove: 'हटाएं', story: 'जितने भी बागों में मैं गया, कोई फूल तुम जैसा नहीं खिला। तुम मेरी हर मौसम में बसंत हो।', wishes: 'मैं तुम्हारी धूप, तुम्हारी बारिश और तुम्हारी गर्मजोशी बनूंगा। क्या तुम हमेशा के लिए मेरी हो जाओगी?' } };
+            let lang = getLang(); let t = T[lang];
+            const ud = JSON.parse(localStorage.getItem('userData') || '{}');
+            const name = ud.name || (lang === 'hi' ? 'मेरे प्यार' : 'My Love');
+            const story = ud.story || t.story; const wishes = ud.wishes || t.wishes;
+
+            function apply() {
+                t = T[lang];
+                document.getElementById('tagTxt').textContent = t.tag;
+                document.getElementById('h1').textContent = t.h1;
+                document.getElementById('nameBl').textContent = name;
+                document.getElementById('storyP').textContent = story;
+                document.getElementById('secH').textContent = t.secH;
+                document.getElementById('secS').textContent = t.secS;
+                document.getElementById('wishH').textContent = t.wishH;
+                document.getElementById('wishP').textContent = wishes;
+                document.getElementById('yesBtn').textContent = t.yesBtn;
+                document.getElementById('noBtn').textContent = t.noBtn;
+                document.getElementById('celBtn').textContent = t.celBtn;
+                document.getElementById('celH').textContent = t.celH;
+                document.getElementById('celP').textContent = t.celP;
+                buildGal();
+            }
+            apply();
+            window.addEventListener('storage', e => { if (e.key === 'greeter_lang') { lang = getLang(); apply() } });
+            window.addEventListener('focus', () => { const nl = getLang(); if (nl !== lang) { lang = nl; apply() } });
+
+            /* Petals */
+            const emojis = ['🌸', '🌺', '🌷', '🌼', '🍃', '🌹'];
+            const pf = document.getElementById('petalField');
+            for (let i = 0; i < 30; i++) { const p = document.createElement('div'); p.className = 'fl-petal'; p.style.cssText = `left:${Math.random() * 100}%;--sz:${14 + Math.random() * 20}px;--dur:${7 + Math.random() * 8}s;--delay:-${Math.random() * 10}s;--drift:${(Math.random() - .5) * 60}px`; p.textContent = emojis[Math.floor(Math.random() * emojis.length)]; pf.appendChild(p) }
+
+            /* Gallery */
+            const STORE = 'proposal5_imgs'; let imgs = [];
+            try { imgs = JSON.parse(localStorage.getItem(STORE)) || [] } catch { imgs = [] }
+            while (imgs.length < 6) imgs.push(null);
+            const urlP = new URLSearchParams(location.search);
+            const EDIT = (window.self !== window.top) && urlP.get('mode') === 'edit';
+            const PREV = urlP.get('mode') === 'preview';
+            function saveI() { if (EDIT) localStorage.setItem(STORE, JSON.stringify(imgs)) }
+            function buildGal() {
+                const g = document.getElementById('galGrid'); g.innerHTML = '';
+                const has = imgs.some(x => x);
+                const sec = document.getElementById('galSec');
+                if (!EDIT && !PREV && !has) { sec.style.display = 'none'; return } sec.style.display = 'flex';
+                imgs.forEach((src, i) => {
+                    const sl = document.createElement('div'); sl.className = 'ph-slot';
+                    const ph = document.createElement('div'); ph.className = 'ph-ph'; ph.innerHTML = `<i class="fas fa-camera"></i><span>${t.upload}</span>`;
+                    const im = document.createElement('img'); if (src) { im.src = src; im.className = 'vis' }
+                    sl.appendChild(ph); sl.appendChild(im);
+                    if (EDIT || PREV) {
+                        const acts = document.createElement('div'); acts.className = 'slot-acts';
+                        const ub = document.createElement('button'); ub.className = 'sa-b sa-u'; ub.innerHTML = `<i class="fas fa-upload"></i> ${t.upload}`;
+                        const rb = document.createElement('button'); rb.className = 'sa-b sa-r'; rb.innerHTML = `<i class="fas fa-trash"></i> ${t.remove}`;
+                        const fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+                        fi.onchange = ev => { const f = ev.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = e => { imgs[i] = e.target.result; saveI(); buildGal() }; r.readAsDataURL(f) };
+                        ub.onclick = () => fi.click(); rb.onclick = () => { imgs[i] = null; saveI(); buildGal() };
+                        acts.appendChild(ub); acts.appendChild(rb); sl.appendChild(fi); sl.appendChild(acts);
+                        sl.onclick = e => { if (e.target === sl || e.target === im || e.target === ph) fi.click() };
+                    }
+                    g.appendChild(sl);
+                });
+            }
+
+            function cel() {
+                document.getElementById('cel').classList.add('show');
+                [0, 400, 800].forEach(d => setTimeout(() => confetti({ particleCount: 80, spread: 90, origin: { y: .5, x: .2 + Math.random() * .6 }, colors: ['#c9184a', '#ffb3c6', '#ffcfe2', '#fff'] }), d));
+            }
+            document.getElementById('yesBtn').onclick = cel;
+            document.getElementById('celBtn').onclick = cel;
+            const maybe = [lang === 'hi' ? 'पक्का? 🌷' : 'Are you sure? 🌺', lang === 'hi' ? 'बस हाँ कहो 🌸' : 'Just say yes 🌸', lang === 'hi' ? 'फूल भी कहते हाँ 🌼' : 'Flowers say YES 🌼', t.yesBtn];
+            let ni = 0;
+            document.getElementById('noBtn').onclick = function () { this.textContent = maybe[ni++ % maybe.length]; if (ni >= maybe.length) cel() };
+        })();
+    </script>
+</body>
+
+</html>

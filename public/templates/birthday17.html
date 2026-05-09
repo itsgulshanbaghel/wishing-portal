@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🧜‍♀️ Underwater Mermaid · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&family=Dancing+Script:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(145deg, #0a2f6c 0%, #1a6b8a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #f0f5ff;
+        }
+
+        #fishCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .page {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 24px 80px;
+            text-align: center;
+        }
+
+        .mermaid-badge {
+            background: rgba(255, 255, 240, 0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 50px;
+            padding: 6px 24px;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(3rem, 10vw, 5rem);
+            color: #ffe0b5;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: fadeUp 0.9s ease;
+        }
+
+        .sub {
+            background: rgba(255, 255, 240, 0.2);
+            backdrop-filter: blur(6px);
+            border-radius: 40px;
+            padding: 6px 20px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .seashell-card {
+            width: min(360px, 90vw);
+            background: rgba(255, 250, 235, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 80px 40px 80px 40px;
+            padding: 36px 28px;
+            margin: 20px auto;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 215, 150, 0.6);
+            text-align: left;
+        }
+
+        .seashell-card h3 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.9rem;
+            color: #1a6b8a;
+        }
+
+        .seashell-card p {
+            color: #2c4a5e;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .sign {
+            text-align: right;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.3rem;
+            color: #0a5f7a;
+        }
+
+        .coral-wishes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .coral-item {
+            background: rgba(255, 250, 235, 0.8);
+            backdrop-filter: blur(4px);
+            border-radius: 30px;
+            padding: 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #0a5f7a;
+            cursor: default;
+            transition: 0.2s;
+        }
+
+        .coral-item:hover {
+            transform: translateY(-3px);
+            background: white;
+        }
+
+        .story-underwater {
+            max-width: 550px;
+            background: rgba(10, 47, 108, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 28px;
+            margin: 20px auto;
+            border-bottom: 6px solid #ffccaa;
+        }
+
+        .gallery-underwater {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .fish-mem {
+            background: rgba(255, 250, 235, 0.7);
+            border-radius: 50% 50% 40% 40%;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .fish-mem img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .fish-mem:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .celebrate-btn {
+            background: linear-gradient(135deg, #ffaa77, #ff8866);
+            border: none;
+            border-radius: 50px;
+            padding: 14px 44px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: 0.2s;
+        }
+
+        .celebrate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 170, 119, 0.5);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #0a5f7a;
+            color: #ffeedd;
+            padding: 12px 28px;
+            border-radius: 50px;
+            transition: 0.4s;
+            opacity: 0;
+            z-index: 999;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 30px;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="fishCanvas"></canvas>
+    <div class="page">
+        <div class="mermaid-badge" id="badge">🧜‍♀️ UNDERWATER MAGIC 🐠</div>
+        <h1 id="heroTitle">Happy Birthday!</h1>
+        <div class="sub" id="subText">✨ a mermaid's wish for you ✨</div>
+        <div class="seashell-card">
+            <h3 id="cardTitle">🐚 Mermaid's Blessing</h3>
+            <p id="cardMsg">Deep beneath the waves, the mermaids sing your name. You are as rare as a pearl, as free as
+                the ocean. May your birthday be filled with treasures and tide of happiness.</p>
+            <div class="sign" id="cardSign">— with a flick of the tail 🧜‍♀️</div>
+        </div>
+        <div class="coral-wishes">
+            <div class="coral-item"><span>🐠</span> <span id="w1">Ocean of joy</span></div>
+            <div class="coral-item"><span>🐚</span> <span id="w2">Pearl moments</span></div>
+            <div class="coral-item"><span>🧜‍♀️</span> <span id="w3">Mermaid magic</span></div>
+            <div class="coral-item"><span>🌊</span> <span id="w4">Endless waves</span></div>
+        </div>
+        <div class="story-underwater">
+            <h3 id="storyTitle">📖 Our Ocean Tale</h3>
+            <p id="storyText">You swam into my life like a beautiful sea creature — unexpected and wonderful. Every day
+                with you is like discovering a new coral reef. Happy birthday, my mermaid/merman.</p>
+        </div>
+        <div class="gallery-underwater" id="gallery">
+            <div class="fish-mem">🐠</div>
+            <div class="fish-mem">🐚</div>
+            <div class="fish-mem">🧜‍♀️</div>
+            <div class="fish-mem">🐟</div>
+            <div class="fish-mem">🐡</div>
+            <div class="fish-mem">🌊</div>
+        </div>
+        <button class="celebrate-btn" id="celebrateBtn">🎉 Celebrate! 🎉</button>
+        <footer>Made with ♡ · Greeter.com</footer>
+    </div>
+    <div class="toast" id="toast">🧜‍♀️ Happy Birthday! 🎂</div>
+
+    <script>
+        (function () {
+            function getLang() {
+                let urlLang = new URLSearchParams(location.search).get('lang');
+                if (urlLang === 'hi' || urlLang === 'en') return urlLang;
+                return localStorage.getItem('greeter_lang') || 'en';
+            }
+            let lang = getLang();
+            const t = {
+                en: {
+                    badge: "🧜‍♀️ UNDERWATER MAGIC 🐠", heroTitle: "Happy Birthday!", subText: "✨ a mermaid's wish for you ✨",
+                    cardTitle: "🐚 Mermaid's Blessing",
+                    cardMsg: "Deep beneath the waves, the mermaids sing your name. You are as rare as a pearl, as free as the ocean. May your birthday be filled with treasures and tide of happiness.",
+                    cardSign: "— with a flick of the tail 🧜‍♀️",
+                    w1: "Ocean of joy", w2: "Pearl moments", w3: "Mermaid magic", w4: "Endless waves",
+                    storyTitle: "📖 Our Ocean Tale",
+                    storyText: "You swam into my life like a beautiful sea creature — unexpected and wonderful. Every day with you is like discovering a new coral reef. Happy birthday, my mermaid/merman.",
+                    toastMsg: "🧜‍♀️ Happy Birthday! 🎂"
+                },
+                hi: {
+                    badge: "🧜‍♀️ पानी के नीचे का जादू 🐠", heroTitle: "जन्मदिन मुबारक!", subText: "✨ एक मरमेड की दुआ तुम्हारे लिए ✨",
+                    cardTitle: "🐚 मरमेड का आशीर्वाद",
+                    cardMsg: "लहरों के नीचे गहरे, मरमेड तुम्हारा नाम गाती हैं। तुम मोती जितनी दुर्लभ हो, समुद्र जितनी आज़ाद। तुम्हारा जन्मदिन खजानों और खुशियों की लहरों से भरा हो।",
+                    cardSign: "— पूँछ के फड़फड़ाहट के साथ 🧜‍♀️",
+                    w1: "खुशियों का समंदर", w2: "मोती जैसे पल", w3: "मरमेड जादू", w4: "अंतहीन लहरें",
+                    storyTitle: "📖 हमारी समुद्री कहानी",
+                    storyText: "तुम मेरी ज़िंदगी में एक खूबसूरत समुद्री जीव की तरह तैर कर आए — अप्रत्याशित और अद्भुत। तुम्हारे साथ हर दिन एक नई कोरल रीफ खोजने जैसा है। जन्मदिन मुबारक, मेरी मरमेड।",
+                    toastMsg: "🧜‍♀️ जन्मदिन मुबारक! 🎂"
+                }
+            };
+            function applyLang() {
+                let tr = t[lang];
+                document.getElementById('badge').innerText = tr.badge;
+                document.getElementById('heroTitle').innerText = tr.heroTitle;
+                document.getElementById('subText').innerText = tr.subText;
+                document.getElementById('cardTitle').innerText = tr.cardTitle;
+                document.getElementById('cardMsg').innerText = tr.cardMsg;
+                document.getElementById('cardSign').innerText = tr.cardSign;
+                document.getElementById('w1').innerText = tr.w1;
+                document.getElementById('w2').innerText = tr.w2;
+                document.getElementById('w3').innerText = tr.w3;
+                document.getElementById('w4').innerText = tr.w4;
+                document.getElementById('storyTitle').innerText = tr.storyTitle;
+                document.getElementById('storyText').innerText = tr.storyText;
+                document.getElementById('toast').innerText = tr.toastMsg;
+            }
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            function refreshUI() {
+                applyLang();
+                if (userData.name) document.getElementById('heroTitle').innerText = (lang === 'hi' ? 'जन्मदिन मुबारक, ' : 'Happy Birthday, ') + userData.name;
+                if (userData.story) document.getElementById('storyText').innerText = userData.story;
+                if (userData.wishes) document.getElementById('cardMsg').innerText = userData.wishes;
+                if (userData.memories && userData.memories.length) {
+                    let gal = document.getElementById('gallery');
+                    gal.innerHTML = '';
+                    userData.memories.forEach(m => {
+                        let div = document.createElement('div'); div.className = 'fish-mem';
+                        if (m.img) div.innerHTML = `<img src="${m.img}" alt="memory">`;
+                        else div.innerText = m.text || '🐠';
+                        gal.appendChild(div);
+                    });
+                }
+            }
+            refreshUI();
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'greeter_lang') { lang = e.newValue || 'en'; refreshUI(); }
+                if (e.key === 'userData') { try { userData = JSON.parse(e.newValue || '{}'); } catch (e) { } refreshUI(); }
+            });
+            window.addEventListener('popstate', () => { let newLang = getLang(); if (newLang !== lang) { lang = newLang; refreshUI(); } });
+            // confetti with ocean colors
+            document.getElementById('celebrateBtn').addEventListener('click', () => {
+                let toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+                canvasConfetti({ particleCount: 250, spread: 120, origin: { y: 0.5 }, colors: ['#0a5f7a', '#ffaa77', '#ffccaa', '#88ddff'], startVelocity: 18 });
+                for (let i = 0; i < 3; i++) setTimeout(() => canvasConfetti({ particleCount: 70, spread: 80, origin: { x: Math.random(), y: 0.6 } }), i * 180);
+            });
+            // swimming fish animation
+            (function () {
+                const canvas = document.getElementById('fishCanvas');
+                const ctx = canvas.getContext('2d');
+                let fish = [];
+                const fishColors = ['#ff9966', '#66cc99', '#ffcc66', '#88aaff', '#ffaaaa'];
+                function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+                resize(); window.addEventListener('resize', resize);
+                for (let i = 0; i < 15; i++) {
+                    fish.push({
+                        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                        size: 15 + Math.random() * 20,
+                        color: fishColors[Math.floor(Math.random() * fishColors.length)],
+                        vx: 0.5 + Math.random() * 1.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        direction: Math.random() > 0.5 ? 1 : -1
+                    });
+                }
+                function drawFish(f) {
+                    ctx.save();
+                    ctx.translate(f.x, f.y);
+                    if (f.vx < 0) ctx.scale(-1, 1);
+                    ctx.fillStyle = f.color;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, f.size, f.size * 0.7, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath(); ctx.arc(f.size * 0.3, -f.size * 0.2, f.size * 0.12, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(-f.size * 0.8, 0); ctx.lineTo(-f.size * 1.3, -f.size * 0.4); ctx.lineTo(-f.size * 1.3, f.size * 0.4); ctx.fill();
+                    ctx.restore();
+                }
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    fish.forEach(f => {
+                        f.x += f.vx * f.direction;
+                        f.y += f.vy;
+                        if (f.x > canvas.width + 50) f.x = -50;
+                        if (f.x < -50) f.x = canvas.width + 50;
+                        if (f.y > canvas.height + 50) f.y = -50;
+                        if (f.y < -50) f.y = canvas.height + 50;
+                        drawFish(f);
+                    });
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            })();
+            // bubble effect (CSS)
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.style.position = 'fixed';
+            bubbleDiv.style.bottom = '0';
+            bubbleDiv.style.left = '0';
+            bubbleDiv.style.width = '100%';
+            bubbleDiv.style.height = '100%';
+            bubbleDiv.style.pointerEvents = 'none';
+            bubbleDiv.style.zIndex = '2';
+            document.body.appendChild(bubbleDiv);
+            setInterval(() => {
+                let bubble = document.createElement('div');
+                bubble.innerHTML = '🫧';
+                bubble.style.position = 'absolute';
+                bubble.style.bottom = '0';
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.fontSize = (10 + Math.random() * 20) + 'px';
+                bubble.style.opacity = 0.5 + Math.random() * 0.4;
+                bubble.style.animation = 'rise 4s linear forwards';
+                bubbleDiv.appendChild(bubble);
+                setTimeout(() => bubble.remove(), 4000);
+            }, 800);
+            const style = document.createElement('style');
+            style.textContent = `@keyframes rise { 0% { bottom: 0; opacity: 0.8; } 100% { bottom: 100vh; opacity: 0; } }`;
+            document.head.appendChild(style);
+        })();
+    </script>
+</body>
+
+</html>

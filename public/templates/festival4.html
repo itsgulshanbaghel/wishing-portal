@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌙 Eid Mubarak · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --teal: #1e6f5c;
+            --gold: #f0a500;
+            --crescent: #f4e285;
+            --night: #0a192f;
+            --star: #f6f1d9;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, #0a2e3a, #041a24);
+            color: var(--star);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Stars background */
+        .star-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star-bg div {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% {
+                opacity: 0.2;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        /* Crescent moon */
+        .crescent {
+            font-size: 90px;
+            display: inline-block;
+            filter: drop-shadow(0 0 20px var(--crescent));
+            animation: moonGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes moonGlow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 5px var(--crescent);
+                transform: scale(1);
+            }
+
+            50% {
+                text-shadow: 0 0 25px var(--crescent);
+                transform: scale(1.05);
+            }
+        }
+
+        h1 {
+            font-family: 'Amiri', serif;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            color: var(--gold);
+            margin: 16px 0 8px;
+        }
+
+        .festival-name {
+            font-size: 1.3rem;
+            letter-spacing: 0.2em;
+            color: var(--crescent);
+            margin-bottom: 32px;
+        }
+
+        .glass-card {
+            background: rgba(10, 35, 45, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 32px;
+            margin: 24px auto;
+            max-width: 700px;
+            border: 1px solid rgba(240, 165, 0, 0.3);
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            font-family: 'Amiri', serif;
+        }
+
+        /* Gallery */
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 32px 0;
+        }
+
+        .memory-card {
+            width: 160px;
+            background: rgba(255, 255, 240, 0.1);
+            border-radius: 24px;
+            padding: 12px;
+            transition: transform 0.3s;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-img {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 20px;
+            background: rgba(240, 165, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            overflow: hidden;
+        }
+
+        .memory-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .memory-caption {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            color: var(--gold);
+        }
+
+        /* Lantern row */
+        .lanterns {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .lantern {
+            font-size: 50px;
+            animation: swing 3s ease-in-out infinite;
+            display: inline-block;
+            filter: drop-shadow(0 0 10px var(--gold));
+        }
+
+        @keyframes swing {
+
+            0%,
+            100% {
+                transform: rotate(-5deg);
+            }
+
+            50% {
+                transform: rotate(5deg);
+            }
+        }
+
+        .btn-eid {
+            background: linear-gradient(135deg, var(--gold), #c27e00);
+            border: none;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+            color: #041a24;
+        }
+
+        .btn-eid:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--gold);
+        }
+
+        /* Countdown */
+        .countdown {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .countdown-item {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 16px;
+            border-radius: 20px;
+            min-width: 70px;
+        }
+
+        .countdown-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        /* Edit mode */
+        .edit-tools {
+            display: none;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        body.edit-mode .edit-tools {
+            display: flex;
+        }
+
+        body.edit-mode .memory-card {
+            cursor: pointer;
+        }
+
+        .edit-btn {
+            background: rgba(240, 165, 0, 0.3);
+            border: 1px solid var(--gold);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            color: var(--crescent);
+        }
+
+        @media (max-width: 640px) {
+            .gallery {
+                gap: 12px;
+            }
+
+            .memory-card {
+                width: 130px;
+            }
+
+            .countdown-item {
+                min-width: 55px;
+                padding: 8px;
+            }
+
+            .countdown-number {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="star-bg" id="starsContainer"></div>
+    <div class="content">
+        <div class="crescent">🌙⭐</div>
+        <h1>Eid Mubarak</h1>
+        <div class="festival-name" id="festivalNameDisplay"></div>
+
+        <div class="glass-card">
+            <p class="story-text" id="storyText"></p>
+        </div>
+
+        <div class="lanterns">
+            <div class="lantern">🏮</div>
+            <div class="lantern">🪔</div>
+            <div class="lantern">🏮</div>
+        </div>
+
+        <div class="gallery" id="galleryContainer"></div>
+
+        <!-- Countdown to next Eid (approximate: based on next 1st Shawwal) -->
+        <div class="glass-card" style="margin-top: 0;">
+            <div class="countdown" id="countdown">
+                <div class="countdown-item"><span class="countdown-number" id="daysLeft">0</span><br>Days</div>
+                <div class="countdown-item"><span class="countdown-number" id="hoursLeft">0</span><br>Hours</div>
+                <div class="countdown-item"><span class="countdown-number" id="minsLeft">0</span><br>Mins</div>
+            </div>
+            <button class="btn-eid" id="celebrateBtn">✨ Send Eid Wishes ✨</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const EDIT_MODE = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+            if (EDIT_MODE) document.body.classList.add('edit-mode');
+
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            const festival = userData.festival || 'Eid';
+            const name = userData.name || 'Dear One';
+            const story = userData.story || `May the blessings of ${festival} fill your heart with peace, your home with joy, and your life with prosperity. Eid Mubarak!`;
+            const wishes = userData.wishes || `Wishing you and your family a very happy ${festival}. May this special day bring you closer to your loved ones.`;
+            const memories = userData.memories || [];
+
+            document.getElementById('festivalNameDisplay').innerHTML = `To ${name} 🌙`;
+            document.getElementById('storyText').innerHTML = story;
+
+            // Gallery render
+            const gallery = document.getElementById('galleryContainer');
+            function renderGallery() {
+                gallery.innerHTML = '';
+                memories.forEach((mem, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'memory-img';
+                    if (mem.img && mem.img.startsWith('data:image')) {
+                        const img = document.createElement('img');
+                        img.src = mem.img;
+                        imgDiv.appendChild(img);
+                    } else {
+                        imgDiv.innerHTML = '🌙';
+                    }
+                    const cap = document.createElement('div');
+                    cap.className = 'memory-caption';
+                    cap.innerText = mem.text || '✨';
+                    card.appendChild(imgDiv);
+                    card.appendChild(cap);
+                    if (EDIT_MODE) {
+                        const tools = document.createElement('div');
+                        tools.className = 'edit-tools';
+                        const uploadBtn = document.createElement('button');
+                        uploadBtn.className = 'edit-btn';
+                        uploadBtn.innerHTML = '📷';
+                        uploadBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = (ev) => {
+                                const file = ev.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (re) => {
+                                        mem.img = re.target.result;
+                                        localStorage.setItem('userData', JSON.stringify(userData));
+                                        renderGallery();
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            };
+                            input.click();
+                        };
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'edit-btn';
+                        removeBtn.innerHTML = '🗑️';
+                        removeBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            memories.splice(idx, 1);
+                            localStorage.setItem('userData', JSON.stringify(userData));
+                            renderGallery();
+                        };
+                        tools.appendChild(uploadBtn);
+                        tools.appendChild(removeBtn);
+                        card.appendChild(tools);
+                    }
+                    gallery.appendChild(card);
+                });
+                if (EDIT_MODE) {
+                    const addCard = document.createElement('div');
+                    addCard.className = 'memory-card';
+                    addCard.innerHTML = '<div class="memory-img" style="font-size:2rem;">+</div><div class="memory-caption">Add Memory</div>';
+                    addCard.onclick = () => {
+                        memories.push({ img: null, text: 'Eid Moment' });
+                        localStorage.setItem('userData', JSON.stringify(userData));
+                        renderGallery();
+                    };
+                    gallery.appendChild(addCard);
+                }
+            }
+            renderGallery();
+
+            // Countdown to next Eid (approximate – set to next year's Eid al-Fitr date)
+            // For demo: calculate days until next 1st Shawwal (approx). Use a simple method: Eid is ~10 days after new moon.
+            // We'll set a generic countdown to the next Eid (assume first day of Shawwal)
+            function getNextEidDate() {
+                // For simplicity, we set Eid to 1st of Shawwal (approximate using current year + 1 if passed)
+                // Real calculation would require lunar calendar, but for demo we use a fixed date offset.
+                // Instead, we use a dynamic approach: Eid is 70 days after Ramadan start (approx). But we'll just set a future date.
+                const today = new Date();
+                let year = today.getFullYear();
+                // Eid al-Fitr 2025 is around March 31. We'll approximate: Eid = April 10 if after April else next year.
+                let eidDate = new Date(year, 3, 10); // April 10
+                if (today > eidDate) {
+                    eidDate = new Date(year + 1, 3, 10);
+                }
+                return eidDate;
+            }
+            function updateCountdown() {
+                const now = new Date();
+                const eid = getNextEidDate();
+                const diff = eid - now;
+                if (diff <= 0) {
+                    document.getElementById('daysLeft').innerText = '0';
+                    document.getElementById('hoursLeft').innerText = '0';
+                    document.getElementById('minsLeft').innerText = '0';
+                    return;
+                }
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (86400000)) / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                document.getElementById('daysLeft').innerText = days;
+                document.getElementById('hoursLeft').innerText = hours;
+                document.getElementById('minsLeft').innerText = mins;
+            }
+            updateCountdown();
+            setInterval(updateCountdown, 60000);
+
+            // Celebrate button
+            document.getElementById('celebrateBtn').addEventListener('click', () => {
+                confetti({ particleCount: 200, spread: 100, colors: ['#f0a500', '#1e6f5c', '#f4e285', '#fff'], origin: { y: 0.5 } });
+                alert(wishes); // Simple alert with wishes; you can replace with modal
+            });
+
+            // Generate stars
+            const starsDiv = document.getElementById('starsContainer');
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
+                star.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                starsDiv.appendChild(star);
+            }
+        })();
+    </script>
+</body>
+
+</html>

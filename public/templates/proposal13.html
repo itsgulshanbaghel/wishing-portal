@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>What My Heart Wants to Say · Proposal</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #fef9f2;
+            font-family: 'Inter', sans-serif;
+            color: #2c2418;
+            line-height: 1.5;
+        }
+
+        .bg-grain {
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: #c08552;
+            width: 0%;
+            z-index: 100;
+            transition: width 0.1s;
+        }
+
+        .chapter {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 70px 20px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .chapter.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.6rem, 10vw, 4.5rem);
+            color: #9b5e3c;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 500;
+            color: #ba7a4a;
+            margin-bottom: 24px;
+        }
+
+        .lead {
+            font-size: 1rem;
+            color: #6f5340;
+            max-width: 500px;
+            margin-top: 12px;
+        }
+
+        .card-simple {
+            background: white;
+            border-radius: 28px;
+            padding: 32px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0e0d0;
+            text-align: left;
+        }
+
+        .diary-text {
+            font-size: 1.12rem;
+            line-height: 1.7;
+            color: #2c2418;
+            font-family: 'Playfair Display', serif;
+            min-height: 140px;
+        }
+
+        .cursor-b {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: #ba7a4a;
+            animation: blink 0.8s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0
+            }
+        }
+
+        .simple-timeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .timeline-dot {
+            background: #f7ede4;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 1px solid #e5cfbf;
+        }
+
+        .timeline-dot.active {
+            background: #c08552;
+            color: white;
+            border-color: #c08552;
+        }
+
+        .quote-area {
+            background: #fef6ef;
+            border-radius: 24px;
+            padding: 28px;
+            font-style: italic;
+            max-width: 500px;
+            margin: 16px auto;
+        }
+
+        .reason-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            max-width: 560px;
+        }
+
+        .reason-simple {
+            background: white;
+            border-radius: 20px;
+            padding: 18px 24px;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: 0.3s;
+            border-left: 6px solid #c08552;
+        }
+
+        .reason-simple.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .promise-simple {
+            background: #fffbf7;
+            border-radius: 50px;
+            padding: 14px 24px;
+            margin: 10px auto;
+            max-width: 540px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            opacity: 0;
+            transform: translateX(-12px);
+            transition: 0.3s;
+        }
+
+        .promise-simple.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .btn-yes {
+            background: #c08552;
+            color: white;
+            border: none;
+            padding: 12px 44px;
+            font-size: 1.3rem;
+            border-radius: 48px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-no {
+            background: transparent;
+            border: 1px solid #cfb6a2;
+            padding: 10px 32px;
+            border-radius: 48px;
+            margin-left: 12px;
+            cursor: pointer;
+            color: #6f5340;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(254, 249, 242, 0.96);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        @media (max-width: 500px) {
+            .card-simple {
+                padding: 24px;
+            }
+
+            .btn-yes,
+            .btn-no {
+                display: block;
+                margin: 12px auto;
+            }
+
+            .btn-no {
+                margin-left: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grain"></div>
+    <div class="progress" id="progressBar"></div>
+
+    <section class="chapter visible" id="intro">
+        <h1 id="introTitle">What my heart wants to say</h1>
+        <p class="lead" id="introSub">To you, the one I love most</p>
+        <div style="margin-top: 50px;">✦</div>
+    </section>
+
+    <section class="chapter" id="how">
+        <h2 id="howHeading">How it began</h2>
+        <div class="simple-timeline" id="simpleTimeline"></div>
+        <div class="quote-area" id="timelineQuote">
+            <p id="quoteText">Something in me changed when I met you.</p>
+        </div>
+    </section>
+
+    <section class="chapter" id="letter">
+        <h2 id="letterTitle">A page from my diary</h2>
+        <div class="card-simple">
+            <div class="diary-text" id="diaryBody"></div>
+            <div style="margin-top: 28px; text-align: right; font-style: italic;" id="diarySign">— Always yours</div>
+        </div>
+    </section>
+
+    <section class="chapter" id="reasons">
+        <h2 id="reasonsTitle">Why I love you</h2>
+        <div class="reason-list" id="reasonList"></div>
+    </section>
+
+    <section class="chapter" id="promises">
+        <h2 id="promisesTitle">I promise you this</h2>
+        <div id="promiseSimpleList"></div>
+    </section>
+
+    <section class="chapter" id="question">
+        <div style="font-size: 2.5rem; margin-bottom: 20px;">💍</div>
+        <p class="lead" id="preQuestion">After everything we've shared...</p>
+        <h1 id="bigQuestion" style="font-size: 2.8rem;">Will you marry me?</h1>
+        <div style="margin-top: 32px;">
+            <button class="btn-yes" id="yesSimple">Yes, forever</button>
+            <button class="btn-no" id="noSimple">I'm thinking...</button>
+        </div>
+    </section>
+
+    <div id="celebSimple" class="overlay">
+        <div style="font-size: 3.5rem;">💞</div>
+        <h2 id="celebTitleSimple">You said yes!</h2>
+        <p id="celebMsgSimple" style="margin: 20px;">This is our forever beginning.</p>
+        <button class="btn-yes" id="closeSimple">Let's start forever →</button>
+    </div>
+
+    <script>
+        (function () {
+            function getLang() {
+                try {
+                    const p = new URLSearchParams(location.search).get('lang');
+                    if (p === 'hi' || p === 'en') return p;
+                    const ls = localStorage.getItem('greeter_lang');
+                    if (ls === 'hi' || ls === 'en') return ls;
+                } catch (e) { }
+                return 'en';
+            }
+            const lang = getLang();
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            const params = new URLSearchParams(location.search);
+            const userName = params.get('name') || userData.name || (lang === 'hi' ? 'मेरी जान' : 'my love');
+            const userStory = params.get('story') || userData.story || '';
+            const userWish = params.get('wishes') || userData.wishes || '';
+
+            const T = {
+                en: {
+                    introTitle: 'What my heart wants to say',
+                    introSub: 'To you, the one I love most',
+                    howHeading: 'How it began',
+                    timelineNodes: [
+                        { name: 'First day', desc: 'You walked in and everything felt lighter. I noticed you immediately.' },
+                        { name: 'Getting closer', desc: 'Every conversation made me realise how much I wanted to know you.' },
+                        { name: 'Falling', desc: 'Without noticing, I fell. You became my favourite thought.' },
+                        { name: 'Now', desc: 'Loving you is the most natural thing I have ever done.' }
+                    ],
+                    letterTitle: 'A page from my diary',
+                    letterBody: "Dear {name}, I'm not good with fancy words. But I know that being with you makes me better. You make ordinary moments beautiful. I want to keep learning you, laughing with you, and building a life where you always feel loved. That's what my heart keeps saying.",
+                    diarySign: '— Always yours',
+                    reasonsTitle: 'Why I love you',
+                    reasons: [
+                        'You listen, truly listen.',
+                        'Your laugh is my favourite sound.',
+                        'You make me feel safe.',
+                        'You care without expecting anything.'
+                    ],
+                    promisesTitle: 'I promise you this',
+                    promises: [
+                        '🤍 To be your home, always.',
+                        '🤍 To hold your hand through everything.',
+                        '🤍 To never stop choosing you.',
+                        '🤍 To love you as you are, everyday.'
+                    ],
+                    preQuestion: 'After everything we\'ve shared...',
+                    bigQuestion: 'Will you marry me?',
+                    yesText: 'Yes, forever',
+                    noSillies: ['Really?', 'Please say yes', 'I love you 🥺', 'Yes?', 'Forever starts now'],
+                    celebTitleSimple: 'You said yes!',
+                    celebMsgSimple: 'This is our forever beginning.'
+                },
+                hi: {
+                    introTitle: 'मेरा दिल क्या कहना चाहता है',
+                    introSub: 'तुम्हारे लिए, जिसे मैं सबसे ज़्यादा प्यार करता हूँ',
+                    howHeading: 'कैसे शुरू हुआ',
+                    timelineNodes: [
+                        { name: 'पहला दिन', desc: 'तुम आए और सब हल्का लगा। मैंने तुम्हें तुरंत देखा।' },
+                        { name: 'करीब आते हुए', desc: 'हर बातचीत ने मुझे और तुम्हें जानने का मन किया।' },
+                        { name: 'प्यार में पड़ना', desc: 'बिना एहसास के, मैं तुममें खो गया।' },
+                        { name: 'आज', desc: 'तुमसे प्यार करना सबसे आसान काम है।' }
+                    ],
+                    letterTitle: 'मेरी डायरी का एक पन्ना',
+                    letterBody: "प्यारी {name}, मैं अच्छे शब्द नहीं जानता। पर तुम्हारे साथ रहना मुझे बेहतर बनाता है। तुम साधारण पलों को खूबसूरत बनाती हो। मैं तुम्हें जानता रहना चाहता हूँ, तुम्हारे साथ हंसना चाहता हूँ। बस इतना है।",
+                    diarySign: '— हमेशा तुम्हारा',
+                    reasonsTitle: 'प्यार के कारण',
+                    reasons: [
+                        'तुम सुनती हो, सच में सुनती हो।',
+                        'तुम्हारी हँसी मेरी पसंदीदा आवाज़ है।',
+                        'तुम मुझे सुरक्षित महसूस कराती हो।',
+                        'बिना शर्त, तुम देती हो।'
+                    ],
+                    promisesTitle: 'मैं वादा करता हूँ',
+                    promises: [
+                        '🤍 हमेशा तुम्हारा घर रहूंगा।',
+                        '🤍 हर हाल में तुम्हारा हाथ थामूंगा।',
+                        '🤍 तुम्हें चुनता रहूंगा, हमेशा।',
+                        '🤍 तुमसे वैसे ही प्यार करूंगा, हर दिन।'
+                    ],
+                    preQuestion: 'हमने जो भी साझा किया, उसके बाद...',
+                    bigQuestion: 'क्या तुम मुझसे शादी करोगी?',
+                    yesText: 'हाँ, हमेशा',
+                    noSillies: ['सच में?', 'हाँ बोलो', 'आई लव यू 🥺', 'हाँ?', 'हमेशा अब शुरू होता है'],
+                    celebTitleSimple: 'तुमने हाँ कह दी!',
+                    celebMsgSimple: 'यह हमारे हमेशा की शुरुआत है।'
+                }
+            };
+            const t = T[lang];
+
+            document.getElementById('introTitle').innerText = t.introTitle;
+            document.getElementById('introSub').innerText = t.introSub;
+            document.getElementById('howHeading').innerText = t.howHeading;
+            document.getElementById('letterTitle').innerText = t.letterTitle;
+            document.getElementById('diarySign').innerHTML = t.diarySign;
+            document.getElementById('reasonsTitle').innerText = t.reasonsTitle;
+            document.getElementById('promisesTitle').innerText = t.promisesTitle;
+            document.getElementById('preQuestion').innerText = t.preQuestion;
+            document.getElementById('bigQuestion').innerText = t.bigQuestion;
+            document.getElementById('yesSimple').innerText = t.yesText;
+            document.getElementById('celebTitleSimple').innerText = t.celebTitleSimple;
+            document.getElementById('celebMsgSimple').innerText = userWish || t.celebMsgSimple;
+
+            // simple timeline
+            const timelineDiv = document.getElementById('simpleTimeline');
+            t.timelineNodes.forEach((node, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'timeline-dot' + (idx === 0 ? ' active' : '');
+                btn.innerText = node.name;
+                btn.dataset.idx = idx;
+                timelineDiv.appendChild(btn);
+            });
+            const quoteText = document.getElementById('quoteText');
+            const dots = document.querySelectorAll('.timeline-dot');
+            function setDot(idx) {
+                dots.forEach((d, i) => {
+                    if (i == idx) d.classList.add('active');
+                    else d.classList.remove('active');
+                });
+                quoteText.innerText = t.timelineNodes[idx].desc;
+            }
+            dots.forEach((d, i) => d.addEventListener('click', () => setDot(i)));
+            setDot(0);
+            let autoTimeline = setInterval(() => {
+                let curr = -1;
+                dots.forEach((d, i) => { if (d.classList.contains('active')) curr = i; });
+                setDot((curr + 1) % t.timelineNodes.length);
+            }, 4500);
+            timelineDiv.addEventListener('mouseenter', () => clearInterval(autoTimeline));
+
+            // diary typewriter
+            const diaryDiv = document.getElementById('diaryBody');
+            let typedDiary = false;
+            const diaryText = userStory || t.letterBody.replace('{name}', userName);
+            function typeDiary() {
+                if (typedDiary) return;
+                typedDiary = true;
+                diaryDiv.innerHTML = '';
+                let i = 0;
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor-b';
+                diaryDiv.appendChild(cursor);
+                const iv = setInterval(() => {
+                    diaryDiv.insertBefore(document.createTextNode(diaryText[i]), cursor);
+                    i++;
+                    if (i >= diaryText.length) { clearInterval(iv); cursor.remove(); }
+                }, 30);
+            }
+
+            // reasons (simple list)
+            const reasonContainer = document.getElementById('reasonList');
+            const reasonItems = [];
+            t.reasons.forEach(text => {
+                const div = document.createElement('div');
+                div.className = 'reason-simple';
+                div.innerHTML = `<span style="font-size:1.5rem;">❤️</span> <span style="margin-left:10px;">${text}</span>`;
+                reasonContainer.appendChild(div);
+                reasonItems.push(div);
+            });
+
+            // promises
+            const promiseContainer = document.getElementById('promiseSimpleList');
+            const promiseSimpleItems = [];
+            t.promises.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'promise-simple';
+                div.innerHTML = `<span style="font-size:1.3rem;">🤍</span><span>${p}</span>`;
+                promiseContainer.appendChild(div);
+                promiseSimpleItems.push(div);
+            });
+
+            // scroll observer
+            const sections = document.querySelectorAll('.chapter');
+            let letterDone = false, reasonsDone = false, promisesDone = false;
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('visible');
+                    if (entry.target.id === 'letter' && !letterDone) { letterDone = true; typeDiary(); }
+                    if (entry.target.id === 'reasons' && !reasonsDone) {
+                        reasonsDone = true;
+                        reasonItems.forEach((r, i) => setTimeout(() => r.classList.add('revealed'), i * 100));
+                    }
+                    if (entry.target.id === 'promises' && !promisesDone) {
+                        promisesDone = true;
+                        promiseSimpleItems.forEach((p, i) => setTimeout(() => p.classList.add('revealed'), i * 120));
+                    }
+                });
+            }, { threshold: 0.25 });
+            sections.forEach(s => obs.observe(s));
+
+            // progress bar
+            window.addEventListener('scroll', () => {
+                const maxH = document.documentElement.scrollHeight - window.innerHeight;
+                const percent = (window.scrollY / maxH) * 100;
+                document.getElementById('progressBar').style.width = percent + '%';
+            });
+
+            // yes/no & confetti
+            const overlay = document.getElementById('celebSimple');
+            let sillyIdx = 0;
+            const noSimple = document.getElementById('noSimple');
+            noSimple.addEventListener('click', () => {
+                const sillies = t.noSillies;
+                if (sillyIdx < sillies.length) {
+                    noSimple.innerText = sillies[sillyIdx++];
+                    if (sillyIdx === sillies.length) setTimeout(() => document.getElementById('yesSimple').click(), 400);
+                }
+            });
+            document.getElementById('yesSimple').addEventListener('click', () => {
+                overlay.classList.add('show');
+                canvasConfetti({ particleCount: 250, spread: 110, origin: { y: 0.5 }, colors: ['#c08552', '#e3bc9a', '#f5dac0'] });
+                setTimeout(() => canvasConfetti({ particleCount: 180, spread: 100, startVelocity: 22 }), 300);
+            });
+            document.getElementById('closeSimple').addEventListener('click', () => overlay.classList.remove('show'));
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🌊 गंगा दशहरा · Sacred Blessings</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Great+Vibes&family=Caveat:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #2c1a0f;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* animated gradient overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.15), rgba(255, 100, 50, 0.05));
+            pointer-events: none;
+            z-index: 0;
+            animation: shimmerBg 6s infinite alternate;
+        }
+
+        @keyframes shimmerBg {
+            0% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* ---------- WAVE & RIVER BORDERS (Enhanced) ---------- */
+        .wave-border {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: repeating-linear-gradient(transparent 0px, transparent 28px, rgba(255, 215, 0, 0.4) 28px, rgba(255, 160, 60, 0.6) 40px);
+            pointer-events: none;
+            z-index: 2;
+            backdrop-filter: blur(1px);
+        }
+
+        .wave-border::before {
+            content: "🌊🌊";
+            position: absolute;
+            bottom: 8px;
+            left: 5%;
+            font-size: 38px;
+            opacity: 0.9;
+            animation: drift 10s linear infinite;
+            text-shadow: 0 0 8px gold;
+        }
+
+        .wave-border::after {
+            content: "🪷🪔";
+            position: absolute;
+            bottom: 20px;
+            right: 8%;
+            font-size: 32px;
+            opacity: 0.9;
+            animation: floatPetal 7s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translateX(0px) rotate(0deg);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: translateX(60px) rotate(5deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(0px) rotate(0deg);
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes floatPetal {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(12deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+
+        /* diya border (top decorative) enhanced */
+        .diya-border {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 45px;
+            background: repeating-linear-gradient(90deg, #ffb34760, #ffb34760 25px, #ffdd9960 25px, #ffdd9960 50px);
+            pointer-events: none;
+            z-index: 2;
+            backdrop-filter: blur(3px);
+        }
+
+        .diya-border::before {
+            content: "🪔✨🪔";
+            position: absolute;
+            left: 3%;
+            top: 0px;
+            font-size: 34px;
+            filter: drop-shadow(0 0 6px #ff9900);
+            animation: diyaGlow 1.5s infinite alternate;
+        }
+
+        .diya-border::after {
+            content: "✨🪔✨";
+            position: absolute;
+            right: 3%;
+            top: 0px;
+            font-size: 34px;
+            animation: diyaGlow 1.5s infinite alternate-reverse;
+        }
+
+        @keyframes diyaGlow {
+            0% {
+                text-shadow: 0 0 2px #ffaa33;
+                transform: scale(1);
+            }
+
+            100% {
+                text-shadow: 0 0 18px #ff6600, 0 0 5px gold;
+                transform: scale(1.1);
+            }
+        }
+
+        /* floating Ganga elements - enhanced */
+        .floating-ganga {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .float-item {
+            position: absolute;
+            font-size: 28px;
+            animation: riverFloat 14s linear infinite;
+            opacity: 0.5;
+            filter: drop-shadow(0 0 4px gold);
+        }
+
+        @keyframes riverFloat {
+            0% {
+                transform: translateX(-30px) translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.8;
+            }
+
+            80% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateX(110vw) translateY(-70px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* main container */
+        .page {
+            position: relative;
+            z-index: 10;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 90px 20px 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 55px;
+        }
+
+        /* hero - bright glassmorphism */
+        .hero {
+            text-align: center;
+            background: rgba(255, 245, 220, 0.85);
+            backdrop-filter: blur(16px);
+            border-radius: 80px 80px 60px 60px;
+            padding: 32px 40px;
+            box-shadow: 0 30px 45px rgba(255, 100, 0, 0.3), inset 0 1px 2px rgba(255, 255, 200, 0.8);
+            border: 2px solid rgba(255, 215, 100, 0.8);
+            width: 100%;
+            max-width: 850px;
+            transition: transform 0.3s;
+        }
+
+        .hero:hover {
+            transform: scale(1.01);
+        }
+
+        .festival-icon {
+            font-size: 80px;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+            animation: gentleWave 2.5s infinite, pulseGlow 2s infinite alternate;
+        }
+
+        @keyframes gentleWave {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-12px) rotate(3deg);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                text-shadow: 0 0 2px gold;
+            }
+
+            100% {
+                text-shadow: 0 0 20px #ffaa44, 0 0 8px #ff8844;
+            }
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(3.2rem, 9vw, 5.6rem);
+            background: linear-gradient(135deg, #b64926, #ff8c42, #ffd966);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 12px 0 8px;
+            text-shadow: 2px 2px 12px rgba(255, 200, 100, 0.5);
+        }
+
+        .greeting-name {
+            font-size: 1.7rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #ff8c42, #ffd966);
+            display: inline-block;
+            padding: 8px 32px;
+            border-radius: 60px;
+            margin-top: 12px;
+            color: white;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+        }
+
+        .wish-message {
+            font-size: 1.25rem;
+            font-style: italic;
+            margin-top: 28px;
+            background: rgba(255, 235, 190, 0.9);
+            padding: 18px 24px;
+            border-radius: 60px;
+            line-height: 1.6;
+            font-weight: 600;
+            border-left: 10px solid #ffaa33;
+            color: #3e2a1f;
+            backdrop-filter: blur(4px);
+        }
+
+        /* memories grid - vibrant cards */
+        .memories-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.6rem;
+            text-align: center;
+            background: linear-gradient(135deg, #ff8c42, #ffc857);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .memory-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 32px;
+            margin: 25px 0 15px;
+        }
+
+        .memory-card {
+            background: #fffef5;
+            border-radius: 40px;
+            padding: 18px 18px 22px;
+            width: 190px;
+            box-shadow: 0 20px 30px rgba(255, 100, 0, 0.25);
+            transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: 1px solid #ffcf8a;
+            position: relative;
+            backdrop-filter: blur(4px);
+        }
+
+        .memory-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 30px 40px rgba(255, 80, 0, 0.4);
+            border-color: #ffaa44;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #fff0dc;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 64px;
+            border: 3px dashed #ffaa66;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .image-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .img-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 14px;
+            gap: 12px;
+        }
+
+        .upload-btn,
+        .remove-btn {
+            flex: 1;
+            padding: 7px 0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .upload-btn {
+            background: #ffaa44;
+            color: #3b2a1f;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .remove-btn {
+            background: #f5d5b5;
+            color: #a55d35;
+        }
+
+        .upload-btn:hover {
+            background: #ff9933;
+            transform: scale(0.96);
+            box-shadow: 0 0 8px #ffaa33;
+        }
+
+        .remove-btn:hover {
+            background: #ecc897;
+            color: #8b4513;
+        }
+
+        .memory-caption {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #aa6f3c;
+            font-weight: 600;
+        }
+
+        /* Sacred Aarti card - vibrant */
+        .aarti-card {
+            background: linear-gradient(145deg, #fff1e0, #ffe6cd);
+            border-radius: 70px;
+            max-width: 750px;
+            width: 100%;
+            padding: 42px 36px;
+            text-align: center;
+            box-shadow: 0 30px 45px rgba(199, 90, 0, 0.35);
+            border: 2px solid #ffcf7a;
+            transition: 0.3s;
+            animation: glowPulse 3s infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                box-shadow: 0 20px 35px rgba(255, 110, 0, 0.3);
+                border-color: #ffcf7a;
+            }
+
+            100% {
+                box-shadow: 0 30px 55px rgba(255, 140, 0, 0.6);
+                border-color: #ffaa44;
+            }
+        }
+
+        .diya-bless {
+            font-size: 68px;
+            margin-bottom: 12px;
+
+        }
+
+        @keyframes spinSlow {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .bless-text {
+            font-size: 1.2rem;
+            line-height: 1.7;
+            margin: 22px 0;
+            font-style: italic;
+            font-weight: 500;
+            color: #4a2c1a;
+            background: rgba(255, 245, 210, 0.7);
+            padding: 16px;
+            border-radius: 48px;
+        }
+
+        .celebrate-btn {
+            background: linear-gradient(95deg, #ff7e2e, #ffb347);
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: white;
+            border-radius: 60px;
+            cursor: pointer;
+            font-family: 'Caveat', cursive;
+            transition: 0.2s;
+            box-shadow: 0 10px 20px rgba(255, 80, 0, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .celebrate-btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(95deg, #ff9430, #ffc15e);
+            box-shadow: 0 14px 28px rgba(255, 100, 0, 0.7);
+        }
+
+        .celebrate-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* toast */
+        .toast-message {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: #ffb347;
+            color: #2c1a0f;
+            padding: 16px 36px;
+            border-radius: 80px;
+            font-weight: bold;
+            font-family: 'Caveat', cursive;
+            font-size: 1.4rem;
+            z-index: 200;
+            opacity: 0;
+            transition: 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-left: 10px solid #ffdd99;
+            backdrop-filter: blur(8px);
+        }
+
+        .toast-message.show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        @media (max-width: 650px) {
+            .memory-card {
+                width: 155px;
+            }
+
+            .toast-message {
+                font-size: 1.1rem;
+                white-space: normal;
+                width: 85%;
+                text-align: center;
+            }
+
+            .hero {
+                padding: 24px 20px;
+            }
+
+            .aarti-card {
+                padding: 30px 22px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #ffd966;
+            background: #2c1a0faa;
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 80px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        /* glitter effect */
+        .glitter {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            animation: glitterMove 20s linear infinite;
+        }
+
+        @keyframes glitterMove {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 80px 80px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glitter"></div>
+    <div class="diya-border"></div>
+    <div class="wave-border"></div>
+    <div class="floating-ganga" id="floatGanga"></div>
+    <div class="toast-message" id="globalToast">🌊 गंगा दशहरा की हार्दिक शुभकामनाएं 🌊</div>
+
+    <div class="page">
+        <div class="hero">
+            <div class="festival-icon">🌊🪷🪔🌸</div>
+            <h1 id="mainTitle">Ganga Dussehra Blessings</h1>
+            <div class="greeting-name" id="greetingName">✨ For <span id="userNameDisplay">You</span> ✨</div>
+            <div class="wish-message" id="festivalMessage">
+                ✨ May this Ganga Dussehra fill your heart with joy and your home with warmth. Sending you best wishes
+                and happiness always! ✨
+            </div>
+        </div>
+
+        <div style="width:100%">
+            <div class="memories-title" id="memoriesTitle">🪷 Sacred Moments by the Ganga 🪷</div>
+            <div class="memory-grid" id="memoryGrid"></div>
+            <p style="text-align:center; font-size:0.85rem; margin-top:12px; font-weight:500; color:#b95f2a; background: #fff0d6; display:inline-block; padding:6px 20px; border-radius:40px; margin-left:auto; margin-right:auto; width:fit-content;"
+                id="uploadHint">🌸 Upload your own Ganga Aarti photos or memories</p>
+        </div>
+
+        <div class="aarti-card">
+            <div class="diya-bless">🪔🌊🕯️🪷</div>
+            <div id="aartiTitle" style="font-family:'Great Vibes',cursive; font-size:2.2rem; color:#c96f2a;">Light a
+                Virtual Diya</div>
+            <div class="bless-text" id="blessMessage">
+                On this holy Ganga Dussehra, may the sacred river wash away all sorrows and bring eternal peace. Let
+                your wishes float with the diya.
+            </div>
+            <button class="celebrate-btn" id="celebrateBtn">🪔 Offer Prayers & Celebrate 🎉</button>
+        </div>
+        <footer>✨ जय गंगे मैया ✨ | Har Har Gange ✨ | 🌊 Sacred Blessings 🌊</footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            // ---------- BILINGUAL via URL param or localStorage (same as birthday1.html) ----------
+            function getLang() {
+                try {
+                    let urlParam = new URLSearchParams(location.search).get('lang');
+                    if (urlParam === 'hi' || urlParam === 'en') return urlParam;
+                    let stored = localStorage.getItem('greeter_lang');
+                    if (stored === 'hi' || stored === 'en') return stored;
+                    return 'en';
+                } catch (e) { return 'en'; }
+            }
+
+            const TRANSLATIONS = {
+                en: {
+                    mainTitle: "Ganga Dussehra Blessings",
+                    festivalMsg: "✨ May this Ganga Dussehra fill your heart with joy and your home with warmth. Sending you best wishes and happiness always! ✨",
+                    memoriesTitle: "🪷 Sacred Moments by the Ganga 🪷",
+                    aartiTitle: "Light a Virtual Diya",
+                    blessMessage: "On this holy Ganga Dussehra, may the sacred river wash away all sorrows and bring eternal peace. Let your wishes float with the diya.",
+                    celebrateBtn: "🪔 Offer Prayers & Celebrate 🎉",
+                    uploadHint: "🌸 Upload your own Ganga Aarti photos or memories",
+                    toastMsg: "🌊 Har Har Gange! May your wishes be fulfilled! 🌊",
+                    removeBtnText: "Remove",
+                    uploadBtnText: "📸 Upload",
+                    defaultCaption: "Sacred Memory",
+                    greetPrefix: "✨ For "
+                },
+                hi: {
+                    mainTitle: "गंगा दशहरा की शुभकामनाएँ",
+                    festivalMsg: "✨ यह गंगा दशहरा आप और आपके परिवार को खुशियों से भर दे। आपको हमेशा सुख और आनंद मिले! ✨",
+                    memoriesTitle: "🪷 गंगा के पवित्र क्षण 🪷",
+                    aartiTitle: "आभासी दीपक जलाएँ",
+                    blessMessage: "इस पवित्र गंगा दशहरा पर, माँ गंगा आपके सभी कष्टों को दूर करें और अनंत शांति लाएँ। आपकी मनोकामनाएँ दीपक के साथ तैरें।",
+                    celebrateBtn: "🪔 पूजा अर्चना और उत्सव मनाएँ 🎉",
+                    uploadHint: "🌸 अपनी गंगा आरती या यादों की तस्वीरें अपलोड करें",
+                    toastMsg: "🌊 हर हर गंगे! आपकी सभी मनोकामनाएँ पूरी हों! 🌊",
+                    removeBtnText: "हटाएँ",
+                    uploadBtnText: "📸 अपलोड करें",
+                    defaultCaption: "पवित्र स्मृति",
+                    greetPrefix: "✨ शुभकामनाएँ "
+                }
+            };
+
+            let currentLang = getLang();
+            let t = TRANSLATIONS[currentLang];
+
+            // userData (name, memories)
+            let userData = { name: "", memories: [] };
+            try {
+                let raw = localStorage.getItem('userData');
+                if (raw) {
+                    let parsed = JSON.parse(raw);
+                    userData.name = parsed.name || "";
+                    if (Array.isArray(parsed.memories)) userData.memories = parsed.memories;
+                    else userData.memories = [];
+                }
+            } catch (e) { }
+
+            const SLOTS_COUNT = 6;
+            function normalizeMemories() {
+                if (!userData.memories) userData.memories = [];
+                while (userData.memories.length < SLOTS_COUNT) {
+                    userData.memories.push({ img: null, text: "" });
+                }
+                if (userData.memories.length > SLOTS_COUNT) userData.memories = userData.memories.slice(0, SLOTS_COUNT);
+                for (let i = 0; i < SLOTS_COUNT; i++) {
+                    if (!userData.memories[i]) userData.memories[i] = { img: null, text: "" };
+                    if (userData.memories[i].img === undefined) userData.memories[i].img = null;
+                    if (!userData.memories[i].text) userData.memories[i].text = "";
+                }
+            }
+            normalizeMemories();
+
+            function saveUserData() {
+                localStorage.setItem('userData', JSON.stringify(userData));
+                window.dispatchEvent(new StorageEvent('storage', { key: 'userData', newValue: JSON.stringify(userData) }));
+            }
+
+            const mainTitle = document.getElementById('mainTitle');
+            const festivalMsgDiv = document.getElementById('festivalMessage');
+            const memoriesTitleSpan = document.getElementById('memoriesTitle');
+            const aartiTitleSpan = document.getElementById('aartiTitle');
+            const blessMsgSpan = document.getElementById('blessMessage');
+            const celebrateBtnText = document.getElementById('celebrateBtn');
+            const uploadHintSpan = document.getElementById('uploadHint');
+            const userNameSpan = document.getElementById('userNameDisplay');
+            const memoryGrid = document.getElementById('memoryGrid');
+            const toastDiv = document.getElementById('globalToast');
+
+            function refreshTexts() {
+                t = TRANSLATIONS[currentLang];
+                mainTitle.innerText = t.mainTitle;
+                festivalMsgDiv.innerText = t.festivalMsg;
+                memoriesTitleSpan.innerText = t.memoriesTitle;
+                aartiTitleSpan.innerText = t.aartiTitle;
+                blessMsgSpan.innerText = t.blessMessage;
+                celebrateBtnText.innerText = t.celebrateBtn;
+                uploadHintSpan.innerText = t.uploadHint;
+                const displayName = (userData.name && userData.name.trim()) ? userData.name.trim() : (currentLang === 'hi' ? "प्रिय" : "Dear");
+                userNameSpan.innerText = displayName;
+                toastDiv.innerText = t.toastMsg;
+                renderMemoryGrid();
+            }
+
+            function renderMemoryGrid() {
+                memoryGrid.innerHTML = '';
+                for (let i = 0; i < SLOTS_COUNT; i++) {
+                    const mem = userData.memories[i];
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'image-placeholder';
+                    if (mem.img && mem.img.startsWith('data:image')) {
+                        const img = document.createElement('img');
+                        img.src = mem.img;
+                        img.alt = "ganga memory";
+                        imgContainer.appendChild(img);
+                    } else {
+                        const defaultIcons = ['🪷', '🌊', '🪔', '🔔', '🌿', '🕯️'];
+                        imgContainer.innerText = defaultIcons[i % defaultIcons.length];
+                        imgContainer.style.fontSize = '52px';
+                    }
+                    const controls = document.createElement('div');
+                    controls.className = 'img-controls';
+                    const uploadBtn = document.createElement('button');
+                    uploadBtn.innerText = t.uploadBtnText;
+                    uploadBtn.className = 'upload-btn';
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerText = t.removeBtnText;
+                    removeBtn.className = 'remove-btn';
+                    const captionSpan = document.createElement('div');
+                    captionSpan.className = 'memory-caption';
+                    captionSpan.innerText = mem.text && mem.text.trim() ? mem.text : t.defaultCaption;
+
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = 'image/*';
+                    fileInput.style.display = 'none';
+                    uploadBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        fileInput.click();
+                    });
+                    fileInput.addEventListener('change', (event) => {
+                        const file = event.target.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                            if (file.size > 2 * 1024 * 1024) {
+                                alert(currentLang === 'hi' ? "फ़ाइल 2MB से बड़ी है" : "File exceeds 2MB");
+                                return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = function (ev) {
+                                const base64 = ev.target.result;
+                                userData.memories[i].img = base64;
+                                if (!userData.memories[i].text) userData.memories[i].text = t.defaultCaption;
+                                saveUserData();
+                                renderMemoryGrid();
+                                showTempToast("📸 " + (currentLang === 'hi' ? "तस्वीर अपलोड हो गई!" : "Photo uploaded!"));
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            alert(currentLang === 'hi' ? "कृपया एक छवि चुनें" : "Please select an image");
+                        }
+                        fileInput.value = '';
+                    });
+
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        userData.memories[i].img = null;
+                        userData.memories[i].text = t.defaultCaption;
+                        saveUserData();
+                        renderMemoryGrid();
+                        showTempToast("🗑️ " + (currentLang === 'hi' ? "तस्वीर हटा दी गई" : "Image removed"));
+                    });
+
+                    controls.appendChild(uploadBtn);
+                    controls.appendChild(removeBtn);
+                    card.appendChild(imgContainer);
+                    card.appendChild(controls);
+                    card.appendChild(captionSpan);
+                    card.appendChild(fileInput);
+                    memoryGrid.appendChild(card);
+                }
+            }
+
+            function showTempToast(msg) {
+                const oldMsg = toastDiv.innerText;
+                toastDiv.innerText = msg;
+                toastDiv.classList.add('show');
+                setTimeout(() => {
+                    toastDiv.classList.remove('show');
+                    setTimeout(() => {
+                        if (toastDiv.innerText === msg) toastDiv.innerText = t.toastMsg;
+                    }, 200);
+                }, 2400);
+            }
+
+            function triggerCelebration() {
+                showTempToast(t.toastMsg);
+                canvasConfetti({ particleCount: 220, spread: 100, origin: { y: 0.6 }, colors: ['#ffb347', '#ff6b3d', '#ffd966', '#e85d04'], startVelocity: 18 });
+                canvasConfetti({ particleCount: 140, spread: 130, origin: { y: 0.4, x: 0.2 }, angle: 70, colors: ['#ffaa44', '#ff884d'] });
+                canvasConfetti({ particleCount: 140, spread: 130, origin: { y: 0.5, x: 0.8 }, angle: 110, colors: ['#ffc857', '#f4a261'] });
+                setTimeout(() => {
+                    canvasConfetti({ particleCount: 500, spread: 120, origin: { y: 0.7 }, startVelocity: 16, colors: ['#ffb347', '#ff8c42', '#e9c46a'] });
+                }, 280);
+                // floating diyas animation
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        let diya = document.createElement('div');
+                        diya.innerText = '🪔';
+                        diya.style.position = 'fixed';
+                        diya.style.bottom = '5px';
+                        diya.style.left = Math.random() * 100 + '%';
+                        diya.style.fontSize = (22 + Math.random() * 22) + 'px';
+                        diya.style.pointerEvents = 'none';
+                        diya.style.zIndex = '999';
+                        diya.style.opacity = '0.9';
+                        diya.style.transition = 'transform 2s ease-out, opacity 2s';
+                        diya.style.filter = 'drop-shadow(0 0 6px gold)';
+                        document.body.appendChild(diya);
+                        setTimeout(() => {
+                            diya.style.transform = 'translateY(-95vh) rotate(20deg)';
+                            diya.style.opacity = '0';
+                        }, 10);
+                        setTimeout(() => diya.remove(), 2200);
+                    }, i * 70);
+                }
+            }
+
+            function spawnFloatingElements() {
+                const container = document.getElementById('floatGanga');
+                if (!container) return;
+                setInterval(() => {
+                    const el = document.createElement('div');
+                    el.className = 'float-item';
+                    const items = ['🌊', '🪷', '🔔', '🪔', '🌿', '💧', '🐚', '🌸', '🕯️'];
+                    el.innerText = items[Math.floor(Math.random() * items.length)];
+                    el.style.left = Math.random() * 90 + '%';
+                    el.style.bottom = '-25px';
+                    el.style.fontSize = (18 + Math.random() * 28) + 'px';
+                    el.style.animationDuration = (7 + Math.random() * 14) + 's';
+                    el.style.opacity = (0.4 + Math.random() * 0.6);
+                    container.appendChild(el);
+                    setTimeout(() => el.remove(), 16000);
+                }, 1800);
+            }
+
+            function syncLanguageFromURL() {
+                let newLang = getLang();
+                if (newLang !== currentLang) {
+                    currentLang = newLang;
+                    refreshTexts();
+                }
+            }
+
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'userData') {
+                    try {
+                        let newData = JSON.parse(e.newValue);
+                        if (newData) {
+                            if (newData.name !== undefined) userData.name = newData.name;
+                            if (Array.isArray(newData.memories)) userData.memories = newData.memories;
+                            normalizeMemories();
+                            saveUserData();
+                            refreshTexts();
+                        }
+                    } catch (err) { }
+                }
+                if (e.key === 'greeter_lang') {
+                    let newLang = e.newValue;
+                    if (newLang === 'hi' || newLang === 'en') {
+                        currentLang = newLang;
+                        refreshTexts();
+                    }
+                }
+            });
+
+            window.addEventListener('focus', () => {
+                syncLanguageFromURL();
+                try {
+                    let freshData = localStorage.getItem('userData');
+                    if (freshData) {
+                        let parsed = JSON.parse(freshData);
+                        let needsRender = false;
+                        if (parsed.name !== userData.name) { userData.name = parsed.name; needsRender = true; }
+                        if (Array.isArray(parsed.memories) && JSON.stringify(parsed.memories) !== JSON.stringify(userData.memories)) {
+                            userData.memories = parsed.memories;
+                            normalizeMemories();
+                            needsRender = true;
+                        }
+                        if (needsRender) {
+                            saveUserData();
+                            refreshTexts();
+                        }
+                    }
+                } catch (e) { }
+            });
+
+            function init() {
+                normalizeMemories();
+                refreshTexts();
+                spawnFloatingElements();
+                const celebBtn = document.getElementById('celebrateBtn');
+                if (celebBtn) celebBtn.addEventListener('click', triggerCelebration);
+            }
+            init();
+        })();
+    </script>
+</body>
+
+</html>

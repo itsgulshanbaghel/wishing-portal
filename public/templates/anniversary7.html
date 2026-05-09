@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🔐 Locked In Love · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Abril+Fatface&family=Pacifico&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-pink: #ff2d6b;
+            --neon-cyan: #00f5d4;
+            --neon-purple: #b700ff;
+            --dark: #080510;
+            --dark2: #0e0a1a;
+            --text: #f0ebff;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Grid bg */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(183, 0, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(183, 0, 255, 0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(183, 0, 255, 0.08) 0%, transparent 70%);
+        }
+
+        section {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        /* Neon badge */
+        .neon-badge {
+            display: inline-block;
+            padding: 6px 24px;
+            border: 1px solid var(--neon-purple);
+            border-radius: 2px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--neon-purple);
+            box-shadow: 0 0 12px rgba(183, 0, 255, 0.4), inset 0 0 8px rgba(183, 0, 255, 0.1);
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: 'Abril Fatface', serif;
+            font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 1;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        h1 .neon {
+            -webkit-text-stroke: 2px var(--neon-pink);
+            color: transparent;
+            filter: drop-shadow(0 0 12px var(--neon-pink));
+        }
+
+        .name-tag {
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px rgba(0, 245, 212, 0.6);
+            margin-bottom: 48px;
+        }
+
+        /* Lock animation */
+        .lock-wrap {
+            position: relative;
+            margin: 0 auto 48px;
+            width: 160px;
+            height: 160px;
+            cursor: pointer;
+        }
+
+        .lock-ring {
+            position: absolute;
+            inset: 0;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            background:
+                linear-gradient(var(--dark), var(--dark)) padding-box,
+                conic-gradient(var(--neon-pink), var(--neon-purple), var(--neon-cyan), var(--neon-pink)) border-box;
+            animation: spinRing 4s linear infinite;
+        }
+
+        @keyframes spinRing {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .lock-inner {
+            position: absolute;
+            inset: 8px;
+            background: var(--dark2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            animation: lockPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes lockPulse {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 8px var(--neon-purple));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 24px var(--neon-pink)) drop-shadow(0 0 40px var(--neon-purple));
+            }
+        }
+
+        .lock-click {
+            position: absolute;
+            bottom: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            color: rgba(240, 235, 255, 0.4);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Stats bar */
+        .stats {
+            display: flex;
+            gap: 1px;
+            max-width: 700px;
+            width: 100%;
+            margin-bottom: 48px;
+            overflow: hidden;
+            border: 1px solid rgba(183, 0, 255, 0.2);
+        }
+
+        .stat {
+            flex: 1;
+            padding: 20px 16px;
+            background: rgba(14, 10, 26, 0.8);
+            position: relative;
+            border-right: 1px solid rgba(183, 0, 255, 0.1);
+            transition: background 0.3s;
+        }
+
+        .stat:last-child {
+            border-right: none;
+        }
+
+        .stat:hover {
+            background: rgba(183, 0, 255, 0.1);
+        }
+
+        .stat-num {
+            font-family: 'Abril Fatface', serif;
+            font-size: 2.5rem;
+            color: var(--neon-cyan);
+            display: block;
+            line-height: 1;
+            text-shadow: 0 0 15px rgba(0, 245, 212, 0.5);
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: rgba(240, 235, 255, 0.4);
+            margin-top: 8px;
+            display: block;
+        }
+
+        /* Message */
+        .msg-box {
+            max-width: 640px;
+            width: 100%;
+            border: 1px solid rgba(255, 45, 107, 0.2);
+            padding: 36px;
+            background: rgba(8, 5, 16, 0.8);
+            backdrop-filter: blur(16px);
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .msg-box::before {
+            content: '/ /';
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            color: rgba(255, 45, 107, 0.3);
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+
+        .msg-box p {
+            font-size: 1.05rem;
+            line-height: 1.9;
+            font-weight: 300;
+            color: rgba(240, 235, 255, 0.85);
+        }
+
+        /* Wishes section */
+        #wishSec {
+            background: linear-gradient(180deg, var(--dark) 0%, var(--dark2) 100%);
+        }
+
+        .wish-block {
+            max-width: 580px;
+            width: 90%;
+            border: 1px solid rgba(0, 245, 212, 0.2);
+            padding: 48px 36px;
+            background: rgba(8, 5, 16, 0.9);
+            backdrop-filter: blur(20px);
+        }
+
+        .wish-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+        }
+
+        .wish-head {
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .wish-text {
+            font-size: 1rem;
+            line-height: 1.9;
+            font-weight: 300;
+            color: rgba(240, 235, 255, 0.75);
+            margin-bottom: 32px;
+        }
+
+        .btn-glow {
+            padding: 14px 44px;
+            background: transparent;
+            border: 1px solid var(--neon-pink);
+            color: var(--neon-pink);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(255, 45, 107, 0.2), inset 0 0 10px rgba(255, 45, 107, 0.05);
+        }
+
+        .btn-glow:hover {
+            background: rgba(255, 45, 107, 0.1);
+            box-shadow: 0 0 40px rgba(255, 45, 107, 0.5), inset 0 0 20px rgba(255, 45, 107, 0.1);
+            transform: scale(1.03);
+        }
+
+        /* Scanlines effect */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scanlines"></div>
+
+    <!-- Hero -->
+    <section>
+        <div class="neon-badge">🔐 Anniversary Edition</div>
+        <h1>LOCKED IN<br><span class="neon">LOVE</span></h1>
+        <div class="name-tag" id="nameLine">with you, always</div>
+
+        <div class="lock-wrap" id="lockWrap">
+            <div class="lock-ring"></div>
+            <div class="lock-inner" id="lockIcon">🔒</div>
+            <div class="lock-click">click to unlock</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat"><span class="stat-num" id="sYears">01</span><span class="stat-label">Years</span></div>
+            <div class="stat"><span class="stat-num" id="sMonths">00</span><span class="stat-label">Months</span></div>
+            <div class="stat"><span class="stat-num" id="sDays">000</span><span class="stat-label">Days</span></div>
+            <div class="stat"><span class="stat-num" id="sHours">00</span><span class="stat-label">Hours</span></div>
+            <div class="stat"><span class="stat-num" id="sMins">00</span><span class="stat-label">Mins</span></div>
+        </div>
+
+        <div class="msg-box">
+            <p id="msgText">Every single day with you feels like finding the rarest glitch in the universe — a perfect
+                error that I never want fixed. You are my favourite anomaly.</p>
+        </div>
+    </section>
+
+    <!-- Wishes -->
+    <section id="wishSec">
+        <div class="wish-block">
+            <div class="wish-label">// anniversary.exe</div>
+            <div class="wish-head" id="wishHead">Happy Anniversary</div>
+            <div class="wish-text" id="wishText">Another year of choosing each other. Another year of being chosen.
+                There's no one else I'd rather be locked in with.</div>
+            <button class="btn-glow" id="celBtn">CELEBRATE // 🥂</button>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            const ud = JSON.parse(localStorage.getItem('userData') || '{}');
+            function getLang() { try { const p = new URLSearchParams(location.search).get('lang'); if (p === 'hi' || p === 'en') return p; return localStorage.getItem('greeter_lang') || 'en' } catch { return 'en' } }
+            const T = { en: { badge: 'Anniversary Edition', h1: 'LOCKED IN<br><span class="neon">LOVE</span>', nameLine: 'with {name}, always', lockClick: 'click to unlock', counterYears: 'Years', counterMonths: 'Months', counterDays: 'Days', counterHours: 'Hours', counterMins: 'Mins', story: 'Every single day with you feels like finding the rarest glitch in the universe — a perfect error that I never want fixed. You are my favourite anomaly.', wishLabel: '// anniversary.exe', wishHead: 'Happy Anniversary', wishText: 'Another year of choosing each other. Another year of being chosen. There\'s no one else I\'d rather be locked in with.', celebrate: 'CELEBRATE // 🥂' }, hi: { badge: 'सालगिरह संस्करण', h1: 'लॉक इन<br><span class="neon">प्यार</span>', nameLine: '{name} के साथ, हमेशा', lockClick: 'अनलॉक करने के लिए क्लिक करें', counterYears: 'साल', counterMonths: 'महीने', counterDays: 'दिन', counterHours: 'घंटे', counterMins: 'मिनट', story: 'हर दिन तुम्हारे साथ यूनिवर्स में सबसे दुर्लभ ग्लिच मिलने जैसा लगता है — एक परफेक्ट एरर जो मैं कभी ठीक नहीं करना चाहता। तुम मेरी पसंदीदा अनोमली हो।', wishLabel: '// सालगिरह.exe', wishHead: 'सालगिरह मुबारक', wishText: 'एक और साल एक दूसरे को चुनने का। एक और साल चुने जाने का। कोई और नहीं है जिसके साथ मैं लॉक होना चाहता।', celebrate: 'जश्न मनाएं // 🥂' } };
+            let lang = getLang(); let t = T[lang];
+            const name = ud.name || (lang === 'hi' ? 'मेरी जान' : 'Forever');
+            const story = ud.story || t.story;
+            const wishes = ud.wishes || t.wishText;
+            applyLang();
+            function applyLang() {
+                t = T[lang];
+                document.querySelector('.neon-badge').innerText = t.badge;
+                document.querySelector('h1').innerHTML = t.h1;
+                document.getElementById('nameLine').innerText = t.nameLine.replace('{name}', name);
+                document.querySelector('.lock-click').innerText = t.lockClick;
+                document.getElementById('msgText').innerText = story;
+                document.querySelector('.wish-label').innerText = t.wishLabel;
+                document.getElementById('wishHead').innerText = t.wishHead + ', ' + name;
+                document.getElementById('wishText').innerText = wishes;
+                document.getElementById('celBtn').innerText = t.celebrate;
+                document.querySelector('#sYears').nextElementSibling.innerText = t.counterYears;
+                document.querySelector('#sMonths').nextElementSibling.innerText = t.counterMonths;
+                document.querySelector('#sDays').nextElementSibling.innerText = t.counterDays;
+                document.querySelector('#sHours').nextElementSibling.innerText = t.counterHours;
+                document.querySelector('#sMins').nextElementSibling.innerText = t.counterMins;
+            }
+
+            // Counter
+            const start = new Date(); start.setFullYear(start.getFullYear() - 1);
+            function tick() {
+                const now = new Date(), diff = now - start;
+                const totalMin = Math.floor(diff / 60000);
+                const hours = Math.floor(totalMin / 60) % 24;
+                const mins = totalMin % 60;
+                const totalDays = Math.floor(diff / 86400000);
+                const years = Math.floor(totalDays / 365);
+                const months = Math.floor((totalDays % 365) / 30);
+                const days = totalDays;
+                document.getElementById('sYears').innerText = String(years).padStart(2, '0');
+                document.getElementById('sMonths').innerText = String(months).padStart(2, '0');
+                document.getElementById('sDays').innerText = String(days).padStart(3, '0');
+                document.getElementById('sHours').innerText = String(hours).padStart(2, '0');
+                document.getElementById('sMins').innerText = String(mins).padStart(2, '0');
+            }
+            tick(); setInterval(tick, 1000);
+
+            // Lock click
+            let unlocked = false;
+            document.getElementById('lockWrap').addEventListener('click', function () {
+                unlocked = !unlocked;
+                document.getElementById('lockIcon').innerText = unlocked ? '🔓' : '🔒';
+                if (unlocked) {
+                    confetti({ particleCount: 80, spread: 90, colors: ['#ff2d6b', '#b700ff', '#00f5d4'], origin: { y: 0.4 } });
+                }
+            });
+
+            // Celebrate
+            document.getElementById('celBtn').addEventListener('click', function () {
+                const colors = ['#ff2d6b', '#b700ff', '#00f5d4', '#fff'];
+                const end = Date.now() + 3000;
+                (function frame() {
+                    confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors });
+                    confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                })();
+            });
+            window.addEventListener('storage', e => { if (e.key === 'greeter_lang' || e.key === 'customizer_lang') { lang = getLang(); applyLang() } });
+            window.addEventListener('focus', () => { const nl = getLang(); if (nl !== lang) { lang = nl; applyLang() } });
+        })();
+    </script>
+</body>
+
+</html>

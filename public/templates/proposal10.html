@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🌸 Eternal Blossoms · A Love Proposal</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital@0;1&family=Pinyon+Script&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --petal-pink: #fceaea;
+            --rose-blush: #e8b4b8;
+            --terracotta: #c87a7a;
+            --sage-green: #b5c1a5;
+            --cream: #fffaf3;
+            --deep-burgundy: #6b3e3e;
+            --gold-leaf: #d4af7a;
+            --shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Jost', sans-serif;
+            background: var(--cream);
+            color: #2e241f;
+            overflow-x: hidden;
+        }
+
+        /* floating petals canvas */
+        #petalCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--rose-blush), var(--terracotta), var(--gold-leaf));
+            z-index: 100;
+            transition: width 0.12s linear;
+        }
+
+        .chapter {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 70px 24px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(48px);
+            transition: opacity 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.9s ease;
+        }
+
+        .chapter.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* intro */
+        .ch1-intro {
+            background: radial-gradient(circle at 20% 30%, #fff6ed, #fce4e0);
+        }
+
+        .flower-decoration {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: gentleFloat 3s infinite;
+        }
+
+        @keyframes gentleFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+
+        .ch1-title {
+            font-family: 'Pinyon Script', cursive;
+            font-size: clamp(3.8rem, 12vw, 7rem);
+            color: var(--deep-burgundy);
+            line-height: 1.1;
+        }
+
+        .ch1-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--terracotta);
+            margin-top: 12px;
+        }
+
+        .scroll-leaf {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--terracotta);
+            animation: bounceLeaf 1.8s infinite;
+        }
+
+        @keyframes bounceLeaf {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(10px);
+            }
+        }
+
+        /* chapter headers */
+        .chapter-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.35em;
+            background: linear-gradient(135deg, var(--sage-green), var(--terracotta));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .section-heading {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 7vw, 3.5rem);
+            color: var(--deep-burgundy);
+            margin-bottom: 16px;
+        }
+
+        /* blossom timeline */
+        .blossom-timeline {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 32px;
+            margin: 32px 0;
+        }
+
+        .blossom-node {
+            flex: 0 0 130px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .blossom-icon {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 12px;
+            border: 2px solid var(--rose-blush);
+            transition: 0.3s;
+            box-shadow: var(--shadow);
+        }
+
+        .blossom-node.active .blossom-icon {
+            background: var(--rose-blush);
+            border-color: var(--terracotta);
+            transform: scale(1.08);
+            box-shadow: 0 12px 24px rgba(200, 122, 122, 0.3);
+        }
+
+        .blossom-title {
+            font-weight: 500;
+            color: var(--deep-burgundy);
+            font-size: 0.9rem;
+        }
+
+        .timeline-card {
+            background: rgba(255, 250, 240, 0.9);
+            backdrop-filter: blur(2px);
+            border-radius: 48px;
+            padding: 28px 32px;
+            max-width: 500px;
+            margin-top: 24px;
+            border: 1px solid var(--rose-blush);
+            box-shadow: var(--shadow);
+        }
+
+        /* love letter - folded style */
+        .floral-letter {
+            background: #fffaf0;
+            border-radius: 32px;
+            padding: 40px 36px;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: relative;
+            border: 1px solid #eeddcc;
+        }
+
+        .letter-body {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            line-height: 1.7;
+            text-align: left;
+            min-height: 130px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: var(--terracotta);
+            animation: blink 0.8s step-end infinite;
+            margin-left: 3px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* pressed flower gallery */
+        .garden-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .flower-card {
+            background: white;
+            width: 150px;
+            padding: 16px 8px 20px;
+            border-radius: 40px 8px 40px 8px;
+            box-shadow: var(--shadow);
+            transition: 0.25s ease;
+            cursor: pointer;
+        }
+
+        .flower-card:hover {
+            transform: translateY(-12px) rotate(1deg);
+        }
+
+        .flower-emoji {
+            font-size: 3rem;
+        }
+
+        /* reasons as pressed blooms */
+        .reasons-bloom {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 24px;
+            width: min(800px, 96vw);
+        }
+
+        .reason-item {
+            background: white;
+            border-radius: 24px;
+            padding: 24px 18px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.45s;
+            border-left: 4px solid var(--terracotta);
+        }
+
+        .reason-item.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* promises petals */
+        .promise-petal {
+            background: #fff7ef;
+            margin: 12px auto;
+            max-width: 540px;
+            padding: 18px 24px;
+            border-radius: 60px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .promise-petal.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* big ring */
+        .ring-container {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 28px;
+        }
+
+        .ring-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(200, 122, 122, 0.3), transparent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
+        }
+
+        .ring-icon {
+            position: absolute;
+            font-size: 5rem;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: sway 3s infinite;
+        }
+
+        @keyframes sway {
+
+            0%,
+            100% {
+                transform: rotate(-6deg);
+            }
+
+            50% {
+                transform: rotate(6deg);
+            }
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, var(--terracotta), var(--deep-burgundy));
+            border: none;
+            padding: 16px 48px;
+            color: white;
+            font-family: 'Pinyon Script', cursive;
+            font-size: 2rem;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-no {
+            background: white;
+            border: 2px solid var(--rose-blush);
+            padding: 14px 36px;
+            border-radius: 60px;
+            margin-left: 12px;
+            cursor: pointer;
+        }
+
+        .celebration-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 245, 235, 0.96);
+            backdrop-filter: blur(12px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.5s;
+        }
+
+        .celebration-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="petalCanvas"></canvas>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- CHAPTER 1 -->
+    <section class="chapter ch1-intro visible" id="ch1">
+        <div class="flower-decoration">🌸🌼🌸</div>
+        <h1 class="ch1-title" id="mainTitle">Our Blossom Story</h1>
+        <p class="ch1-sub" id="mainSub">From a single seed, a garden grew</p>
+        <div class="scroll-leaf">❀ SCROLL ❀</div>
+    </section>
+
+    <!-- TIMELINE CHAPTER -->
+    <section class="chapter" id="ch2">
+        <div class="chapter-label">— First Bloom —</div>
+        <h2 class="section-heading" id="timelineHeading">How We Grew</h2>
+        <div class="blossom-timeline" id="blossomTimeline"></div>
+        <div class="timeline-card" id="timelineCard">
+            <div class="blossom-icon" style="width: 48px; height: 48px; margin:0 auto 12px;" id="tlIcon">🌱</div>
+            <p id="tlText">Every love begins with a single glance.</p>
+        </div>
+    </section>
+
+    <!-- LETTER CHAPTER -->
+    <section class="chapter" id="ch3">
+        <div class="chapter-label">— Tender Words —</div>
+        <h2 class="section-heading" id="letterHeading">A Letter to You</h2>
+        <div class="floral-letter">
+            <div class="letter-body" id="letterBody"></div>
+            <p style="margin-top: 24px; text-align: right; font-style: italic;" id="letterSign">Forever yours,</p>
+        </div>
+    </section>
+
+    <!-- GALLERY / MEMORIES -->
+    <section class="chapter" id="ch4">
+        <div class="chapter-label">— Pressed Petals —</div>
+        <h2 class="section-heading" id="memoriesHeading">Fragments of Us</h2>
+        <div class="garden-grid" id="memoryGrid"></div>
+    </section>
+
+    <!-- REASONS -->
+    <section class="chapter" id="ch5">
+        <div class="chapter-label">— Why I Love You —</div>
+        <h2 class="section-heading" id="reasonsHeading">A Bouquet of Reasons</h2>
+        <div class="reasons-bloom" id="reasonsGrid"></div>
+    </section>
+
+    <!-- PROMISES PETALS -->
+    <section class="chapter" id="ch6">
+        <div class="chapter-label">— Sacred Vows —</div>
+        <h2 class="section-heading" id="promisesHeading">My Promises to You</h2>
+        <div id="promisesContainer"></div>
+    </section>
+
+    <!-- PROPOSAL -->
+    <section class="chapter" id="ch7">
+        <div class="ring-container">
+            <div class="ring-glow"></div>
+            <div class="ring-icon">💍</div>
+        </div>
+        <p class="q-line" id="proposalLine1" style="font-size: 1.3rem; font-style: italic;">After every whispered
+            dream...</p>
+        <h2 class="section-heading" id="proposalQuestion">Will you marry me?</h2>
+        <div style="margin-top: 30px;">
+            <button class="btn-yes" id="yesBtn">Yes, Forever 💐</button>
+            <button class="btn-no" id="noBtn">I need a moment...</button>
+        </div>
+    </section>
+
+    <div id="celebrationOverlay" class="celebration-overlay">
+        <div style="font-size: 5rem;">💍🌺💍</div>
+        <h1 id="celebTitle" style="font-family: 'Pinyon Script'; font-size: 3rem;">She Said Yes!</h1>
+        <p id="celebMsg" style="margin: 18px;">This is the beginning of our forever garden.</p>
+        <button id="closeCeleb" class="btn-yes" style="font-size: 1.2rem;">Begin Forever 🌸</button>
+    </div>
+
+    <script>
+        (function () {
+            function getLang() {
+                try {
+                    const p = new URLSearchParams(location.search).get('lang');
+                    if (p === 'hi' || p === 'en') return p;
+                    const ls = localStorage.getItem('greeter_lang');
+                    if (ls === 'hi' || ls === 'en') return ls;
+                } catch (e) { }
+                return 'en';
+            }
+            const lang = getLang();
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            const params = new URLSearchParams(location.search);
+            const userName = params.get('name') || userData.name || (lang === 'hi' ? 'मेरी जान' : 'My Love');
+            const userStory = params.get('story') || userData.story || '';
+            const userWish = params.get('wishes') || userData.wishes || '';
+            const userMems = Array.isArray(userData.memories) ? userData.memories : [];
+
+            const T = {
+                en: {
+                    mainTitle: 'Our Blossom Story', mainSub: 'From a single seed, a garden grew',
+                    timelineHeading: 'How We Grew',
+                    timelineNodes: [
+                        { icon: '🌱', title: 'First Meeting', desc: 'The day I saw you, something in me knew you were my home.' },
+                        { icon: '🌿', title: 'Growing Closer', desc: 'Every conversation was sunlight, every laugh a new leaf.' },
+                        { icon: '🌻', title: 'Falling Deeply', desc: 'I realized that loving you is as natural as breathing.' },
+                        { icon: '🍃', title: 'Our Journey', desc: 'Together we\'ve weathered storms and danced in sunshine.' }
+                    ],
+                    letterHeading: 'A Letter to You',
+                    letterBodyDefault: "My dearest {name}, every day I thank the universe for you. You've turned my world into a blooming garden. I promise to cherish you, to grow beside you, and to fill our days with tenderness.",
+                    letterSign: 'Forever yours,',
+                    memoriesHeading: 'Fragments of Us',
+                    defaultMems: ['First Hello 🌸', 'Sunset Walks 🌅', 'Coffee & Chaos ☕', 'Your Laugh 😊'],
+                    reasonsHeading: 'A Bouquet of Reasons',
+                    reasonsList: [
+                        { icon: '🌸', title: 'Your Heart', text: 'Unconditionally kind and warm.' },
+                        { icon: '🌼', title: 'Your Smile', text: 'It heals everything.' },
+                        { icon: '🌺', title: 'Your Strength', text: 'You inspire me daily.' },
+                        { icon: '🌷', title: 'Your Soul', text: 'Deep, gentle, and true.' }
+                    ],
+                    promisesHeading: 'My Promises to You',
+                    promises: ['🤍 Love you through every season', '🤍 Hold your hand in the dark', '🤍 Laugh with you until we\'re old', '🤍 Build a home full of tenderness'],
+                    proposalLine1: 'After every whispered dream...',
+                    proposalQuestion: 'Will you marry me?',
+                    yesText: 'Yes, Forever 💐',
+                    noSillies: ['Are you sure? 🌸', 'Please? 💕', 'Say yes?', 'Yes! 🥺', 'Forever with me?'],
+                    celebTitle: 'She Said Yes!',
+                    celebMsgDefault: 'This is the beginning of our forever garden.'
+                },
+                hi: {
+                    mainTitle: 'हमारी खिलती कहानी', mainSub: 'एक बीज से बगीचा बना',
+                    timelineHeading: 'हम कैसे बढ़े',
+                    timelineNodes: [
+                        { icon: '🌱', title: 'पहली मुलाकात', desc: 'जब तुमसे मिला, दिल ने कहा यही घर है।' },
+                        { icon: '🌿', title: 'बढ़ते कदम', desc: 'हर बातचीत धूप थी, हर हंसी पत्ता।' },
+                        { icon: '🌻', title: 'गहरा प्यार', desc: 'तुमसे प्यार करना साँस लेने जैसा है।' },
+                        { icon: '🍃', title: 'हमारा सफर', desc: 'तूफान और धूप, संग चले हमेशा।' }
+                    ],
+                    letterHeading: 'तुम्हारे नाम खत',
+                    letterBodyDefault: "मेरे प्रिय {name}, तुमने मेरी दुनिया को बहार दी। तुम्हारे बिना ये बगीचा अधूरा है। हर दिन तुमसे प्यार करता रहूँगा, हर मौसम तुम्हारा साथ दूंगा।",
+                    letterSign: 'हमेशा तुम्हारा,',
+                    memoriesHeading: 'हमारी यादें',
+                    defaultMems: ['पहली नमस्ते 🌸', 'शाम की सैर 🌅', 'कॉफी और हँसी ☕', 'तुम्हारी मुस्कान 😊'],
+                    reasonsHeading: 'प्यार के फूल',
+                    reasonsList: [
+                        { icon: '🌸', title: 'तुम्हारा दिल', text: 'बेहद कोमल और गर्म।' },
+                        { icon: '🌼', title: 'तुम्हारी मुस्कान', text: 'हर घाव भरती है।' },
+                        { icon: '🌺', title: 'तुम्हारी ताकत', text: 'हर दिन प्रेरित करती है।' },
+                        { icon: '🌷', title: 'तुम्हारी रूह', text: 'गहरी, सच्ची और खूबसूरत।' }
+                    ],
+                    promisesHeading: 'मेरे वादे',
+                    promises: ['🤍 हर मौसम प्यार दूंगा', '🤍 अंधेरे में हाथ थामूंगा', '🤍 तुम्हारे साथ हंसता रहूंगा', '🤍 कोमल घर बनाऊंगा'],
+                    proposalLine1: 'हर धड़कन के बाद...',
+                    proposalQuestion: 'क्या तुम मुझसे शादी करोगी?',
+                    yesText: 'हाँ, हमेशा 💐',
+                    noSillies: ['पक्का? 🌸', 'प्लीज़? 💕', 'हाँ बोलो?', 'हाँ! 🥺', 'हमेशा मेरे साथ?'],
+                    celebTitle: 'उसने हाँ कह दी!',
+                    celebMsgDefault: 'यह हमारे हमेशा की शुरुआत है।'
+                }
+            };
+            const t = T[lang];
+
+            // set static translations
+            document.getElementById('mainTitle').innerText = t.mainTitle;
+            document.getElementById('mainSub').innerText = t.mainSub;
+            document.getElementById('timelineHeading').innerText = t.timelineHeading;
+            document.getElementById('letterHeading').innerText = t.letterHeading;
+            document.getElementById('letterSign').innerText = t.letterSign;
+            document.getElementById('memoriesHeading').innerText = t.memoriesHeading;
+            document.getElementById('reasonsHeading').innerText = t.reasonsHeading;
+            document.getElementById('promisesHeading').innerText = t.promisesHeading;
+            document.getElementById('proposalLine1').innerText = t.proposalLine1;
+            document.getElementById('proposalQuestion').innerText = t.proposalQuestion;
+            document.getElementById('yesBtn').innerText = t.yesText;
+            document.getElementById('celebTitle').innerText = t.celebTitle;
+            document.getElementById('celebMsg').innerText = userWish || t.celebMsgDefault;
+
+            // timeline
+            const timelineDiv = document.getElementById('blossomTimeline');
+            t.timelineNodes.forEach((node, idx) => {
+                const el = document.createElement('div');
+                el.className = 'blossom-node' + (idx === 0 ? ' active' : '');
+                el.setAttribute('data-idx', idx);
+                el.innerHTML = `<div class="blossom-icon">${node.icon}</div><div class="blossom-title">${node.title}</div>`;
+                timelineDiv.appendChild(el);
+            });
+            const tlNodes = document.querySelectorAll('.blossom-node');
+            const tlCardIcon = document.getElementById('tlIcon');
+            const tlCardText = document.getElementById('tlText');
+            function updateTimeline(idx) {
+                tlNodes.forEach((n, i) => {
+                    if (i == idx) n.classList.add('active');
+                    else n.classList.remove('active');
+                });
+                tlCardIcon.innerText = t.timelineNodes[idx].icon;
+                tlCardText.innerText = t.timelineNodes[idx].desc;
+            }
+            tlNodes.forEach((node, i) => node.addEventListener('click', () => updateTimeline(i)));
+            updateTimeline(0);
+            setInterval(() => {
+                let curr = -1;
+                tlNodes.forEach((n, i) => { if (n.classList.contains('active')) curr = i; });
+                let next = (curr + 1) % t.timelineNodes.length;
+                updateTimeline(next);
+            }, 4500);
+
+            // letter typewriter
+            const letterContainer = document.getElementById('letterBody');
+            let typed = false;
+            const finalText = userStory || t.letterBodyDefault.replace('{name}', userName);
+            function typewrite(el, text) {
+                if (typed) return;
+                typed = true;
+                el.innerHTML = '';
+                let i = 0;
+                const cursorSpan = document.createElement('span');
+                cursorSpan.className = 'cursor';
+                el.appendChild(cursorSpan);
+                const interval = setInterval(() => {
+                    el.insertBefore(document.createTextNode(text[i]), cursorSpan);
+                    i++;
+                    if (i >= text.length) {
+                        clearInterval(interval);
+                        cursorSpan.remove();
+                    }
+                }, 30);
+            }
+
+            // gallery
+            const galleryDiv = document.getElementById('memoryGrid');
+            let memArray = userMems.length ? userMems.map(m => m.text || '💖') : t.defaultMems;
+            memArray.slice(0, 6).forEach((mem, idx) => {
+                const card = document.createElement('div');
+                card.className = 'flower-card';
+                card.innerHTML = `<div class="flower-emoji">${mem.includes('☕') ? '☕' : (mem.includes('🌸') ? '🌸' : '🌼')}</div><div style="margin-top: 12px;">${mem}</div>`;
+                galleryDiv.appendChild(card);
+            });
+
+            // reasons
+            const reasonsGrid = document.getElementById('reasonsGrid');
+            t.reasonsList.forEach((r, i) => {
+                const reasonDiv = document.createElement('div');
+                reasonDiv.className = 'reason-item';
+                reasonDiv.innerHTML = `<div style="font-size:2rem;">${r.icon}</div><h3>${r.title}</h3><p>${r.text}</p>`;
+                reasonsGrid.appendChild(reasonDiv);
+            });
+            const reasonItems = document.querySelectorAll('.reason-item');
+
+            // promises
+            const promisesContainer = document.getElementById('promisesContainer');
+            t.promises.forEach((p, idx) => {
+                const promDiv = document.createElement('div');
+                promDiv.className = 'promise-petal';
+                promDiv.innerHTML = `<span style="font-size:1.6rem;">🌼</span><span>${p}</span>`;
+                promisesContainer.appendChild(promDiv);
+            });
+            const promiseRows = document.querySelectorAll('.promise-petal');
+
+            // scroll observer
+            const chapters = document.querySelectorAll('.chapter');
+            let ch3Done = false, ch5Done = false, ch6Done = false;
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('visible');
+                    const id = entry.target.id;
+                    if (id === 'ch3' && !ch3Done) { ch3Done = true; typewrite(letterContainer, finalText); }
+                    if (id === 'ch5' && !ch5Done) {
+                        ch5Done = true;
+                        reasonItems.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), i * 100));
+                    }
+                    if (id === 'ch6' && !ch6Done) {
+                        ch6Done = true;
+                        promiseRows.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), i * 120));
+                    }
+                });
+            }, { threshold: 0.25 });
+            chapters.forEach(c => observer.observe(c));
+
+            // progress bar
+            window.addEventListener('scroll', () => {
+                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                const percent = (window.scrollY / maxScroll) * 100;
+                document.getElementById('progressBar').style.width = percent + '%';
+            });
+
+            // yes/no + confetti
+            const celebrationDiv = document.getElementById('celebrationOverlay');
+            const noBtn = document.getElementById('noBtn');
+            let sillyIndex = 0;
+            noBtn.addEventListener('click', () => {
+                const sillies = t.noSillies;
+                if (sillyIndex < sillies.length) {
+                    noBtn.innerText = sillies[sillyIndex++];
+                    if (sillyIndex === sillies.length) {
+                        setTimeout(() => document.getElementById('yesBtn').click(), 400);
+                    }
+                }
+            });
+            document.getElementById('yesBtn').addEventListener('click', () => {
+                celebrationDiv.classList.add('show');
+                canvasConfetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#c87a7a', '#e8b4b8', '#d4af7a'], shapes: ['heart'] });
+                for (let i = 0; i < 5; i++) setTimeout(() => canvasConfetti({ particleCount: 120, angle: 60, spread: 80, origin: { x: 0 } }), i * 200);
+                setTimeout(() => canvasConfetti({ particleCount: 400, spread: 140, origin: { y: 0.5 } }), 500);
+            });
+            document.getElementById('closeCeleb').addEventListener('click', () => {
+                celebrationDiv.classList.remove('show');
+            });
+
+            // floating petals canvas
+            const canvas = document.getElementById('petalCanvas');
+            const ctx = canvas.getContext('2d');
+            let petals = [];
+            function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            for (let i = 0; i < 35; i++) {
+                petals.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: 6 + Math.random() * 12,
+                    speedY: 0.3 + Math.random() * 0.6,
+                    speedX: (Math.random() - 0.5) * 0.3,
+                    color: `rgba(200, 122, 122, ${0.2 + Math.random() * 0.3})`
+                });
+            }
+            function drawPetals() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                petals.forEach(p => {
+                    ctx.beginPath();
+                    ctx.ellipse(p.x, p.y, p.size * 0.5, p.size, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    if (p.y > canvas.height) p.y = -20;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.x < 0) p.x = canvas.width;
+                });
+                requestAnimationFrame(drawPetals);
+            }
+            drawPetals();
+        })();
+    </script>
+</body>
+
+</html>

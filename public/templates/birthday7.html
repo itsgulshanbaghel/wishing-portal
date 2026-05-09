@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🌸 Birthday Garden · Greeter.com (हिंदी/English)</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@300;400;600;700&family=Dancing+Script:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --blush: #fde8ef;
+      --petal: #f9b8cc;
+      --rose: #e8739b;
+      --deep: #c2426e;
+      --mint: #d4f1e4;
+      --sage: #8ecfb0;
+      --lavender: #ede0f5;
+      --lilac: #c4a3d6;
+      --golden: #ffe0a0;
+      --text: #4a2438;
+      --white: #fff;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(160deg, #fff5f8 0%, #fde8ef 40%, #ede0f5 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #petalCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .sparkle-field {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .sp {
+      position: absolute;
+      width: var(--s);
+      height: var(--s);
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff 0%, var(--petal) 60%, transparent 80%);
+      opacity: 0;
+      animation: twinkle var(--d) ease-in-out var(--delay) infinite;
+    }
+
+    @keyframes twinkle {
+
+      0%,
+      100% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+
+      50% {
+        opacity: 0.9;
+        transform: scale(1);
+      }
+    }
+
+    .page {
+      position: relative;
+      z-index: 5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 24px 80px;
+      text-align: center;
+    }
+
+    .garden-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--petal), var(--lavender));
+      border-radius: 50px;
+      padding: 6px 22px;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--deep);
+      font-weight: 700;
+      margin-bottom: 20px;
+      animation: fadeSlideDown 0.8s ease both;
+    }
+
+    h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(3.5rem, 11vw, 6rem);
+      color: var(--deep);
+      line-height: 1.1;
+      animation: fadeSlideDown 0.9s 0.1s ease both;
+    }
+
+    .name-label {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1rem, 3.5vw, 1.5rem);
+      font-style: italic;
+      color: var(--rose);
+      margin: 12px 0 0;
+      animation: fadeSlideDown 1s 0.2s ease both;
+    }
+
+    .emoji-row {
+      font-size: 2rem;
+      margin: 18px 0;
+      animation: fadeSlideDown 1s 0.3s ease both;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .emoji-row span {
+      display: inline-block;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    .emoji-row span:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+
+    .emoji-row span:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes fadeSlideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .envelope-wrap {
+      width: min(360px, 92vw);
+      margin: 30px auto;
+      animation: fadeSlideDown 1s 0.4s ease both;
+    }
+
+    .envelope {
+      position: relative;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .env-body {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 16px 48px rgba(200, 100, 130, 0.22);
+      overflow: hidden;
+      transition: transform 0.4s ease;
+    }
+
+    .env-body:hover {
+      transform: translateY(-4px);
+    }
+
+    .env-top {
+      background: linear-gradient(135deg, var(--petal) 0%, var(--lavender) 100%);
+      padding: 32px 28px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .env-flap {
+      width: 100%;
+      height: 50px;
+      background: linear-gradient(160deg, var(--petal) 48%, transparent 48%);
+      position: relative;
+      top: -1px;
+      transform-origin: top;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .envelope.open .env-flap {
+      transform: rotateX(180deg);
+    }
+
+    .env-inner {
+      padding: 0 28px 32px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s ease;
+    }
+
+    .envelope.open .env-inner {
+      max-height: 400px;
+      padding: 12px 28px 32px;
+    }
+
+    .env-flower {
+      font-size: 3.5rem;
+      margin-bottom: 8px;
+    }
+
+    .env-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2.4rem;
+      color: var(--deep);
+    }
+
+    .env-hint {
+      font-size: 0.8rem;
+      color: var(--rose);
+      margin-top: 6px;
+      letter-spacing: 0.1em;
+    }
+
+    .env-msg {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text);
+      border-left: 3px solid var(--petal);
+      padding-left: 14px;
+      margin-bottom: 16px;
+    }
+
+    .env-sign {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.8rem;
+      color: var(--rose);
+      text-align: right;
+    }
+
+    .bubbles-section {
+      width: min(680px, 94vw);
+      margin: 0 auto 40px;
+      animation: fadeSlideDown 1s 0.5s ease both;
+    }
+
+    .bubbles-head {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2rem;
+      color: var(--deep);
+      margin-bottom: 20px;
+    }
+
+    .bubbles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+    }
+
+    .wish-bubble {
+      background: white;
+      border-radius: 20px;
+      padding: 20px 16px;
+      box-shadow: 0 6px 24px rgba(200, 100, 130, 0.14);
+      border: 2px solid transparent;
+      transition: all 0.35s ease;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wish-bubble:hover {
+      transform: translateY(-6px) scale(1.04);
+      border-color: var(--rose);
+    }
+
+    .wish-bubble .icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .wish-bubble .label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .story-section {
+      max-width: 640px;
+      width: 90%;
+      background: white;
+      border-radius: 24px;
+      padding: 40px 36px;
+      box-shadow: 0 12px 40px rgba(200, 100, 130, 0.14);
+      margin: 0 auto 40px;
+      animation: fadeSlideDown 1s 0.6s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .story-section::after {
+      content: '🌸';
+      position: absolute;
+      right: 20px;
+      top: 16px;
+      font-size: 3rem;
+      opacity: 0.15;
+    }
+
+    .story-head {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.8rem;
+      color: var(--deep);
+      margin-bottom: 12px;
+    }
+
+    .story-body {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: #6a3a50;
+    }
+
+    .mosaic-section {
+      width: min(680px, 94vw);
+      margin: 0 auto 40px;
+      animation: fadeSlideDown 1s 0.7s ease both;
+    }
+
+    .mosaic-head {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2rem;
+      color: var(--deep);
+      margin-bottom: 20px;
+    }
+
+    .mosaic {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .mosaic-tile {
+      aspect-ratio: 1;
+      border-radius: 16px;
+      background: var(--bg, var(--petal));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      transition: all 0.35s ease;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .mosaic-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .mosaic-tile:hover {
+      transform: scale(1.07) rotate(-2deg);
+    }
+
+    .cel-btn-wrap {
+      animation: fadeSlideDown 1s 0.8s ease both;
+      margin-bottom: 16px;
+    }
+
+    .cel-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--rose) 0%, var(--deep) 100%);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 18px 48px;
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.6rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .cel-btn:hover {
+      transform: translateY(-4px) scale(1.04);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: linear-gradient(135deg, var(--rose), var(--deep));
+      color: white;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.3rem;
+      z-index: 999;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s;
+      opacity: 0;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .footer-text {
+      font-size: 0.8rem;
+      color: var(--rose);
+      opacity: 0.7;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="petalCanvas"></canvas>
+  <div class="sparkle-field" id="sparkles"></div>
+  <div class="page">
+    <div class="garden-badge" id="gardenBadge">✿ Birthday Celebration ✿</div>
+    <h1 id="heroTitle">Happy Birthday</h1>
+    <div class="name-label" id="nameSub">to the most wonderful soul 🌸</div>
+    <div class="emoji-row"><span>🌸</span><span>🎂</span><span>🌸</span></div>
+    <div class="envelope-wrap">
+      <div class="envelope" id="envelope">
+        <div class="env-body">
+          <div class="env-top">
+            <div class="env-flower">💐</div>
+            <div class="env-title" id="envTitle">A Message for You</div>
+            <div class="env-hint">✦ tap to open ✦</div>
+          </div>
+          <div class="env-flap"></div>
+          <div class="env-inner">
+            <p class="env-msg" id="envMsg">On your special day, may every petal that falls carry a wish, every star that
+              shines remind you of how bright you are. You are a rare bloom in the garden of life — beautiful, strong,
+              and endlessly loved.</p>
+            <div class="env-sign" id="envSign">With all my love ♡</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bubbles-section">
+      <div class="bubbles-head" id="bubblesHead">🌟 Birthday Wishes</div>
+      <div class="bubbles-grid">
+        <div class="wish-bubble" style="--bg: #f9b8cc;">
+          <div class="icon">🌺</div>
+          <div class="label" id="bubble1">Endless Joy</div>
+        </div>
+        <div class="wish-bubble" style="--bg: #d4f1e4;">
+          <div class="icon">✨</div>
+          <div class="label" id="bubble2">Bright Future</div>
+        </div>
+        <div class="wish-bubble" style="--bg: #ede0f5;">
+          <div class="icon">💖</div>
+          <div class="label" id="bubble3">Overflowing Love</div>
+        </div>
+        <div class="wish-bubble" style="--bg: #ffe0a0;">
+          <div class="icon">🎁</div>
+          <div class="label" id="bubble4">Sweet Surprises</div>
+        </div>
+      </div>
+    </div>
+    <div class="story-section">
+      <div class="story-head" id="storyHead">Our Beautiful Story 🌹</div>
+      <p class="story-body" id="storyBody">Every moment spent with you is a chapter I never want to end. You light up
+        every room you enter and make every ordinary day feel extraordinary. Today we celebrate not just your birthday,
+        but the gift of you in all our lives.</p>
+    </div>
+    <div class="mosaic-section">
+      <div class="mosaic-head" id="mosaicHead">💫 Memory Garden</div>
+      <div class="mosaic" id="gallery">
+        <div class="mosaic-tile" style="--bg: #fde8ef;">🌸</div>
+        <div class="mosaic-tile" style="--bg: #d4f1e4;">🎂</div>
+        <div class="mosaic-tile" style="--bg: #ede0f5;">🎈</div>
+        <div class="mosaic-tile" style="--bg: #ffe0a0;">💐</div>
+        <div class="mosaic-tile" style="--bg: #fde8ef;">✨</div>
+        <div class="mosaic-tile" style="--bg: #d4f1e4;">🌟</div>
+      </div>
+    </div>
+    <div class="cel-btn-wrap"><button class="cel-btn" id="celBtn">🎉 Celebrate! 🎉</button></div>
+    <p class="footer-text">Made with ♡ · Greeter.com</p>
+  </div>
+  <div class="toast" id="toast">🌸 Happy Birthday! 🌸</div>
+
+  <script>
+    (function () {
+      // ----- Language detection (same as birthday1.html) -----
+      function getLang() {
+        let urlParam = new URLSearchParams(location.search).get('lang');
+        if (urlParam === 'hi' || urlParam === 'en') return urlParam;
+        return localStorage.getItem('greeter_lang') || 'en';
+      }
+      let currentLang = getLang();
+
+      const translations = {
+        en: {
+          gardenBadge: "✿ Birthday Celebration ✿", heroTitle: "Happy Birthday", nameSub: "to the most wonderful soul 🌸",
+          envTitle: "A Message for You", envMsg: "On your special day, may every petal that falls carry a wish, every star that shines remind you of how bright you are. You are a rare bloom in the garden of life — beautiful, strong, and endlessly loved.",
+          envSign: "With all my love ♡",
+          bubblesHead: "🌟 Birthday Wishes", bubble1: "Endless Joy", bubble2: "Bright Future", bubble3: "Overflowing Love", bubble4: "Sweet Surprises",
+          storyHead: "Our Beautiful Story 🌹", storyBody: "Every moment spent with you is a chapter I never want to end. You light up every room you enter and make every ordinary day feel extraordinary. Today we celebrate not just your birthday, but the gift of you in all our lives.",
+          mosaicHead: "💫 Memory Garden", celBtn: "🎉 Celebrate! 🎉", toastMsg: "🌸 Happy Birthday! 🌸"
+        },
+        hi: {
+          gardenBadge: "✿ जन्मदिन का जश्न ✿", heroTitle: "जन्मदिन मुबारक", nameSub: "दुनिया की सबसे खूबसूरत आत्मा को 🌸",
+          envTitle: "तुम्हारे लिए एक प्यारा संदेश", envMsg: "तुम्हारे इस खास दिन पर, हर गिरती पंखुड़ी एक दुआ लेकर आए, हर चमकता सितारा तुम्हें याद दिलाए कि तुम कितनी रोशनी हो। तुम जीवन के बगीचे में एक अनमोल फूल हो — खूबसूरत, मजबूत, और बेहद प्यार करने वाले।",
+          envSign: "मेरे सारे प्यार से ♡",
+          bubblesHead: "🌟 जन्मदिन की शुभकामनाएँ", bubble1: "अपार खुशियाँ", bubble2: "उज्ज्वल भविष्य", bubble3: "बहता प्यार", bubble4: "मीठे उपहार",
+          storyHead: "हमारी खूबसूरत कहानी 🌹", storyBody: "तुम्हारे साथ बिताया हर पल एक कहानी है जो कभी खत्म न हो। तुम हर कमरे को रोशन कर देते हो और हर साधारण दिन को असाधारण बना देते हो। आज हम सिर्फ तुम्हारा जन्मदिन नहीं, बल्कि हमारी ज़िंदगी में तुम्हारे होने का तोहफा मना रहे हैं।",
+          mosaicHead: "💫 यादों का बगीचा", celBtn: "🎉 जश्न मनाएं! 🎉", toastMsg: "🌸 जन्मदिन मुबारक! 🌸"
+        }
+      };
+
+      function applyLanguage() {
+        let t = translations[currentLang];
+        document.getElementById('gardenBadge').innerText = t.gardenBadge;
+        document.getElementById('heroTitle').innerText = t.heroTitle;
+        document.getElementById('nameSub').innerText = t.nameSub;
+        document.getElementById('envTitle').innerText = t.envTitle;
+        document.getElementById('envMsg').innerText = t.envMsg;
+        document.getElementById('envSign').innerText = t.envSign;
+        document.getElementById('bubblesHead').innerText = t.bubblesHead;
+        document.getElementById('bubble1').innerText = t.bubble1;
+        document.getElementById('bubble2').innerText = t.bubble2;
+        document.getElementById('bubble3').innerText = t.bubble3;
+        document.getElementById('bubble4').innerText = t.bubble4;
+        document.getElementById('storyHead').innerText = t.storyHead;
+        document.getElementById('storyBody').innerText = t.storyBody;
+        document.getElementById('mosaicHead').innerText = t.mosaicHead;
+        document.getElementById('celBtn').innerText = t.celBtn;
+        document.getElementById('toast').innerText = t.toastMsg;
+      }
+
+      // Load user data
+      let userData = {};
+      try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+
+      function refreshAll() {
+        applyLanguage();
+        if (userData.name) {
+          document.getElementById('heroTitle').innerText = (currentLang === 'hi' ? 'जन्मदिन मुबारक, ' : 'Happy Birthday, ') + userData.name;
+        }
+        if (userData.story) document.getElementById('storyBody').innerText = userData.story;
+        if (userData.wishes) document.getElementById('envMsg').innerText = userData.wishes;
+        if (userData.memories && userData.memories.length) {
+          let gallery = document.getElementById('gallery');
+          gallery.innerHTML = '';
+          userData.memories.forEach(m => {
+            let div = document.createElement('div'); div.className = 'mosaic-tile';
+            if (m.img) div.innerHTML = `<img src="${m.img}" alt="memory">`;
+            else div.innerText = m.text || '🌸';
+            gallery.appendChild(div);
+          });
+        }
+      }
+
+      refreshAll();
+
+      // Listen for storage changes
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'greeter_lang') {
+          currentLang = e.newValue || 'en';
+          refreshAll();
+        }
+        if (e.key === 'userData') {
+          try { userData = JSON.parse(e.newValue || '{}'); } catch (e) { }
+          refreshAll();
+        }
+      });
+
+      // URL param changes
+      window.addEventListener('popstate', () => {
+        let newLang = getLang();
+        if (newLang !== currentLang) {
+          currentLang = newLang;
+          refreshAll();
+        }
+      });
+
+      // Envelope flip
+      document.getElementById('envelope').addEventListener('click', function () { this.classList.toggle('open'); });
+
+      // Confetti celebration
+      document.getElementById('celBtn').addEventListener('click', () => {
+        let toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+        canvasConfetti({ particleCount: 250, spread: 130, origin: { y: 0.4 }, startVelocity: 18 });
+        for (let i = 0; i < 3; i++) setTimeout(() => canvasConfetti({ particleCount: 100, spread: 90, origin: { y: 0.5, x: 0.2 + i * 0.3 } }), i * 200);
+      });
+
+      // Falling petals canvas
+      (function () {
+        const canvas = document.getElementById('petalCanvas');
+        const ctx = canvas.getContext('2d');
+        let petals = [];
+        const colors = ['#f9b8cc', '#ede0f5', '#d4f1e4', '#fde8ef', '#ffe0a0', '#c4a3d6'];
+        function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+        function newPetal() { return { x: Math.random() * canvas.width, y: -20, r: 6 + Math.random() * 10, vx: (Math.random() - 0.5) * 1.5, vy: 0.8 + Math.random() * 1.4, angle: Math.random() * Math.PI * 2, spin: (Math.random() - 0.5) * 0.06, color: colors[Math.floor(Math.random() * colors.length)], opacity: 0.4 + Math.random() * 0.5 }; }
+        for (let i = 0; i < 18; i++) { let p = newPetal(); p.y = Math.random() * innerHeight; petals.push(p); }
+        function drawPetal(p) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.globalAlpha = p.opacity; ctx.fillStyle = p.color; ctx.beginPath(); ctx.ellipse(0, 0, p.r, p.r * 1.6, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+        function loop() { ctx.clearRect(0, 0, canvas.width, canvas.height); petals.forEach(p => { p.x += p.vx + Math.sin(p.angle * 2) * 0.5; p.y += p.vy; p.angle += p.spin; drawPetal(p); if (p.y > canvas.height + 30) Object.assign(p, newPetal()); }); if (petals.length < 30 && Math.random() < 0.04) petals.push(newPetal()); requestAnimationFrame(loop); }
+        loop();
+      })();
+
+      // Sparkles
+      (function () {
+        let field = document.getElementById('sparkles');
+        for (let i = 0; i < 30; i++) {
+          let sp = document.createElement('div'); sp.className = 'sp';
+          let size = (4 + Math.random() * 12) + 'px';
+          sp.style.cssText = `--s:${size}; --d:${2 + Math.random() * 4}s; --delay:${Math.random() * 5}s; left:${Math.random() * 100}vw; top:${Math.random() * 100}vh;`;
+          field.appendChild(sp);
+        }
+      })();
+    })();
+  </script>
+</body>
+
+</html>

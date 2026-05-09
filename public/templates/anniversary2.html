@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>📖 Our Love Story · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Quicksand:wght@300;400;500;600&family=Great+Vibes&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --blush: #f9d5e5;
+            --mauve: #c9748a;
+            --lavender: #d4c5e2;
+            --sage: #b5c9b1;
+            --cream: #fffaf6;
+            --warm: #7a4f5a;
+            --text: #4a3040;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Watercolor texture via SVG blur */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 20% 20%, rgba(249, 213, 229, 0.6), transparent),
+                radial-gradient(ellipse 50% 50% at 80% 80%, rgba(212, 197, 226, 0.5), transparent),
+                radial-gradient(ellipse 40% 60% at 50% 50%, rgba(181, 201, 177, 0.3), transparent);
+            z-index: 0;
+            pointer-events: none;
+            animation: bgShift 12s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% {
+                filter: hue-rotate(0deg);
+            }
+
+            100% {
+                filter: hue-rotate(15deg);
+            }
+        }
+
+        .page {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        /* Hero */
+        .hero-ornament {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.4rem;
+            color: var(--mauve);
+            letter-spacing: 0.2em;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(3.5rem, 10vw, 6rem);
+            color: var(--warm);
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .name-sub {
+            font-family: 'Lora', serif;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-style: italic;
+            color: var(--mauve);
+            margin-bottom: 48px;
+        }
+
+        /* Heart float animation */
+        .floating-hearts {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .fh {
+            position: absolute;
+            bottom: -30px;
+            animation: floatHeart linear infinite;
+            opacity: 0;
+            font-size: var(--sz);
+        }
+
+        @keyframes floatHeart {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.7;
+            }
+
+            90% {
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: translateY(-110vh) rotate(20deg);
+                opacity: 0;
+            }
+        }
+
+        /* Book component */
+        .book-wrap {
+            perspective: 1200px;
+            width: min(340px, 90vw);
+            height: min(420px, 65vw);
+            max-height: 420px;
+            margin: 0 auto 40px;
+            cursor: pointer;
+        }
+
+        .book {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .book.flipped {
+            transform: rotateY(-180deg);
+        }
+
+        .book-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            border-radius: 4px 16px 16px 4px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(122, 79, 90, 0.25), 0 0 0 1px rgba(201, 116, 138, 0.2);
+        }
+
+        .book-front {
+            background: linear-gradient(135deg, var(--blush) 0%, var(--lavender) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+
+        .book-spine {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 24px;
+            background: linear-gradient(90deg, rgba(201, 116, 138, 0.4), rgba(201, 116, 138, 0.1));
+            border-radius: 4px 0 0 4px;
+        }
+
+        .book-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.5rem;
+            color: var(--warm);
+            line-height: 1.3;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .book-subtitle {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--mauve);
+            letter-spacing: 0.1em;
+        }
+
+        .book-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .book-hint {
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: rgba(122, 79, 90, 0.6);
+            letter-spacing: 0.1em;
+            font-weight: 500;
+        }
+
+        .book-back {
+            background: var(--cream);
+            transform: rotateY(180deg);
+            border-radius: 16px 4px 4px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 28px;
+        }
+
+        .inside-message {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.9;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .inside-sign {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.8rem;
+            color: var(--mauve);
+            margin-top: 16px;
+        }
+
+        /* Gallery strip */
+        .gallery-strip {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 8px 0 20px;
+            max-width: 700px;
+            width: 100%;
+            scrollbar-width: none;
+        }
+
+        .gallery-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        .mem-thumb {
+            flex: 0 0 auto;
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            background: var(--col, var(--blush));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 4px 12px rgba(122, 79, 90, 0.15);
+            transition: transform 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .mem-thumb:hover {
+            transform: scale(1.08);
+        }
+
+        .mem-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Story section */
+        .story-section {
+            background: rgba(249, 213, 229, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .story-card {
+            max-width: 600px;
+            width: 90%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px 36px;
+            box-shadow: 0 8px 30px rgba(122, 79, 90, 0.12);
+            border: 1px solid rgba(201, 116, 138, 0.15);
+        }
+
+        .story-top {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.5rem;
+            color: var(--mauve);
+            margin-bottom: 12px;
+        }
+
+        .story-body {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            line-height: 1.9;
+            color: var(--text);
+        }
+
+        /* Wishes */
+        .wish-section {
+            background: linear-gradient(135deg, var(--blush) 0%, var(--lavender) 100%);
+        }
+
+        .wish-card {
+            max-width: 560px;
+            width: 90%;
+            background: rgba(255, 250, 246, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 40px 36px;
+            box-shadow: 0 12px 40px rgba(122, 79, 90, 0.15);
+            border: 1px solid rgba(255, 250, 246, 0.6);
+        }
+
+        .wish-emoji {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .wish-head {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.2rem;
+            color: var(--warm);
+            margin-bottom: 16px;
+        }
+
+        .wish-text {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            line-height: 1.9;
+            color: var(--text);
+            margin-bottom: 28px;
+        }
+
+        .btn-celebrate {
+            padding: 14px 40px;
+            background: var(--mauve);
+            border: none;
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            border-radius: 60px;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(201, 116, 138, 0.4);
+            text-transform: uppercase;
+        }
+
+        .btn-celebrate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 30px rgba(201, 116, 138, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="floating-hearts" id="fhearts"></div>
+
+    <!-- Hero -->
+    <div class="page">
+        <div class="hero-ornament">A Love Story</div>
+        <h1 id="heroTitle">Happy Anniversary</h1>
+        <div class="name-sub" id="nameSub">To the one who holds my heart</div>
+
+        <!-- Flippable Book -->
+        <div class="book-wrap">
+            <div class="book" id="book">
+                <div class="book-face book-front">
+                    <div class="book-spine"></div>
+                    <div class="book-icon">💕</div>
+                    <div class="book-title" id="bookTitle">Our Story</div>
+                    <div class="book-subtitle">a love in pages</div>
+                    <div class="book-hint">tap to open ↓</div>
+                </div>
+                <div class="book-face book-back">
+                    <div class="inside-message" id="insideMsg">
+                        Every day with you is a new page in our favourite story.
+                    </div>
+                    <div class="inside-sign" id="insideSign">With all my love ♡</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Memory gallery -->
+        <div class="gallery-strip" id="gallery">
+            <div class="mem-thumb" style="--col:#ffd6e0">🌷</div>
+            <div class="mem-thumb" style="--col:#d4edda">🌿</div>
+            <div class="mem-thumb" style="--col:#fff3cd">☀️</div>
+            <div class="mem-thumb" style="--col:#cce5ff">🌊</div>
+            <div class="mem-thumb" style="--col:#e2d9f3">🌙</div>
+            <div class="mem-thumb" style="--col:#fde2e4">💐</div>
+        </div>
+    </div>
+
+    <!-- Story -->
+    <div class="page story-section">
+        <div class="story-card">
+            <div class="story-top">Our Journey Together</div>
+            <div class="story-body" id="storyBody">
+                Every anniversary reminds me why I chose you, and why I would choose you again, in every lifetime.
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishes -->
+    <div class="page wish-section">
+        <div class="wish-card">
+            <div class="wish-emoji">🌹</div>
+            <div class="wish-head">Happy Anniversary</div>
+            <div class="wish-text" id="wishText">May every year be sweeter than the last. Here's to us — forever.</div>
+            <button class="btn-celebrate" id="celBtn">Celebrate Our Love 🥂</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            const ud = JSON.parse(localStorage.getItem('userData') || '{}');
+            function getLang() { try { const p = new URLSearchParams(location.search).get('lang'); if (p === 'hi' || p === 'en') return p; return localStorage.getItem('greeter_lang') || 'en' } catch { return 'en' } }
+            const T = { en: { title: 'Happy Anniversary', journey: 'Our Journey Together', wishHead: 'Happy Anniversary', story: 'Every anniversary reminds me why I chose you, and why I would choose you again, in every lifetime. You are my home, my adventure, my forever.', wishText: 'May every year be sweeter than the last. Here\'s to us — forever.', celebrate: 'Celebrate Our Love 🥂' }, hi: { title: 'सालगिरह मुबारक', journey: 'हमारा साथ का सफर', wishHead: 'सालगिरह मुबारक', story: 'हर सालगिरह मुझे याद दिलाती है कि मैंने तुम्हें क्यों चुना, और हर जिंदगी में फिर चुनूंगा। तुम मेरा घर, मेरी साहसिक यात्रा, मेरी हमेशा हो।', wishText: 'हर साल पिछले से ज्यादा मीठा हो। हमारे लिए — हमेशा।', celebrate: 'हमारे प्यार का जश्न मनाएं 🥂' } };
+            let lang = getLang(); let t = T[lang];
+            const name = ud.name || (lang === 'hi' ? 'मेरी जान' : 'My Love');
+            const story = ud.story || t.story;
+            const wishes = ud.wishes || t.wishText;
+            applyLang();
+            function applyLang() {
+                t = T[lang];
+                document.getElementById('heroTitle').innerText = t.title + ', ' + name;
+                document.getElementById('nameSub').innerText = lang === 'hi' ? name + ' के लिए, मेरे सारे दिल से' : 'For ' + name + ', with all my heart';
+                document.getElementById('bookTitle').innerText = lang === 'hi' ? 'हमारी कहानी,\n' + name : 'Our Story,\n' + name;
+                document.getElementById('insideMsg').innerText = story.split('.')[0] + '.';
+                document.getElementById('insideSign').innerText = lang === 'hi' ? 'हमेशा तुम्हारा ♡' : 'Always yours ♡';
+                document.getElementById('storyBody').innerText = story;
+                document.querySelector('.story-top').innerText = t.journey;
+                document.querySelector('.wish-head').innerText = t.wishHead;
+                document.getElementById('wishText').innerText = wishes;
+                document.getElementById('celBtn').innerText = t.celebrate;
+            }
+
+
+
+            // Load memories as gallery thumbnails
+            const mems = ud.memories || [];
+            if (mems.length > 0) {
+                const gal = document.getElementById('gallery');
+                gal.innerHTML = '';
+                mems.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'mem-thumb';
+                    if (m.img) div.innerHTML = `<img src="${m.img}" alt="memory">`;
+                    else div.innerText = '♡';
+                    gal.appendChild(div);
+                });
+            }
+
+            // Book flip
+            document.getElementById('book').addEventListener('click', function () {
+                this.classList.toggle('flipped');
+            });
+
+            // Floating hearts
+            const fh = document.getElementById('fhearts');
+            const hearts = ['❤️', '💕', '💗', '🌹', '💖', '🌷'];
+            setInterval(() => {
+                const h = document.createElement('div');
+                h.className = 'fh';
+                h.style.setProperty('--sz', (16 + Math.random() * 20) + 'px');
+                h.style.left = Math.random() * 100 + 'vw';
+                const dur = 8 + Math.random() * 8;
+                h.style.animationDuration = dur + 's';
+                h.style.animationDelay = '0s';
+                h.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+                fh.appendChild(h);
+                setTimeout(() => h.remove(), dur * 1000);
+            }, 1500);
+
+            // Celebrate
+            document.getElementById('celBtn').addEventListener('click', function () {
+                const colors = ['#f9d5e5', '#c9748a', '#d4c5e2', '#b5c9b1', '#fff'];
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        confetti({ particleCount: 50, spread: 80, origin: { y: 0.6, x: 0.1 + i * 0.2 }, colors, angle: 70 + i * 10 });
+                    }, i * 200);
+                }
+            });
+            window.addEventListener('storage', e => { if (e.key === 'greeter_lang' || e.key === 'customizer_lang') { lang = getLang(); applyLang() } });
+            window.addEventListener('focus', () => { const nl = getLang(); if (nl !== lang) { lang = nl; applyLang() } });
+        })();
+    </script>
+</body>
+
+</html>

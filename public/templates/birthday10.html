@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌲 Forest Birthday · Greeter.com (हिंदी/English)</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&family=Caveat:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --forest-green: #2d6a4f;
+            --leaf-light: #52b788;
+            --earth-brown: #9c6644;
+            --moss: #b7e4c7;
+            --glow: #ffdd88;
+            --text-dark: #2d3e2b;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(145deg, #d8f3dc 0%, #b7e4c7 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--text-dark);
+        }
+
+        #fireflyCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .page {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 24px 80px;
+            text-align: center;
+        }
+
+        .forest-badge {
+            background: rgba(255, 250, 220, 0.8);
+            backdrop-filter: blur(6px);
+            border-radius: 60px;
+            padding: 6px 22px;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            font-weight: 700;
+            color: var(--forest-green);
+            margin-bottom: 20px;
+            animation: fadeUp 0.8s ease;
+        }
+
+        h1 {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(3.5rem, 12vw, 5.8rem);
+            color: #fff2d0;
+            text-shadow: 3px 3px 0 var(--forest-green);
+            animation: fadeUp 0.9s ease;
+        }
+
+        .sub {
+            background: rgba(255, 250, 235, 0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 40px;
+            padding: 8px 28px;
+            margin: 12px 0;
+            font-weight: 600;
+            animation: fadeUp 1s ease;
+        }
+
+        .wood-card {
+            width: min(360px, 90vw);
+            background: #fffef7;
+            border-radius: 48px 24px 48px 24px;
+            padding: 36px 28px;
+            margin: 20px auto;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--leaf-light);
+            animation: fadeUp 1.1s ease;
+            text-align: left;
+        }
+
+        .wood-card h3 {
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            color: var(--forest-green);
+            border-left: 5px solid var(--glow);
+            padding-left: 12px;
+            margin-bottom: 16px;
+        }
+
+        .wood-card p {
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .sign {
+            text-align: right;
+            font-family: 'Caveat', cursive;
+            font-size: 1.3rem;
+            color: var(--earth-brown);
+        }
+
+        .wish-forest {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px auto;
+        }
+
+        .wish-leaf {
+            background: var(--leaf-light);
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: bold;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            cursor: default;
+        }
+
+        .wish-leaf:hover {
+            transform: translateY(-3px);
+            background: var(--forest-green);
+        }
+
+        .story-forest {
+            max-width: 600px;
+            background: rgba(255, 250, 240, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 32px;
+            margin: 20px auto;
+            border-right: 8px solid var(--glow);
+        }
+
+        .gallery-forest {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .forest-mem {
+            background: #fdf6e3;
+            border-radius: 24px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .forest-mem img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .forest-mem:hover {
+            transform: scale(1.05) rotate(-1deg);
+        }
+
+        .celebrate-btn {
+            background: linear-gradient(135deg, var(--forest-green), var(--leaf-light));
+            border: none;
+            border-radius: 60px;
+            padding: 14px 44px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: 0.2s;
+        }
+
+        .celebrate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--forest-green);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            transition: 0.4s;
+            opacity: 0;
+            z-index: 999;
+            font-weight: bold;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        footer {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="fireflyCanvas"></canvas>
+    <div class="page">
+        <div class="forest-badge" id="badge">🌲 FOREST WONDERLAND 🌲</div>
+        <h1 id="heroTitle">Happy Birthday!</h1>
+        <div class="sub" id="subText">✨ may the forest whisper your wishes ✨</div>
+        <div class="wood-card">
+            <h3 id="cardTitle">🍃 A Forest Blessing</h3>
+            <p id="cardMsg">Like a tree standing tall and strong, you grow more beautiful every year. The forest
+                celebrates you today — every leaf, every creature. May your life be as deep and magical as the woods.
+            </p>
+            <div class="sign" id="cardSign">— with earthy love 🌿</div>
+        </div>
+        <div class="wish-forest">
+            <div class="wish-leaf"><span>🍃</span> <span id="w1">Peace & calm</span></div>
+            <div class="wish-leaf"><span>🌼</span> <span id="w2">Blossoming joy</span></div>
+            <div class="wish-leaf"><span>🦊</span> <span id="w3">Adventure awaits</span></div>
+            <div class="wish-leaf"><span>✨</span> <span id="w4">Magical days</span></div>
+        </div>
+        <div class="story-forest">
+            <h3 id="storyTitle">📖 Our Forest Tale</h3>
+            <p id="storyText">We met on a path covered with golden leaves, and since then every step has been an
+                adventure. You are my sunshine through the trees. Happy birthday, my wildflower.</p>
+        </div>
+        <div class="gallery-forest" id="gallery">
+            <div class="forest-mem">🌲</div>
+            <div class="forest-mem">🍄</div>
+            <div class="forest-mem">🦊</div>
+            <div class="forest-mem">🌸</div>
+            <div class="forest-mem">🐿️</div>
+            <div class="forest-mem">✨</div>
+        </div>
+        <button class="celebrate-btn" id="celebrateBtn">🎉 Celebrate! 🎉</button>
+        <footer>Made with ♡ · Greeter.com</footer>
+    </div>
+    <div class="toast" id="toast">🌲 Happy Birthday! 🎂</div>
+
+    <script>
+        (function () {
+            function getLang() {
+                let urlLang = new URLSearchParams(location.search).get('lang');
+                if (urlLang === 'hi' || urlLang === 'en') return urlLang;
+                return localStorage.getItem('greeter_lang') || 'en';
+            }
+            let lang = getLang();
+            const t = {
+                en: {
+                    badge: "🌲 FOREST WONDERLAND 🌲", heroTitle: "Happy Birthday!", subText: "✨ may the forest whisper your wishes ✨",
+                    cardTitle: "🍃 A Forest Blessing",
+                    cardMsg: "Like a tree standing tall and strong, you grow more beautiful every year. The forest celebrates you today — every leaf, every creature. May your life be as deep and magical as the woods.",
+                    cardSign: "— with earthy love 🌿",
+                    w1: "Peace & calm", w2: "Blossoming joy", w3: "Adventure awaits", w4: "Magical days",
+                    storyTitle: "📖 Our Forest Tale",
+                    storyText: "We met on a path covered with golden leaves, and since then every step has been an adventure. You are my sunshine through the trees. Happy birthday, my wildflower.",
+                    toastMsg: "🌲 Happy Birthday! 🎂"
+                },
+                hi: {
+                    badge: "🌲 जंगल की परियों का देश 🌲", heroTitle: "जन्मदिन मुबारक!", subText: "✨ जंगल तुम्हारी हर मुराद पूरी करे ✨",
+                    cardTitle: "🍃 जंगल का आशीर्वाद",
+                    cardMsg: "एक ऊँचे और मजबूत पेड़ की तरह, तुम हर साल और खूबसूरत होते जाते हो। आज जंगल तुम्हारा जश्न मना रहा है — हर पत्ता, हर जीव। तुम्हारी ज़िंदगी जंगल की तरह गहरी और जादुई हो।",
+                    cardSign: "— मिट्टी के प्यार से 🌿",
+                    w1: "शांति और सुकून", w2: "खिलती खुशियाँ", w3: "नए सफर", w4: "जादुई दिन",
+                    storyTitle: "📖 हमारी जंगल कहानी",
+                    storyText: "हम सुनहरे पत्तों वाले रास्ते पर मिले, और तब से हर कदम एक सफर है। तुम पेड़ों के बीच मेरी धूप हो। जन्मदिन मुबारक, मेरे जंगली फूल।",
+                    toastMsg: "🌲 जन्मदिन मुबारक! 🎂"
+                }
+            };
+            function applyLang() {
+                let tr = t[lang];
+                document.getElementById('badge').innerText = tr.badge;
+                document.getElementById('heroTitle').innerText = tr.heroTitle;
+                document.getElementById('subText').innerText = tr.subText;
+                document.getElementById('cardTitle').innerText = tr.cardTitle;
+                document.getElementById('cardMsg').innerText = tr.cardMsg;
+                document.getElementById('cardSign').innerText = tr.cardSign;
+                document.getElementById('w1').innerText = tr.w1;
+                document.getElementById('w2').innerText = tr.w2;
+                document.getElementById('w3').innerText = tr.w3;
+                document.getElementById('w4').innerText = tr.w4;
+                document.getElementById('storyTitle').innerText = tr.storyTitle;
+                document.getElementById('storyText').innerText = tr.storyText;
+                document.getElementById('toast').innerText = tr.toastMsg;
+            }
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            function refreshUI() {
+                applyLang();
+                if (userData.name) document.getElementById('heroTitle').innerText = (lang === 'hi' ? 'जन्मदिन मुबारक, ' : 'Happy Birthday, ') + userData.name;
+                if (userData.story) document.getElementById('storyText').innerText = userData.story;
+                if (userData.wishes) document.getElementById('cardMsg').innerText = userData.wishes;
+                if (userData.memories && userData.memories.length) {
+                    let gal = document.getElementById('gallery');
+                    gal.innerHTML = '';
+                    userData.memories.forEach(m => {
+                        let div = document.createElement('div'); div.className = 'forest-mem';
+                        if (m.img) div.innerHTML = `<img src="${m.img}" alt="memory">`;
+                        else div.innerText = m.text || '🌲';
+                        gal.appendChild(div);
+                    });
+                }
+            }
+            refreshUI();
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'greeter_lang') { lang = e.newValue || 'en'; refreshUI(); }
+                if (e.key === 'userData') { try { userData = JSON.parse(e.newValue || '{}'); } catch (e) { } refreshUI(); }
+            });
+            window.addEventListener('popstate', () => { let newLang = getLang(); if (newLang !== lang) { lang = newLang; refreshUI(); } });
+            // confetti
+            document.getElementById('celebrateBtn').addEventListener('click', () => {
+                let toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+                canvasConfetti({ particleCount: 220, spread: 110, origin: { y: 0.5 }, colors: ['#2d6a4f', '#52b788', '#ffdd88', '#9c6644'] });
+                for (let i = 0; i < 3; i++) setTimeout(() => canvasConfetti({ particleCount: 70, spread: 80, origin: { x: Math.random(), y: 0.4 } }), i * 180);
+            });
+            // fireflies canvas
+            (function () {
+                const canvas = document.getElementById('fireflyCanvas');
+                const ctx = canvas.getContext('2d');
+                let fireflies = [];
+                function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+                resize(); window.addEventListener('resize', resize);
+                for (let i = 0; i < 40; i++) {
+                    fireflies.push({
+                        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                        r: 2 + Math.random() * 4, speedX: (Math.random() - 0.5) * 0.4, speedY: (Math.random() - 0.5) * 0.3,
+                        phase: Math.random() * Math.PI * 2, freq: 0.02 + Math.random() * 0.03
+                    });
+                }
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    fireflies.forEach(f => {
+                        let glow = 0.4 + 0.4 * Math.sin(Date.now() * f.freq + f.phase);
+                        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 221, 136, ${glow * 0.7})`;
+                        ctx.fill();
+                        ctx.shadowBlur = 8; ctx.shadowColor = '#ffdd88';
+                        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 0.6, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 255, 200, ${glow})`;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                        f.x += f.speedX; f.y += f.speedY;
+                        if (f.x < -10) f.x = canvas.width + 10;
+                        if (f.x > canvas.width + 10) f.x = -10;
+                        if (f.y < -10) f.y = canvas.height + 10;
+                        if (f.y > canvas.height + 10) f.y = -10;
+                    });
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            })();
+        })();
+    </script>
+</body>
+
+</html>

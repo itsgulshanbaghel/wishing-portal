@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>✨ Starlight & Forever · A Cosmic Proposal</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital@0;1&family=Quicksand:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cosmic-bg: #0b0c1a;
+            --star-dust: #f6e9b2;
+            --deep-purple: #2c1b4d;
+            --nebula-pink: #c77dff;
+            --aurora: #6c5ce7;
+            --golden-glow: #facc15;
+            --silver: #cbd5e1;
+        }
+
+        body {
+            background: var(--cosmic-bg);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--nebula-pink), var(--golden-glow));
+            z-index: 200;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .chapter {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 24px;
+            opacity: 0;
+            transform: translateY(35px);
+            transition: opacity 0.85s ease, transform 0.85s ease;
+        }
+
+        .chapter.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .star-heading {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 10vw, 5rem);
+            background: linear-gradient(135deg, #fff, var(--nebula-pink));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .sub-star {
+            font-size: 1rem;
+            letter-spacing: 0.2em;
+            color: var(--star-dust);
+        }
+
+        /* constellation timeline */
+        .constellation {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .star-node {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(6px);
+            border-radius: 80px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(199, 125, 255, 0.4);
+        }
+
+        .star-node.active {
+            border-color: var(--golden-glow);
+            background: rgba(250, 204, 21, 0.1);
+            box-shadow: 0 0 20px rgba(250, 204, 21, 0.2);
+        }
+
+        .constellation-card {
+            background: rgba(15, 20, 35, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 48px;
+            padding: 30px 32px;
+            width: min(480px, 90vw);
+            margin-top: 20px;
+        }
+
+        /* starlight letter */
+        .galactic-letter {
+            background: rgba(10, 12, 28, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 40px;
+            width: min(560px, 92vw);
+            border: 1px solid rgba(199, 125, 255, 0.5);
+            text-align: left;
+        }
+
+        .letter-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.18rem;
+            line-height: 1.8;
+        }
+
+        .cursor-glow {
+            display: inline-block;
+            width: 2px;
+            background: var(--nebula-pink);
+            animation: blink 0.7s infinite;
+        }
+
+        /* reason cards */
+        .reason-galaxy {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+        }
+
+        .cosmic-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 28px;
+            padding: 24px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.4s;
+            border-top: 2px solid var(--nebula-pink);
+        }
+
+        .cosmic-card.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* promises orbits */
+        .orbit-promise {
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: 60px;
+            padding: 16px 24px;
+            margin: 12px auto;
+            width: min(520px, 90vw);
+            opacity: 0;
+            transform: scale(0.95);
+            transition: 0.4s;
+        }
+
+        .orbit-promise.revealed {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* ring */
+        .cosmic-ring {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin: 0 auto 30px;
+        }
+
+        .ring-spin {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px dashed var(--golden-glow);
+            border-radius: 50%;
+            animation: spin 8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .ring-core {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, var(--nebula-pink), var(--aurora));
+            border: none;
+            padding: 14px 42px;
+            border-radius: 50px;
+            font-size: 1.6rem;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-no {
+            background: transparent;
+            border: 1px solid var(--silver);
+            padding: 12px 36px;
+            border-radius: 50px;
+            color: var(--silver);
+            margin-left: 15px;
+            cursor: pointer;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(2, 4, 18, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.4s;
+        }
+
+        .celebration.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Lock Overlay */
+        .lock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 12, 26, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.4s;
+        }
+
+        .lock-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .lock-content {
+            text-align: center;
+            max-width: 400px;
+            padding: 40px;
+        }
+
+        .lock-overlay input:focus {
+            outline: none;
+            border-color: var(--nebula-pink);
+            box-shadow: 0 0 10px rgba(199, 125, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="starCanvas"></canvas>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <section class="chapter visible" id="ch1">
+        <div style="font-size: 4rem;">✨🌙✨</div>
+        <h1 class="star-heading" id="mainTitleCosmic">Our Infinite Sky</h1>
+        <p class="sub-star" id="mainSubCosmic">Written in the stars, sealed with love</p>
+        <div style="margin-top: 40px;">⬇</div>
+    </section>
+
+    <section class="chapter" id="ch2">
+        <div class="chapter-label" style="color: var(--nebula-pink);">✦ Constellation ✦</div>
+        <h2 class="star-heading" style="font-size: 2rem;" id="constellationHeading">How We Orbited</h2>
+        <div class="constellation" id="constellationContainer"></div>
+        <div class="constellation-card" id="constellationCard">
+            <p id="constellationDesc">The first time I saw you, the stars rearranged themselves.</p>
+        </div>
+    </section>
+
+    <section class="chapter" id="ch3">
+        <h2 class="star-heading" style="font-size: 2rem;" id="letterCosmicHeading">Starlight Letter</h2>
+        <div class="galactic-letter">
+            <div class="letter-text" id="cosmicLetterBody"></div>
+            <div style="margin-top: 24px; text-align: right; opacity: 0.8;" id="cosmicSign">— Yours across galaxies
+            </div>
+        </div>
+    </section>
+
+    <section class="chapter" id="ch4">
+        <h2 class="star-heading" style="font-size: 2rem;" id="memoriesCosmicHeading">Nebula Memories</h2>
+        <div class="reason-galaxy" id="cosmicGallery"></div>
+    </section>
+
+    <section class="chapter" id="ch5">
+        <h2 class="star-heading" style="font-size: 2rem;" id="reasonsCosmicHeading">Why I Love You</h2>
+        <div class="reason-galaxy" id="cosmicReasons"></div>
+    </section>
+
+    <section class="chapter" id="ch6">
+        <h2 class="star-heading" style="font-size: 2rem;" id="promisesCosmicHeading">Eternal Vows</h2>
+        <div id="cosmicPromises"></div>
+    </section>
+
+    <!-- Lock Toggle -->
+    <div style="position: fixed; top: 50%; right: 20px; z-index: 100; transform: translateY(-50%);">
+        <button id="lockToggle" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(199, 125, 255, 0.3); border-radius: 50px; padding: 8px 16px; color: var(--star-dust); font-size: 0.9rem; cursor: pointer; transition: all 0.3s; display: none;">
+            🔒 Lock
+        </button>
+    </div>
+
+    <section class="chapter" id="ch7">
+        <div class="cosmic-ring">
+            <div class="ring-spin"></div>
+            <div class="ring-core">💫💍</div>
+        </div>
+        <p class="sub-star" id="proposalPre">Through every galaxy and lifetime...</p>
+        <h2 class="star-heading" id="proposalBigQuestion">Will you marry me?</h2>
+        <div style="margin-top: 32px;">
+            <button class="btn-yes" id="yesCosmic">Yes, Eternally ✨</button>
+            <button class="btn-no" id="noCosmic">I need a moment...</button>
+        </div>
+    </section>
+
+    <div id="celebrationOverlay" class="celebration">
+        <div style="font-size: 5rem;">💍🌌💍</div>
+        <h1 class="star-heading" id="cosmicCelebTitle">She Said Yes to Forever!</h1>
+        <p id="cosmicCelebMsg" style="margin: 20px;">And the stars have never shone brighter.</p>
+        <button class="btn-yes" id="closeCosmicCeleb">Begin Our Infinity</button>
+    </div>
+
+    <!-- Lock Overlay -->
+    <div id="lockOverlay" class="lock-overlay">
+        <div class="lock-content">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🔒</div>
+            <h1 class="star-heading" style="font-size: 2.5rem;">Shield of Secrets</h1>
+            <p style="color: var(--star-dust); margin: 20px 0; text-align: center;">Enter the password to reveal the surprise...</p>
+            <div style="max-width: 300px; margin: 0 auto;">
+                <input type="password" id="lockPassword" placeholder="Enter password" style="width: 100%; padding: 12px; border: 1px solid rgba(199, 125, 255, 0.3); border-radius: 25px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); color: var(--star-dust); font-size: 1rem; text-align: center; margin-bottom: 15px;">
+                <button id="unlockBtn" class="btn-yes" style="width: 100%;">Unlock ✨</button>
+                <p id="lockError" style="color: #ff6b6b; text-align: center; margin-top: 10px; display: none;">Incorrect password</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            function getLang() {
+                try {
+                    const p = new URLSearchParams(location.search).get('lang');
+                    if (p === 'hi' || p === 'en') return p;
+                    const ls = localStorage.getItem('greeter_lang');
+                    if (ls === 'hi' || ls === 'en') return ls;
+                } catch (e) { }
+                return 'en';
+            }
+            const lang = getLang();
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
+            const params = new URLSearchParams(location.search);
+            const userName = params.get('name') || userData.name || (lang === 'hi' ? 'मेरा आसमान' : 'My Starlight');
+            const userStory = params.get('story') || userData.story || '';
+            const userWish = params.get('wishes') || userData.wishes || '';
+            const userMems = Array.isArray(userData.memories) ? userData.memories : [];
+
+            const T = {
+                en: {
+                    mainTitle: 'Our Infinite Sky', mainSub: 'Written in the stars, sealed with love',
+                    constellationHeading: 'How We Orbited',
+                    nodes: [
+                        { name: 'Gravity', desc: 'The moment our worlds collided — I felt it deep in my core.' },
+                        { name: 'Alignment', desc: 'Every text, every laugh aligned perfectly like planets.' },
+                        { name: 'Falling', desc: 'No gravity could pull me away from you.' },
+                        { name: 'Supernova', desc: 'Loving you became the brightest light of my existence.' }
+                    ],
+                    letterHeading: 'Starlight Letter',
+                    letterBodyDefault: "To my universe, {name}, you are the celestial miracle I never dared to dream of. Every day with you is a new constellation. I promise to navigate every storm, celebrate every dawn, and love you until the stars burn out.",
+                    letterSign: '— Yours across galaxies',
+                    memoriesHeading: 'Nebula Memories',
+                    defaultMems: ['✨ First Spark', '🌙 Midnight Talks', '⭐ Laughing under stars', '💫 Holding Hands'],
+                    reasonsHeading: 'Why I Love You',
+                    reasonsList: [
+                        { icon: '🌠', title: 'Your Light', text: 'You illuminate my darkest nights.' },
+                        { icon: '🌌', title: 'Your Depth', text: 'Endless like the cosmos.' },
+                        { icon: '🪐', title: 'Your Warmth', text: 'A supernova of kindness.' }
+                    ],
+                    promisesHeading: 'Eternal Vows',
+                    promises: ['✨ I vow to orbit only you', '✨ I promise to build galaxies of happiness', '✨ I will hold you through every eclipse', '✨ Our love is timeless'],
+                    proposalPre: 'Through every galaxy and lifetime...',
+                    proposalQuestion: 'Will you marry me?',
+                    yesText: 'Yes, Eternally ✨',
+                    sillies: ['Are you sure? 💫', 'Say yes, my star?', 'Forever begins now', 'Please? 🌌', 'I love you!'],
+                    celebTitle: 'She Said Yes to Forever!',
+                    celebMsgDefault: 'And the stars have never shone brighter.'
+                },
+                hi: {
+                    mainTitle: 'हमारा अनंत आसमान', mainSub: 'सितारों में लिखा, प्यार से सजा',
+                    constellationHeading: 'हम कैसे मिले',
+                    nodes: [
+                        { name: 'गुरुत्व', desc: 'जब तुमसे मिला, मुझे लगा ब्रह्मांड झुक गया।' },
+                        { name: 'संरेखण', desc: 'हर बात, हर हँसी सितारों जैसी।' },
+                        { name: 'गिराव', desc: 'प्यार में गिरना तुम्हारे संग सुखद है।' },
+                        { name: 'सुपरनोवा', desc: 'तुम्हारा प्यार सबसे तेज रोशनी है।' }
+                    ],
+                    letterHeading: 'तारों भरा पत्र',
+                    letterBodyDefault: "मेरे आसमान {name}, तुम वो चमत्कार हो जिसकी कल्पना न थी। तुमसे प्यार करना मेरा अनंत सत्य है। हर तूफान में संग रहूंगा, हर सुबह तुम्हारा नाम लूंगा।",
+                    letterSign: '— हमेशा तुम्हारा, ब्रह्मांड भर',
+                    memoriesHeading: 'यादों के नीहारिका',
+                    defaultMems: ['✨ पहली चमक', '🌙 रातों की बातें', '⭐ तारों के नीचे हँसी', '💫 हाथों का स्पर्श'],
+                    reasonsHeading: 'प्यार के कारण',
+                    reasonsList: [
+                        { icon: '🌠', title: 'तुम्हारी रोशनी', text: 'अंधेरी रातों में भी उजाला।' },
+                        { icon: '🌌', title: 'तुम्हारी गहराई', text: 'ब्रह्मांड जैसी अनंत।' },
+                        { icon: '🪐', title: 'तुम्हारी गर्मी', text: 'कोमलता का सुपरनोवा।' }
+                    ],
+                    promisesHeading: 'अनंत वादे',
+                    promises: ['✨ बस तुम्हारी परिक्रमा करूंगा', '✨ खुशियों की आकाशगंगा बनाऊंगा', '✨ हर ग्रहण में साथ दूंगा', '✨ हमारा प्यार अमर है'],
+                    proposalPre: 'हर आकाशगंगा और जन्मों के बाद...',
+                    proposalQuestion: 'क्या तुम मुझसे शादी करोगी?',
+                    yesText: 'हाँ, अनंत तक ✨',
+                    sillies: ['सच में? 💫', 'हाँ बोलो मेरे सितारे?', 'हमेशा शुरू होता है', 'प्लीज़? 🌌', 'मैं प्यार करता हूँ'],
+                    celebTitle: 'उसने हाँ कह दी!',
+                    celebMsgDefault: 'सितारे और चमक उठे।'
+                }
+            };
+            const t = T[lang];
+
+            document.getElementById('mainTitleCosmic').innerText = t.mainTitle;
+            document.getElementById('mainSubCosmic').innerText = t.mainSub;
+            document.getElementById('constellationHeading').innerText = t.constellationHeading;
+            document.getElementById('letterCosmicHeading').innerText = t.letterHeading;
+            document.getElementById('cosmicSign').innerText = t.letterSign;
+            document.getElementById('memoriesCosmicHeading').innerText = t.memoriesHeading;
+            document.getElementById('reasonsCosmicHeading').innerText = t.reasonsHeading;
+            document.getElementById('promisesCosmicHeading').innerText = t.promisesHeading;
+            document.getElementById('proposalPre').innerText = t.proposalPre;
+            document.getElementById('proposalBigQuestion').innerText = t.proposalQuestion;
+            document.getElementById('yesCosmic').innerText = t.yesText;
+            document.getElementById('cosmicCelebTitle').innerHTML = t.celebTitle;
+            document.getElementById('cosmicCelebMsg').innerText = userWish || t.celebMsgDefault;
+
+            // constellation
+            const constContainer = document.getElementById('constellationContainer');
+            t.nodes.forEach((node, idx) => {
+                const starDiv = document.createElement('div');
+                starDiv.className = 'star-node' + (idx === 0 ? ' active' : '');
+                starDiv.innerText = node.name;
+                starDiv.dataset.idx = idx;
+                constContainer.appendChild(starDiv);
+            });
+            const descEl = document.getElementById('constellationDesc');
+            const starNodes = document.querySelectorAll('.star-node');
+            function activateConstellation(i) {
+                starNodes.forEach((n, idx) => {
+                    if (idx == i) n.classList.add('active');
+                    else n.classList.remove('active');
+                });
+                descEl.innerText = t.nodes[i].desc;
+            }
+            starNodes.forEach((n, i) => n.addEventListener('click', () => activateConstellation(i)));
+            activateConstellation(0);
+            setInterval(() => {
+                let cur = -1;
+                starNodes.forEach((n, i) => { if (n.classList.contains('active')) cur = i; });
+                activateConstellation((cur + 1) % t.nodes.length);
+            }, 4500);
+
+            // letter typewriter
+            const cosmicLetterDiv = document.getElementById('cosmicLetterBody');
+            let letterTyped = false;
+            const letterFull = userStory || t.letterBodyDefault.replace('{name}', userName);
+            function typeCosmicLetter() {
+                if (letterTyped) return;
+                letterTyped = true;
+                cosmicLetterDiv.innerHTML = '';
+                let i = 0;
+                const spanCursor = document.createElement('span');
+                spanCursor.className = 'cursor-glow';
+                spanCursor.style.width = '2px';
+                spanCursor.style.height = '1.2em';
+                cosmicLetterDiv.appendChild(spanCursor);
+                const interval = setInterval(() => {
+                    cosmicLetterDiv.insertBefore(document.createTextNode(letterFull[i]), spanCursor);
+                    i++;
+                    if (i >= letterFull.length) { clearInterval(interval); spanCursor.remove(); }
+                }, 25);
+            }
+
+            // memories
+            const galleryCosmic = document.getElementById('cosmicGallery');
+            const mems = userMems.length ? userMems.map(m => m.text || '✨') : t.defaultMems;
+            mems.slice(0, 4).forEach(mem => {
+                const card = document.createElement('div');
+                card.className = 'cosmic-card';
+                card.style.opacity = '1';
+                card.style.transform = 'none';
+                card.innerHTML = `<div style="font-size:2rem;">⭐</div><div>${mem}</div>`;
+                galleryCosmic.appendChild(card);
+            });
+
+            // reasons
+            const reasonsContainer = document.getElementById('cosmicReasons');
+            const reasonItems = [];
+            t.reasonsList.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'cosmic-card';
+                card.innerHTML = `<div style="font-size:2rem;">${r.icon}</div><h3>${r.title}</h3><p>${r.text}</p>`;
+                reasonsContainer.appendChild(card);
+                reasonItems.push(card);
+            });
+
+            // promises
+            const promisesContainerCosmic = document.getElementById('cosmicPromises');
+            const promiseItems = [];
+            t.promises.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'orbit-promise';
+                div.innerHTML = `<span>${p}</span>`;
+                promisesContainerCosmic.appendChild(div);
+                promiseItems.push(div);
+            });
+
+            // intersection observer
+            const sections = document.querySelectorAll('.chapter');
+            let ch3Flag = false, ch5Flag = false, ch6Flag = false;
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('visible');
+                    if (entry.target.id === 'ch3' && !ch3Flag) { ch3Flag = true; typeCosmicLetter(); }
+                    if (entry.target.id === 'ch5' && !ch5Flag) {
+                        ch5Flag = true;
+                        reasonItems.forEach((c, idx) => setTimeout(() => c.classList.add('revealed'), idx * 120));
+                    }
+                    if (entry.target.id === 'ch6' && !ch6Flag) {
+                        ch6Flag = true;
+                        promiseItems.forEach((p, idx) => setTimeout(() => p.classList.add('revealed'), idx * 130));
+                    }
+                });
+            }, { threshold: 0.25 });
+            sections.forEach(s => obs.observe(s));
+
+            // progress bar
+            window.addEventListener('scroll', () => {
+                const maxH = document.documentElement.scrollHeight - window.innerHeight;
+                document.getElementById('progressBar').style.width = (window.scrollY / maxH * 100) + '%';
+            });
+
+            // Yes / No & confetti
+            const celebrationDiv = document.getElementById('celebrationOverlay');
+            let sillyIdx = 0;
+            const noCosmicBtn = document.getElementById('noCosmic');
+            noCosmicBtn.addEventListener('click', () => {
+                const silliesArr = t.sillies;
+                if (sillyIdx < silliesArr.length) {
+                    noCosmicBtn.innerText = silliesArr[sillyIdx++];
+                    if (sillyIdx === silliesArr.length) setTimeout(() => document.getElementById('yesCosmic').click(), 350);
+                }
+            });
+            document.getElementById('yesCosmic').addEventListener('click', () => {
+                celebrationDiv.classList.add('show');
+                canvasConfetti({ particleCount: 300, spread: 120, origin: { y: 0.5 }, colors: ['#c77dff', '#facc15', '#6c5ce7'], startVelocity: 18 });
+                for (let i = 0; i < 3; i++) setTimeout(() => canvasConfetti({ particleCount: 150, angle: 45, spread: 80, origin: { x: 0 } }), i * 250);
+            });
+            document.getElementById('closeCosmicCeleb').addEventListener('click', () => celebrationDiv.classList.remove('show'));
+
+            // Lock functionality
+            const lockOverlay = document.getElementById('lockOverlay');
+            const lockToggle = document.getElementById('lockToggle');
+            const lockPassword = document.getElementById('lockPassword');
+            const unlockBtn = document.getElementById('unlockBtn');
+            const lockError = document.getElementById('lockError');
+
+            let isLocked = false;
+            const storedPassword = localStorage.getItem('cosmicLockPassword');
+
+            // Show lock toggle only if password is set
+            if (storedPassword) {
+                lockToggle.style.display = 'block';
+            }
+
+            // Check if page should be locked on load
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('locked') === 'true' && storedPassword) {
+                lockPage();
+            }
+
+            lockToggle.addEventListener('click', () => {
+                if (!storedPassword) {
+                    alert('Please set a password first in the customization panel.');
+                    return;
+                }
+                if (isLocked) {
+                    unlockPage();
+                } else {
+                    lockPage();
+                }
+            });
+
+            unlockBtn.addEventListener('click', () => {
+                const enteredPassword = lockPassword.value.trim();
+                if (enteredPassword === storedPassword) {
+                    unlockPage();
+                    lockPassword.value = '';
+                    lockError.style.display = 'none';
+                } else {
+                    lockError.style.display = 'block';
+                    lockPassword.focus();
+                }
+            });
+
+            lockPassword.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    unlockBtn.click();
+                }
+            });
+
+            function lockPage() {
+                isLocked = true;
+                lockOverlay.classList.add('show');
+                lockToggle.innerHTML = '🔓 Unlock';
+                lockPassword.focus();
+            }
+
+            function unlockPage() {
+                isLocked = false;
+                lockOverlay.classList.remove('show');
+                lockToggle.innerHTML = '🔒 Lock';
+            }
+
+            // starfield animation
+            const canvasStar = document.getElementById('starCanvas');
+            const ctxStar = canvasStar.getContext('2d');
+            let stars = [];
+            function resizeStars() { canvasStar.width = window.innerWidth; canvasStar.height = window.innerHeight; }
+            window.addEventListener('resize', resizeStars);
+            resizeStars();
+            for (let i = 0; i < 150; i++) {
+                stars.push({ x: Math.random() * canvasStar.width, y: Math.random() * canvasStar.height, radius: Math.random() * 2, alpha: Math.random() * 0.6 });
+            }
+            function drawStars() {
+                ctxStar.clearRect(0, 0, canvasStar.width, canvasStar.height);
+                stars.forEach(s => {
+                    ctxStar.beginPath();
+                    ctxStar.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
+                    ctxStar.fillStyle = `rgba(255,245,200, ${s.alpha})`;
+                    ctxStar.fill();
+                    s.y += 0.15;
+                    if (s.y > canvasStar.height) s.y = 0;
+                });
+                requestAnimationFrame(drawStars);
+            }
+            drawStars();
+        })();
+    </script>
+</body>
+
+</html>

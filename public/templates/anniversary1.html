@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>💛 Anniversary · Greeter.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;700&family=Dancing+Script:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #c9a84c;
+            --gold-light: #f0d080;
+            --gold-deep: #8b6914;
+            --cream: #fdf8f0;
+            --dark: #0a0805;
+            --dark2: #1a1208;
+            --rose: #c9184a;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--dark);
+            color: var(--cream);
+            min-height: 100vh;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Luxury texture bg */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 15% 30%, rgba(201, 168, 76, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 70%, rgba(201, 24, 74, 0.06) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0805 0%, #1a1208 50%, #0f0904 100%);
+            z-index: 0;
+        }
+
+        canvas#particles {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        section {
+            position: relative;
+            z-index: 5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px;
+            text-align: center;
+        }
+
+        /* Hero */
+        .year-badge {
+            display: inline-block;
+            padding: 8px 28px;
+            border: 1px solid rgba(201, 168, 76, 0.4);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 28px;
+            position: relative;
+        }
+
+        .year-badge::before,
+        .year-badge::after {
+            content: '◆';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 8px;
+            color: var(--gold);
+        }
+
+        .year-badge::before {
+            left: -16px;
+        }
+
+        .year-badge::after {
+            right: -16px;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3rem, 9vw, 6rem);
+            font-weight: 300;
+            font-style: italic;
+            line-height: 1.15;
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 40%, var(--cream) 70%, var(--gold-light) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 12px;
+            animation: shimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                filter: brightness(1);
+            }
+
+            50% {
+                filter: brightness(1.2);
+            }
+        }
+
+        .name-pair {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            color: var(--cream);
+            opacity: 0.9;
+            margin-bottom: 48px;
+        }
+
+        .name-pair .amp {
+            color: var(--gold);
+            margin: 0 12px;
+        }
+
+        /* Live counter */
+        .counter-wrap {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 48px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .counter-item {
+            background: rgba(201, 168, 76, 0.06);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            padding: 20px 12px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .counter-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(201, 168, 76, 0.05), transparent);
+        }
+
+        .counter-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.8rem;
+            font-weight: 600;
+            color: var(--gold-light);
+            line-height: 1;
+            display: block;
+        }
+
+        .counter-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(253, 248, 240, 0.5);
+            margin-top: 6px;
+            display: block;
+        }
+
+        /* Story block */
+        .story-glass {
+            max-width: 680px;
+            width: 100%;
+            background: rgba(10, 8, 5, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(201, 168, 76, 0.15);
+            border-radius: 4px;
+            padding: 40px 36px;
+            box-shadow: 0 0 80px rgba(201, 168, 76, 0.05), 0 40px 80px rgba(0, 0, 0, 0.6);
+            margin-bottom: 40px;
+        }
+
+        .story-glass p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+            font-style: italic;
+            font-weight: 300;
+            line-height: 2;
+            color: rgba(253, 248, 240, 0.85);
+        }
+
+        /* Timeline section */
+        #timeline {
+            background: linear-gradient(180deg, var(--dark) 0%, var(--dark2) 100%);
+        }
+
+        .timeline-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-style: italic;
+            color: var(--gold-light);
+            margin-bottom: 60px;
+        }
+
+        .timeline-line {
+            position: relative;
+            max-width: 680px;
+            width: 90%;
+            padding-left: 32px;
+            border-left: 1px solid rgba(201, 168, 76, 0.3);
+        }
+
+        .tl-item {
+            position: relative;
+            margin-bottom: 48px;
+            animation: fadeInLeft 0.6s ease both;
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tl-dot {
+            position: absolute;
+            left: -40px;
+            top: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 15px rgba(201, 168, 76, 0.6);
+        }
+
+        .tl-year {
+            font-size: 0.65rem;
+            letter-spacing: 0.3em;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .tl-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: rgba(253, 248, 240, 0.85);
+            line-height: 1.7;
+        }
+
+        /* Wishes section */
+        #wishes {
+            background: linear-gradient(180deg, var(--dark2) 0%, #0d0a06 100%);
+        }
+
+        .wish-wrap {
+            max-width: 580px;
+            width: 90%;
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            padding: 48px 40px;
+            position: relative;
+            text-align: center;
+        }
+
+        .wish-wrap::before,
+        .wish-wrap::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-color: rgba(201, 168, 76, 0.5);
+            border-style: solid;
+        }
+
+        .wish-wrap::before {
+            top: 12px;
+            left: 12px;
+            border-width: 1px 0 0 1px;
+        }
+
+        .wish-wrap::after {
+            bottom: 12px;
+            right: 12px;
+            border-width: 0 1px 1px 0;
+        }
+
+        .wish-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .wish-head {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-style: italic;
+            color: var(--gold-light);
+            margin-bottom: 20px;
+        }
+
+        .wish-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            line-height: 1.9;
+            color: rgba(253, 248, 240, 0.8);
+        }
+
+        /* Buttons */
+        .btn-celebrate {
+            margin-top: 40px;
+            padding: 16px 52px;
+            background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+            border: none;
+            color: var(--dark);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(201, 168, 76, 0.3);
+        }
+
+        .btn-celebrate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 50px rgba(201, 168, 76, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="particles"></canvas>
+
+    <!-- Hero -->
+    <section id="hero">
+        <div class="year-badge" id="yearBadge">Happy Anniversary</div>
+        <h1 id="heroTitle">Another Beautiful Year</h1>
+        <div class="name-pair">
+            <span id="n1">You</span><span class="amp">♡</span><span id="n2">Me</span>
+        </div>
+
+        <div class="counter-wrap" id="counterWrap">
+            <div class="counter-item"><span class="counter-num" id="cYears">0</span><span
+                    class="counter-label">Years</span></div>
+            <div class="counter-item"><span class="counter-num" id="cMonths">0</span><span
+                    class="counter-label">Months</span></div>
+            <div class="counter-item"><span class="counter-num" id="cDays">0</span><span
+                    class="counter-label">Days</span></div>
+            <div class="counter-item"><span class="counter-num" id="cHours">00</span><span
+                    class="counter-label">Hours</span></div>
+        </div>
+
+        <div class="story-glass">
+            <p id="storyText">Every anniversary is a celebration of how far we've come and a toast to how far we'll go.
+                Thank you for being my greatest adventure, my warmest home.</p>
+        </div>
+    </section>
+
+    <!-- Timeline -->
+    <section id="timeline">
+        <div class="timeline-title">Our Journey</div>
+        <div class="timeline-line" id="timelineEl"></div>
+    </section>
+
+    <!-- Wishes -->
+    <section id="wishes">
+        <div class="wish-wrap">
+            <div class="wish-icon">💛</div>
+            <div class="wish-head">With All My Love</div>
+            <div class="wish-text" id="wishText">May every year we share be more beautiful than the last. Happy
+                Anniversary, my love.</div>
+            <button class="btn-celebrate" id="celBtn">Celebrate Together 🥂</button>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+        (function () {
+            const ud = JSON.parse(localStorage.getItem('userData') || '{}');
+            function getLang() { try { const p = new URLSearchParams(location.search).get('lang'); if (p === 'hi' || p === 'en') return p; return localStorage.getItem('greeter_lang') || 'en' } catch { return 'en' } }
+            const T = { en: { badge: 'Happy Anniversary', title: 'Another Beautiful Year', counterYears: 'Years', counterMonths: 'Months', counterDays: 'Days', counterHours: 'Hours', story: 'Every anniversary is a celebration of how far we\'ve come and a toast to how far we\'ll go. Thank you for being my greatest adventure, my warmest home.', journey: 'Our Journey', mem1year: 'The Beginning', mem1caption: 'The day our forever started', mem2year: 'Growing Together', mem2caption: 'Every day a new memory, a new reason to love you more', mem3year: 'Building a Home', mem3caption: 'Not just a place — a feeling of belonging', mem4year: 'Today', mem4caption: 'Happy Anniversary — here\'s to forever', wishHead: 'With All My Love', wishText: 'May every year we share be more beautiful than the last. Happy Anniversary, my love.', celebrate: 'Celebrate Together 🥂' }, hi: { badge: 'शादी की सालगिरह मुबारक हो', title: 'एक और खूबसूरत साल', counterYears: 'साल', counterMonths: 'महीने', counterDays: 'दिन', counterHours: 'घंटे', story: 'हर सालगिरह हमारे सफर की खुशी का जश्न है और आगे के सफर की शराब है। धन्यवाद जो तुम मेरी सबसे बड़ी साहसिक यात्रा, मेरे सबसे गर्म घर बन गए।', journey: 'हमारा सफर', mem1year: 'शुरुआत', mem1caption: 'जिस दिन हमारा हमेशा शुरू हुआ', mem2year: 'साथ बढ़ना', mem2caption: 'हर दिन एक नई याद, तुमसे प्यार करने का एक नया कारण', mem3year: 'घर बनाना', mem3caption: 'सिर्फ जगह नहीं — सम्बन्ध की भावना', mem4year: 'आज', mem4caption: 'सालगिरह मुबारक — हमेशा के लिए', wishHead: 'मेरे सारे प्यार से', wishText: 'हमारे साथ का हर साल पिछले से ज्यादा खूबसूरत हो। सालगिरह मुबारक, मेरी जान।', celebrate: 'साथ जश्न मनाएं 🥂' } };
+            let lang = getLang(); let t = T[lang];
+            const name = ud.name || (lang === 'hi' ? 'मेरी जान' : 'My Love');
+            const relation = ud.creatingFor || (lang === 'hi' ? 'हमेशा' : 'Forever');
+            const story = ud.story || t.story;
+            const wishes = ud.wishes || t.wishText;
+            applyLang();
+            function applyLang() {
+                t = T[lang];
+                document.getElementById('yearBadge').innerText = t.badge;
+                document.getElementById('heroTitle').innerText = t.title + ', ' + name;
+                document.getElementById('n1').innerText = name;
+                document.getElementById('n2').innerText = relation;
+                document.getElementById('storyText').innerText = story;
+                document.querySelector('.timeline-title').innerText = t.journey;
+                document.getElementById('wishHead').innerText = t.wishHead;
+                document.getElementById('wishText').innerText = wishes;
+                document.getElementById('celBtn').innerText = t.celebrate;
+                document.getElementById('cYears').nextElementSibling.innerText = t.counterYears;
+                document.getElementById('cMonths').nextElementSibling.innerText = t.counterMonths;
+                document.getElementById('cDays').nextElementSibling.innerText = t.counterDays;
+                document.getElementById('cHours').nextElementSibling.innerText = t.counterHours;
+                buildTimeline();
+            }
+            function buildTimeline() {
+                const tl = document.getElementById('timelineEl');
+                tl.innerHTML = '';
+                const mems = ud.memories || [];
+                const defaultMems = [
+                    { year: t.mem1year, caption: t.mem1caption },
+                    { year: t.mem2year, caption: t.mem2caption },
+                    { year: t.mem3year, caption: t.mem3caption },
+                    { year: t.mem4year, caption: t.mem4caption }
+                ];
+                const items = mems.length > 0 ? mems : defaultMems;
+                items.forEach((m, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'tl-item';
+                    div.style.animationDelay = i * 0.15 + 's';
+                    div.innerHTML = `<div class="tl-dot"></div><div class="tl-year">${m.year || m.caption || ''}</div><div class="tl-text">${m.caption || m.year || ''}</div>`;
+                    tl.appendChild(div);
+                });
+            }
+
+
+
+            // Live counter (from a year ago)
+            const start = new Date();
+            start.setFullYear(start.getFullYear() - 1);
+            function updateCounter() {
+                const now = new Date(), diff = now - start;
+                const totalSec = Math.floor(diff / 1000);
+                const hours = Math.floor(totalSec / 3600) % 24;
+                const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const years = Math.floor(totalDays / 365);
+                const months = Math.floor((totalDays % 365) / 30);
+                const days = totalDays % 30;
+                document.getElementById('cYears').innerText = years;
+                document.getElementById('cMonths').innerText = months;
+                document.getElementById('cDays').innerText = days;
+                document.getElementById('cHours').innerText = String(hours).padStart(2, '0');
+            }
+            updateCounter(); setInterval(updateCounter, 1000);
+            document.getElementById('cYears').nextElementSibling.innerText = t.counterYears;
+            document.getElementById('cMonths').nextElementSibling.innerText = t.counterMonths;
+            document.getElementById('cDays').nextElementSibling.innerText = t.counterDays;
+            document.getElementById('cHours').nextElementSibling.innerText = t.counterHours;
+
+            buildTimeline();
+
+            // Particles
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            let pts = [];
+            function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+            resize(); window.addEventListener('resize', resize);
+            for (let i = 0; i < 80; i++) {
+                pts.push({
+                    x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+                    vx: (Math.random() - .5) * .3, vy: -(Math.random() * .5 + .1),
+                    r: Math.random() * 2,
+                    opacity: Math.random(),
+                    phase: Math.random() * 6.28
+                });
+            }
+            function drawParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pts.forEach(p => {
+                    p.phase += 0.01;
+                    p.x += p.vx + Math.sin(p.phase) * 0.2;
+                    p.y += p.vy;
+                    if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+                    ctx.fillStyle = `rgba(201,168,76,${p.opacity * 0.6})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+                });
+                requestAnimationFrame(drawParticles);
+            }
+            drawParticles();
+
+            // Celebrate button
+            document.getElementById('celBtn').addEventListener('click', function () {
+                const duration = 4000, end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#c9a84c', '#f0d080', '#fff5d6', '#c9184a'] });
+                    confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#c9a84c', '#f0d080', '#fff5d6', '#c9184a'] });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                })();
+            });
+            window.addEventListener('storage', e => { if (e.key === 'greeter_lang' || e.key === 'customizer_lang') { lang = getLang(); applyLang() } });
+            window.addEventListener('focus', () => { const nl = getLang(); if (nl !== lang) { lang = nl; applyLang() } });
+        })();
+    </script>
+</body>
+
+</html>

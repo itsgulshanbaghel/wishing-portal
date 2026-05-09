@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🎂 Enchanted Birthday · Greeter.com</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;500;700&family=Cinzel:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0f0c29;
+      color: white;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 40px;
+      padding: 40px;
+      max-width: 1400px;
+      width: 100%;
+      box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-family: 'Great Vibes', cursive;
+      font-size: clamp(3rem, 10vw, 5rem);
+      background: linear-gradient(45deg, #ff0080, #ff8c00, #ffd700);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #ffd700;
+      font-family: 'Cinzel', serif;
+    }
+
+    button {
+      background: linear-gradient(45deg, #ff0080, #ff8c00);
+      border: none;
+      color: white;
+      padding: 12px 28px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 10px 25px rgba(255, 0, 128, 0.3);
+      margin: 8px;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(255, 0, 128, 0.5);
+    }
+
+    .timeline-wrapper {
+      display: flex;
+      justify-content: safe center;
+      gap: 25px;
+      padding: 30px 20px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      cursor: grab;
+      scrollbar-width: thin;
+      scrollbar-color: #ff8c00 #2a1e3c;
+      width: 100%;
+    }
+
+    .timeline-wrapper::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .timeline-wrapper::-webkit-scrollbar-thumb {
+      background: #ff8c00;
+      border-radius: 20px;
+    }
+
+    .timeline-wrapper:active {
+      cursor: grabbing;
+    }
+
+    .memory-card {
+      flex: 0 0 auto;
+      width: 280px;
+      background: rgba(30, 20, 40, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 32px;
+      border: 1px solid rgba(255, 180, 200, 0.5);
+      padding: 20px 18px;
+      box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #f0e0ff;
+      transition: transform 0.2s;
+      scroll-snap-align: center;
+      position: relative;
+      user-select: none;
+    }
+
+    .memory-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .memory-card.add-card {
+      background: rgba(100, 50, 120, 0.85);
+      border: 2px dashed #ffb6c7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      width: 240px;
+      min-height: 360px;
+    }
+
+    .add-card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: #ffdab9;
+      font-size: 1.3rem;
+    }
+
+    .add-card-content i {
+      font-size: 3rem;
+    }
+
+    .remove-card-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(180, 80, 100, 0.9);
+      border: none;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+
+    .remove-card-btn:hover {
+      background: #e53e3e;
+      transform: scale(1.1);
+    }
+
+    .resize-handle {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      cursor: nwse-resize;
+      color: rgba(255, 220, 200, 0.9);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 14px;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+      transition: 0.1s;
+    }
+
+    .resize-handle:hover {
+      color: #ffd700;
+      background: rgba(255, 140, 200, 0.5);
+    }
+
+    .resize-handle:active {
+      cursor: nwse-resize;
+      background: #ff4da6;
+    }
+
+    .image-slot {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: rgba(255, 220, 240, 0.1);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 15px;
+      border: 2px dashed #ffb6c7;
+      position: relative;
+    }
+
+    .image-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-slot .placeholder-text {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #e6b0c0;
+      font-weight: 600;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+      border-radius: 24px;
+    }
+
+    .placeholder-text i {
+      font-size: 2.5rem;
+      opacity: 0.9;
+    }
+
+    .image-actions {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .img-btn {
+      background: rgba(255, 220, 210, 0.15);
+      border: 1px solid rgba(255, 200, 220, 0.5);
+      border-radius: 40px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #ffdab9;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+      transition: 0.2s;
+    }
+
+    .img-btn:hover {
+      background: #ff0080;
+      border-color: #ff0080;
+      color: white;
+    }
+
+    .remove-btn.img-btn:hover {
+      background: #e53e3e;
+    }
+
+    .memory-year {
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem;
+      color: #ffb6c1;
+      margin: 8px 0 4px;
+      text-shadow: 0 0 8px #ff69b4;
+    }
+
+    .memory-caption {
+      font-weight: 600;
+      color: #e0c0ff;
+      font-size: 1rem;
+    }
+
+    #curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      background: #2b0000;
+    }
+
+    .panel {
+      flex: 1;
+      background: repeating-linear-gradient(90deg, #7a0000, #a00000 40px);
+      transition: transform 2s;
+    }
+
+    .left {
+      transform-origin: left;
+    }
+
+    .right {
+      transform-origin: right;
+    }
+
+    #curtain.open .left {
+      transform: translateX(-110%);
+    }
+
+    #curtain.open .right {
+      transform: translateX(110%);
+    }
+
+    #welcomeMsg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      color: white;
+      text-shadow: 0 0 30px gold;
+      font-size: 4rem;
+      font-family: 'Great Vibes', cursive;
+    }
+
+    #effectsCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: 0.8s;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-15px);
+      }
+    }
+
+    .floating {
+      animation: float 5s infinite;
+    }
+
+    .gallery-note {
+      color: #ffdab9;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="curtain">
+    <div class="panel left"></div>
+    <div class="panel right"></div>
+    <div id="welcomeMsg">✨ Welcome ✨</div>
+  </div>
+  <canvas id="effectsCanvas"></canvas>
+
+  <!-- Hero -->
+  <section id="hero">
+    <div class="glass-card fade-up visible">
+      <h1 id="heroTitle">Happy Birthday!</h1>
+      <p id="heroSub" style="font-size:1.5rem; margin-bottom:20px;"></p>
+      <button id="viewMemoriesBtn"><i class="fas fa-images"></i> View Memories</button>
+    </div>
+  </section>
+
+  <!-- Story -->
+  <section id="story">
+    <div class="glass-card fade-up">
+      <h2 id="storyHeading">💌 A Special Message</h2>
+      <p id="storyText" style="font-size:1.3rem; line-height:1.8;"></p>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery">
+    <div class="glass-card fade-up" style="overflow: visible;">
+      <h2 id="galleryHeading">📸 Precious Memories</h2>
+      <p id="galleryNote" class="gallery-note">Some of the most treasured moments.</p>
+      <div class="timeline-wrapper" id="timelineContainer"></div>
+    </div>
+  </section>
+
+  <!-- Wishes -->
+  <section id="wishes">
+    <div class="glass-card fade-up">
+      <h2 id="wishesHeading">✨ Birthday Wishes</h2>
+      <p id="wishesText" style="font-size:1.3rem;"></p>
+    </div>
+  </section>
+
+  <!-- Surprise -->
+  <section id="surprise">
+    <div class="glass-card fade-up">
+      <h2 id="surpriseHeading">🎁 A Special Surprise</h2>
+      <div id="giftBox" style="font-size:6rem; cursor:pointer;" class="floating" onclick="revealGift()">🎁</div>
+      <div id="giftReveal" style="display:none; margin-top:20px;">
+        <h3 id="giftMessage" style="color:#ffd700;">You are the most wonderful gift! 💖</h3>
+        <button id="celebrateBtn"><i class="fas fa-fire"></i> Celebrate</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+  <script>
+    (function () {
+      // ---------- TRANSLATIONS ----------
+      const translations = {
+        en: {
+          welcomeMsg: (name) => `✨ Welcome, ${name}! ✨`,
+          heroTitle: (name) => `Happy Birthday, ${name}!`,
+          heroSub: "🎈 Let's make this day unforgettable 🎈",
+          viewMemories: "View Memories",
+          storyHeading: "💌 A Special Message",
+          storyDefault: "Every year on this day, the world became a little brighter because you were born. Today we celebrate you!",
+          galleryHeading: "📸 Precious Memories",
+          galleryNote: "Some of the most treasured moments.",
+          wishesHeading: "✨ Birthday Wishes",
+          wishesDefault: "May your day be filled with laughter, love, and all the cake you can eat! 🎂✨",
+          surpriseHeading: "🎁 A Special Surprise",
+          giftMessage: "You are the most wonderful gift! 💖",
+          celebrate: "Celebrate",
+          memoryYears: ["✨ 2023", "🌻 2024", "⭐️ 2025", "🎉 Today"],
+          memoryCaps: ["First magical laugh", "Golden adventures", "Starlight dreams", "Your radiant birthday"],
+          addMemory: "➕ Add Memory",
+          uploadImage: "📸 Click to upload an image",
+          uploadBtn: "Upload",
+          replaceBtn: "Replace",
+          removeImg: "Remove",
+          close: "Close"
+        },
+        hi: {
+          welcomeMsg: (name) => `✨ स्वागत है, ${name}! ✨`,
+          heroTitle: (name) => `जन्मदिन की ढेर सारी शुभकामनाएँ, ${name}!`,
+          heroSub: "🎈 आइए इस दिन को अविस्मरणीय बनाएँ 🎈",
+          viewMemories: "यादें देखें",
+          storyHeading: "💌 एक खास संदेश",
+          storyDefault: "हर साल इस दिन, दुनिया थोड़ी और रोशन हो जाती है क्योंकि आपने जन्म लिया। आज हम आपका जश्न मना रहे हैं!",
+          galleryHeading: "📸 कीमती यादें",
+          galleryNote: "कुछ सबसे अनमोल पल।",
+          wishesHeading: "✨ जन्मदिन की शुभकामनाएँ",
+          wishesDefault: "आपका दिन हँसी, प्यार और ढेर सारे केक से भरा हो! 🎂✨",
+          surpriseHeading: "🎁 एक खास सरप्राइज़",
+          giftMessage: "आप सबसे अद्भुत उपहार हैं! 💖",
+          celebrate: "जश्न मनाएँ",
+          memoryYears: ["✨ 2023", "🌻 2024", "⭐️ 2025", "🎉 आज"],
+          memoryCaps: ["पहली जादुई हँसी", "सुनहरे सफर", "तारों भरे सपने", "आपका शानदार जन्मदिन"],
+          addMemory: "➕ नई याद जोड़ें",
+          uploadImage: "📸 तस्वीर अपलोड करें",
+          uploadBtn: "अपलोड करें",
+          replaceBtn: "बदलें",
+          removeImg: "हटाएँ",
+          close: "बंद करें"
+        }
+      };
+
+      let currentLang = 'en';
+      let userName = "Friend";
+      let userData = {};
+      let memoryImages = [];
+      let cardSizes = [];
+      let currentMemories = [];
+
+      const heroTitle = document.getElementById('heroTitle');
+      const heroSub = document.getElementById('heroSub');
+      const viewMemoriesBtn = document.getElementById('viewMemoriesBtn');
+      const storyHeading = document.getElementById('storyHeading');
+      const storyText = document.getElementById('storyText');
+      const galleryHeading = document.getElementById('galleryHeading');
+      const galleryNote = document.getElementById('galleryNote');
+      const wishesHeading = document.getElementById('wishesHeading');
+      const wishesText = document.getElementById('wishesText');
+      const surpriseHeading = document.getElementById('surpriseHeading');
+      const giftMessage = document.getElementById('giftMessage');
+      const celebrateBtn = document.getElementById('celebrateBtn');
+      const welcomeMsgDiv = document.getElementById('welcomeMsg');
+      const timeline = document.getElementById('timelineContainer');
+
+      function getCurrentLang() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlLang = urlParams.get('lang');
+          if (urlLang === 'hi') return 'hi';
+          if (urlLang === 'en') return 'en';
+          const saved = localStorage.getItem('greeter_lang') || localStorage.getItem('customizer_lang') || 'en';
+          return saved === 'hi' ? 'hi' : 'en';
+        } catch (e) { return 'en'; }
+      }
+
+      function updateUI(lang, name) {
+        const t = translations[lang];
+        welcomeMsgDiv.innerHTML = t.welcomeMsg(name);
+        heroTitle.innerHTML = t.heroTitle(name);
+        heroSub.innerHTML = t.heroSub;
+        viewMemoriesBtn.innerHTML = `<i class="fas fa-images"></i> ${t.viewMemories}`;
+        storyHeading.innerHTML = t.storyHeading;
+        galleryHeading.innerHTML = t.galleryHeading;
+        galleryNote.innerHTML = t.galleryNote;
+        wishesHeading.innerHTML = t.wishesHeading;
+        surpriseHeading.innerHTML = t.surpriseHeading;
+        giftMessage.innerHTML = t.giftMessage;
+        celebrateBtn.innerHTML = `<i class="fas fa-fire"></i> ${t.celebrate}`;
+
+        const originalStory = userData.story;
+        const originalWishes = userData.wishes;
+        if (!originalStory || originalStory === translations.en.storyDefault || originalStory === translations.hi.storyDefault) {
+          storyText.innerText = t.storyDefault;
+          if (!userData.story) userData.story = t.storyDefault;
+        } else {
+          storyText.innerText = originalStory;
+        }
+        if (!originalWishes || originalWishes === translations.en.wishesDefault || originalWishes === translations.hi.wishesDefault) {
+          wishesText.innerText = t.wishesDefault;
+          if (!userData.wishes) userData.wishes = t.wishesDefault;
+        } else {
+          wishesText.innerText = originalWishes;
+        }
+      }
+
+      function updateDefaultMemoryCaptions(lang) {
+        const t = translations[lang];
+        const isDefault = currentMemories.length === 4 &&
+          (currentMemories[0].year === "✨ 2023" || currentMemories[0].year === "✨ 2023") &&
+          (currentMemories[1].year === "🌻 2024" || currentMemories[1].year === "🌻 2024") &&
+          (currentMemories[2].year === "⭐️ 2025" || currentMemories[2].year === "⭐️ 2025") &&
+          (currentMemories[3].year === "🎉 Today" || currentMemories[3].year === "🎉 आज");
+        if (isDefault) {
+          for (let i = 0; i < 4; i++) {
+            currentMemories[i].year = t.memoryYears[i];
+            currentMemories[i].caption = t.memoryCaps[i];
+          }
+          userData.memories = currentMemories;
+          localStorage.setItem('userData', JSON.stringify(userData));
+          renderTimeline();
+        }
+      }
+
+      function loadUserData() {
+        try {
+          const stored = localStorage.getItem("userData");
+          userData = stored ? JSON.parse(stored) : {};
+          userName = userData.name || (currentLang === 'hi' ? "दोस्त" : "Friend");
+          if (!userData.memories || !Array.isArray(userData.memories) || userData.memories.length === 0) {
+            const t = translations[currentLang];
+            userData.memories = [
+              { year: t.memoryYears[0], caption: t.memoryCaps[0] },
+              { year: t.memoryYears[1], caption: t.memoryCaps[1] },
+              { year: t.memoryYears[2], caption: t.memoryCaps[2] },
+              { year: t.memoryYears[3], caption: t.memoryCaps[3] }
+            ];
+            localStorage.setItem('userData', JSON.stringify(userData));
+          }
+          currentMemories = [...userData.memories];
+        } catch (e) {
+          const t = translations[currentLang];
+          userData = {
+            memories: [
+              { year: t.memoryYears[0], caption: t.memoryCaps[0] },
+              { year: t.memoryYears[1], caption: t.memoryCaps[1] },
+              { year: t.memoryYears[2], caption: t.memoryCaps[2] },
+              { year: t.memoryYears[3], caption: t.memoryCaps[3] }
+            ]
+          };
+          userName = currentLang === 'hi' ? "दोस्त" : "Friend";
+          currentMemories = [...userData.memories];
+        }
+      }
+
+      function loadImagesAndSizes() {
+        try {
+          const storedImg = localStorage.getItem('birthday_memory_images');
+          memoryImages = storedImg ? JSON.parse(storedImg) : new Array(currentMemories.length).fill(null);
+          if (!Array.isArray(memoryImages) || memoryImages.length !== currentMemories.length) {
+            memoryImages = new Array(currentMemories.length).fill(null);
+          }
+          const storedSizes = localStorage.getItem('birthday_card_sizes');
+          cardSizes = storedSizes ? JSON.parse(storedSizes) : currentMemories.map(() => ({ width: 280, height: null }));
+          if (!Array.isArray(cardSizes) || cardSizes.length !== currentMemories.length) {
+            cardSizes = currentMemories.map(() => ({ width: 280, height: null }));
+          }
+        } catch (e) {
+          memoryImages = new Array(currentMemories.length).fill(null);
+          cardSizes = currentMemories.map(() => ({ width: 280, height: null }));
+        }
+      }
+
+      function saveAllStorage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isEditMode = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+        if (!isEditMode) return;
+        localStorage.setItem('birthday_memory_images', JSON.stringify(memoryImages));
+        localStorage.setItem('birthday_card_sizes', JSON.stringify(cardSizes));
+        userData.memories = currentMemories;
+        localStorage.setItem('userData', JSON.stringify(userData));
+      }
+
+      // ----- Resize logic (fixed) -----
+      let activeResize = null; // { card, idx, startX, startY, startW, startH, onMove, onUp }
+
+      function startResize(e, card, idx) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (activeResize) return; // already resizing
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startW = card.offsetWidth;
+        const startH = card.offsetHeight;
+
+        function onMove(moveEvent) {
+          moveEvent.preventDefault();
+          const dx = moveEvent.clientX - startX;
+          const dy = moveEvent.clientY - startY;
+          let newW = Math.max(200, startW + dx);
+          let newH = Math.max(200, startH + dy);
+          card.style.width = newW + 'px';
+          card.style.height = newH + 'px';
+        }
+
+        function onUp() {
+          if (activeResize) {
+            const newW = parseInt(card.style.width);
+            const newH = parseInt(card.style.height);
+            if (!isNaN(newW) && !isNaN(newH)) {
+              cardSizes[idx] = { width: newW, height: newH };
+              saveAllStorage();
+            }
+            window.removeEventListener('mousemove', activeResize.onMove);
+            window.removeEventListener('mouseup', activeResize.onUp);
+            activeResize = null;
+            document.body.style.cursor = '';
+          }
+        }
+
+        activeResize = { card, idx, onMove, onUp };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+        document.body.style.cursor = 'nwse-resize';
+      }
+
+      // ----- Image handling -----
+      function createCardElement(mem, idx) {
+        const t = translations[currentLang];
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.dataset.index = idx;
+        const size = cardSizes[idx] || { width: 280, height: null };
+        card.style.width = size.width + 'px';
+        if (size.height) card.style.height = size.height + 'px';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const EDIT_MODE = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+
+        if (EDIT_MODE) {
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-card-btn';
+          removeBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
+          removeBtn.onclick = (e) => { e.stopPropagation(); removeCard(idx); };
+          card.appendChild(removeBtn);
+        }
+
+        const imageSlot = document.createElement('div');
+        imageSlot.className = 'image-slot';
+
+        const img = document.createElement('img');
+        img.style.display = 'none';
+
+        const placeholder = document.createElement('div');
+        placeholder.className = 'placeholder-text';
+        placeholder.innerHTML = `<i class="fas fa-camera"></i><span>${t.uploadImage}</span>`;
+
+        imageSlot.appendChild(placeholder);
+        imageSlot.appendChild(img);
+        card.appendChild(imageSlot);
+
+        // Set initial visibility
+        function setImage(dataUrl) {
+          if (dataUrl && dataUrl.startsWith('data:image')) {
+            img.src = dataUrl;
+            img.style.display = 'block';
+            placeholder.style.display = 'none';
+          } else {
+            img.src = '';
+            img.style.display = 'none';
+            placeholder.style.display = 'flex';
+          }
+        }
+
+        setImage(memoryImages[idx]);
+
+        if (EDIT_MODE) {
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          fileInput.style.display = 'none';
+
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'image-actions';
+          const uploadBtn = document.createElement('button'); uploadBtn.className = 'img-btn'; uploadBtn.innerHTML = `<i class="fas fa-upload"></i> ${t.uploadBtn}`;
+          const replaceBtn = document.createElement('button'); replaceBtn.className = 'img-btn'; replaceBtn.innerHTML = `<i class="fas fa-sync-alt"></i> ${t.replaceBtn}`;
+          const removeImgBtn = document.createElement('button'); removeImgBtn.className = 'img-btn remove-btn'; removeImgBtn.innerHTML = `<i class="fas fa-trash-alt"></i> ${t.removeImg}`;
+
+          function updateImage(dataUrl) {
+            memoryImages[idx] = dataUrl;
+            saveAllStorage();
+            setImage(dataUrl);
+            // Force a small delay to ensure DOM updates (especially for large images)
+            if (dataUrl && dataUrl.startsWith('data:image')) {
+              // Ensure image is fully loaded before showing (already set)
+              if (img.complete) {
+                // already loaded
+              } else {
+                img.onload = () => { img.style.display = 'block'; placeholder.style.display = 'none'; };
+              }
+            }
+            if (typeof confetti === 'function') {
+              confetti({ particleCount: 15, spread: 40 });
+            }
+          }
+
+          const handleFileSelect = (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+              const reader = new FileReader();
+              reader.onload = ev => updateImage(ev.target.result);
+              reader.readAsDataURL(file);
+            }
+            fileInput.value = '';
+          };
+
+          fileInput.addEventListener('change', handleFileSelect);
+          const triggerUpload = () => fileInput.click();
+          uploadBtn.addEventListener('click', triggerUpload);
+          replaceBtn.addEventListener('click', triggerUpload);
+          removeImgBtn.addEventListener('click', () => updateImage(null));
+
+          actionsDiv.appendChild(uploadBtn);
+          actionsDiv.appendChild(replaceBtn);
+          actionsDiv.appendChild(removeImgBtn);
+          card.appendChild(actionsDiv);
+          card.appendChild(fileInput);
+        }
+
+        const yearSpan = document.createElement('div'); yearSpan.className = 'memory-year'; yearSpan.innerText = mem.year;
+        const captionSpan = document.createElement('div'); captionSpan.className = 'memory-caption'; captionSpan.innerText = mem.caption;
+        card.appendChild(yearSpan);
+        card.appendChild(captionSpan);
+
+        if (EDIT_MODE) {
+          const resizeHandle = document.createElement('div');
+          resizeHandle.className = 'resize-handle';
+          resizeHandle.innerHTML = '<i class="fas fa-chevron-circle-down"></i>';
+          resizeHandle.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            startResize(e, card, idx);
+          });
+          card.appendChild(resizeHandle);
+        }
+
+        timeline.appendChild(card);
+      }
+
+      function createAddCard() {
+        const t = translations[currentLang];
+        const addCard = document.createElement('div');
+        addCard.className = 'memory-card add-card';
+        addCard.innerHTML = `
+        <div class="add-card-content">
+          <i class="fas fa-plus-circle"></i>
+          <span>${t.addMemory}</span>
+          <small>click to create new</small>
+        </div>
+      `;
+        addCard.addEventListener('click', addNewMemoryCard);
+        timeline.appendChild(addCard);
+      }
+
+      function removeCard(idx) {
+        if (idx >= 0 && idx < currentMemories.length) {
+          currentMemories.splice(idx, 1);
+          memoryImages.splice(idx, 1);
+          cardSizes.splice(idx, 1);
+          saveAllStorage();
+          renderTimeline();
+          applyGalleryVisibility();
+        }
+      }
+
+      function addNewMemoryCard() {
+        const t = translations[currentLang];
+        const newMem = { year: "🆕 New", caption: "Click to upload" };
+        currentMemories.push(newMem);
+        memoryImages.push(null);
+        cardSizes.push({ width: 280, height: null });
+        saveAllStorage();
+        renderTimeline();
+        setTimeout(() => {
+          if (timeline.lastChild) timeline.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }, 100);
+      }
+
+      function renderTimeline() {
+        timeline.innerHTML = '';
+        while (memoryImages.length < currentMemories.length) memoryImages.push(null);
+        while (cardSizes.length < currentMemories.length) cardSizes.push({ width: 280, height: null });
+        currentMemories.forEach((mem, idx) => createCardElement(mem, idx));
+        const urlParams = new URLSearchParams(window.location.search);
+        const EDIT_MODE = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+        if (EDIT_MODE) createAddCard();
+      }
+
+      function applyGalleryVisibility() {
+        const gallerySection = document.getElementById('gallery');
+        if (!gallerySection) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPreviewMode = urlParams.get('mode') === 'preview';
+        const isInsideIframe = window.self !== window.top;
+        const EDIT_MODE = isInsideIframe && (urlParams.get('mode') === 'edit');
+        const FINAL_MODE = !isInsideIframe && !isPreviewMode;
+        if (EDIT_MODE || isPreviewMode) {
+          gallerySection.style.display = 'flex';
+        } else if (FINAL_MODE) {
+          const hasAnyImage = memoryImages.some(img => img && img.startsWith('data:image'));
+          gallerySection.style.display = hasAnyImage ? 'flex' : 'none';
+        }
+      }
+
+      function refreshLanguage() {
+        const newLang = getCurrentLang();
+        if (newLang === currentLang) return;
+        currentLang = newLang;
+        loadUserData();
+        loadImagesAndSizes();
+        updateUI(currentLang, userName);
+        updateDefaultMemoryCaptions(currentLang);
+        renderTimeline();
+        applyGalleryVisibility();
+      }
+
+      window.addEventListener('storage', function (e) {
+        if (e.key === 'greeter_lang' || e.key === 'customizer_lang' || e.key === 'userData') {
+          refreshLanguage();
+        }
+      });
+      window.addEventListener('focus', function () {
+        refreshLanguage();
+      });
+
+      currentLang = getCurrentLang();
+      loadUserData();
+      loadImagesAndSizes();
+      updateUI(currentLang, userName);
+      updateDefaultMemoryCaptions(currentLang);
+      renderTimeline();
+      applyGalleryVisibility();
+
+      document.getElementById('viewMemoriesBtn').addEventListener('click', () => {
+        document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+      });
+
+      const curtain = document.getElementById('curtain');
+      setTimeout(() => curtain.classList.add('open'), 500);
+      setTimeout(() => curtain.style.display = 'none', 2500);
+
+      const canvas = document.getElementById('effectsCanvas');
+      const ctx = canvas.getContext('2d');
+      let hearts = [];
+      function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+      function createHeart() {
+        return { x: Math.random() * canvas.width, y: canvas.height + 20, size: 15 + Math.random() * 25, speed: 1 + Math.random() * 3, opacity: 0.6 + Math.random() * 0.4, swing: Math.random() * 6.28, char: ['💖', '❤️', '💗', '💓', '💕'][Math.floor(Math.random() * 5)] };
+      }
+      for (let i = 0; i < 30; i++) hearts.push(createHeart());
+      function drawHearts() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hearts.forEach(h => {
+          h.y -= h.speed;
+          h.x += Math.sin(h.swing + Date.now() * 0.002) * 0.5;
+          if (h.y < -50) { Object.assign(h, createHeart()); h.y = canvas.height + 20; }
+          ctx.font = `${h.size}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+          ctx.fillStyle = `rgba(255,100,150,${h.opacity})`;
+          ctx.fillText(h.char, h.x, h.y);
+        });
+        requestAnimationFrame(drawHearts);
+      }
+      drawHearts();
+
+      window.revealGift = () => {
+        document.getElementById('giftBox').style.display = 'none';
+        document.getElementById('giftReveal').style.display = 'block';
+        confetti({ particleCount: 150, spread: 100 });
+      };
+      window.startFireworks = () => {
+        confetti({ particleCount: 200, spread: 120 });
+        confetti({ particleCount: 200, spread: 120, origin: { x: 0.3 } });
+        confetti({ particleCount: 200, spread: 120, origin: { x: 0.7 } });
+      };
+      document.getElementById('celebrateBtn').onclick = () => window.startFireworks();
+
+      const fadeElements = document.querySelectorAll('.fade-up');
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.2 });
+      fadeElements.forEach(el => observer.observe(el));
+
+      let heartThrottle;
+      document.addEventListener('mousemove', (e) => {
+        if (!heartThrottle) {
+          heartThrottle = setTimeout(() => {
+            const heart = document.createElement('div');
+            heart.style.cssText = `position:fixed; pointer-events:none; z-index:999; font-size:24px; left:${e.clientX}px; top:${e.clientY}px; animation:heartFloat 1.2s forwards;`;
+            heart.innerHTML = ['💖', '🎂', '💗'][Math.floor(Math.random() * 3)];
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1200);
+            heartThrottle = null;
+          }, 40);
+        }
+      });
+      const style = document.createElement('style');
+      style.textContent = `@keyframes heartFloat{0%{opacity:1;transform:scale(0.6) translateY(0);}100%{opacity:0;transform:scale(0.3) translateY(-70px);}}`;
+      document.head.appendChild(style);
+    })();
+  </script>
+</body>
+
+</html>

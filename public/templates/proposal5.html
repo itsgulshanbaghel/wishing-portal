@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>💍 Will You Marry Me? · Greeter.com</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500;600&family=Alex+Brush&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --ivory:  #fdf8f2;
+      --cream:  #fff4e8;
+      --blush:  #fce4ec;
+      --petal:  #f8bbd0;
+      --rose:   #e91e63;
+      --deep:   #880e4f;
+      --gold:   #f5d060;
+      --warm:   #8d5035;
+      --text:   #3e1c10;
+      --glass:  rgba(255,255,255,0.65);
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: linear-gradient(160deg, #fdf8f2 0%, #fce4ec 50%, #fff4e8 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEART CANVAS ── */
+    #heartCanvas { position:fixed; inset:0; pointer-events:none; z-index:1; }
+
+    /* ── LANTERNS ── */
+    .lanterns { position:fixed; inset:0; pointer-events:none; z-index:2; overflow:hidden; }
+    .lantern {
+      position: absolute;
+      bottom: -80px;
+      font-size: var(--fs);
+      opacity: 0;
+      animation: riseLantern var(--d) ease-in var(--delay) infinite;
+    }
+    @keyframes riseLantern {
+      0%   { opacity:0;   transform:translateY(0)   rotate(-5deg); }
+      15%  { opacity:0.8; }
+      85%  { opacity:0.6; }
+      100% { opacity:0;   transform:translateY(-110vh) rotate(5deg); }
+    }
+
+    /* ── MAIN ── */
+    .wall {
+      position:relative; z-index:5;
+      min-height:100vh;
+      display:flex; flex-direction:column;
+      align-items:center; text-align:center;
+      padding: 70px 24px 80px;
+    }
+
+    /* ── HERO ── */
+    .ring-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border:1px solid rgba(233,30,99,0.2);
+      border-radius:50px; padding:8px 24px;
+      font-size:0.78rem; letter-spacing:0.25em;
+      text-transform:uppercase; color:var(--rose);
+      font-weight:600; margin-bottom:24px;
+      animation: bloomIn 0.9s ease both;
+      box-shadow:0 4px 20px rgba(233,30,99,0.1);
+    }
+    @keyframes bloomIn {
+      from { opacity:0; transform:scale(0.8) translateY(20px); }
+      to   { opacity:1; transform:scale(1) translateY(0); }
+    }
+
+    h1 {
+      font-family: 'Alex Brush', cursive;
+      font-size: clamp(3.5rem, 12vw, 6.5rem);
+      color: var(--deep);
+      line-height: 1.1;
+      animation: bloomIn 1s 0.1s ease both;
+    }
+
+    .name-hero {
+      font-family: 'Bodoni Moda', serif;
+      font-style: italic;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      color: var(--rose);
+      margin: 12px 0 0;
+      animation: bloomIn 1s 0.2s ease both;
+    }
+
+    .ring-emoji {
+      font-size: 3rem;
+      margin: 18px 0;
+      display: inline-block;
+      animation: bloomIn 1s 0.25s ease both, rockRing 4s ease-in-out 1.5s infinite;
+    }
+    @keyframes rockRing {
+      0%,100% { transform:rotate(-8deg); }
+      50%     { transform:rotate(8deg); }
+    }
+
+    /* ── LOVE LETTER ── */
+    .letter-outer {
+      width: min(480px, 94vw);
+      margin: 28px auto;
+      animation: bloomIn 1s 0.35s ease both;
+    }
+    .letter-card {
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(14px);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(136,14,79,0.14), 0 0 0 1px rgba(255,255,255,0.9);
+      overflow: hidden;
+    }
+    .letter-top {
+      background: linear-gradient(135deg, var(--blush) 0%, #ffe0f0 100%);
+      padding: 28px 30px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .letter-top::after {
+      content:'♡';
+      position:absolute; right:16px; top:10px;
+      font-size:5rem; color:rgba(233,30,99,0.08);
+      line-height:1;
+    }
+    .letter-eyebrow {
+      font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase;
+      color:var(--rose); font-weight:600; margin-bottom:6px;
+    }
+    .letter-title {
+      font-family:'Alex Brush', cursive;
+      font-size:2.4rem; color:var(--deep);
+    }
+    .letter-body-wrap { padding:28px 30px; }
+    .letter-text {
+      font-family:'Bodoni Moda', serif;
+      font-style:italic; font-size:1.05rem;
+      line-height:2; color:#5a2832;
+      border-left:3px solid var(--petal);
+      padding-left:16px; margin-bottom:20px;
+    }
+    .letter-sign {
+      font-family:'Alex Brush', cursive;
+      font-size:2rem; color:var(--rose);
+      text-align:right;
+    }
+
+    /* ── PHOTO STRIPS ── */
+    .strips-section {
+      width: min(680px, 96vw);
+      margin: 0 auto 36px;
+      animation: bloomIn 1s 0.5s ease both;
+    }
+    .strips-head {
+      font-family:'Alex Brush', cursive;
+      font-size:2.2rem; color:var(--deep); margin-bottom:20px;
+    }
+    .strips-row {
+      display:flex; gap:16px; justify-content:center;
+      flex-wrap: wrap;
+    }
+    .strip {
+      width:140px;
+      background:white;
+      padding:10px 10px 40px;
+      border-radius:4px;
+      box-shadow:0 6px 20px rgba(136,14,79,0.18), 0 2px 4px rgba(0,0,0,0.06);
+      transform:rotate(var(--rot));
+      transition:all 0.3s ease;
+      cursor:default; position:relative;
+    }
+    .strip:hover { transform:rotate(0deg) scale(1.08) translateY(-8px); box-shadow:0 16px 40px rgba(136,14,79,0.28); z-index:10; }
+    .strip-img {
+      width:100%; aspect-ratio:1;
+      background:var(--bg, var(--blush));
+      border-radius:2px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:3rem; overflow:hidden;
+    }
+    .strip-img img { width:100%; height:100%; object-fit:cover; }
+    .strip-cap {
+      position:absolute; bottom:10px; left:0; right:0;
+      text-align:center;
+      font-family:'Alex Brush', cursive; font-size:1.1rem;
+      color:var(--warm);
+    }
+    .strip-tape {
+      position:absolute; top:-12px; left:50%;
+      transform:translateX(-50%) rotate(-2deg);
+      width:46px; height:18px;
+      background:rgba(255,220,150,0.65);
+      border-left:1px solid rgba(200,160,80,0.3);
+      border-right:1px solid rgba(200,160,80,0.3);
+    }
+
+    /* ── QUESTION ── */
+    .question-section {
+      animation: bloomIn 1s 0.6s ease both;
+      margin-bottom: 36px;
+    }
+    .q-text {
+      font-family:'Alex Brush', cursive;
+      font-size: clamp(2.5rem, 9vw, 5rem);
+      color:var(--deep);
+      line-height:1.2;
+    }
+    .q-name {
+      font-family:'Bodoni Moda', serif;
+      font-style:italic; font-size:clamp(1.2rem,4vw,2rem);
+      color:var(--rose); margin-top:4px;
+    }
+
+    /* ── YES/NO BUTTONS ── */
+    .btn-row {
+      display:flex; gap:20px; justify-content:center;
+      flex-wrap:wrap;
+      animation: bloomIn 1s 0.7s ease both;
+      margin-bottom: 40px;
+    }
+    .btn-yes {
+      background:linear-gradient(135deg, var(--rose) 0%, var(--deep) 100%);
+      color:white; border:none; border-radius:50px;
+      padding:18px 52px;
+      font-family:'Alex Brush', cursive; font-size:2rem;
+      cursor:pointer;
+      box-shadow:0 10px 36px rgba(233,30,99,0.38);
+      transition:all 0.3s ease;
+    }
+    .btn-yes:hover { transform:translateY(-4px) scale(1.05); box-shadow:0 16px 48px rgba(233,30,99,0.48); }
+    .btn-no {
+      background:white; color:var(--warm);
+      border:2px solid var(--petal); border-radius:50px;
+      padding:18px 42px;
+      font-family:'Jost', sans-serif; font-size:1rem; font-weight:500;
+      cursor:pointer;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06);
+      transition:all 0.3s ease;
+    }
+    .btn-no:hover { border-color:var(--rose); color:var(--rose); transform:translateY(-2px); }
+
+    /* ── CELEBRATION MODAL ── */
+    .celebration {
+      position:fixed; inset:0; z-index:100;
+      background:rgba(253,248,242,0.92);
+      backdrop-filter:blur(20px);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none;
+      transition:opacity 0.5s ease;
+    }
+    .celebration.show { opacity:1; pointer-events:all; }
+    .cel-box {
+      background:white;
+      border-radius:32px;
+      padding:52px 44px;
+      max-width:440px; width:90%;
+      text-align:center;
+      box-shadow:0 30px 80px rgba(136,14,79,0.25);
+      animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes popIn {
+      from { transform:scale(0.7); opacity:0; }
+      to   { transform:scale(1); opacity:1; }
+    }
+    .cel-icon { font-size:4rem; margin-bottom:16px; }
+    .cel-title {
+      font-family:'Alex Brush', cursive;
+      font-size:3rem; color:var(--deep); margin-bottom:12px;
+    }
+    .cel-msg {
+      font-family:'Bodoni Moda', serif;
+      font-style:italic; font-size:1.1rem;
+      color:var(--warm); line-height:1.8; margin-bottom:28px;
+    }
+    .cel-close {
+      background:linear-gradient(135deg, var(--rose), var(--deep));
+      color:white; border:none; border-radius:50px;
+      padding:14px 36px;
+      font-family:'Alex Brush', cursive; font-size:1.6rem;
+      cursor:pointer;
+      box-shadow:0 8px 28px rgba(233,30,99,0.35);
+      transition:all 0.3s ease;
+    }
+    .cel-close:hover { transform:scale(1.04); }
+
+    .footer { font-size:0.78rem; color:var(--rose); opacity:0.6; margin-top:20px; letter-spacing:0.15em; }
+  </style>
+</head>
+<body>
+
+<canvas id="heartCanvas"></canvas>
+<div class="lanterns" id="lanternLayer"></div>
+
+<div class="wall">
+  <div class="ring-badge">💍 A Question from the Heart 💍</div>
+  <h1 id="pageTitle">My Dearest Love</h1>
+  <div class="name-hero" id="nameHero">the one who owns my heart entirely</div>
+  <span class="ring-emoji">💍</span>
+
+  <!-- Love Letter -->
+  <div class="letter-outer">
+    <div class="letter-card">
+      <div class="letter-top">
+        <div class="letter-eyebrow">✦ A Letter From My Heart</div>
+        <div class="letter-title" id="letterTitle">To My Greatest Love</div>
+      </div>
+      <div class="letter-body-wrap">
+        <p class="letter-text" id="letterText">
+          From the very first moment our eyes met, I knew — you were the missing page of my story. Every laugh we have shared, every quiet moment, every dream we have whispered to each other has led me here, to this question burning in my heart. You are my home, my peace, and my greatest adventure.
+        </p>
+        <div class="letter-sign" id="letterSign">Forever yours ♡</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo Strips -->
+  <div class="strips-section">
+    <div class="strips-head">Our Memories Together 📸</div>
+    <div class="strips-row" id="gallery">
+      <div class="strip" style="--rot:-5deg;">
+        <div class="strip-tape"></div>
+        <div class="strip-img" style="--bg:#fce4ec;">🌸</div>
+        <div class="strip-cap">First Hello</div>
+      </div>
+      <div class="strip" style="--rot:3deg;">
+        <div class="strip-tape"></div>
+        <div class="strip-img" style="--bg:#fff4e8;">💕</div>
+        <div class="strip-cap">Our Story</div>
+      </div>
+      <div class="strip" style="--rot:-2deg;">
+        <div class="strip-tape"></div>
+        <div class="strip-img" style="--bg:#fce4ec;">🌹</div>
+        <div class="strip-cap">Always You</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Question -->
+  <div class="question-section">
+    <div class="q-text" id="qText">Will You Marry Me?</div>
+    <div class="q-name" id="qName">my love, my life, my everything</div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="btn-row">
+    <button class="btn-yes" id="yesBtn">Yes! ♡</button>
+    <button class="btn-no"  id="noBtn">Maybe later...</button>
+  </div>
+
+  <p class="footer">Made with ♡ · Greeter.com</p>
+</div>
+
+<!-- Celebration -->
+<div class="celebration" id="celebration">
+  <div class="cel-box">
+    <div class="cel-icon">💍</div>
+    <div class="cel-title" id="celTitle">She Said Yes!</div>
+    <p class="cel-msg" id="celMsg">This is the beginning of our forever — a love story written in the stars, sealed with a yes, and lived every single day with joy, laughter, and endless love.</p>
+    <button class="cel-close" id="celClose">Together Forever ♡</button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const params = new URLSearchParams(location.search);
+    let userData = {};
+    try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch {}
+    const userName   = params.get('name')   || userData.name   || 'My Love';
+    const userStory  = params.get('story')  || userData.story  || '';
+    const userWishes = params.get('wishes') || userData.wishes || '';
+    const userMems   = userData.memories || [];
+    const lang = localStorage.getItem('greeter_lang') || 'en';
+
+    const pageTitleEl = document.getElementById('pageTitle');
+    const nameHeroEl  = document.getElementById('nameHero');
+    const letterTitleEl = document.getElementById('letterTitle');
+    const letterTextEl  = document.getElementById('letterText');
+    const letterSignEl  = document.getElementById('letterSign');
+    const qTextEl     = document.getElementById('qText');
+    const qNameEl     = document.getElementById('qName');
+    const celTitleEl  = document.getElementById('celTitle');
+    const celMsgEl    = document.getElementById('celMsg');
+    const yesBtnEl    = document.getElementById('yesBtn');
+    const noBtnEl     = document.getElementById('noBtn');
+    const celebDiv    = document.getElementById('celebration');
+    const celCloseEl  = document.getElementById('celClose');
+
+    const sillies = lang === 'hi'
+      ? ['सच में?','ज़रा सोचो...','आओ बात करें','मैं इंतजार करूँगा','बस एक बार...','हाँ कह दो! 💍']
+      : ['Are you sure?','Think again...','Pleeeease?','I\'ll wait forever','Just say yes...','Yes it is! 💍'];
+    let sillyIdx = 0;
+
+    if (lang === 'hi') {
+      pageTitleEl.innerText    = 'मेरी प्रिय ' + userName;
+      nameHeroEl.innerText     = 'जो मेरे दिल की मालकिन है';
+      letterTitleEl.innerText  = userName + ' के नाम';
+      letterSignEl.innerText   = 'हमेशा तुम्हारा ♡';
+      qTextEl.innerText        = 'क्या तुम मुझसे शादी करोगी?';
+      qNameEl.innerText        = 'मेरी जान, मेरी ज़िंदगी';
+      yesBtnEl.innerText       = 'हाँ! ♡';
+      noBtnEl.innerText        = 'बाद में...';
+      celTitleEl.innerText     = 'उसने हाँ कह दिया!';
+      celCloseEl.innerText     = 'हमेशा साथ ♡';
+    } else {
+      pageTitleEl.innerText   = 'My Dearest ' + userName;
+      letterTitleEl.innerText = 'To My Greatest Love, ' + userName;
+    }
+
+    if (userStory)  letterTextEl.innerText = userStory;
+    if (userWishes) celMsgEl.innerText     = userWishes;
+
+    // Gallery
+    if (userMems.length > 0) {
+      const gal = document.getElementById('gallery');
+      gal.innerHTML = '';
+      userMems.slice(0, 4).forEach((m, i) => {
+        const strip = document.createElement('div');
+        strip.className = 'strip';
+        strip.style.setProperty('--rot', ([-5,3,-2,4][i] || 0) + 'deg');
+        const tape = document.createElement('div'); tape.className = 'strip-tape';
+        const img  = document.createElement('div'); img.className  = 'strip-img';
+        const cap  = document.createElement('div'); cap.className  = 'strip-cap';
+        if (m.img)  img.innerHTML = `<img src="${m.img}" alt="memory">`;
+        else        img.innerText = '💕';
+        cap.innerText = m.text || '♡';
+        strip.append(tape, img, cap);
+        gal.appendChild(strip);
+      });
+    }
+
+    // Yes button
+    yesBtnEl.addEventListener('click', () => {
+      celebDiv.classList.add('show');
+      const colors = ['#e91e63','#880e4f','#f8bbd0','#f5d060','#fce4ec'];
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          canvasConfetti({ particleCount: 100, angle: 60,  spread: 70, origin: { x:0 }, colors, startVelocity:22 });
+          canvasConfetti({ particleCount: 100, angle: 120, spread: 70, origin: { x:1 }, colors, startVelocity:22 });
+        }, i * 300);
+      }
+      setTimeout(() => canvasConfetti({ particleCount: 300, spread: 130, origin: { y:0.5 }, colors, startVelocity:18 }), 600);
+    });
+
+    // No button
+    noBtnEl.addEventListener('click', () => {
+      if (sillyIdx < sillies.length - 1) {
+        noBtnEl.innerText = sillies[sillyIdx++];
+      } else {
+        yesBtnEl.click();
+      }
+    });
+
+    celCloseEl.addEventListener('click', () => celebDiv.classList.remove('show'));
+
+    window.addEventListener('storage', e => {
+      if (e.key === 'userData') {
+        try {
+          const d = JSON.parse(e.newValue);
+          if (d.name)   pageTitleEl.innerText = 'My Dearest ' + d.name;
+          if (d.story)  letterTextEl.innerText = d.story;
+          if (d.wishes) celMsgEl.innerText = d.wishes;
+        } catch {}
+      }
+    });
+  })();
+
+  // ── HEARTS CANVAS ─────────────────────────────────────────────────────────
+  (function () {
+    const canvas = document.getElementById('heartCanvas');
+    const ctx    = canvas.getContext('2d');
+    let hearts   = [];
+
+    function resize() { canvas.width=innerWidth; canvas.height=innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    const COLORS = ['#f8bbd0','#fce4ec','#f48fb1','#ce93d8','#ffe0e8'];
+
+    function newHeart() {
+      return {
+        x: Math.random() * canvas.width,
+        y: canvas.height + 30,
+        s: 10 + Math.random() * 22,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: -(0.6 + Math.random() * 1.2),
+        op: 0.3 + Math.random() * 0.5,
+        angle: (Math.random() - 0.5) * 0.3,
+        spin: (Math.random() - 0.5) * 0.01,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      };
+    }
+
+    function drawHeart(h) {
+      ctx.save();
+      ctx.translate(h.x, h.y);
+      ctx.rotate(h.angle);
+      ctx.globalAlpha = h.op;
+      ctx.fillStyle = h.color;
+      ctx.beginPath();
+      const s = h.s;
+      ctx.moveTo(0, s * 0.3);
+      ctx.bezierCurveTo(-s, -s * 0.3, -s * 1.5, s * 0.5, 0, s * 1.1);
+      ctx.bezierCurveTo(s * 1.5, s * 0.5, s, -s * 0.3, 0, s * 0.3);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    for (let i = 0; i < 12; i++) {
+      const h = newHeart(); h.y = Math.random() * canvas.height;
+      hearts.push(h);
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hearts.forEach(h => {
+        h.x     += h.vx + Math.sin(Date.now() * 0.001 + h.y) * 0.4;
+        h.y     += h.vy;
+        h.angle += h.spin;
+        drawHeart(h);
+        if (h.y < -40) Object.assign(h, newHeart());
+      });
+      if (hearts.length < 20 && Math.random() < 0.03) hearts.push(newHeart());
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+
+  // ── LANTERNS ────────────────────────────────────────────────────────────────
+  (function () {
+    const layer = document.getElementById('lanternLayer');
+    const items = ['🏮','✨','🌸','💖','🕯️'];
+    function spawn() {
+      const el = document.createElement('div');
+      el.className = 'lantern';
+      const fs = 18 + Math.random() * 22;
+      el.style.cssText = `--fs:${fs}px; --d:${9+Math.random()*8}s; --delay:${Math.random()*2}s;
+        left:${Math.random()*100}vw;`;
+      el.innerText = items[Math.floor(Math.random() * items.length)];
+      layer.appendChild(el);
+      setTimeout(() => el.remove(), 14000);
+    }
+    for (let i = 0; i < 6; i++) setTimeout(spawn, i * 800);
+    setInterval(spawn, 2200);
+  })();
+</script>
+</body>
+</html>
