@@ -479,40 +479,40 @@
       white-space: nowrap;
     }
 
-.logo img {
-  height: clamp(32px, 10vw, 55px);
-  width: auto;
-}
+    .logo img {
+      height: clamp(32px, 10vw, 55px);
+      width: auto;
+    }
 
-.logo .logo-light {
-  display: block;
-}
+    .logo .logo-light {
+      display: block;
+    }
 
-body.dark .logo .logo-light {
-  display: none;
-}
+    body.dark .logo .logo-light {
+      display: none;
+    }
 
-.logo .logo-dark {
-  display: none;
-}
+    .logo .logo-dark {
+      display: none;
+    }
 
-body.dark .logo .logo-dark {
-  display: block;
-}
+    body.dark .logo .logo-dark {
+      display: block;
+    }
 
-.logo-icon {
-  background: var(--accent-gradient);
-  width: 44px;
-  height: 44px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 22px;
-  box-shadow: 0 12px 20px -8px var(--glow);
-  flex-shrink: 0;
-}
+    .logo-icon {
+      background: var(--accent-gradient);
+      width: 44px;
+      height: 44px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 12px 20px -8px var(--glow);
+      flex-shrink: 0;
+    }
 
     .nav-links {
       display: flex;
@@ -962,10 +962,8 @@ body.dark .logo .logo-dark {
   <div class="container">
     <nav class="navbar" id="navbar">
       <a href="index.html" class="logo">
-                <img src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
-                    alt="Greeter Logo" class="logo-light">
-                <img src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
-                    alt="Greeter Logo" class="logo-dark">
+        <img src="assets/Light_logo.png" alt="Greeter Logo" class="logo-light">
+        <img src="assets/Dark_logo.png" alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
         <a href="index.html" id="navHome">Home</a>
@@ -1007,6 +1005,22 @@ body.dark .logo .logo-dark {
               <div id="festivalError" class="error-message" style="display: none;"><i
                   class="fas fa-exclamation-circle"></i> Please enter festival name</div>
             </div>
+            <div id="proposalContainer" style="display: none; margin-top: 16px;">
+              <label id="proposalForLabel"><i class="fas fa-ring"></i> Proposal for</label>
+              <select id="proposalForSelect">
+                <option value="" selected disabled>-- Select Relationship --</option>
+                <option value="girlfriend">Girlfriend 💕</option>
+                <option value="boyfriend">Boyfriend 💕</option>
+                <option value="wife">Wife 💍</option>
+                <option value="husband">Husband 💍</option>
+                <option value="bestfriend">Best Friend 💖</option>
+                <option value="friend">Friend 💖</option>
+                <option value="partner">Partner 💕</option>
+              </select>
+              <div id="proposalForError" class="error-message" style="display: none;"><i
+                  class="fas fa-exclamation-circle"></i>
+                Please select what you're proposing for</div>
+            </div>
           </div>
           <div>
             <label id="moodLabel"><i class="far fa-smile"></i> Select Mood</label>
@@ -1024,8 +1038,8 @@ body.dark .logo .logo-dark {
           </div>
         </div>
 
-        <div style="margin-top: 16px;">
-          <label id="creatingForLabel"><i class="fas fa-heart"></i> Creating for (Relation)</label>
+        <div id="relationContainer" style="margin-top: 16px;">
+          <label id="creatingForLabel"><i class="fas fa-heart"></i> Creating for (Current Relation)</label>
           <input type="text" id="creatingForInput" list="relationList"
             placeholder="Select or type relation (e.g., Bestfriend, Brother...)" autocomplete="off">
           <datalist id="relationList"></datalist>
@@ -1040,7 +1054,7 @@ body.dark .logo .logo-dark {
             <div id="nameError" class="error-message" style="display: none;"><i class="fas fa-exclamation-circle"></i>
               Please enter a name</div>
           </div>
-          <div>
+          <div id="ageContainer">
             <label id="ageLabel"><i class="far fa-calendar"></i> Age (optional)</label>
             <input id="age" type="number" placeholder="Optional" inputmode="numeric">
           </div>
@@ -1061,11 +1075,9 @@ body.dark .logo .logo-dark {
 
     <footer class="footer">
       <div class="footer-inner">
-        <div class="footer-brand">          <a href="index.html" class="logo" style="margin-bottom: 16px; display: inline-flex;">
-                    <img src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
-                        alt="Greeter Logo" class="logo-light">
-                    <img src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
-                        alt="Greeter Logo" class="logo-dark">
+        <div class="footer-brand"> <a href="index.html" class="logo" style="margin-bottom: 16px; display: inline-flex;">
+            <img src="assets/Light_logo.png" alt="Greeter Logo" class="logo-light">
+            <img src="assets/Dark_logo.png" alt="Greeter Logo" class="logo-dark">
           </a>
           <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals,
             anniversaries and festivals — no coding needed.</p>
@@ -1092,13 +1104,14 @@ body.dark .logo .logo-dark {
         </div>
         <div class="footer-social">
           <h4 id="followTitle">Follow us</h4>
-          <div class="social-icons"><a href="#" id="footerFacebook"><i class="fab fa-facebook-f"></i></a><a href="#"
-              id="footerInstagram"><i class="fab fa-instagram"></i></a><a href="#" id="footerWhatsApp"><i
-                class="fab fa-whatsapp"></i></a><a href="#" id="footerTwitter"><i class="fab fa-twitter"></i></a></div>
+          <div class="social-icons"><a href="#" id="footerFacebook"><i class="fab fa-facebook-f"></i></a><a
+              href="https://instagram.com/thegreeter.in" id="footerInstagram" aria-label="Instagram"><i
+                class="fab fa-instagram"></i></a><a href="#" id="footerWhatsApp"><i class="fab fa-whatsapp"></i></a><a
+              href="#" id="footerTwitter"><i class="fab fa-twitter"></i></a></div>
         </div>
       </div>
       <div class="copyright">
-        <p id="copyrightText">© 2026 Greeter · Make every moment magical</p>
+        <p id="copyrightText"> 2026 Greeter · Make every moment magical</p>
       </div>
     </footer>
   </div>
@@ -1507,9 +1520,9 @@ body.dark .logo .logo-dark {
         en: {
           mainTitle: "Create Your Surprise", subhead: "Design beautiful websites for your loved ones ✨", eventLabel: "Select Event", moodLabel: "Select Mood",
           festivalLabel: "Festival Name", festivalPlaceholder: "Select or type festival name", festivalErrorMsg: "Please enter festival name",
-          creatingForLabel: "Creating for (Relation)", creatingForPlaceholder: "Select or type relation (e.g., Bestfriend, Brother...)", creatingForErrorMsg: "Please specify relation (optional, but helps personalization)",
+          creatingForLabel: "Creating for (Current Relation)", creatingForPlaceholder: "Select or type relation (e.g., Bestfriend, Brother...)", creatingForErrorMsg: "Please specify relation (optional, but helps personalization)",
           nameLabel: "Name", ageLabel: "Age (optional)", storyLabel: "Story / Message", wishesLabel: "Special Wishes",
-          continueBtn: "Continue → Generate Surprise ✨", namePlaceholder: "Enter name (required)", agePlaceholder: "Optional",
+          continueBtn: "Continue → Generate Surprise ✨", namePlaceholder: "Enter name (required)", nameFestivalPlaceholder: "Enter your name", agePlaceholder: "Optional",
           storyPlaceholder: "Write something beautiful... or click AI to generate ✨", wishesPlaceholder: "Write wishes... or let AI inspire you",
           nameErrorMsg: "Please enter a name", eventErrorMsg: "Please select an event", moodErrorMsg: "Please select a mood",
           copyright: "© 2026 Greeter · Make every moment magical", footer: ["Templates", "Features", "Showcase", "Help", "Privacy"], signinAlert: "Sign in",
@@ -1523,7 +1536,7 @@ body.dark .logo .logo-dark {
           festivalLabel: "त्योहार का नाम", festivalPlaceholder: "त्योहार चुनें या लिखें", festivalErrorMsg: "कृपया त्योहार का नाम डालें",
           creatingForLabel: "किसके लिए बना रहे हैं (रिश्ता)", creatingForPlaceholder: "रिश्ता चुनें या लिखें (जैसे: दोस्त, भाई...)", creatingForErrorMsg: "कृपया रिश्ता बताएं (वैकल्पिक, लेकिन निजीकरण में मदद करता है)",
           nameLabel: "नाम", ageLabel: "उम्र (वैकल्पिक)", storyLabel: "कहानी / संदेश", wishesLabel: "खास शुभकामनाएं",
-          continueBtn: "आगे बढ़ें → सरप्राइज़ बनाएं ✨", namePlaceholder: "नाम लिखें (ज़रूरी)", agePlaceholder: "वैकल्पिक",
+          continueBtn: "आगे बढ़ें → सरप्राइज़ बनाएं ✨", namePlaceholder: "नाम लिखें (ज़रूरी)", nameFestivalPlaceholder: "अपना नाम लिखें", agePlaceholder: "वैकल्पिक",
           storyPlaceholder: "कुछ खूबसूरत लिखें... या AI से विचार लें✨", wishesPlaceholder: "शुभकामनाएं लिखें... या AI से विचार लें✨",
           nameErrorMsg: "कृपया नाम डालें", eventErrorMsg: "कृपया कोई मौका चुनें", moodErrorMsg: "कृपया कोई मूड चुनें",
           copyright: "© 2026 Greeter · हर पल जादुई बनाएं", footer: ["टेम्पलेट", "फीचर्स", "शोकेस", "मदद", "प्राइवेसी"], signinAlert: "लॉगिन करें",
@@ -1552,7 +1565,7 @@ body.dark .logo .logo-dark {
         document.getElementById('storyLabel').innerHTML = `<i class="far fa-heart"></i> ${t.storyLabel}`;
         document.getElementById('wishesLabel').innerHTML = `<i class="far fa-star"></i> ${t.wishesLabel}`;
         document.querySelector('#continueBtnText').innerText = t.continueBtn;
-        document.getElementById('name').placeholder = t.namePlaceholder;
+        document.getElementById('name').placeholder = eventSelect.value === 'festival' ? t.nameFestivalPlaceholder : t.namePlaceholder;
         document.getElementById('age').placeholder = t.agePlaceholder;
         document.getElementById('story').placeholder = t.storyPlaceholder;
         document.getElementById('wishes').placeholder = t.wishesPlaceholder;
@@ -1577,6 +1590,7 @@ body.dark .logo .logo-dark {
       function toggleLanguage() {
         const newLang = currentLang === 'en' ? 'hi' : 'en';
         applyLanguage(newLang);
+        toggleFestivalField();
         document.querySelector('#langToggleBtn span').textContent = newLang === 'en' ? 'हिन्दी' : 'English';
       }
 
@@ -1587,8 +1601,42 @@ body.dark .logo .logo-dark {
       function getCurrentLang() { return currentLang; }
 
       function toggleFestivalField() {
-        if (eventSelect.value === 'festival') festivalContainer.style.display = 'block';
-        else { festivalContainer.style.display = 'none'; festivalInput.value = ''; festivalError.style.display = 'none'; festivalInput.classList.remove('error-border'); }
+        const relationContainer = document.getElementById('relationContainer');
+        const ageContainer = document.getElementById('ageContainer');
+        const proposalContainer = document.getElementById('proposalContainer');
+        const t = translations[currentLang];
+
+        // Hide all optional fields first
+        festivalContainer.style.display = 'none';
+        proposalContainer.style.display = 'none';
+
+        if (eventSelect.value === 'festival') {
+          festivalContainer.style.display = 'block';
+          relationContainer.style.display = 'none';
+          ageContainer.style.display = 'none';
+          nameInput.placeholder = t.nameFestivalPlaceholder;
+        } else if (eventSelect.value === 'proposal') {
+          proposalContainer.style.display = 'block';
+          relationContainer.style.display = 'block';
+          ageContainer.style.display = 'block';
+          nameInput.placeholder = t.namePlaceholder;
+        } else {
+          relationContainer.style.display = 'block';
+          ageContainer.style.display = 'block';
+          nameInput.placeholder = t.namePlaceholder;
+        }
+
+        // Clear values when switching events
+        if (eventSelect.value !== 'festival') {
+          festivalInput.value = '';
+          festivalError.style.display = 'none';
+          festivalInput.classList.remove('error-border');
+        }
+        if (eventSelect.value !== 'proposal') {
+          document.getElementById('proposalForSelect').value = '';
+          document.getElementById('proposalForError').style.display = 'none';
+          document.getElementById('proposalForSelect').classList.remove('error-border');
+        }
       }
       eventSelect.addEventListener('change', toggleFestivalField);
       const presetEvent = localStorage.getItem('presetEvent');
@@ -1620,13 +1668,21 @@ body.dark .logo .logo-dark {
         festivalInput.classList.toggle('error-border', !ok);
         return { valid: ok, errorElement: document.getElementById('festivalError') };
       }
+      function validateProposalWithElement() {
+        if (eventSelect.value !== 'proposal') return { valid: true, errorElement: null };
+        const ok = document.getElementById('proposalForSelect').value !== "";
+        document.getElementById('proposalForError').style.display = ok ? 'none' : 'flex';
+        document.getElementById('proposalForSelect').classList.toggle('error-border', !ok);
+        return { valid: ok, errorElement: document.getElementById('proposalForError') };
+      }
       eventSelect.addEventListener('change', () => validateEventWithElement());
       moodSelect.addEventListener('change', () => validateMoodWithElement());
       nameInput.addEventListener('input', () => validateNameWithElement());
       festivalInput.addEventListener('input', () => { if (eventSelect.value === 'festival') validateFestivalWithElement(); });
+      document.getElementById('proposalForSelect').addEventListener('change', () => { if (eventSelect.value === 'proposal') validateProposalWithElement(); });
 
       function showFirstValidationError() {
-        const checks = [validateEventWithElement, validateMoodWithElement, validateNameWithElement, validateFestivalWithElement];
+        const checks = [validateEventWithElement, validateMoodWithElement, validateNameWithElement, validateFestivalWithElement, validateProposalWithElement];
         for (let check of checks) {
           const res = check();
           if (!res.valid) { showModal(translations[currentLang].aiErrors[res.errorElement?.id.replace('Error', '').toLowerCase() + 'Missing'] || 'Please fill required fields'); res.errorElement?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return false; }
@@ -1646,11 +1702,15 @@ body.dark .logo .logo-dark {
 
       // Backend API
       async function callGemini(prompt, retryForCompletion = true) {
-        const response = await fetch('https://wishing-portal.onrender.com/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) });
+        // Use localhost for local development, Render for production
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const apiUrl = isLocalhost ? '/api/generate' : 'https://wishing-portal.onrender.com/api/generate';
+        
+        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) });
         if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || `HTTP ${response.status}`); }
         const data = await response.json();
-        if (data.candidates?.[0]?.content?.parts?.[0]) {
-          let content = data.candidates[0].content.parts[0].text.trim();
+        if (data.choices?.[0]?.message?.content) {
+          let content = data.choices[0].message.content.trim();
           content = content.replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]?\s*/i, '');
           if (retryForCompletion && !/[.!?।]$/.test(content) && content.length < 300) {
             const cont = await callGemini(prompt + "\n\n(Please ensure the response is complete and ends with proper punctuation.)", false);
@@ -1676,12 +1736,218 @@ body.dark .logo .logo-dark {
         const name = nameInput.value.trim();
         const age = document.getElementById('age').value;
         const relation = creatingForInput.value.trim();
-        const relationPhrase = relation ? `, who is your ${relation}` : '';
+        const mood = moodSelect.value;
         const lang = currentLang;
-        if (lang === 'hi') {
-          return `आपको ${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} के अवसर पर एक अच्छा संदेश लिखना है। मूड: ${moodSelect.value}। भाषा सहज और बातचीत जैसी हो और मूड के हिसाब से हो। उचित इमोजी का प्रयोग करें। संदेश 150 शब्दों से कम हो। **केवल संदेश ही आउटपुट करें। कोई परिचय, व्याख्या या अतिरिक्त टिप्पणी न जोड़ें।**`;
+
+        const getRelationInstructions = (rel, mood, event) => {
+          const getSalutation = (relation) => {
+            const salutations = {
+              'friend': '',
+              'bestfriend': '',
+              'best friend': '',
+              'brother': '',
+              'bhai': '',
+              'bhaiya': '',
+              'sister': '',
+              'didi': '',
+              'mother': 'Respected',
+              'mom': 'Respected',
+              'mummy': 'Respected',
+              'father': 'Respected',
+              'dad': 'Respected',
+              'papa': 'Respected',
+              'partner': 'My dear',
+              'wife': 'My dear',
+              'husband': 'My dear',
+              'girlfriend': 'My dear',
+              'boyfriend': 'My dear',
+              'colleague': '',
+              'boss': 'Respected',
+              'teacher': 'Respected',
+              'student': ''
+            };
+            return salutations[relation?.toLowerCase()] || '';
+          };
+
+          const getEventSpecific = (event) => {
+            if (event === 'proposal') {
+              const proposalFor = document.getElementById('proposalForSelect')?.value;
+              const proposalMessages = {
+                'girlfriend': "CRITICAL: You are USER proposing to make this person your GIRLFRIEND. Write a direct relationship proposal asking 'Will you be my girlfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
+                'boyfriend': "CRITICAL: You are USER proposing to make this person your BOYFRIEND. Write a direct relationship proposal asking 'Will you be my boyfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
+                'wife': "CRITICAL: You are USER proposing MARRIAGE to this person (to make them your WIFE). Write a direct marriage proposal asking 'Will you marry me?' or similar. Express deep love and desire to spend life together. This must be a marriage proposal FROM you TO them.",
+                'husband': "CRITICAL: You are USER proposing MARRIAGE to this person (to make them your HUSBAND). Write a direct marriage proposal asking 'Will you marry me?' or similar. Express deep love and desire to spend life together. This must be a marriage proposal FROM you TO them.",
+                'bestfriend': "CRITICAL: You are USER proposing to make this person your BEST FRIEND. Write a direct friendship proposal asking 'Will you be my best friend?' or similar. Express desire for deep friendship and connection. This must be a friendship proposal FROM you TO them.",
+                'friend': "CRITICAL: You are USER proposing to make this person your FRIEND. Write a direct friendship proposal asking 'Will you be my friend?' or similar. Express desire for friendship and connection. This must be a friendship proposal FROM you TO them.",
+                'partner': "CRITICAL: You are USER proposing to make this person your PARTNER. Write a direct relationship proposal asking 'Will you be my partner?' or similar. Express desire for a committed relationship. This must be a relationship proposal FROM you TO them."
+              };
+              return proposalMessages[proposalFor] || proposalMessages['friend'];
+            }
+            return '';
+          };
+
+          const getLanguageBoundaries = (rel, mood) => {
+            const boundaries = {
+              // Family relationships - more formal, respectful language
+              'mother': {
+                romantic: 'Write with deep family love and respect, like a proud child. Use warm but appropriate language - no romantic intimacy.',
+                funny: 'Share gentle family humor and sweet childhood memories. Keep it family-friendly.',
+                emotional: 'Express deep gratitude and love with respectful, heartfelt language.',
+                happy: 'Show joyful celebration with warm, family-appropriate excitement.',
+                roast: 'Keep teasing very light and affectionate, never hurtful. Use motherly love tone.',
+                normal: 'Write with sincere care and respect, like a loving child to parent.'
+              },
+              'father': {
+                romantic: 'Write with deep paternal respect and pride. Use formal but warm language - no romantic intimacy.',
+                funny: 'Share respectful dad jokes and proud father moments. Keep it dignified.',
+                emotional: 'Show deep respect and emotional connection with proper boundaries.',
+                happy: 'Express proud celebration with respectful, dignified language.',
+                roast: 'Use light, respectful teasing that shows admiration, never disrespect.',
+                normal: 'Write with sincere respect and warm, appropriate care.'
+              },
+              // Romantic relationships - intimate but appropriate
+              'wife': {
+                romantic: 'Write as a loving husband with deep romantic intimacy and passion. Use terms of endearment.',
+                funny: 'Share married life humor and intimate couple jokes. Keep it loving.',
+                emotional: 'Express deep romantic love and emotional vulnerability.',
+                happy: 'Show excited celebration with romantic excitement and intimacy.',
+                roast: 'Use loving, playful teasing that shows deep affection and intimacy.',
+                normal: 'Write with warm, romantic love and genuine husbandly care.'
+              },
+              'husband': {
+                romantic: 'Write as a loving wife with deep romantic passion and intimacy. Use sweet terms of endearment.',
+                funny: 'Share marriage humor and wife-husband jokes. Keep it affectionate.',
+                emotional: 'Express deep romantic love and emotional connection.',
+                happy: 'Show excited celebration with romantic joy and intimacy.',
+                roast: 'Use loving, playful teasing that shows wifely affection.',
+                normal: 'Write with warm, romantic love and genuine wifely care.'
+              },
+              'girlfriend': {
+                romantic: 'Write as a boyfriend with sweet romantic love and dating excitement. Use cute terms of endearment.',
+                funny: 'Share relationship humor and cute dating moments. Keep it playful.',
+                emotional: 'Express romantic feelings with appropriate dating intimacy.',
+                happy: 'Show excited celebration with romantic dating energy.',
+                roast: 'Use playful, cute teasing that shows affection and charm.',
+                normal: 'Write with warm, romantic feelings and genuine boyfriend care.'
+              },
+              'boyfriend': {
+                romantic: 'Write as a girlfriend with sweet romantic love and dating excitement. Use affectionate language.',
+                funny: 'Share relationship humor and cute couple moments. Keep it charming.',
+                emotional: 'Express romantic feelings with appropriate dating intimacy.',
+                happy: 'Show excited celebration with romantic dating joy.',
+                roast: 'Use playful, cute teasing that shows girlfriend affection.',
+                normal: 'Write with warm, romantic feelings and genuine girlfriend care.'
+              },
+              // Friend relationships - casual but respectful
+              'friend': {
+                romantic: 'Write as a close friend with subtle admiration. Keep it friendly, not romantic. Avoid crossing boundaries.',
+                funny: 'Share best friend humor and inside jokes. Keep it casual and fun.',
+                emotional: 'Show deep friendship loyalty and support. Keep it platonic.',
+                happy: 'Express excited celebration with fun, friendly energy.',
+                roast: 'Use friendly teasing that shows close bond but never hurtful.',
+                normal: 'Write with warm, genuine friendship and care.'
+              },
+              'bestfriend': {
+                romantic: 'Write as a best friend with deep platonic love. Never cross romantic boundaries.',
+                funny: 'Share deep inside jokes and embarrassing best friend moments.',
+                emotional: 'Show profound friendship loyalty and emotional support.',
+                happy: 'Express maximum excitement with best friend energy.',
+                roast: 'Use the most teasing you can, but always with underlying love.',
+                normal: 'Write with deepest friendship and genuine best friend care.'
+              },
+              // Sibling relationships
+              'brother': {
+                romantic: 'Write as a sibling with brotherly protection and family love. No romantic intimacy.',
+                funny: 'Share childhood fights and silly brother moments. Keep it family-appropriate.',
+                emotional: 'Show deep sibling bond and protective brotherly love.',
+                happy: 'Express excited brother celebration with family energy.',
+                roast: 'Use sibling teasing that shows brotherly bond and memories.',
+                normal: 'Write with caring brother love and warm family support.'
+              },
+              'sister': {
+                romantic: 'Write as a sibling with sisterly protection and family love. No romantic intimacy.',
+                funny: 'Share childhood memories and sister moments. Keep it family-friendly.',
+                emotional: 'Show deep sibling bond and caring sisterly love.',
+                happy: 'Express excited sister celebration with family joy.',
+                roast: 'Use sisterly teasing that shows family bond and affection.',
+                normal: 'Write with loving sister care and warm family support.'
+              },
+              // Professional relationships
+              'colleague': {
+                romantic: 'Keep it strictly professional. No romantic language. Use respectful workplace boundaries.',
+                funny: 'Use light, professional humor. Keep it workplace-appropriate.',
+                emotional: 'Show professional respect and support. Keep boundaries.',
+                happy: 'Express professional congratulations and good wishes.',
+                roast: 'Avoid teasing. Keep it respectful and professional.',
+                normal: 'Write with professional respect and appropriate workplace warmth.'
+              },
+              'boss': {
+                romantic: 'Strictly professional only. Never romantic. Maintain respectful boundaries.',
+                funny: 'Use very light, respectful humor. Keep it professional.',
+                emotional: 'Show professional respect and appreciation. Maintain boundaries.',
+                happy: 'Express professional congratulations and respectful good wishes.',
+                roast: 'Never tease. Keep it completely respectful.',
+                normal: 'Write with professional respect and formal appreciation.'
+              },
+              'teacher': {
+                romantic: 'Strictly professional. No romantic language. Maintain student-teacher boundaries.',
+                funny: 'Use respectful, appropriate humor. Keep it professional.',
+                emotional: 'Show respect and appreciation. Maintain proper boundaries.',
+                happy: 'Express respectful congratulations and good wishes.',
+                roast: 'Never tease. Keep it completely respectful.',
+                normal: 'Write with student respect and professional appreciation.'
+              },
+              'student': {
+                romantic: 'Maintain appropriate teacher-student boundaries. No romantic language.',
+                funny: 'Use light, encouraging humor. Keep it professional.',
+                emotional: 'Show teacher-like encouragement and support. Maintain boundaries.',
+                happy: 'Express proud teacher-like celebration and encouragement.',
+                roast: 'Avoid teasing. Keep it respectful and encouraging.',
+                normal: 'Write with teacher-like care and professional support.'
+              }
+            };
+
+            return boundaries[rel?.toLowerCase()] || boundaries['friend'];
+          };
+
+          const languageBoundaries = getLanguageBoundaries(rel, mood);
+          const eventSpecific = getEventSpecific(event);
+          return `${languageBoundaries[mood]}. ${eventSpecific}`;
+        };
+
+        const getSimpleEmojis = (mood) => {
+          const emojiMap = {
+            romantic: "💕❤️🌹💝✨🥰",
+            funny: "😂😄🎭😜🤪🎉",
+            emotional: "🥹😢💖🤗✨💝",
+            happy: "😊🎉🌟🥳🦋🌈",
+            roast: "😈🔥😂😜🎭👀",
+            normal: "😊🌟💫🤗🎈"
+          };
+          return emojiMap[mood] || "😊🌟💫";
+        };
+
+        if (eventSelect.value === 'festival') {
+          // For festivals, use user name and create general messages
+          const userName = nameInput.value.trim();
+          const festivalName = festivalInput.value.trim();
+          const emojis = getSimpleEmojis(mood);
+          
+          if (lang === 'hi') {
+            return `${userName} द्वारा ${festivalName} के अवसर पर सभी को भेजने के लिए एक सामान्य संदेश बनाएं। मूड: ${mood}। यह संदेश किसी विशिष्ट व्यक्ति के लिए नहीं है, बल्कि सभी को भेजने के लिए है। ${userName} के रूप में लिखें, जैसे कि वह सभी को शुभकामनाएं दे रहा हो। **CRITICAL: संदेश में अवश्य "${userName}" नाम शामिल करें।** बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल संदेश दें।**`;
+          } else {
+            return `Create a general ${festivalName} message from ${userName} that can be sent to everyone. Mood: ${mood}. This is NOT for a specific person - it's a general message for anyone. Write as ${userName}, sharing festival wishes with everyone. **CRITICAL: You MUST include "${userName}" in the message.** Use simple, everyday words like normal people use. Write like you're posting on social media or sending to a group. Use emojis: ${emojis}. Write at least 50 words but keep under 150 words. **Output ONLY message.**`;
+          }
         } else {
-          return `Write a heartfelt, natural message for ${name}${age ? ` (age ${age})` : ''}${relationPhrase} celebrating ${eventDisplay}. Mood: ${moodSelect.value}. Use friendly, conversational language(with easy words) as per the mood and reletionship(if given) and use appropriate emojis. Keep under 150 words. **Output ONLY the message. Do not include any introductory or concluding remarks, explanations, or extra text.**`;
+          // For non-festival events, use the existing logic
+          const relationInstruction = getRelationInstructions(relation, mood, eventSelect.value);
+          const emojis = getSimpleEmojis(mood);
+          
+          if (lang === 'hi') {
+            return `${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर एक दिल से लिखा हुआ संदेश बनाएं। मूड: ${mood}। ${relationInstruction}। संबंध के अनुसार उचित भाषा का प्रयोग करें - परिवार के लिए सम्मानजनक, दोस्तों के लिए अनौपचारिक, रोमांटिक रिश्तों के लिए सही सीमाओं के साथ। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें, जैसे कोई इंसान दोस्त या परिवार के सदस्य से बात कर रहा हो। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल संदेश दें।**`;
+          } else {
+            return `Write a heartfelt message for ${name}${age ? ` (age ${age})` : ''}${relation ? ` (${relation})` : ''} celebrating ${eventDisplay}. Mood: ${mood}. ${relationInstruction}. Use relationship-appropriate language: formal/respectful for family, casual for friends, intimate for romantic partners, professional for colleagues/boss/teacher. Use simple, everyday words like normal people use - no fancy or difficult words. Write like you're actually talking to them. Use emojis: ${emojis}. Write at least 50 words but keep under 150 words. **Output ONLY message.**`;
+          }
         }
       }
 
@@ -1692,12 +1958,218 @@ body.dark .logo .logo-dark {
         const name = nameInput.value.trim();
         const age = document.getElementById('age').value;
         const relation = creatingForInput.value.trim();
-        const relationPhrase = relation ? `, who is your ${relation}` : '';
+        const mood = moodSelect.value;
         const lang = currentLang;
-        if (lang === 'hi') {
-          return `आपको ${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर शुभकामनाओं की एक सूची बनानी है। मूड: ${moodSelect.value}। बुलेट पॉइंट्स (•) का प्रयोग करें, भाषा सहज और बातचीत जैसी हो और मूड के हिसाब से हो, और उचित इमोजी जोड़ें। **केवल शुभकामनाओं की सूची ही आउटपुट करें। कोई परिचय या अतिरिक्त पाठ न जोड़ें।**`;
+
+        const getRelationWishInstructions = (rel, mood, event) => {
+          const getSalutation = (relation) => {
+            const salutations = {
+              'friend': '',
+              'bestfriend': '',
+              'best friend': '',
+              'brother': '',
+              'bhai': '',
+              'bhaiya': '',
+              'sister': '',
+              'didi': '',
+              'mother': 'Respected',
+              'mom': 'Respected',
+              'mummy': 'Respected',
+              'father': 'Respected',
+              'dad': 'Respected',
+              'papa': 'Respected',
+              'partner': 'My dear',
+              'wife': 'My dear',
+              'husband': 'My dear',
+              'girlfriend': 'My dear',
+              'boyfriend': 'My dear',
+              'colleague': '',
+              'boss': 'Respected',
+              'teacher': 'Respected',
+              'student': ''
+            };
+            return salutations[relation?.toLowerCase()] || '';
+          };
+
+          const getEventSpecific = (event) => {
+            if (event === 'proposal') {
+              const proposalFor = document.getElementById('proposalForSelect')?.value;
+              const proposalMessages = {
+                'girlfriend': "CRITICAL: You are the USER proposing to make this person your GIRLFRIEND. Create a direct relationship proposal asking 'Will you be my girlfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
+                'boyfriend': "CRITICAL: You are the USER proposing to make this person your BOYFRIEND. Create a direct relationship proposal asking 'Will you be my boyfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
+                'wife': "CRITICAL: You are the USER proposing MARRIAGE to this person (to make them your WIFE). Create a direct marriage proposal asking 'Will you marry me?' or similar. Express deep love and desire to spend life together. This must be a marriage proposal FROM you TO them.",
+                'husband': "CRITICAL: You are the USER proposing MARRIAGE to this person (to make them your HUSBAND). Create a direct marriage proposal asking 'Will you marry me?' or similar. Express deep love and desire to spend life together. This must be a marriage proposal FROM you TO them.",
+                'bestfriend': "CRITICAL: You are the USER proposing to make this person your BEST FRIEND. Create a direct friendship proposal asking 'Will you be my best friend?' or similar. Express desire for deep friendship and connection. This must be a friendship proposal FROM you TO them.",
+                'friend': "CRITICAL: You are the USER proposing to make this person your FRIEND. Create a direct friendship proposal asking 'Will you be my friend?' or similar. Express desire for friendship and connection. This must be a friendship proposal FROM you TO them.",
+                'partner': "CRITICAL: You are the USER proposing to make this person your PARTNER. Create a direct relationship proposal asking 'Will you be my partner?' or similar. Express desire for a committed relationship. This must be a relationship proposal FROM you TO them."
+              };
+              return proposalMessages[proposalFor] || proposalMessages['friend'];
+            }
+            return '';
+          };
+
+          const getWishLanguageBoundaries = (rel, mood) => {
+            const boundaries = {
+              // Family relationships - more formal, respectful language
+              'mother': {
+                romantic: 'Create wishes with deep family love and respect, like a proud child. Use warm but appropriate language - no romantic intimacy.',
+                funny: 'Create gentle family humor and sweet childhood memories. Keep it family-friendly.',
+                emotional: 'Create wishes expressing deep gratitude and love with respectful, heartfelt language.',
+                happy: 'Create joyful celebration wishes with warm, family-appropriate excitement.',
+                roast: 'Create wishes with very light and affectionate teasing, never hurtful. Use motherly love tone.',
+                normal: 'Create wishes with sincere care and respect, like a loving child to parent.'
+              },
+              'father': {
+                romantic: 'Create wishes with deep paternal respect and pride. Use formal but warm language - no romantic intimacy.',
+                funny: 'Create respectful dad jokes and proud father moments. Keep it dignified.',
+                emotional: 'Create wishes showing deep respect and emotional connection with proper boundaries.',
+                happy: 'Create proud celebration wishes with respectful, dignified language.',
+                roast: 'Create wishes with light, respectful teasing that shows admiration, never disrespect.',
+                normal: 'Create wishes with sincere respect and warm, appropriate care.'
+              },
+              // Romantic relationships - intimate but appropriate
+              'wife': {
+                romantic: 'Create wishes as a loving husband with deep romantic intimacy and passion. Use terms of endearment.',
+                funny: 'Create married life humor and intimate couple jokes. Keep it loving.',
+                emotional: 'Create wishes expressing deep romantic love and emotional vulnerability.',
+                happy: 'Create excited celebration wishes with romantic excitement and intimacy.',
+                roast: 'Create wishes with loving, playful teasing that shows deep affection and intimacy.',
+                normal: 'Create wishes with warm, romantic love and genuine husbandly care.'
+              },
+              'husband': {
+                romantic: 'Create wishes as a loving wife with deep romantic passion and intimacy. Use sweet terms of endearment.',
+                funny: 'Create marriage humor and wife-husband jokes. Keep it affectionate.',
+                emotional: 'Create wishes expressing deep romantic love and emotional connection.',
+                happy: 'Create excited celebration wishes with romantic joy and intimacy.',
+                roast: 'Create wishes with loving, playful teasing that shows wifely affection.',
+                normal: 'Create wishes with warm, romantic love and genuine wifely care.'
+              },
+              'girlfriend': {
+                romantic: 'Create wishes as a boyfriend with sweet romantic love and dating excitement. Use cute terms of endearment.',
+                funny: 'Create relationship humor and cute dating moments. Keep it playful.',
+                emotional: 'Create wishes expressing romantic feelings with appropriate dating intimacy.',
+                happy: 'Create excited celebration wishes with romantic dating energy.',
+                roast: 'Create wishes with playful, cute teasing that shows affection and charm.',
+                normal: 'Create wishes with warm, romantic feelings and genuine boyfriend care.'
+              },
+              'boyfriend': {
+                romantic: 'Create wishes as a girlfriend with sweet romantic love and dating excitement. Use affectionate language.',
+                funny: 'Create relationship humor and cute couple moments. Keep it charming.',
+                emotional: 'Create wishes expressing romantic feelings with appropriate dating intimacy.',
+                happy: 'Create excited celebration wishes with romantic dating joy.',
+                roast: 'Create wishes with playful, cute teasing that shows girlfriend affection.',
+                normal: 'Create wishes with warm, romantic feelings and genuine girlfriend care.'
+              },
+              // Friend relationships - casual but respectful
+              'friend': {
+                romantic: 'Create wishes as a close friend with subtle admiration. Keep it friendly, not romantic. Avoid crossing boundaries.',
+                funny: 'Create best friend humor and inside jokes. Keep it casual and fun.',
+                emotional: 'Create wishes showing deep friendship loyalty and support. Keep it platonic.',
+                happy: 'Create excited celebration wishes with fun, friendly energy.',
+                roast: 'Create wishes with friendly teasing that shows close bond but never hurtful.',
+                normal: 'Create wishes with warm, genuine friendship and care.'
+              },
+              'bestfriend': {
+                romantic: 'Create wishes as a best friend with deep platonic love. Never cross romantic boundaries.',
+                funny: 'Create deep inside jokes and embarrassing best friend moments.',
+                emotional: 'Create wishes showing profound friendship loyalty and emotional support.',
+                happy: 'Create maximum excitement wishes with best friend energy.',
+                roast: 'Create wishes with most teasing you can, but always with underlying love.',
+                normal: 'Create wishes with deepest friendship and genuine best friend care.'
+              },
+              // Sibling relationships
+              'brother': {
+                romantic: 'Create wishes as a sibling with brotherly protection and family love. No romantic intimacy.',
+                funny: 'Create childhood fights and silly brother moments. Keep it family-appropriate.',
+                emotional: 'Create wishes showing deep sibling bond and protective brotherly love.',
+                happy: 'Create excited brother celebration wishes with family energy.',
+                roast: 'Create wishes with sibling teasing that shows brotherly bond and memories.',
+                normal: 'Create wishes with caring brother love and warm family support.'
+              },
+              'sister': {
+                romantic: 'Create wishes as a sibling with sisterly protection and family love. No romantic intimacy.',
+                funny: 'Create childhood memories and sister moments. Keep it family-friendly.',
+                emotional: 'Create wishes showing deep sibling bond and caring sisterly love.',
+                happy: 'Create excited sister celebration wishes with family joy.',
+                roast: 'Create wishes with sisterly teasing that shows family bond and affection.',
+                normal: 'Create wishes with loving sister care and warm family support.'
+              },
+              // Professional relationships
+              'colleague': {
+                romantic: 'Create strictly professional wishes. No romantic language. Use respectful workplace boundaries.',
+                funny: 'Create light, professional humor. Keep it workplace-appropriate.',
+                emotional: 'Create wishes showing professional respect and support. Keep boundaries.',
+                happy: 'Create professional congratulations and good wishes.',
+                roast: 'Avoid teasing. Keep it respectful and professional.',
+                normal: 'Create wishes with professional respect and appropriate workplace warmth.'
+              },
+              'boss': {
+                romantic: 'Create strictly professional wishes only. Never romantic. Maintain respectful boundaries.',
+                funny: 'Create very light, respectful humor. Keep it professional.',
+                emotional: 'Create wishes showing professional respect and appreciation. Maintain boundaries.',
+                happy: 'Create professional congratulations and respectful good wishes.',
+                roast: 'Never tease. Keep it completely respectful.',
+                normal: 'Create wishes with professional respect and formal appreciation.'
+              },
+              'teacher': {
+                romantic: 'Create strictly professional wishes. No romantic language. Maintain student-teacher boundaries.',
+                funny: 'Create respectful, appropriate humor. Keep it professional.',
+                emotional: 'Create wishes showing respect and appreciation. Maintain proper boundaries.',
+                happy: 'Create respectful congratulations and good wishes.',
+                roast: 'Never tease. Keep it completely respectful.',
+                normal: 'Create wishes with student respect and professional appreciation.'
+              },
+              'student': {
+                romantic: 'Create wishes maintaining appropriate teacher-student boundaries. No romantic language.',
+                funny: 'Create light, encouraging humor. Keep it professional.',
+                emotional: 'Create wishes showing teacher-like encouragement and support. Maintain boundaries.',
+                happy: 'Create proud teacher-like celebration and encouragement.',
+                roast: 'Avoid teasing. Keep it respectful and encouraging.',
+                normal: 'Create wishes with teacher-like care and professional support.'
+              }
+            };
+
+            return boundaries[rel?.toLowerCase()] || boundaries['friend'];
+          };
+
+          const languageBoundaries = getWishLanguageBoundaries(rel, mood);
+          const eventSpecific = getEventSpecific(event);
+          return `${languageBoundaries[mood]}. ${eventSpecific}`;
+        };
+
+        const getSimpleEmojis = (mood) => {
+          const emojiMap = {
+            romantic: "💕❤️🌹💝✨🥰",
+            funny: "😂😄🎭😜🤪🎉",
+            emotional: "🥹😢💖🤗✨💝",
+            happy: "😊🎉🌟🥳🦋🌈",
+            roast: "😈🔥😂😜🎭👀",
+            normal: "😊🌟💫🤗🎈"
+          };
+          return emojiMap[mood] || "😊🌟💫";
+        };
+
+        if (eventSelect.value === 'festival') {
+          // For festivals, use user name and create general wishes
+          const userName = nameInput.value.trim();
+          const festivalName = festivalInput.value.trim();
+          const emojis = getSimpleEmojis(mood);
+          
+          if (lang === 'hi') {
+            return `${userName} द्वारा ${festivalName} के अवसर पर सभी को भेजने के लिए शुभकामनाओं की सूची बनाएं। मूड: ${mood}। यह शुभकामनाएं किसी विशिष्ट व्यक्ति के लिए नहीं हैं, बल्कि सभी को भेजने के लिए हैं। ${userName} के रूप में लिखें, जैसे कि वह सभी को शुभकामनाएं दे रहा हो। **CRITICAL: शुभकामनाओं में अवश्य "${userName}" नाम शामिल करें।** बुलेट पॉइंट्स (•) का उपयोग करें। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल बुलेट सूची दें।**`;
+          } else {
+            return `Create a bullet-point list of ${festivalName} wishes from ${userName} that can be sent to everyone. Mood: ${mood}. This is NOT for a specific person - it's general wishes for anyone. Write as ${userName}, sharing festival wishes with everyone. **CRITICAL: You MUST include "${userName}" in the wishes.** Use bullet points (•). Use simple, everyday words like normal people use. Write like you're posting on social media or sending to a group. Use emojis: ${emojis}. Write at least 50 words but keep under 150 words. **Output ONLY bullet list.**`;
+          }
         } else {
-          return `Create a short, sweet bullet-point list of wishes for ${name}${age ? ` (age ${age})` : ''}${relationPhrase} on ${eventDisplay}. Mood: ${moodSelect.value}. Use bullet points (•) and Use friendly, conversational language(with easy words) as per the mood and reletionship(if given), and use appropriate emojis. Keep under 150 words. **Output ONLY the bullet list. Do not include any introductory text, explanations, or extra commentary.**`;
+          // For non-festival events, use the existing logic
+          const relationInstruction = getRelationWishInstructions(relation, mood, eventSelect.value);
+          const emojis = getSimpleEmojis(mood);
+          
+          if (lang === 'hi') {
+            return `${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर शुभकामनाओं की सूची बनाएं। मूड: ${mood}। ${relationInstruction}। संबंध के अनुसार उचित भाषा का प्रयोग करें - परिवार के लिए सम्मानजनक, दोस्तों के लिए अनौपचारिक, रोमांटिक रिश्तों के लिए उचित सीमाओं के साथ। बुलेट पॉइंट्स (•) का उपयोग करें। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें, जैसे कोई इंसान दोस्त या परिवार के सदस्य से बात कर रहा हो। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल बुलेट सूची दें।**`;
+          } else {
+            return `Create a bullet-point list of wishes for ${name}${age ? ` (age ${age})` : ''}${relation ? ` (${relation})` : ''} celebrating ${eventDisplay}. Mood: ${mood}. ${relationInstruction}. Use relationship-appropriate language: formal/respectful for family, casual for friends, intimate for romantic partners, professional for colleagues/boss/teacher. Use simple, everyday words like normal people use - no fancy or difficult words. Write like you're actually talking to them. Use bullet points (•). Use emojis: ${emojis}. Write at least 50 words but keep under 150 words. **Output ONLY bullet list.**`;
+          }
         }
       }
 
@@ -1731,6 +2203,7 @@ body.dark .logo .logo-dark {
         if (!validateMoodWithElement().valid) { showModal(t.aiErrors.missingMood); return; }
         if (!validateNameWithElement().valid) { showModal(t.aiErrors.missingName); return; }
         if (eventSelect.value === 'festival' && !validateFestivalWithElement().valid) { showModal(t.aiErrors.missingFestival); return; }
+        if (eventSelect.value === 'proposal' && !validateProposalWithElement().valid) { showModal(t.aiErrors.missingProposal || 'Please select what you\'re proposing for'); return; }
 
         const name = nameInput.value.trim();
         const relation = creatingForInput.value.trim();
@@ -1767,24 +2240,26 @@ body.dark .logo .logo-dark {
         }
 
         // 2. Prewritten available and under quota -> use prewritten
-        const preMessages = getPreWrittenMessages(event, mood, name, relation, age, festival);
-        if (preMessages.length > 0 && prewriteUsage[fieldKey] < 4) {
-          const btn = targetTextarea.parentElement.querySelector('.ai-neon-btn');
-          const originalLabel = btn.innerHTML;
-          btn.innerHTML = '<div class="loading-spinner-small"></div>';
-          btn.disabled = true;
-          await new Promise(r => setTimeout(r, 6000));
-          const otherTextarea = isWishes ? storyTextarea : wishesTextarea;
-          const avoid = otherTextarea.value.trim();
-          const chosen = getRandomDifferentMessage(preMessages, avoid);
-          targetTextarea.value = chosen;
-          autoResize(targetTextarea);
-          prewriteUsage[fieldKey]++;
-          if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
-          btn.innerHTML = originalLabel;
-          btn.disabled = false;
-          return;
-        }
+        // Note: Prewritten database is now only used as backup when APIs are rate limited
+        // This section is disabled to prevent primary usage of prewritten database
+        // const preMessages = getPreWrittenMessages(event, mood, name, relation, age, festival);
+        // if (preMessages.length > 0 && prewriteUsage[fieldKey] < 4) {
+        //   const btn = targetTextarea.parentElement.querySelector('.ai-neon-btn');
+        //   const originalLabel = btn.innerHTML;
+        //   btn.innerHTML = '<div class="loading-spinner-small"></div>';
+        //   btn.disabled = true;
+        //   await new Promise(r => setTimeout(r, 6000));
+        //   const otherTextarea = isWishes ? storyTextarea : wishesTextarea;
+        //   const avoid = otherTextarea.value.trim();
+        //   const chosen = getRandomDifferentMessage(preMessages, avoid);
+        //   targetTextarea.value = chosen;
+        //   autoResize(targetTextarea);
+        //   prewriteUsage[fieldKey]++;
+        //   if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
+        //   btn.innerHTML = originalLabel;
+        //   btn.disabled = false;
+        //   return;
+        // }
 
         // 3. Fallback: clear and generate fresh via AI
         targetTextarea.value = '';

@@ -10,6 +10,7 @@
     href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -410,6 +411,63 @@
       box-shadow: 0 10px 20px var(--glow);
     }
 
+    /* ----- NEW LAYOUT: Contact cards on left, form on right ----- */
+    .contact-layout {
+      display: flex;
+      gap: 40px;
+      margin: 32px 0;
+      align-items: stretch;
+    }
+
+    .contact-cards-left {
+      flex: 0 0 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .contact-cards-left .method-item {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border: 3px solid rgba(123, 93, 246, 0.4);
+      box-shadow: 0 0 0 2px rgba(123, 93, 246, 0.15);
+    }
+
+    .form-wrapper {
+      flex: 1;
+      max-width: none;
+      margin: 0;
+    }
+
+    .form-wrapper .form-card {
+      border: 3px solid rgba(123, 93, 246, 0.4);
+      box-shadow: 0 0 0 2px rgba(123, 93, 246, 0.15), var(--shadow-lg);
+    }
+
+    /* Additional methods (location and response time) */
+    .additional-methods {
+      display: flex;
+      gap: 40px;
+      margin: 32px 0;
+      align-items: stretch;
+    }
+
+    .additional-methods .method-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border: 3px solid rgba(123, 93, 246, 0.4);
+      box-shadow: 0 0 0 2px rgba(123, 93, 246, 0.15);
+    }
+
     /* ----- CARDS (unchanged) ----- */
     .contact-methods {
       display: flex;
@@ -699,6 +757,27 @@
         padding: 10px 18px;
       }
 
+      /* Responsive layout for contact page */
+      .contact-layout {
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .contact-cards-left {
+        flex: 1;
+        width: 100%;
+      }
+
+      .additional-methods {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .additional-methods .method-item {
+        max-width: 100%;
+        width: 100%;
+      }
+
       .logo {
         font-size: clamp(0.9rem, 4vw, 1.3rem);
       }
@@ -837,6 +916,61 @@
         justify-content: center;
       }
 
+      /* Mobile form container improvements */
+      .form-card {
+        margin: 0 10px;
+        max-width: 100%;
+      }
+
+      .contact-layout {
+        padding: 10px;
+      }
+
+      /* Better mobile button targets */
+      .submit-btn {
+        min-height: 44px;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 15px;
+      }
+      
+      #verificationSection button {
+        min-height: 44px;
+        font-size: 14px;
+        width: 100%;
+      }
+
+      /* Mobile form button positioning fix */
+      .btn-submit {
+        margin-top: 20px !important;
+        width: 100%;
+        display: block;
+      }
+      
+      .form-status {
+        margin-top: 10px;
+      }
+
+      /* Ensure form elements stack vertically on mobile */
+      .form-card {
+        display: block;
+      }
+      
+      .row-2cols {
+        display: block;
+      }
+      
+      .form-group {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+      
+      .btn-submit {
+        display: block;
+        width: 100%;
+        margin-top: 20px !important;
+      }
+
       .footer-inner {
         gap: 1.5rem;
       }
@@ -852,14 +986,15 @@
   </style>
 </head>
 
+
 <body>
   <div class="bg-gradient"></div>
   <div class="container">
     <nav class="navbar">
       <a href="index.html" class="logo">
-                <img src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
+                <img src="assets/Light_logo.png"
                     alt="Greeter Logo" class="logo-light">
-                <img src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
+                <img src="assets/Dark_logo.png"
                     alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
@@ -882,12 +1017,38 @@
       <p id="heroDesc">We are here to help you. Send us a message – We will reply in the fastest possible time.</p>
     </div>
 
-    <div class="form-wrapper">
-      <div class="form-card">
-        <div class="form-title" id="formTitle">Send a message</div>
-        <div class="form-desc" id="formDesc">Fill out the form below and we'll get back to you promptly.</div>
-        <form id="contactForm">
-          <div class="row-2cols">
+    <!-- NEW LAYOUT: Contact cards on left, form on right -->
+    <div class="contact-layout">
+      <!-- Left side: Email and Telegram cards -->
+      <div class="contact-cards-left">
+        <div class="method-item">
+          <div class="method-icon"><i class="fas fa-envelope"></i></div>
+          <h3 id="emailTitle">Email</h3>
+          <p id="emailDesc">For inquiries & support</p>
+          <a href="mailto:greeterindia@gmail.com" class="method-link" id="emailLink">greeterindia@gmail.com <i
+              class="fas fa-arrow-right"></i></a>
+          <div class="sub-method">
+            <a href="mailto:greeterindia@gmail.com" id="supportEmailLink">greeterindia@gmail.com</a>
+          </div>
+        </div>
+        <div class="method-item">
+          <div class="method-icon"><i class="fab fa-telegram-plane"></i></div>
+          <h3 id="telegramTitle">Telegram</h3>
+          <p id="telegramDesc">Fast & encrypted</p>
+          <a href="https://t.me/greeter_support" target="_blank" class="method-link"
+            id="telegramLink">t.me/greeter_support <i class="fas fa-arrow-right"></i></a>
+          <div class="sub-method">
+            <a href="https://t.me/greeter_community" target="_blank" id="telegramCommunityLink">Join community</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side: Form -->
+      <div class="form-wrapper">
+        <div class="form-card">
+          <div class="form-title" id="formTitle">Send a message</div>
+          <div class="form-desc" id="formDesc">Fill out the form below and we'll get back to you promptly.</div>
+          <form id="contactForm">
             <div class="form-group">
               <label id="nameLabel" for="name">Full Name *</label>
               <input type="text" id="name" name="name" required>
@@ -896,49 +1057,29 @@
               <label id="emailLabel" for="email">Email Address *</label>
               <input type="email" id="email" name="email" required>
             </div>
-          </div>
-          <div class="form-group">
-            <label id="subjectLabel" for="subject">Subject *</label>
-            <select id="subject" name="subject" required>
-              <option value="general" id="subjectGeneral">General Inquiry</option>
-              <option value="support" id="subjectSupport">Technical Support</option>
-              <option value="sales" id="subjectSales">Sales / Partnership</option>
-              <option value="feedback" id="subjectFeedback">Feedback</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label id="messageLabel" for="message">Message *</label>
-            <textarea id="message" name="message" required rows="5"></textarea>
-          </div>
-          <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane"></i> <span
+            <div class="form-group">
+              <label id="subjectLabel" for="subject">Subject *</label>
+              <select id="subject" name="subject" required>
+                <option value="general" id="subjectGeneral">General Inquiry</option>
+                <option value="support" id="subjectSupport">Technical Support</option>
+                <option value="sales" id="subjectSales">Sales / Partnership</option>
+                <option value="feedback" id="subjectFeedback">Feedback</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label id="messageLabel" for="message">Message *</label>
+              <textarea id="message" name="message" required rows="5"></textarea>
+            </div>
+            <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane"></i> <span
               id="btnText">Send Message</span></button>
-          <div id="formStatus" class="form-status"></div>
-        </form>
+            <div id="formStatus" class="form-status"></div>
+          </form>
+        </div>
       </div>
     </div>
 
-    <!-- CONTACT METHODS CARDS unchanged -->
-    <div class="contact-methods">
-      <div class="method-item">
-        <div class="method-icon"><i class="fas fa-envelope"></i></div>
-        <h3 id="emailTitle">Email</h3>
-        <p id="emailDesc">For inquiries & support</p>
-        <a href="mailto:greeterindia@gmail.com" class="method-link" id="emailLink">greeterindia@gmail.com <i
-            class="fas fa-arrow-right"></i></a>
-        <div class="sub-method">
-          <a href="mailto:greeterindia@gmail.com" id="supportEmailLink">greeterindia@gmail.com</a>
-        </div>
-      </div>
-      <div class="method-item">
-        <div class="method-icon"><i class="fab fa-telegram-plane"></i></div>
-        <h3 id="telegramTitle">Telegram</h3>
-        <p id="telegramDesc">Fast & encrypted</p>
-        <a href="https://t.me/greeter_support" target="_blank" class="method-link"
-          id="telegramLink">t.me/greeter_support <i class="fas fa-arrow-right"></i></a>
-        <div class="sub-method">
-          <a href="https://t.me/greeter_community" target="_blank" id="telegramCommunityLink">Join community</a>
-        </div>
-      </div>
+    <!-- ADDITIONAL INFO CARDS (Location and Response time) -->
+    <div class="additional-methods">
       <div class="method-item">
         <div class="method-icon"><i class="fas fa-map-marker-alt"></i></div>
         <h3 id="locationTitle">Location</h3>
@@ -955,34 +1096,23 @@
       </div>
     </div>
 
-    <div class="social-row">
-      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-      <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-    </div>
-
+    
+    <!-- FOOTER -->
     <footer class="footer">
       <div class="footer-inner">
-        <div class="footer-brand">
-          <a href="/" class="logo" style="margin-bottom: 16px; display: inline-flex;">
-                    <img src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
-                        alt="Greeter Logo" class="logo-light">
-                    <img src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
-                        alt="Greeter Logo" class="logo-dark">
+        <div class="footer-brand"><a href="index.html" class="logo" style="margin-bottom: 16px; display: inline-flex;">
+            <img class="logo-light" src="assets/Light_logo.png" alt="Greeter Logo">
+            <img class="logo-dark" src="assets/Dark_logo.png" alt="Greeter Logo">
           </a>
-          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
-            and festivals — no coding needed.</p>
+          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals,
+            anniversaries and festivals — no coding needed.</p>
         </div>
         <div class="footer-links">
           <div class="footer-col">
             <h4 id="exploreTitle">Explore</h4>
             <ul>
-              <!-- Replace Templates with Create (link to create.html) -->
               <li><a href="create.html" id="exploreTemplates">Create</a></li>
-              <!-- Replace Features with Why Greeter (link to WhyWe.html) -->
               <li><a href="WhyWe.html" id="exploreFeatures">Why Greeter</a></li>
-              <!-- How it Works remains (link to index.html#stepsHeader) -->
               <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
               <li><a href="#" id="explorePricing">Pricing</a></li>
             </ul>
@@ -999,24 +1129,40 @@
         </div>
         <div class="footer-social">
           <h4 id="followTitle">Follow us</h4>
-          <div class="social-icons">
-            <a href="#" id="footerFacebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" id="footerInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#" id="footerWhatsApp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-            <a href="#" id="footerTwitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          </div>
+          <div class="social-icons"><a href="#" id="footerFacebook"><i class="fab fa-facebook-f"></i></a><a href="https://instagram.com/thegreeter.in"
+              id="footerInstagram"><i class="fab fa-instagram"></i></a><a href="#" id="footerWhatsApp"><i
+                class="fab fa-whatsapp"></i></a><a href="#" id="footerTwitter"><i class="fab fa-twitter"></i></a></div>
         </div>
       </div>
       <div class="copyright">
+        <p id="copyrightText"> 2026 Greeter · Make every moment magical</p>
         <p id="copyrightText">© 2026 Greeter · Make every moment magical</p>
       </div>
     </footer>
   </div>
 
   <script>
-    // UPDATED TRANSLATIONS: footer links renamed to match new links
     const translations = {
-        en: {
+      en: {
+        nav: ["Home", "Create", "Why Greeter", "Privacy", "Contact Us"],
+        signin: "Sign in",
+        pageTitle: "Contact Us",
+        heroDesc: "We are here to help you. Send us a message – We will reply in the fastest possible time.",
+        formTitle: "Send a message",
+        formDesc: "Fill out the form below and we'll get back to you promptly.",
+        nameLabel: "Full Name *",
+        emailLabel: "Email Address *",
+        subjectLabel: "Subject *",
+        subjectGeneral: "General Inquiry",
+        subjectSupport: "Technical Support",
+        subjectSales: "Sales / Partnership",
+        subjectFeedback: "Feedback",
+        messageLabel: "Message *",
+        btnText: "Send Message",
+        formRequired: "Please fill in all fields.",
+        formSuccess: "Message sent successfully! We will get back to you soon.",
+        emailTitle: "Email",
+        emailDesc: "For inquiries & support",
         emailLink: "greeterindia@gmail.com",
         supportEmailLink: "greeterindia@gmail.com",
         telegramTitle: "Telegram",
@@ -1037,9 +1183,31 @@
         followTitle: "Follow us",
         copyright: "© 2026 Greeter · Make every moment magical"
       },
-        hi: {
+      hi: {
+        nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"],
+        signin: "लॉगिन करें",
+        pageTitle: "संपर्क करें",
+        heroDesc: "हम आपकी सहायता के लिए यहाँ हैं। हमें संदेश भेजें - हम जल्द से जल्द जवाब देंगे।",
+        formTitle: "संदेश भेजें",
+        formDesc: "नीचे दिया गया फॉर्म भरें और हम आपसे जल्द ही संपर्क करेंगे।",
+        nameLabel: "पूरा नाम *",
+        emailLabel: "ईमेल पता *",
+        subjectLabel: "विषय *",
+        subjectGeneral: "सामान्य पूछताछ",
+        subjectSupport: "तकनीकी सहायता",
+        subjectSales: "बिक्री / साझेदारी",
+        subjectFeedback: "प्रतिक्रिया",
+        messageLabel: "संदेश *",
+        btnText: "संदेश भेजें",
+        formRequired: "कृपया सभी फ़ील्ड भरें।",
+        formSuccess: "संदेश सफलतापूर्वक भेजा गया! हम जल्द ही आपसे संपर्क करेंगे।",
+        emailTitle: "ईमेल",
+        emailDesc: "पूछताछ और सहायता के लिए",
         emailLink: "greeterindia@gmail.com",
         supportEmailLink: "greeterindia@gmail.com",
+
+
+
         telegramTitle: "टेलीग्राम",
         telegramDesc: "तेज़ और सुरक्षित",
         telegramLink: "t.me/greeter_support",
@@ -1168,25 +1336,285 @@
     window.addEventListener('resize', () => { if (window.innerWidth > 768 && navLinksDiv.classList.contains('show')) closeMobileMenu(); });
     document.querySelectorAll('#navLinks a').forEach(link => { link.addEventListener('click', closeMobileMenu); });
 
-    // Form submission
+    // Email verification system
+    let verificationCode = null;
+    let verifiedEmail = null;
+    let verificationAttempts = 0;
+    const MAX_ATTEMPTS = 3;
+    
+    function generateVerificationCode() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+    
+    function sendVerificationEmail(email, name) {
+      console.log('=== SENDING VERIFICATION EMAIL ===');
+      verificationCode = generateVerificationCode();
+      verificationAttempts = 0;
+      
+      console.log('Generated verification code:', verificationCode);
+      console.log('Sending to email:', email);
+      console.log('Template ID: template_96pkstd');
+      
+      const templateParams = {
+        name: name,
+        email: email,
+        verification_code: verificationCode,
+        company_name: "Greeter",
+        reply_to: email,
+        from_name: "Greeter Verification"
+      };
+      
+      console.log('Template params:', templateParams);
+      
+      return emailjs.send('service_greeter', 'template_96pkstd', templateParams);
+    }
+    
+    function validateVerificationCode(inputCode) {
+      return inputCode === verificationCode;
+    }
+
+    // Initialize EmailJS
+    (function() {
+      emailjs.init("QzvA-__61RB8pzLms"); // Your EmailJS public key
+    })();
+
+    // Form submission with EmailJS
     const form = document.getElementById('contactForm');
     const statusDiv = document.getElementById('formStatus');
+    const submitBtn = document.getElementById('submitBtn');
+    
     form.addEventListener('submit', (e) => {
       e.preventDefault();
+      
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
+      const subject = document.getElementById('subject').value;
       const message = document.getElementById('message').value.trim();
+      
       if (!name || !email || !message) {
         statusDiv.innerHTML = `<span style="color: #ef4444;">${translations[currentLang].formRequired}</span>`;
         return;
       }
-      statusDiv.innerHTML = `<span style="color: #10b981;">${translations[currentLang].formSuccess}</span>`;
-      form.reset();
-      setTimeout(() => { statusDiv.innerHTML = ''; }, 5000);
+      
+      console.log('Form submission - Checking verification for email:', email);
+      console.log('Current verifiedEmail:', verifiedEmail);
+      console.log('Email match check:', verifiedEmail === email);
+      
+      // Check if email is already verified
+      if (verifiedEmail === email) {
+        console.log('Email already verified, sending message directly');
+        // Email is verified, send the message
+        sendContactMessage(name, email, subject, message);
+      } else {
+        console.log('Email not verified, sending verification email');
+        // Need to verify email first
+        
+        // Show loading state for verification email
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span id="btnText">Sending verification...</span>';
+        statusDiv.innerHTML = '<span style="color: #3b82f6;">Sending verification code to your email...</span>';
+        
+        sendVerificationEmail(email, name)
+          .then(function(response) {
+            console.log('Verification email sent!', response.status, response.text);
+            statusDiv.innerHTML = `<span style="color: #3b82f6;">Verification code sent to ${email}. Please check your inbox and enter the code below.</span>`;
+            showVerificationInput(email, name, subject, message);
+            
+            // Reset button state after showing verification interface
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> <span id="btnText">Send Message</span>';
+          })
+          .catch(function(error) {
+            console.log('Verification email error details:', error);
+            console.log('Error Status:', error.status);
+            console.log('Error Text:', error.text);
+            
+            let errorMessage = 'Failed to send verification email. ';
+            
+            if (error.status === 400) {
+              errorMessage += 'Verification template not found. Please create the verification template in EmailJS.';
+            } else if (error.status === 401) {
+              errorMessage += 'Authentication failed. Check your EmailJS public key.';
+            } else if (error.status === 403) {
+              errorMessage += 'Access denied. Check EmailJS service permissions.';
+            } else if (error.status === 404) {
+              errorMessage += 'Verification template or service not found.';
+            } else {
+              errorMessage += 'Please check console for details.';
+            }
+            
+            statusDiv.innerHTML = `<span style="color: #ef4444;">${errorMessage}</span>`;
+            
+            // Remove fallback - force verification to work
+            console.log('Verification failed, NOT sending message directly');
+          });
+      }
     });
+    
+    function sendContactMessage(name, email, subject, message) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span id="btnText">Sending...</span>';
+      statusDiv.innerHTML = '<span style="color: #3b82f6;">Sending your message...</span>';
+      
+      const templateParams = {
+        from_name: name,
+        from_email: email,
+        subject: subject,
+        message: message,
+        to_email: 'greeterindia@gmail.com'
+      };
+      
+      emailjs.send('service_greeter', 'template_xvvfl1b', templateParams)
+        .then(function(response) {
+          console.log('SUCCESS!', response.status, response.text);
+          statusDiv.innerHTML = `<span style="color: #10b981;">${translations[currentLang].formSuccess}</span>`;
+          form.reset();
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> <span id="btnText">Send Message</span>';
+          setTimeout(() => { statusDiv.innerHTML = ''; }, 5000);
+        }, function(error) {
+          console.log('EmailJS Error Details:', error);
+          console.log('Error Status:', error.status);
+          console.log('Error Text:', error.text);
+          
+          let errorMessage = 'Failed to send message. ';
+          
+          if (error.status === 401) {
+            errorMessage += 'Authentication failed. Check your public key.';
+          } else if (error.status === 400) {
+            errorMessage += 'Invalid request. Check template variables.';
+          } else if (error.status === 403) {
+            errorMessage += 'Access denied. Check service permissions.';
+          } else if (error.status === 404) {
+            errorMessage += 'Template or service not found.';
+          } else {
+            errorMessage += 'Please check console for details or contact us directly via email.';
+          }
+          
+          statusDiv.innerHTML = `<span style="color: #ef4444;">${errorMessage}</span>`;
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> <span id="btnText">Send Message</span>';
+        });
+    }
+    
+    function showVerificationInput(email, name, subject, message) {
+      // Remove any existing verification section first
+      const existingSection = document.getElementById('verificationSection');
+      if (existingSection) {
+        existingSection.remove();
+      }
+      
+      // Create verification input section
+      const verificationHtml = `
+        <div id="verificationSection" style="margin-top: 20px; padding: 20px; background: var(--card-bg); border-radius: 20px; border: 2px solid rgba(123, 93, 246, 0.2);">
+          <h4 style="margin-bottom: 10px; color: var(--text-primary);">Email Verification Required</h4>
+          <p style="margin-bottom: 15px; color: var(--text-secondary); font-size: 0.9rem;">A 6-digit verification code has been dispatched to <strong>${email}</strong>. Kindly check your inbox and input the code below to proceed with verification:</p>
+          <div style="margin-bottom: 15px;">
+            <input type="text" id="verificationCodeInput" placeholder="Enter 6-digit code" maxlength="6" style="width: 100%; padding: 12px; border: 1px solid var(--card-border); border-radius: 30px; background: var(--input-bg); color: var(--text-primary); margin-bottom: 10px;">
+            <button type="button" id="verifyBtn" style="width: 100%; padding: 12px 20px; background: var(--accent-gradient); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600;">Verify</button>
+          </div>
+          <div id="verificationStatus"></div>
+          <button type="button" id="resendBtn" style="margin-top: 10px; padding: 8px 16px; background: transparent; color: var(--accent-solid); border: 1px solid var(--accent-solid); border-radius: 20px; cursor: pointer; font-size: 0.85rem;">Resend Code</button>
+        </div>
+      `;
+      
+      // Insert verification section after the form
+      form.insertAdjacentHTML('afterend', verificationHtml);
+      
+      // Add event listeners
+      document.getElementById('verifyBtn').addEventListener('click', () => {
+        verifyCode(email, name, subject, message);
+      });
+      
+      document.getElementById('verificationCodeInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          verifyCode(email, name, subject, message);
+        }
+      });
+      
+      document.getElementById('resendBtn').addEventListener('click', () => {
+        resendVerificationCode(email, name);
+      });
+      
+      // Focus on verification input
+      document.getElementById('verificationCodeInput').focus();
+    }
+    
+    function verifyCode(email, name, subject, message) {
+      const inputCode = document.getElementById('verificationCodeInput').value.trim();
+      const verificationStatus = document.getElementById('verificationStatus');
+      
+      if (!inputCode) {
+        verificationStatus.innerHTML = '<span style="color: #ef4444;">Please enter the verification code.</span>';
+        return;
+      }
+      
+      verificationAttempts++;
+      
+      if (validateVerificationCode(inputCode)) {
+        // Verification successful
+        verificationStatus.innerHTML = '<span style="color: #10b981;">✓ Email verified successfully!</span>';
+        verifiedEmail = email;
+        
+        // Remove verification section
+        setTimeout(() => {
+          const verificationSection = document.getElementById('verificationSection');
+          if (verificationSection) {
+            verificationSection.remove();
+          }
+          
+          // Send the actual message
+          sendContactMessage(name, email, subject, message);
+        }, 1000);
+        
+      } else {
+        // Verification failed
+        if (verificationAttempts >= MAX_ATTEMPTS) {
+          verificationStatus.innerHTML = '<span style="color: #ef4444;">Too many failed attempts. Please start over.</span>';
+          setTimeout(() => {
+            const verificationSection = document.getElementById('verificationSection');
+            if (verificationSection) {
+              verificationSection.remove();
+            }
+          }, 3000);
+        } else {
+          const attemptsLeft = MAX_ATTEMPTS - verificationAttempts;
+          verificationStatus.innerHTML = `<span style="color: #ef4444;">Invalid code. ${attemptsLeft} attempts remaining.</span>`;
+        }
+      }
+    }
+    
+    function resendVerificationCode(email, name) {
+      const resendBtn = document.getElementById('resendBtn');
+      const verificationStatus = document.getElementById('verificationStatus');
+      
+      resendBtn.disabled = true;
+      resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+      
+      sendVerificationEmail(email, name)
+        .then(function(response) {
+          console.log('Verification email resent!', response.status, response.text);
+          verificationStatus.innerHTML = '<span style="color: #10b981;">New verification code sent!</span>';
+          resendBtn.disabled = false;
+          resendBtn.innerHTML = 'Resend Code';
+          
+          // Reset attempts
+          verificationAttempts = 0;
+        })
+        .catch(function(error) {
+          console.log('Failed to resend verification email:', error);
+          verificationStatus.innerHTML = '<span style="color: #ef4444;">Failed to resend. Please try again.</span>';
+          resendBtn.disabled = false;
+          resendBtn.innerHTML = 'Resend Code';
+        });
+    }
 
     document.querySelectorAll('.social-row a, .footer-social a').forEach(link => {
-      link.addEventListener('click', (e) => { e.preventDefault(); alert(currentLang === 'en' ? "Social media integration coming soon." : "सोशल मीडिया इंटीग्रेशन जल्द आ रहा है।"); });
+      if (link.id === 'footerInstagram') {
+        link.addEventListener('click', (e) => { e.preventDefault(); window.open('https://instagram.com/thegreeter.in', '_blank'); });
+      } else {
+        link.addEventListener('click', (e) => { e.preventDefault(); alert(currentLang === 'en' ? "Social media integration coming soon." : "सोशल मीडिया इंटीग्रेशन जल्द आ रहा है।"); });
+      }
     });
     document.getElementById('signinBtn').addEventListener('click', () => { alert(currentLang === 'en' ? "Sign in feature coming soon!" : "लॉगिन सुविधा जल्द आ रही है!"); });
 
