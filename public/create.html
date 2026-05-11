@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <script src="assets/config.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
@@ -955,6 +956,7 @@
       }
     }
   </style>
+  <script src="/assets/tracker.js" defer></script>
 </head>
 
 <body>
@@ -1438,7 +1440,7 @@
               "😢💖 इस {festival} पर, मुझे याद आता है कि मैं तुम्हें पाकर कितना/कितनी भाग्यशाली हूँ, {name}। तुम हर उत्सव को सार्थक बनाते हो। मेरा परिवार होने के लिए धन्यवाद। 🕯️ यह त्योहार मुझे याद दिलाता है कि मैं तुम्हें पाकर कितना/कितनी धन्य हूँ। तुम मेरा परिवार, मेरी खुशी, मेरे सब कुछ हो। भगवान हमेशा तुम्हारी रक्षा करें। 🕯️💕",
               "🥹 {name}, त्योहार तुम्हारे बिना अधूरे लगते हैं। तुम्हारी मौजूदगी सबसे बड़ा उपहार है। हैप्पी {festival}, मेरे प्यार। 💌",
               "💕 इस {festival}, मैं तुम्हारी खुशी, सेहत और शांति के लिए प्रार्थना करता/करती हूँ। तुम मेरे दिल का घर हो। 🎇",
-              "✨ प्रभु आपको बहुत आशीर्वाद दें, {name}। आप दुनिया की सारी खुशियों के हकदार हो। हैप्पी {festival}! 🌟"
+              "✨ प्रभु आपको बहुत आशीर्वाद दें, {name}. आप दुनिया की सारी खुशियों के हकदार हो। हैप्पी {festival}! 🌟"
             ],
             happy: [
               "🎉 हैप्पी {festival}, {name}! आपके दिन मिठाइयों, मुस्कानों और जश्न से भरे हों। चलो इसे अब तक का सबसे अच्छा बनाएं! 🥳 आपके दिन रोशनी, हँसी और ढेर सारी मिठाइयों से भरे रहें। चलो ऐसे जश्न मनाएं जैसे कल कोई नहीं! 🎉🎇",
@@ -1700,34 +1702,51 @@
       document.getElementById('shareInstagram')?.addEventListener('click', () => { const msg = translations[currentLang].shareMessages.instaAlert; if (navigator.share) navigator.share({ title: 'Greeter', text: 'Create a magical surprise website!', url: window.location.href }).catch(() => { }); else showModal(msg, window.location.href); });
 
 
-      // Backend API
-      async function callGemini(prompt, retryForCompletion = true) {
-        // Use localhost for local development, Render for production
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const apiUrl = isLocalhost ? '/api/generate' : 'https://wishing-portal.onrender.com/api/generate';
-        
-        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) });
-        if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || `HTTP ${response.status}`); }
-        const data = await response.json();
-        if (data.choices?.[0]?.message?.content) {
-          let content = data.choices[0].message.content.trim();
-          content = content.replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]?\s*/i, '');
-          if (retryForCompletion && !/[.!?।]$/.test(content) && content.length < 300) {
-            const cont = await callGemini(prompt + "\n\n(Please ensure the response is complete and ends with proper punctuation.)", false);
-            return cont;
+      // Backend API - Proxy Integration (Groq via Server)
+      async function callGroq(prompt, retryForCompletion = true) {
+        try {
+          const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+          });
+          
+          if (!response.ok) throw new Error('AI generation failed');
+          const data = await response.json();
+          if (data.choices?.[0]?.message?.content) {
+            return data.choices[0].message.content.trim().replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]?\s*/i, '');
           }
-          return content;
+          throw new Error("Unexpected API response");
+        } catch (err) {
+          console.error('AI Generation Error:', err);
+          throw err;
         }
-        throw new Error("Unexpected API response");
       }
-      async function callGeminiWithRetry(prompt, retries = 2) {
+
+      async function callGroqWithRetry(prompt, retries = 2) {
         let lastError;
         for (let i = 0; i < retries; i++) {
-          try { return await callGemini(prompt); }
+          try { return await callGroq(prompt); }
           catch (e) { lastError = e; if (i < retries - 1) await new Promise(r => setTimeout(r, 2000 * (i + 1))); }
         }
         throw lastError;
       }
+
+      // Test function for debugging
+      async function testGroqAPI() {
+        console.log('Testing Groq API...');
+        try {
+          const result = await callGroq('Hello, can you respond with just "API working"?');
+          console.log('Test result:', result);
+          return result;
+        } catch (error) {
+          console.error('Test failed:', error);
+          return null;
+        }
+      }
+
+      // Add test button to console
+      window.testGroqAPI = testGroqAPI;
 
       function buildStoryPrompt() {
         if (!validateEventWithElement().valid || !validateMoodWithElement().valid || !validateNameWithElement().valid) return null;
@@ -2224,14 +2243,22 @@
           btn.innerHTML = '<div class="loading-spinner-small"></div>';
           btn.disabled = true;
           try {
-            const refined = await callGeminiWithRetry(prompt);
+            const refined = await callGroqWithRetry(prompt);
             targetTextarea.value = refined;
             autoResize(targetTextarea);
             if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
           } catch (error) {
-            let msg = t.aiErrors.genericFail + error.message;
-            if (error.message.includes('quota') || error.message.includes('429')) msg = t.aiErrors.quotaExceeded;
-            showModal(msg);
+            // Silent fallback to pre-written messages when all APIs fail
+            console.error('All APIs failed, falling back to pre-written:', error);
+            const preMessages = getPreWrittenMessages(event, mood, name, relation, age, festival);
+            if (preMessages.length > 0) {
+              const otherTextarea = isWishes ? storyTextarea : wishesTextarea;
+              const avoid = otherTextarea.value.trim();
+              const chosen = getRandomDifferentMessage(preMessages, avoid);
+              targetTextarea.value = chosen;
+              autoResize(targetTextarea);
+              if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
+            }
           } finally {
             btn.innerHTML = originalLabel;
             btn.disabled = false;
@@ -2270,14 +2297,22 @@
         btn.innerHTML = '<div class="loading-spinner-small"></div>';
         btn.disabled = true;
         try {
-          const generated = await callGeminiWithRetry(prompt);
+          const generated = await callGroqWithRetry(prompt);
           targetTextarea.value = generated;
           autoResize(targetTextarea);
           if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
         } catch (error) {
-          let msg = t.aiErrors.genericFail + error.message;
-          if (error.message.includes('quota') || error.message.includes('429')) msg = t.aiErrors.quotaExceeded;
-          showModal(msg);
+          // Silent fallback to pre-written messages when all APIs fail
+          console.error('All APIs failed, falling back to pre-written:', error);
+          const preMessages = getPreWrittenMessages(event, mood, name, relation, age, festival);
+          if (preMessages.length > 0) {
+            const otherTextarea = isWishes ? storyTextarea : wishesTextarea;
+            const avoid = otherTextarea.value.trim();
+            const chosen = getRandomDifferentMessage(preMessages, avoid);
+            targetTextarea.value = chosen;
+            autoResize(targetTextarea);
+            if (isWishes) dirtyFlags.wishes = false; else dirtyFlags.story = false;
+          }
         } finally {
           btn.innerHTML = originalLabel;
           btn.disabled = false;

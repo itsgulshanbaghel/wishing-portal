@@ -1638,10 +1638,10 @@
     <nav class="navbar">
       <a href="../index.html" class="logo">
         <img
-          src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
+          src="../assets/Light_logo.png"
           alt="Greeter Logo" class="logo-light">
         <img
-          src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
+          src="../assets/Dark_logo.png"
           alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
@@ -2077,6 +2077,128 @@
         return getEventData().name || "Loved One";
       }
       let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null;
+
+      // Customization state management
+      function saveCustomizationState(viewId = null) {
+        try {
+          const state = {
+            activeFeatures: Array.from(activeFeatureStates.entries()),
+            customData: Array.from(customData.entries()),
+            timestamp: Date.now(),
+            viewId: viewId
+          };
+          localStorage.setItem('customizationState', JSON.stringify(state));
+          if (viewId) {
+            localStorage.setItem('customizationState_' + viewId, JSON.stringify(state));
+          }
+        } catch (e) {
+          console.error('Failed to save customization state:', e);
+        }
+      }
+
+      function loadCustomizationState() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const viewId = urlParams.get('view');
+          const restoreId = urlParams.get('restore');
+          const stateKey = viewId ? 'customizationState_' + viewId : (restoreId ? 'customizationState_' + restoreId : 'customizationState');
+          const savedState = localStorage.getItem(stateKey);
+          
+          if (savedState) {
+            const state = JSON.parse(savedState);
+            if (state.activeFeatures) {
+              activeFeatureStates = new Map(state.activeFeatures);
+            }
+            if (state.customData) {
+              customData = new Map(state.customData);
+            }
+            return true;
+          }
+        } catch (e) {
+          console.error('Failed to load customization state:', e);
+        }
+        return false;
+      }
+
+      function applyCustomizationToUI() {
+        // Apply active states to toggle rows
+        activeFeatureStates.forEach((active, id) => {
+          const toggleRow = document.getElementById(`toggle-${id}`);
+          if (toggleRow) {
+            if (active) {
+              toggleRow.classList.add('active');
+            } else {
+              toggleRow.classList.remove('active');
+            }
+          }
+        });
+
+        // Apply custom data to form elements
+        customData.forEach((data, id) => {
+          const toggleRow = document.getElementById(`toggle-${id}`);
+          if (!toggleRow) return;
+
+          const customPanel = toggleRow.nextElementSibling;
+          if (!customPanel || !customPanel.classList.contains('custom-panel')) return;
+
+          // Apply text data
+          const textarea = customPanel.querySelector('textarea[data-placeholder-key="text"]');
+          if (textarea && data.text) {
+            textarea.value = data.text;
+          }
+
+          // Apply emoji data
+          const emojiInput = customPanel.querySelector('textarea[data-placeholder-key="emoji"]');
+          if (emojiInput && data.emoji) {
+            emojiInput.value = data.emoji;
+          }
+
+          // Apply image previews
+          if (data.images && data.images.length > 0) {
+            const previewDiv = customPanel.querySelector('.image-preview');
+            if (previewDiv) {
+              updateImagePreview(previewDiv, data.images);
+            }
+          }
+
+          // Apply audio data for magicMusic
+          if (id === 'magicMusic' && data.audio) {
+            const audioNameDiv = customPanel.querySelector('div');
+            if (audioNameDiv) {
+              audioNameDiv.innerText = "Audio: " + (data.audioName || "Uploaded Audio");
+            }
+            const volumeSlider = customPanel.querySelector('input[type="range"]');
+            if (volumeSlider && data.volume !== undefined) {
+              volumeSlider.value = data.volume;
+            }
+          }
+        });
+      }
+
+      function updateImagePreview(previewDiv, images) {
+        previewDiv.innerHTML = '';
+        images.forEach((imgSrc, idx) => {
+          const item = document.createElement("div");
+          item.className = "image-preview-item loaded";
+          const img = document.createElement("img");
+          img.src = imgSrc;
+          const removeBtn = document.createElement("span");
+          removeBtn.className = "remove-image";
+          removeBtn.innerHTML = "×";
+          item.appendChild(img);
+          item.appendChild(removeBtn);
+          previewDiv.appendChild(item);
+        });
+      }
+
+      // Auto-save state when changes occur
+      function autoSaveState() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewId = urlParams.get('view');
+        const restoreId = urlParams.get('restore');
+        const saveId = viewId || restoreId;
+        saveCustomizationState(saveId);
+      }
       function getIframeDocument() { try { const f = document.getElementById("frame"); if (f?.contentDocument) return f.contentDocument; if (f?.contentWindow) return f.contentWindow.document; } catch (e) { } return null; }
       function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); }
       window.escapeHtml = escapeHtml;
@@ -2528,6 +2650,7 @@
             setTimeout(() => overlay.style.opacity = '1', 100);
             // Add styles
             const style = doc.createElement('style');
+            style.setAttribute('data-lock-styles', 'true');
             style.textContent = `
               @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
               @keyframes shake-strong { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
@@ -2548,6 +2671,11 @@
             editModeActive = editModeBeforeLock;
             doc.body.contentEditable = editModeBeforeLock;
             editToggleBtn.classList.toggle('active', editModeBeforeLock);
+            // Clean up any inline styles that might have been applied to prevent color traces
+            doc.body.style = '';
+            // Remove any lock-related styles from head
+            const lockStyles = doc.querySelector('style[data-lock-styles]');
+            if (lockStyles) lockStyles.remove();
           }
         };
         FEATURE_MAP.addImages = FEATURE_MAP.resizableImages;
@@ -2767,7 +2895,7 @@
               bodyStyle.id = 'body-bg-style';
               doc.head.appendChild(bodyStyle);
             }
-            bodyStyle.textContent = 'body { background: #e0e0e0 !important; }';
+            bodyStyle.textContent = 'body { background: transparent !important; }';
             // Add Google Fonts link to iframe
             let fontLink = doc.getElementById('google-fonts-link');
             if (!fontLink) {
@@ -2941,6 +3069,11 @@
             });
           };
         }
+        // Set default iframe src to share.html if not already set
+        const frame = document.getElementById('frame');
+        if (!frame.src) {
+          frame.src = './share.html';
+        }
       }).catch(e => console.error("Magic API error", e));
 
       const FEATURES_CATALOG = [
@@ -3026,6 +3159,7 @@
                       const existing = customData.get("addImages") || {};
                       existing.images = (existing.images || []).concat(urls);
                       customData.set("addImages", existing);
+                      autoSaveState();
                       const nameVal = getUserName();
                       applyFeature("addImages", true, nameVal, "", existing.images);
                     });
@@ -3115,6 +3249,7 @@
                               const audio = doc.getElementById('magic-music-audio');
                               if (audio) audio.volume = ex.volume;
                             }
+                            autoSaveState();
                           };
                           parentRow.parentNode.insertBefore(customPanel, parentRow.nextSibling);
                           let panelVisible = false;
@@ -3177,6 +3312,7 @@
                 customData.set(id, ex);
                 const nameVal = getUserName();
                 refreshFeatureIfActive(id, nameVal, ex.text, ex.images, ex.emoji);
+                autoSaveState();
               });
             }
             if (hasCustom && ["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
@@ -3195,6 +3331,7 @@
                 customData.set(id, ex);
                 const nameVal = getUserName();
                 refreshFeatureIfActive(id, nameVal, ex.text, ex.images, ex.emoji);
+                autoSaveState();
               });
             }
             if (hasCustom && ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "resizableImages"].includes(id)) {
@@ -3266,6 +3403,7 @@
                   if (textarea) existing.text = textarea.value;
                   if (emojiInput) existing.emoji = emojiInput.value;
                   customData.set(id, existing);
+                  autoSaveState();
                   // Update remove buttons for new items
                   const items = previewDiv.querySelectorAll('.image-preview-item');
                   items.forEach((item, idx) => {
@@ -3277,6 +3415,7 @@
                         const ex = customData.get(id) || {};
                         ex.images = ex.images.filter(u => u !== url);
                         customData.set(id, ex);
+                        autoSaveState();
                         item.remove();
                         if (textarea) ex.text = textarea.value;
                         if (emojiInput) ex.emoji = emojiInput.value;
@@ -3337,6 +3476,7 @@
                   const audio = doc.getElementById('magic-music-audio');
                   if (audio) audio.volume = ex.volume;
                 }
+                autoSaveState();
               };
             }
             if (customPanel) { customPanel.style.display = "none"; grid.appendChild(toggleRow); grid.appendChild(customPanel); }
@@ -3383,6 +3523,7 @@
               }
               if (openPanelId && openPanelId !== customPanel) closeOpenPanel();
               adjustIframePadding(activeFeatureStates);
+              autoSaveState();
             };
           });
           section.appendChild(grid);
@@ -3506,6 +3647,15 @@
       renderCategoriesWithLanguage(translations[currentLang]);
       loadSelectedTemplate();
 
+      // Load and apply saved customization state
+      if (loadCustomizationState()) {
+        // Apply state after a short delay to ensure UI is ready
+        setTimeout(() => {
+          applyCustomizationToUI();
+          refreshAll();
+        }, 100);
+      }
+
       // Message listener for dropped images and errors
       window.addEventListener('message', (event) => {
         if (event.data.type === 'uploadError') {
@@ -3515,7 +3665,8 @@
           const existing = customData.get("addImages") || {};
           existing.images = (existing.images || []).concat(urls);
           customData.set("addImages", existing);
-          // Activate the addImages feature if not active
+          autoSaveState();
+          // Activate addImages feature if not active
           if (!activeFeatureStates.get("addImages")) {
             const rows = document.querySelectorAll('.toggle-row');
             rows.forEach(row => {
@@ -3699,7 +3850,7 @@
 </style>
 `;
           const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";localStorage.setItem("greeter_lang",lang);localStorage.setItem("customizer_lang",lang);var urlParams=new URLSearchParams(window.location.search);if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);window.history.replaceState({},"",newUrl);}})();</scr' + 'ipt>';
-          const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } window.addEventListener("load",function(){ setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }, 10); }); })();</scr' + 'ipt>';
+          const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } // Hide content immediately to prevent visibility before features load document.documentElement.style.visibility = "hidden"; document.body.style.visibility = "hidden"; document.body.style.overflow = "hidden"; window.addEventListener("load",function(){ setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }, 10); }); })();</scr' + 'ipt>';
 
           const ctaHtml = `
 <style>
@@ -3768,10 +3919,17 @@
           ctaContainer.innerHTML = ctaHtml;
           container.appendChild(ctaContainer);
 
+          const urlParams = new URLSearchParams(window.location.search);
+          const localEventData = getEventData();
+          const storedTemplate = localStorage.getItem("selectedTemplate") || "";
+          const templateFile = storedTemplate.split('/').pop() || 'birthday1';
+
           const config = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
             customData: Array.from(customData.entries()),
-            userName: getUserName()
+            userName: getUserName(),
+            eventType: localEventData.event || urlParams.get('event') || 'birthday',
+            templateName: templateFile.replace('.html', '') || urlParams.get('template') || 'birthday1'
           };
 
           const magicRuntime = `
@@ -3819,22 +3977,46 @@
         return;
       }
       const lockActive = activeFeatureStates.get('lock');
+      const curtainActive = activeFeatureStates.get('curtainReveal');
+      
+      // Show content only after protective features are applied
+      const showContent = () => {
+        document.documentElement.style.visibility = "visible";
+        document.body.style.visibility = "visible";
+        document.body.style.overflow = "";
+      };
+      
       if (lockActive) {
         const data = customData.get('lock') || {};
         window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-
+        // Content remains hidden until lock is unlocked
         const handler = () => {
           window.removeEventListener('lockUnlocked', handler);
-          // Respect toggle order for other features
+          // Apply other features after unlock
           for (const [id, active] of activeFeatureStates.entries()) {
             if (id !== 'lock' && active) {
               const data = customData.get(id) || {};
               window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
             }
           }
+          showContent();
         };
         window.addEventListener('lockUnlocked', handler);
+      } else if (curtainActive) {
+        // Apply curtain reveal first, then show content
+        const data = customData.get('curtainReveal') || {};
+        window.applyFeature('curtainReveal', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+        // Apply other features
+        for (const [id, active] of activeFeatureStates.entries()) {
+          if (id !== 'curtainReveal' && active) {
+            const data = customData.get(id) || {};
+            window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          }
+        }
+        // Show content after curtain is in place
+        setTimeout(showContent, 100);
       } else {
+        // No protective features, show content immediately
         // Respect toggle order by iterating over the Map
         for (const [id, active] of activeFeatureStates.entries()) {
           if (active) {
@@ -3842,6 +4024,7 @@
             window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
           }
         }
+        showContent();
       }
     };
     function initMagic() {
@@ -3870,7 +4053,15 @@
         console.warn('No magicRaw provided, features may not work');
       }
     }
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMagic); } else { initMagic(); }
+    // Ensure features are applied immediately to prevent content visibility before lock/curtain
+    if (document.readyState === 'loading') { 
+      document.addEventListener('DOMContentLoaded', () => {
+        // Apply features immediately without delay
+        setTimeout(initMagic, 0);
+      }); 
+    } else { 
+      initMagic(); 
+    }
   } catch(e) {
     console.error('Magic runtime initialization failed:', e);
   }
@@ -3880,6 +4071,16 @@
           const runtimeEl = doc2.createElement('div');
           runtimeEl.innerHTML = magicRuntime;
           container.insertBefore(runtimeEl, container.firstChild);
+
+          // Inject analytics tracker into the generated HTML
+          const configScript = doc2.createElement('script');
+          configScript.src = '/assets/config.js';
+          doc2.head.appendChild(configScript);
+
+          const trackerScript = doc2.createElement('script');
+          trackerScript.src = '/assets/tracker.js';
+          trackerScript.defer = true;
+          doc2.head.appendChild(trackerScript);
 
           html = doc2.documentElement.outerHTML;
 
@@ -3920,6 +4121,8 @@
             })
             .then(data => {
               if (data.id) {
+                // Save customization state before navigating
+                saveCustomizationState(data.id);
                 window.location.href = `share.html?view=${data.id}`;
               } else {
                 throw new Error('No ID returned');
@@ -4111,6 +4314,7 @@
       document.querySelectorAll('.nav-links a').forEach(link => link.addEventListener('click', closeMobileMenu));
     })();
   </script>
+  <script src="/assets/tracker.js" defer></script>
 </body>
 
 </html>

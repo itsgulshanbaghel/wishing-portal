@@ -13,6 +13,7 @@
     href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 
   <style>
     /* ----- CSS VARIABLES (matches main site) ----- */
@@ -352,35 +353,21 @@
       background: var(--accent-gradient);
       border: none;
       color: white;
-      width: 42px;
-      height: 42px;
+      padding: 8px 16px;
       border-radius: 40px;
       cursor: pointer;
-      font-size: 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
       transition: 0.2s;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .copy-btn:hover {
       transform: scale(1.05);
       filter: brightness(1.1);
-    }
-
-    .native-share-btn {
-      background: var(--accent-gradient);
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 60px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      width: 100%;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
     }
 
     /* ---------- SHARE ICONS (identical to index.html share popup) ---------- */
@@ -468,8 +455,351 @@
       color: white;
     }
 
+    .share-icon-item[data-platform="more"] .share-icon-circle {
+      background: var(--accent-gradient);
+      color: white;
+    }
+
     .share-icon-item:hover .share-icon-circle {
       transform: scale(1.05);
+    }
+
+    /* ----- SHARE CONTENT LAYOUT ----- */
+    .share-content-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    /* ----- LEFT SECTION ----- */
+    .left-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ----- SHARE HEADING ----- */
+    .share-heading {
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin: 0 0 4px 0;
+      text-align: left;
+    }
+
+    /* ----- QR CODE SECTION ----- */
+    .qr-code-section {
+      flex-shrink: 0;
+      text-align: center;
+      width: 260px;
+      margin-top: 20px;
+    }
+
+    .qr-code-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+    }
+
+    /* ----- Modal (Instagram share) ----- */
+    .custom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.2s, opacity 0.2s;
+    }
+
+    .custom-modal.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* ----- QR Code Fullscreen Modal ----- */
+    .qr-fullscreen-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 10002;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.3s, opacity 0.3s;
+      cursor: pointer;
+    }
+
+    .qr-fullscreen-modal.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .qr-fullscreen-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .qr-fullscreen-image {
+      width: auto;
+      height: auto;
+      max-width: 70vw;
+      max-height: 60vh;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      background: white;
+      padding: 20px;
+    }
+
+    .qr-fullscreen-image canvas,
+    .qr-fullscreen-image svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      border-radius: 12px;
+    }
+
+    .qr-fullscreen-close {
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      background: var(--accent-gradient);
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+    }
+
+    .qr-fullscreen-close:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .qr-fullscreen-info {
+      color: white;
+      text-align: center;
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-top: 10px;
+    }
+
+    #qrCodeCanvas {
+      border-radius: 24px;
+      width: 100%;
+      max-width: 250px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      margin: 0 auto;
+      overflow: hidden;
+      padding: 10px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      /* Add some internal padding to ensure QR doesn't touch borders */
+    }
+
+    #qrCodeCanvas:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    /* QR Code Scanning Animation */
+    .qr-scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 150%;
+      height: 4px;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.1) 40%,
+        rgba(255, 255, 255, 0.8) 50%,
+        rgba(255, 255, 255, 0.1) 60%,
+        transparent 100%
+      );
+      transform: rotate(-45deg) translate(-50%, -50%);
+      transform-origin: top left;
+      animation: slantScan 2s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+    }
+
+    .qr-scan-line::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: shinePulse 2s ease-in-out infinite;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    }
+
+    @keyframes slantScan {
+      0% {
+        top: -100%;
+        left: -100%;
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        top: 100%;
+        left: 100%;
+        opacity: 0;
+      }
+    }
+
+    @keyframes shinePulse {
+      0%, 100% {
+        transform: translate(-50%, -50%) scale(0.6);
+        opacity: 0.6;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+      }
+    }
+
+    /* Additional scanning effect for corners */
+    .qr-scan-corners {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 2px solid transparent;
+      border-radius: 24px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .qr-scan-corners::before,
+    .qr-scan-corners::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 3px solid;
+      border-color: transparent;
+    }
+
+    .qr-scan-corners::before {
+      top: 5px;
+      left: 5px;
+      border-top-color: #7b5df6;
+      border-left-color: #7b5df6;
+      animation: cornerPulse 2s ease-in-out infinite;
+    }
+
+    .qr-scan-corners::after {
+      bottom: 5px;
+      right: 5px;
+      border-bottom-color: #ff7a2f;
+      border-right-color: #ff7a2f;
+      animation: cornerPulse 2s ease-in-out infinite 0.5s;
+    }
+
+    @keyframes cornerPulse {
+      0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.9);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+    }
+
+    #qrCodeCanvas canvas,
+    #qrCodeCanvas svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    .download-qr-btn {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .download-qr-btn:hover {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+
+    .download-qr-btn.secondary {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1.5px solid var(--card-border);
+      margin-top: -8px;
+    }
+
+    .download-qr-btn.secondary:hover {
+      background: var(--card-bg);
+      border-color: var(--accent-solid);
     }
 
     .action-buttons {
@@ -810,21 +1140,48 @@
       }
 
       h1 {
-        font-size: clamp(1.6rem, 6vw, 2.2rem);
+        font-size: clamp(1.4rem, 5vw, 2.0rem);
       }
 
       .sub {
         font-size: 0.95rem;
       }
 
+      .share-content-layout {
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .left-section {
+        width: 100%;
+        align-items: center;
+      }
+
       .share-icons-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 10px;
+        width: 100%;
+      }
+
+      .qr-code-section {
+        width: 180px;
+      }
+
+      .qr-code-container {
+        padding: 16px;
+      }
+
+      #qrCodeCanvas {
+        width: 100%;
+        max-width: 180px;
+        height: auto;
       }
 
       .action-buttons {
-        flex-direction: column;
+        flex-direction: row;
         gap: 12px;
+        justify-content: center;
       }
 
       .footer-inner {
@@ -840,6 +1197,12 @@
 
       .social-icons {
         justify-content: center;
+      }
+
+      .copy-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        gap: 4px;
       }
     }
 
@@ -910,6 +1273,7 @@
       }
     }
   </style>
+  <script src="/assets/tracker.js" defer></script>
 </head>
 
 <body>
@@ -918,12 +1282,8 @@
     <!-- ========== NAVBAR ========== -->
     <nav class="navbar">
       <a href="../index.html" class="logo">
-        <img
-          src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
-          alt="Greeter Logo" class="logo-light">
-        <img
-          src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
-          alt="Greeter Logo" class="logo-dark">
+        <img src="../assets/Light_logo.png" alt="Greeter Logo" class="logo-light">
+        <img src="../assets/Dark_logo.png" alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
         <a href="../index.html" id="navHome">Home</a>
@@ -948,45 +1308,65 @@
 
       <div class="link-box">
         <input type="text" id="shareLinkInput" readonly value="Loading...">
-        <button class="copy-btn" id="copyLinkBtn"><i class="far fa-copy"></i></button>
+        <button class="copy-btn" id="copyLinkBtn"><i class="far fa-copy"></i> Copy</button>
       </div>
 
-      <button class="native-share-btn" id="nativeShareBtn" style="display: none;">
-        <i class="fas fa-share-alt"></i> <span id="nativeShareText">Share via device apps</span>
-      </button>
+      <!-- Social media and QR code layout -->
+      <div class="share-content-layout">
+        <!-- Left side: Social media grid and action buttons -->
+        <div class="left-section">
+          <!-- Share heading -->
+          <h3 class="share-heading" id="shareHeading">Share on</h3>
 
-      <!-- Social media grid -->
-      <div class="share-icons-grid">
-        <div class="share-icon-item" data-platform="facebook">
-          <div class="share-icon-circle"><i class="fab fa-facebook-f"></i></div><span>Facebook</span>
-        </div>
-        <div class="share-icon-item" data-platform="twitter">
-          <div class="share-icon-circle"><i class="fab fa-twitter"></i></div><span>Twitter</span>
-        </div>
-        <div class="share-icon-item" data-platform="whatsapp">
-          <div class="share-icon-circle"><i class="fab fa-whatsapp"></i></div><span>WhatsApp</span>
-        </div>
-        <div class="share-icon-item" data-platform="linkedin">
-          <div class="share-icon-circle"><i class="fab fa-linkedin-in"></i></div><span>LinkedIn</span>
-        </div>
-        <div class="share-icon-item" data-platform="telegram">
-          <div class="share-icon-circle"><i class="fab fa-telegram-plane"></i></div><span>Telegram</span>
-        </div>
-        <div class="share-icon-item" data-platform="email">
-          <div class="share-icon-circle"><i class="fas fa-envelope"></i></div><span>Email</span>
-        </div>
-        <div class="share-icon-item" data-platform="sms">
-          <div class="share-icon-circle"><i class="fas fa-sms"></i></div><span>SMS</span>
-        </div>
-        <div class="share-icon-item" data-platform="instagram">
-          <div class="share-icon-circle"><i class="fab fa-instagram"></i></div><span>Instagram</span>
-        </div>
-      </div>
+          <!-- Social media grid -->
+          <div class="share-icons-grid">
+            <div class="share-icon-item" data-platform="facebook">
+              <div class="share-icon-circle"><i class="fab fa-facebook-f"></i></div><span>Facebook</span>
+            </div>
+            <div class="share-icon-item" data-platform="twitter">
+              <div class="share-icon-circle"><i class="fab fa-twitter"></i></div><span>Twitter</span>
+            </div>
+            <div class="share-icon-item" data-platform="whatsapp">
+              <div class="share-icon-circle"><i class="fab fa-whatsapp"></i></div><span>WhatsApp</span>
+            </div>
+            <div class="share-icon-item" data-platform="telegram">
+              <div class="share-icon-circle"><i class="fab fa-telegram-plane"></i></div><span>Telegram</span>
+            </div>
+            <div class="share-icon-item" data-platform="email">
+              <div class="share-icon-circle"><i class="fas fa-envelope"></i></div><span>Email</span>
+            </div>
+            <div class="share-icon-item" data-platform="instagram">
+              <div class="share-icon-circle"><i class="fab fa-instagram"></i></div><span>Instagram</span>
+            </div>
+            <div class="share-icon-item" data-platform="more">
+              <div class="share-icon-circle"><i class="fas fa-share-alt"></i></div><span>More</span>
+            </div>
+          </div>
 
-      <div class="action-buttons">
-        <button class="secondary-btn" id="openTabBtn"><i class="fas fa-external-link-alt"></i> Open in new tab</button>
-        <button class="secondary-btn" id="backToCustomizeBtn"><i class="fas fa-paint-brush"></i> Back to
-          customize</button>
+          <!-- Action buttons -->
+          <div class="action-buttons">
+            <button class="secondary-btn" id="openTabBtn"><i class="fas fa-external-link-alt"></i> Open in new
+              tab</button>
+            <button class="secondary-btn" id="backToCustomizeBtn"><i class="fas fa-paint-brush"></i> Back to
+              customize</button>
+          </div>
+        </div>
+
+        <!-- QR Code section -->
+        <div class="qr-code-section" id="qrCodeSection" style="display: block;">
+          <div class="qr-code-container">
+            <div id="qrCodeCanvas">
+              <div class="qr-scan-line"></div>
+              <div class="qr-scan-corners"></div>
+            </div>
+            <button class="download-qr-btn" id="downloadQrBtn">
+              <i class="fas fa-download"></i> <span id="downloadQrText">Download QR Code</span>
+            </button>
+            <button class="download-qr-btn secondary" id="shareQrBtn">
+              <i class="fas fa-share-alt"></i> <span id="shareQrText">Share QR Code</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1012,17 +1392,24 @@
       </div>
     </div>
 
+    <!-- QR Code Fullscreen Modal -->
+    <div class="qr-fullscreen-modal" id="qrFullscreenModal">
+      <div class="qr-fullscreen-content">
+        <div class="qr-fullscreen-image" id="qrFullscreenImage"></div>
+        <button class="qr-fullscreen-close" id="qrFullscreenClose">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="qr-fullscreen-info"></div>
+      </div>
+    </div>
+
     <!-- ========== FOOTER ========== -->
     <footer class="footer">
       <div class="footer-inner">
         <div class="footer-brand">
           <a href="../index.html" class="logo" style="margin-bottom: 16px; display: inline-flex;">
-            <img
-              src="https://www.dropbox.com/scl/fi/af580bi4284735hg55slo/Light_logo.png?rlkey=bmsousbkqbh5hqr5ovm137qx6&st=tlcajwiw&dl=1"
-              alt="Greeter Logo" class="logo-light">
-            <img
-              src="https://www.dropbox.com/scl/fi/magk4515bsznqw471bbaw/Dark_logo.png?rlkey=40tyootep3jj27msfnp4fghw7&st=8olrvzhp&dl=1"
-              alt="Greeter Logo" class="logo-dark">
+            <img src="../assets/Light_logo.png" alt="Greeter Logo" class="logo-light">
+            <img src="../assets/Dark_logo.png" alt="Greeter Logo" class="logo-dark">
           </a>
           <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
             and festivals — no coding needed.</p>
@@ -1051,7 +1438,7 @@
           <h4 id="followTitle">Follow us</h4>
           <div class="social-icons">
             <a href="#" id="footerFacebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" id="footerInstagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://instagram.com/thegreeter.in" id="footerInstagram"><i class="fab fa-instagram"></i></a>
             <a href="#" id="footerWhatsApp"><i class="fab fa-whatsapp"></i></a>
             <a href="#" id="footerTwitter"><i class="fab fa-twitter"></i></a>
           </div>
@@ -1089,17 +1476,6 @@
         }).catch(() => alert('Could not copy link'));
       });
 
-      // Native share
-      const nativeShareBtn = document.getElementById('nativeShareBtn');
-      if (navigator.share) nativeShareBtn.style.display = 'flex';
-      nativeShareBtn.addEventListener('click', () => {
-        if (!fullLink) return;
-        navigator.share({
-          title: 'Greeter',
-          text: currentLang === 'en' ? 'Check out this magical surprise website!' : 'यह जादुई सरप्राइज़ वेबसाइट देखें!',
-          url: fullLink
-        }).catch(() => { });
-      });
 
       // Social share function
       function shareOn(platform) {
@@ -1111,11 +1487,18 @@
           case 'whatsapp': shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`; break;
           case 'facebook': shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
           case 'twitter': shareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}`; break;
-          case 'linkedin': shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`; break;
           case 'telegram': shareUrl = `https://t.me/share/url?url=${url}&text=${title}`; break;
           case 'email': shareUrl = `mailto:?subject=${title}&body=${url}`; break;
-          case 'sms': shareUrl = `sms:?body=${title}%20${url}`; break;
           case 'instagram': showInstagramModal(fullLink); return;
+          case 'more':
+            if (navigator.share) {
+              navigator.share({
+                title: 'Greeter',
+                text: currentLang === 'en' ? 'Check out this magical surprise website!' : 'यह जादुई सरप्राइज़ वेबसाइट देखें!',
+                url: fullLink
+              }).catch(() => { });
+            }
+            return;
         }
         if (shareUrl) window.open(shareUrl, '_blank');
       }
@@ -1131,7 +1514,7 @@
       document.getElementById('instagramModalClose').addEventListener('click', closeInstagramModal);
       document.getElementById('instagramModalOk').addEventListener('click', closeInstagramModal);
       document.getElementById('instagramModalRedirect').addEventListener('click', () => {
-        window.open('https://instagram.com', '_blank');
+        window.open('https://instagram.com/thegreeter.in', '_blank');
         closeInstagramModal();
       });
       document.getElementById('instagramModalCopy').addEventListener('click', function () {
@@ -1150,7 +1533,16 @@
       });
 
       document.getElementById('openTabBtn').addEventListener('click', () => { if (fullLink) window.open(fullLink, '_blank'); });
-      document.getElementById('backToCustomizeBtn').addEventListener('click', () => { window.location.href = './customize.html'; });
+      document.getElementById('backToCustomizeBtn').addEventListener('click', () => { 
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewId = urlParams.get('view');
+        if (viewId) {
+          // Load the customization state for this view but don't show in shared view mode
+          window.location.href = `./customize.html?restore=${viewId}`;
+        } else {
+          window.location.href = './customize.html';
+        }
+      });
 
       // ========== DYNAMIC TITLE WITH ORIGINAL EMOJIS ==========
       // Helper: wraps every emoji (including ✨) in <span class="original-emoji"> so they keep original color
@@ -1172,7 +1564,9 @@
           signinAlert: "Sign in feature coming soon!",
           title: "✨ Your Website is Ready! ✨",
           sub: "Share this unique link and let the surprise unfold",
-          nativeShare: "Share via device apps",
+          shareOn: "Share on",
+          downloadQr: "Download QR Code",
+          shareQr: "Share QR Code",
           copyAlert: "Link copied to clipboard!"
         },
         hi: {
@@ -1184,7 +1578,9 @@
           signinAlert: "लॉगिन सुविधा जल्द आ रही है!",
           title: "✨ आपकी वेबसाइट तैयार है! ✨",
           sub: "इस अनोखे लिंक को शेयर करें और सरप्राइज़ का आनंद लें",
-          nativeShare: "दूसरे ऐप्स से शेयर करें",
+          shareOn: "शेयर करें",
+          downloadQr: "QR कोड डाउनलोड करें",
+          shareQr: "QR कोड शेयर करें",
           copyAlert: "लिंक कॉपी हो गया!"
         }
       };
@@ -1213,7 +1609,9 @@
         document.getElementById('copyrightText').innerText = t.copyright;
         // Share card strings
         document.getElementById('subText').innerText = t.sub;
-        document.getElementById('nativeShareText').innerText = t.nativeShare;
+        document.getElementById('shareHeading').innerText = t.shareOn;
+        document.getElementById('downloadQrText').innerText = t.downloadQr;
+        document.getElementById('shareQrText').innerText = t.shareQr;
         document.querySelector('#langToggleBtn span').innerText = lang === 'en' ? 'हिन्दी' : 'English';
 
         // *** CRITICAL: Update title HTML so emojis keep original color ***
@@ -1246,6 +1644,223 @@
       mobileBtn.addEventListener('click', (e) => { e.stopPropagation(); navLinksDiv.classList.toggle('show'); const icon = mobileBtn.querySelector('i'); if (navLinksDiv.classList.contains('show')) icon.classList.replace('fa-bars', 'fa-times'); else icon.classList.replace('fa-times', 'fa-bars'); });
       document.addEventListener('click', (e) => { if (!navLinksDiv.contains(e.target) && !mobileBtn.contains(e.target) && navLinksDiv.classList.contains('show')) { navLinksDiv.classList.remove('show'); mobileBtn.querySelector('i').classList.replace('fa-times', 'fa-bars'); } });
       document.getElementById('signinBtn').addEventListener('click', () => alert(translations[currentLang].signinAlert));
+
+      // ----- QR Code Generation (New Styled Version) -----
+      const qrCodeSection = document.getElementById('qrCodeSection');
+      const qrCodeContainer = document.getElementById('qrCodeCanvas');
+      const downloadQrBtn = document.getElementById('downloadQrBtn');
+      const qrFullscreenModal = document.getElementById('qrFullscreenModal');
+      const qrFullscreenImage = document.getElementById('qrFullscreenImage');
+      const qrFullscreenClose = document.getElementById('qrFullscreenClose');
+      let qrCode;
+
+      function generateQRCode() {
+        console.log('=== generateQRCode (Styled) START ===');
+
+        if (!fullLink) {
+          qrCodeSection.style.display = 'none';
+          return;
+        }
+
+        // Clear QR container but keep animation elements
+        const scanLine = qrCodeContainer.querySelector('.qr-scan-line');
+        const scanCorners = qrCodeContainer.querySelector('.qr-scan-corners');
+        qrCodeContainer.innerHTML = '';
+
+        qrCode = new QRCodeStyling({
+          width: 1200,
+          height: 1200,
+          margin: 40,
+          type: "canvas",
+          data: fullLink,
+          image: "../assets/CLOGO.jpg",
+          dotsOptions: {
+            color: "#4267b2",
+            type: "rounded",
+            gradient: {
+              type: "linear",
+              rotation: 45,
+              colorStops: [
+                { offset: 0, color: "#ff0080" }, // Pink
+                { offset: 0.33, color: "#ff7a2f" }, // Orange
+                { offset: 0.66, color: "#7b5df6" }, // Purple
+                { offset: 1, color: "#00d2ff" }  // Cyan
+              ]
+            }
+          },
+          backgroundOptions: {
+            color: "#ffffff",
+          },
+          imageOptions: {
+            crossOrigin: "anonymous",
+            margin: 30,
+            imageSize: 0.45,
+            hideBackgroundDots: true
+          },
+          cornersSquareOptions: {
+            type: "extra-rounded",
+            gradient: {
+              type: "linear",
+              rotation: 45,
+              colorStops: [
+                { offset: 0, color: "#ff0080" },
+                { offset: 1, color: "#ff7a2f" }
+              ]
+            }
+          },
+          cornersDotOptions: {
+            type: "dot",
+            gradient: {
+              type: "linear",
+              rotation: 45,
+              colorStops: [
+                { offset: 0, color: "#ff0080" },
+                { offset: 1, color: "#7b5df6" }
+              ]
+            }
+          },
+          qrOptions: {
+            errorCorrectionLevel: "H"
+          }
+        });
+
+        qrCode.append(qrCodeContainer);
+
+        // Re-add animation elements after QR code is generated
+        setTimeout(() => {
+          if (scanLine) qrCodeContainer.appendChild(scanLine);
+          if (scanCorners) qrCodeContainer.appendChild(scanCorners);
+        }, 100);
+      }
+
+      // Generate QR code when link is available
+      if (viewId) {
+        setTimeout(generateQRCode, 500);
+      } else {
+        fullLink = 'https://greeter.com';
+        setTimeout(generateQRCode, 500);
+      }
+
+      // ----- QR Code Fullscreen Modal -----
+      function showQRFullscreen() {
+        if (!qrCode) return;
+
+        // Clear previous content
+        qrFullscreenImage.innerHTML = '';
+
+        // Get the original HD canvas from the QR code (1200x1200)
+        const originalCanvas = qrCodeContainer.querySelector('canvas');
+        
+        if (originalCanvas) {
+          // Create a new canvas to show the original HD QR code at appropriate size
+          const displayCanvas = document.createElement('canvas');
+          const ctx = displayCanvas.getContext('2d');
+          
+          // Calculate display size (responsive but maintain quality)
+          const maxSize = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.7, 800);
+          displayCanvas.width = maxSize;
+          displayCanvas.height = maxSize;
+          
+          // The original QR code is 1200x1200, draw it at display size
+          // This maintains HD quality since we're scaling down from HD, not up from SD
+          ctx.drawImage(originalCanvas, 0, 0, 1200, 1200, 0, 0, maxSize, maxSize);
+          
+          qrFullscreenImage.appendChild(displayCanvas);
+          
+          // Show modal immediately
+          qrFullscreenModal.classList.add('show');
+          document.body.style.overflow = 'hidden';
+        } else {
+          // Fallback if canvas not found (shouldn't happen with proper generation)
+          alert('QR code not ready. Please try again.');
+        }
+      }
+
+      function hideQRFullscreen() {
+        qrFullscreenModal.classList.remove('show');
+        document.body.style.overflow = ''; // Restore scrolling
+        qrFullscreenImage.innerHTML = ''; // Clear content
+      }
+
+      // Add click event to QR code container
+      qrCodeContainer.addEventListener('click', showQRFullscreen);
+
+      // Close modal events
+      qrFullscreenClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hideQRFullscreen();
+      });
+
+      qrFullscreenModal.addEventListener('click', (e) => {
+        if (e.target === qrFullscreenModal) {
+          hideQRFullscreen();
+        }
+      });
+
+      // Close on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && qrFullscreenModal.classList.contains('show')) {
+          hideQRFullscreen();
+        }
+      });
+
+      // ----- Download QR Code -----
+      downloadQrBtn.addEventListener('click', () => {
+        if (qrCode) {
+          qrCode.download({ name: "greeter-qr-code", extension: "png", width: 2000, height: 2000 });
+        }
+      });
+
+      // ----- Share QR Code -----
+      const shareQrBtn = document.getElementById('shareQrBtn');
+      shareQrBtn.addEventListener('click', async () => {
+        if (!qrCode) return;
+
+        try {
+          // Get the canvas from the QR code container
+          const canvas = qrCodeContainer.querySelector('canvas');
+          if (!canvas) {
+            alert('QR code canvas not found.');
+            return;
+          }
+
+          // Convert canvas to blob
+          const blob = await new Promise((resolve) => {
+            canvas.toBlob(resolve, 'image/png');
+          });
+
+          if (!blob) {
+            alert('Failed to generate QR image blob.');
+            return;
+          }
+
+          const file = new File([blob], 'greeter-qr-code.png', { type: 'image/png' });
+
+          // Try to share the file directly
+          await navigator.share({
+            files: [file],
+            title: 'Greeter QR Code',
+            text: 'Scan this QR code to see my magical surprise!'
+          });
+        } catch (err) {
+          console.error('File sharing failed:', err);
+          try {
+            // Fallback: share just the link
+            await navigator.share({
+              title: 'Greeter Surprise',
+              text: 'Check out this magical surprise!',
+              url: fullLink
+            });
+          } catch (err2) {
+            console.error('Link sharing failed:', err2);
+            // Final fallback: download the QR code
+            qrCode.download({ name: "greeter-qr-code", extension: "png" });
+            alert(currentLang === 'en'
+              ? 'QR Code sharing not supported on your device. QR code has been downloaded instead.You can share it manually'
+              : 'इस डिवाइस पर QR कोड शेयरिंग उपलब्ध नहीं है। इसके बजाय QR कोड डाउनलोड किया गया है। आप इसे खुद से शेयर कर सकते हैं।');
+          }
+        }
+      });
 
       // Footer social share (same as index)
       document.getElementById('footerFacebook')?.addEventListener('click', (e) => { e.preventDefault(); window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`); });

@@ -1,5 +1,10 @@
 node_modules/
 .env
+.env.*
+data/*.json
 uploads/
 configs/
 scratch/
+.firebase/
+firebase-debug.log*
+.DS_Store

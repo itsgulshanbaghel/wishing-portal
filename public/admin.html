@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="assets/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard · Greeter Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo"><i class="fas fa-shield-halved"></i></div>
+      <h1 class="login-title">Admin Access</h1>
+      <p class="login-sub">Enter your credentials to access the analytics dashboard</p>
+      <form id="loginForm" autocomplete="off">
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" id="loginUser" placeholder="Username" required autocomplete="off">
+        </div>
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="loginPass" placeholder="Password" required autocomplete="off">
+        </div>
+        <button type="submit" class="login-btn"><i class="fas fa-arrow-right-to-bracket"></i> Sign In</button>
+        <p id="loginError" class="login-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardScreen" class="dashboard-screen" style="display:none;">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo"><i class="fas fa-chart-line"></i> <span>Greeter</span></div>
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="overview"><i class="fas fa-gauge-high"></i> Overview</a>
+        <a href="#" class="nav-item" data-section="traffic"><i class="fas fa-chart-area"></i> Traffic</a>
+        <a href="#" class="nav-item" data-section="websites"><i class="fas fa-globe"></i> Websites</a>
+        <a href="#" class="nav-item" data-section="audience"><i class="fas fa-users"></i> Audience</a>
+        <a href="#" class="nav-item" data-section="behavior"><i class="fas fa-mouse-pointer"></i> Behavior</a>
+        <a href="#" class="nav-item" data-section="realtime"><i class="fas fa-bolt"></i> Real-time</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-btn"><i class="fas fa-right-from-bracket"></i> Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+        <h2 class="topbar-title" id="sectionTitle">Overview</h2>
+        <div class="topbar-actions">
+          <select id="periodSelector" class="period-select">
+            <option value="0">Today</option>
+            <option value="3">Last 3 Days</option>
+            <option value="7" selected>Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="-1">All Time</option>
+          </select>
+          <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+          <span class="last-updated" id="lastUpdated">Last updated: --</span>
+        </div>
+      </header>
+
+      <div class="content-area" id="contentArea">
+        <!-- OVERVIEW SECTION -->
+        <section id="sec-overview" class="section active">
+          <div class="kpi-grid">
+            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-eye"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTotalViews">--</span><span class="kpi-label">Total Page Views</span></div></div>
+            <div class="kpi-card accent-orange"><div class="kpi-icon"><i class="fas fa-globe"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTotalWebsites">--</span><span class="kpi-label">Websites Created</span></div></div>
+            <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fas fa-users"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiWeekVisitors">--</span><span class="kpi-label">Unique Visitors (7d)</span></div></div>
+            <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fas fa-chart-line"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayViews">--</span><span class="kpi-label">Today's Views</span></div></div>
+            <div class="kpi-card accent-pink"><div class="kpi-icon"><i class="fas fa-rocket"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayWebsites">--</span><span class="kpi-label">Created Today</span></div></div>
+            <div class="kpi-card accent-gold"><div class="kpi-icon"><i class="fas fa-binoculars"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiWebsiteViews">--</span><span class="kpi-label">Website Views</span></div></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card wide"><h3><i class="fas fa-chart-area"></i> Traffic Trend (30 Days)</h3><canvas id="trendChart"></canvas></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Devices</h3><canvas id="deviceChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-compass"></i> Browsers</h3><canvas id="browserChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-desktop"></i> OS</h3><canvas id="osChart"></canvas></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-clock"></i> Hourly Activity</h3><canvas id="hourlyChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-tags"></i> Event Types</h3><canvas id="eventTypeChart"></canvas></div>
+          </div>
+          <!-- Recent Activity -->
+          <div class="table-card">
+            <h3><i class="fas fa-stream"></i> Recent Activity</h3>
+            <div class="table-scroll"><table id="activityTable"><thead><tr><th>Time</th><th>Type</th><th>Details</th><th>Location</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </section>
+
+        <!-- TRAFFIC SECTION -->
+        <section id="sec-traffic" class="section">
+          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-chart-bar"></i> Page Views by Page</h3><canvas id="pageViewsChart"></canvas></div></div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-link"></i> Referrer Sources</h3><canvas id="refererChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-door-open"></i> Exit Pages</h3><canvas id="exitChart"></canvas></div>
+          </div>
+        </section>
+
+        <!-- WEBSITES SECTION -->
+        <section id="sec-websites" class="section">
+          <div class="table-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+              <h3><i class="fas fa-globe"></i> Generated Websites</h3>
+              <button class="refresh-btn" id="syncWebsitesBtn"><i class="fas fa-sync"></i> Sync with Cloudinary</button>
+            </div>
+            
+            <div class="table-toolbar" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <input type="text" id="websiteSearch" placeholder="Search by name, ID or event type..." class="table-search" style="flex:1;">
+              <select id="websiteSort" class="table-search" style="max-width:200px;">
+                <option value="date_desc">Newest First</option>
+                <option value="date_asc">Oldest First</option>
+                <option value="views_desc">Most Viewed</option>
+                <option value="name_asc">Name (A-Z)</option>
+              </select>
+            </div>
+
+            <div id="websiteGrid" class="website-grid">
+              <!-- Cards injected here -->
+              <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <p>No websites found. Try syncing with Cloudinary if you have existing sites.</p>
+              </div>
+            </div>
+          </div>
+          <!-- Top websites -->
+          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-trophy"></i> Top Websites by Views</h3><canvas id="topWebsitesChart"></canvas></div></div>
+          <!-- Cloudinary -->
+          <div class="table-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3><i class="fas fa-cloud"></i> Cloudinary Storage (Raw)</h3>
+              <div style="display:flex; gap:10px;">
+                <select id="cloudinarySort" class="table-search" style="font-size:0.75rem; padding:5px 10px;">
+                  <option value="date_desc">Newest First</option>
+                  <option value="date_asc">Oldest First</option>
+                  <option value="size_desc">Largest First</option>
+                  <option value="id_asc">ID (A-Z)</option>
+                </select>
+                <button class="refresh-btn small" id="loadCloudinaryBtn" style="margin:0;"><i class="fas fa-cloud-arrow-down"></i> Load</button>
+              </div>
+            </div>
+            <div class="table-scroll"><table id="cloudinaryTable"><thead><tr><th>Public ID</th><th>Created</th><th>Size</th><th>Actions</th></tr></thead><tbody><tr><td colspan="4" style="text-align:center;opacity:0.5;">Click "Load" to fetch</td></tr></tbody></table></div>
+          </div>
+        </section>
+
+        <!-- AUDIENCE SECTION -->
+        <section id="sec-audience" class="section">
+          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-earth-americas"></i> Geographic Distribution</h3><canvas id="geoChart"></canvas></div></div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Device Breakdown</h3><canvas id="deviceChart2"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-laptop-code"></i> Operating Systems</h3><canvas id="osChart2"></canvas></div>
+          </div>
+        </section>
+
+        <!-- BEHAVIOR SECTION -->
+        <section id="sec-behavior" class="section">
+          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-toggle-on"></i> Feature Usage</h3><canvas id="featureChart"></canvas></div></div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-calendar-check"></i> Websites by Category</h3><canvas id="categoryChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-arrow-trend-up"></i> Daily Website Creations</h3><canvas id="creationTrendChart"></canvas></div>
+          </div>
+        </section>
+
+        <!-- REALTIME SECTION -->
+        <section id="sec-realtime" class="section">
+          <div class="kpi-grid">
+            <div class="kpi-card accent-green pulse"><div class="kpi-icon"><i class="fas fa-signal"></i></div><div class="kpi-info"><span class="kpi-value" id="rtTodayViews">--</span><span class="kpi-label">Views Today</span></div></div>
+            <div class="kpi-card accent-cyan pulse"><div class="kpi-icon"><i class="fas fa-user-check"></i></div><div class="kpi-info"><span class="kpi-value" id="rtTodayUnique">--</span><span class="kpi-label">Unique Today</span></div></div>
+            <div class="kpi-card accent-orange pulse"><div class="kpi-icon"><i class="fas fa-wand-magic-sparkles"></i></div><div class="kpi-info"><span class="kpi-value" id="rtTodayCreated">--</span><span class="kpi-label">Created Today</span></div></div>
+          </div>
+          <div class="table-card">
+            <h3><i class="fas fa-bolt"></i> Live Feed <span class="live-dot"></span></h3>
+            <div class="table-scroll"><table id="realtimeTable"><thead><tr><th>Time</th><th>Type</th><th>Details</th><th>Location</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </section>
+
+        <!-- LOADING OVERLAY -->
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="spinner"></div>
+          <p>Loading analytics data...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/admin.js"></script>
+</body>
+</html>
