@@ -45,12 +45,16 @@ const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 const corsOptions = {
-  origin: '*', // Allow all origins for the split deployment phase
+  origin: [
+    'https://thegreeterindia.web.app',
+    'https://thegreeterindia.firebaseapp.com',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true
 };
-app.use(cors(corsOptions));
-
 app.use(cors(corsOptions));
 
 
