@@ -130,6 +130,17 @@
     try {
       dashData = await apiFetch(`/api/admin/dashboard?days=${period}`);
       console.log(`[Admin] Dashboard data (period: ${period}d) received:`, dashData);
+      
+      // Show fallback mode indicator if applicable
+      if (dashData.fallbackMode) {
+        console.log('[Admin] Dashboard running in fallback mode:', dashData.message);
+        // You could add a visual indicator here if needed
+        const fallbackIndicator = document.getElementById('fallbackIndicator');
+        if (fallbackIndicator) {
+          fallbackIndicator.textContent = dashData.message;
+          fallbackIndicator.style.display = 'block';
+        }
+      }
     } catch (err) {
       console.error('Dashboard load error:', err);
       dashData = {
@@ -137,7 +148,9 @@
         charts: { trendData: [] },
         recentActivity: [],
         websites: [],
-        topWebsites: []
+        topWebsites: [],
+        fallbackMode: true,
+        message: 'Failed to load dashboard data'
       };
     }
     renderAll();
@@ -509,6 +522,14 @@
     try {
       const res = await apiFetch('/api/admin/sync-websites', { method: 'POST' });
       if (res.success) {
+        if (res.fallbackMode) {
+          console.log('[Admin] Sync completed in fallback mode:', res.message);
+          // Show a more user-friendly message for fallback mode
+          const message = res.message || 'Sync completed in fallback mode';
+          console.log(message);
+        } else {
+          console.log('[Admin] Sync completed successfully:', res.message);
+        }
         await loadDashboard();
       }
       return res;
@@ -533,7 +554,11 @@
     try {
       const res = await triggerSync();
       if (res && res.success) {
-        alert(`Sync complete! ${res.synced} new websites added to analytics.`);
+        if (res.fallbackMode) {
+          alert(`Sync completed in fallback mode.\n${res.message}\n\nAnalytics will be available once MongoDB connection is restored.`);
+        } else {
+          alert(`Sync complete! ${res.synced} new websites added to analytics.`);
+        }
       }
     } catch (err) {
       alert('Sync failed. Check console for details.');

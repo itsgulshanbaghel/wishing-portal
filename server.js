@@ -33,11 +33,20 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// MongoDB Connection
+// MongoDB Connection with fallback
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://gulshanbaghel:greetly06@thegreeter.eu9o9le.mongodb.net/?appName=TheGreeter';
+let mongoConnected = false;
+
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log('[Server] Connected to MongoDB Atlas'))
-  .catch(err => console.error('[Server] MongoDB connection error:', err));
+  .then(() => {
+    console.log('[Server] Connected to MongoDB Atlas');
+    mongoConnected = true;
+  })
+  .catch(err => {
+    console.error('[Server] MongoDB connection error:', err);
+    console.log('[Server] Running in fallback mode - analytics will be limited');
+    mongoConnected = false;
+  });
 
 
 
@@ -557,7 +566,17 @@ app.post('/api/admin/login', (req, res) => {
 
 app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
   console.log('[Server] POST /api/admin/sync-websites reached');
+  
   try {
+    // Check MongoDB connection state more reliably
+    const dbState = mongoose.connection.readyState;
+    console.log('[Admin] MongoDB connection state:', dbState);
+    
+    if (dbState !== 1) { // 1 = connected
+      console.log('[Admin] MongoDB not connected (state:', dbState, '), returning fallback response');
+      return res.json({ success: true, synced: 0, message: 'MongoDB not connected - sync skipped', fallbackMode: true });
+    }
+    
     console.log('[Admin] Starting website sync from Cloudinary...');
     const resources = await cloudinary.api.resources({
       type: 'upload',
@@ -570,14 +589,15 @@ app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
 
     for (const resource of resources.resources) {
       const id = resource.public_id.replace('configs/', '');
-      const existing = await Website.findOne({ id });
-
-      // Only skip if it exists AND has valid metadata
-      if (existing && existing.eventType !== 'unknown') continue;
-
-      console.log(`[Admin] Syncing/Updating website: ${id}`);
-
+      
       try {
+        const existing = await Website.findOne({ id });
+
+        // Only skip if it exists AND has valid metadata
+        if (existing && existing.eventType !== 'unknown') continue;
+
+        console.log(`[Admin] Syncing/Updating website: ${id}`);
+
         // ... (metadata logic remains same) ...
         const ctx = resource.context?.custom || {};
         const ctxEventType = ctx.event_type || ctx.category;
@@ -621,10 +641,15 @@ app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
         console.warn(`[Admin] Sync failed for ${id}:`, err.message);
       }
     }
-    res.json({ success: true, synced: syncedCount });
+    res.json({ success: true, synced: syncedCount, message: `Successfully synced ${syncedCount} websites` });
   } catch (err) {
     console.error('Sync failed:', err);
-    res.status(500).json({ error: 'Sync failed' });
+    // Check if it's a MongoDB connection error
+    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError' || err.message.includes('ECONNREFUSED')) {
+      res.json({ success: true, synced: 0, message: 'MongoDB connection failed - sync skipped', fallbackMode: true });
+    } else {
+      res.status(500).json({ error: 'Sync failed', details: err.message });
+    }
   }
 });
 
@@ -632,11 +657,62 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
   try {
     const daysQuery = req.query.days;
     const days = (daysQuery !== undefined && daysQuery !== '') ? parseInt(daysQuery) : 7;
+    
+    // Check MongoDB connection state more reliably
+    const dbState = mongoose.connection.readyState;
+    console.log('[Admin] Dashboard MongoDB connection state:', dbState);
+    
+    if (dbState !== 1) { // 1 = connected
+      console.log('[Admin] MongoDB not connected (state:', dbState, '), returning fallback dashboard data');
+      return res.json({
+        period: days,
+        overview: {
+          totalPageViews: 0,
+          totalWebsitesCreated: 0,
+          periodUniqueVisitors: 0,
+          todayViews: 0,
+          todayUniqueVisitors: 0,
+          todayWebsitesCreated: 0
+        },
+        charts: {
+          trendData: []
+        },
+        recentActivity: [],
+        websites: [],
+        topWebsites: [],
+        fallbackMode: true,
+        message: 'MongoDB not connected - showing fallback data'
+      });
+    }
+    
     const data = await analytics.getDashboardData(days);
     res.json(data);
   } catch (err) {
     console.error('Dashboard error:', err);
-    res.status(500).json({ error: 'Failed to load dashboard data' });
+    // Check if it's a MongoDB connection error
+    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError' || err.message.includes('ECONNREFUSED')) {
+      res.json({
+        period: days,
+        overview: {
+          totalPageViews: 0,
+          totalWebsitesCreated: 0,
+          periodUniqueVisitors: 0,
+          todayViews: 0,
+          todayUniqueVisitors: 0,
+          todayWebsitesCreated: 0
+        },
+        charts: {
+          trendData: []
+        },
+        recentActivity: [],
+        websites: [],
+        topWebsites: [],
+        fallbackMode: true,
+        message: 'MongoDB connection failed - showing fallback data'
+      });
+    } else {
+      res.status(500).json({ error: 'Failed to load dashboard data', details: err.message });
+    }
   }
 });
 
