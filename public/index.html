@@ -11,7 +11,7 @@
 
 
 <head>
-  <script src="assets/config.js"></script>
+    <script src="assets/config.js"></script>
 
 
 
@@ -20,7 +20,6 @@
 
 
     <meta name="viewport"
-
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 
 
@@ -38,9 +37,7 @@
 
 
     <link
-
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
-
         rel="stylesheet">
 
 
@@ -50,7 +47,6 @@
 
 
     <style>
-
         /* ---------- CSS VARIABLES (LIGHT/DARK MODE) ---------- */
 
 
@@ -6084,12 +6080,37 @@
 
 
         }
+        /* ----- Modal (Instagram share) ----- */
+
+        .custom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); z-index: 10001; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: visibility 0.2s, opacity 0.2s; }
+
+        .custom-modal.show { visibility: visible; opacity: 1; }
+
+        .modal-card { background: var(--bg-secondary); border-radius: 32px; max-width: 480px; width: 90%; padding: 28px 28px 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--card-border); position: relative; text-align: center; }
+
+        .modal-close { position: absolute; top: 16px; right: 16px; background: var(--card-bg); border: 1px solid var(--card-border); width: 32px; height: 32px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--text-primary); font-size: 16px; cursor: pointer; }
+
+        .modal-close:hover { background: var(--accent-solid); color: white; }
+
+        .modal-link-box { display: flex; align-items: center; background: var(--card-bg); border-radius: 60px; padding: 4px 4px 4px 18px; border: 1px solid var(--card-border); margin-bottom: 16px; }
+
+        .modal-link-box input { flex: 1; background: transparent; border: none; padding: 12px 0; color: var(--text-primary); font-size: 0.9rem; outline: none; font-family: monospace; }
+
+        .modal-copy-btn { background: transparent; border: none; color: var(--text-secondary); width: 40px; height: 40px; border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; }
+
+        .modal-copy-btn:hover { background: var(--accent-solid); color: white; }
+
+        .modal-buttons { display: flex; gap: 12px; justify-content: center; }
+
+        .modal-button { background: var(--accent-gradient); color: white; border: none; padding: 12px 24px; border-radius: 60px; font-weight: 600; font-size: 1rem; cursor: pointer; flex: 1; }
+
+        .modal-button.secondary { background: transparent; border: 1.5px solid var(--card-border); color: var(--text-primary); }
 
     </style>
 
 
 
-<script src="/assets/tracker.js" defer></script>
+    <script src="/assets/tracker.js" defer></script>
 </head>
 
 
@@ -6231,17 +6252,13 @@
 
 
                 <div class="hero-buttons"><button class="btn-primary" onclick="startFlow('personal')"
-
                         id="btnCreatePerson"><i class="fas fa-user-heart"></i> Create for a person</button><button
-
                         class="btn-secondary" onclick="startFlow('event', 'festival')" id="btnCreateEvent"><i
-
                             class="fas fa-calendar-star"></i> Create for an event</button></div>
 
 
 
                 <p style="margin-top: 24px; opacity: 0.8; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;"
-
                     id="freeStartText">
 
 
@@ -6598,7 +6615,7 @@
 
 
 
-                <div class="proof-number"><span class="counter" data-target="7">0</span><span>k+</span></div>
+                <div class="proof-number"><span class="counter" data-target="6">0</span><span>k+</span></div>
 
 
 
@@ -6632,7 +6649,7 @@
 
 
 
-                <div class="proof-number"><span class="counter" data-target="2">0</span><span> min</span></div>
+                <div class="proof-number"><span class="counter" data-target="3">0</span><span> min</span></div>
 
 
 
@@ -6708,13 +6725,13 @@
 
 
 
-                <p class="testimonial-text">"Created a proposal website that made my partner happy! The animations and
+                <p class="testimonial-text" id="testim1Text">"Created a proposal website that made my partner happy! The animations and
 
                     personalization options are incredible."</p>
 
 
 
-                <div class="testimonial-event">💍 Proposal</div>
+                <div class="testimonial-event" id="testim1Event">💍 Proposal</div>
 
 
 
@@ -6754,13 +6771,13 @@
 
 
 
-                <p class="testimonial-text">"Made my best friend's birthday unforgettable with funny mood messages.
+                <p class="testimonial-text" id="testim2Text">"Made my best friend's birthday unforgettable with funny mood messages.
 
                     Everyone was laughing for days!"</p>
 
 
 
-                <div class="testimonial-event">🎂 Birthday</div>
+                <div class="testimonial-event" id="testim2Event">🎂 Birthday</div>
 
 
 
@@ -6800,13 +6817,13 @@
 
 
 
-                <p class="testimonial-text">"Our anniversary timeline brought back so many memories. Absolutely
+                <p class="testimonial-text" id="testim3Text">"Our anniversary timeline brought back so many memories. Absolutely
 
                     beautiful and so easy to create!"</p>
 
 
 
-                <div class="testimonial-event">💑 Anniversary</div>
+                <div class="testimonial-event" id="testim3Event">💑 Anniversary</div>
 
 
 
@@ -6839,7 +6856,6 @@
 
 
                 smile.</p><button class="btn-primary" style="font-size: 1.3rem; padding: 20px 48px; background: red;"
-
                 onclick="startFlow('personal')" id="ctaBtn"><i class="fas fa-gem"></i> Start creating — it's
 
 
@@ -6873,7 +6889,6 @@
 
 
                 <div class="footer-brand"><a href="index.html" class="logo"
-
                         style="margin-bottom: 16px; display: inline-flex;">
 
 
@@ -6991,13 +7006,9 @@
 
 
                     <div class="social-icons"><a href="#" id="footerFacebook"><i class="fab fa-facebook-f"></i></a><a
-
                             href="https://instagram.com/thegreeter.in" id="footerInstagram" aria-label="Instagram"><i
-
                                 class="fab fa-instagram"></i></a><a href="#" id="footerWhatsApp"><i
-
                                 class="fab fa-whatsapp"></i></a><a href="#" id="footerTwitter"><i
-
                                 class="fab fa-twitter"></i></a></div>
 
 
@@ -7055,7 +7066,6 @@
 
 
                 <h4 id="shareTitle">Share this page</h4><button class="share-close-btn" id="closeSharePopupBtn"><i
-
                         class="fas fa-times"></i></button>
 
 
@@ -7177,7 +7187,6 @@
 
 
             <div class="copy-link-section"><input type="text" class="copy-link-input" id="pageUrlInput" readonly
-
                     value=""><button class="copy-link-btn" id="copyPageLinkBtn"><i class="far fa-copy"></i></button>
 
 
@@ -7194,6 +7203,28 @@
 
 
 
+    </div>
+
+    <!-- Instagram Modal -->
+    <div class="custom-modal" id="instagramModal">
+      <div class="modal-card">
+        <div class="modal-close" id="instagramModalClose"><i class="fas fa-times"></i></div>
+        <div class="modal-icon">
+          <div class="share-icon-circle"
+            style="width:48px;height:48px;background:radial-gradient(circle at 30% 110%, #ffdb70, #e4405f, #833ab4);margin:0 auto;">
+            <i class="fab fa-instagram"></i>
+          </div>
+        </div>
+        <div class="modal-message" id="instagramModalMessage">Copy & Share this link on Instagram</div>
+        <div class="modal-link-box">
+          <input type="text" id="instagramModalLink" readonly>
+          <button class="modal-copy-btn" id="instagramModalCopy"><i class="far fa-copy"></i></button>
+        </div>
+        <div class="modal-buttons">
+          <button class="modal-button secondary" id="instagramModalRedirect">Go to Instagram</button>
+          <button class="modal-button primary" id="instagramModalOk">OK</button>
+        </div>
+      </div>
     </div>
 
 
@@ -7278,9 +7309,23 @@
 
 
 
-                signinAlert: "Sign in feature coming soon!", shareTitle: "Share this page", nativeShare: "Share via device apps", copyAlert: "Link copied to clipboard!"
+                signinAlert: "Sign in feature coming soon!", shareTitle: "Share this page", nativeShare: "Share via device apps", copyAlert: "Link copied to clipboard!",
 
 
+
+                testimTitle: "Love from our users", testimDesc: "Real stories from people who created magical moments",
+
+                testimCards: [
+
+                    ['"Created a proposal website that made my partner happy! The animations and personalization options are incredible."', "💍 Proposal"],
+
+                    ['"Made my best friend\'s birthday unforgettable with funny mood messages. Everyone was laughing for days!"', "🎂 Birthday"],
+
+                    ['"Our anniversary timeline brought back so many memories. Absolutely beautiful and so easy to create!"', "💑 Anniversary"]
+
+                ],
+
+                instaTitle: "Copy & Share this link on Instagram", instaBtn: "Go to Instagram"
 
             },
 
@@ -7350,9 +7395,23 @@
 
 
 
-                signinAlert: "लॉगिन सुविधा जल्द आ रही है!", shareTitle: "ये पेज शेयर करें", nativeShare: "दूसरे ऐप्स से शेयर करें", copyAlert: "लिंक कॉपी हो गया!"
+                signinAlert: "लॉगिन सुविधा जल्द आ रही है!", shareTitle: "ये पेज शेयर करें", nativeShare: "दूसरे ऐप्स से शेयर करें", copyAlert: "लिंक कॉपी हो गया!",
 
 
+
+                testimTitle: "हमारे यूज़र्स का प्यार", testimDesc: "उन लोगों की असल कहानियाँ जिन्होंने बनाए जादुई पल",
+
+                testimCards: [
+
+                    ['"मैंने एक प्रपोज़ल वेबसाइट बनाई और मेरे पार्टनर की खुशी का ठिकाना नहीं रहा! एनिमेशन और ऑप्शंस कमाल के हैं।"', "💍 प्रपोज़ल"],
+
+                    ['"अपने दोस्त के जन्मदिन को फनी मैसेजेस से यादगार बना दिया। हर कोई हँस-हँस कर लोटपोट हो गया!"', "🎂 जन्मदिन"],
+
+                    ['"हमारी सालगिरह की टाइमलाइन ने पुरानी यादें ताज़ा कर दीं। बहुत ही खूबसूरत और बनाने में बेहद आसान!"', "💑 सालगिरह"]
+
+                ],
+
+                instaTitle: "इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें", instaBtn: "इंस्टाग्राम पर जाएं"
 
             }
 
@@ -7466,6 +7525,18 @@
 
 
 
+            document.getElementById('testimonialsTitle').innerText = t.testimTitle;
+
+
+
+            document.getElementById('testimonialsDesc').innerText = t.testimDesc;
+
+
+
+            for (let i = 0; i < 3; i++) { document.getElementById(`testim${i + 1}Text`).innerText = t.testimCards[i][0]; document.getElementById(`testim${i + 1}Event`).innerText = t.testimCards[i][1]; }
+
+
+
             document.getElementById('ctaSub').innerText = t.ctaSub;
 
 
@@ -7519,6 +7590,9 @@
 
 
             document.getElementById('nativeShareText').innerText = t.nativeShare;
+
+            if (document.getElementById('instagramModalMessage')) document.getElementById('instagramModalMessage').innerText = t.instaTitle;
+            if (document.getElementById('instagramModalRedirect')) document.getElementById('instagramModalRedirect').innerText = t.instaBtn;
 
 
 
@@ -8158,7 +8232,11 @@
 
 
 
-                else if (platform === 'instagram') { alert(translations[currentLang].copyAlert + ' ' + window.location.href); closeSharePopup(); return; }
+                else if (platform === 'instagram') {
+                    showInstagramModal(window.location.href);
+                    closeSharePopup();
+                    return;
+                }
 
 
 
@@ -8174,6 +8252,38 @@
 
 
 
+        });
+
+        // Instagram Modal Logic
+        const instagramModal = document.getElementById('instagramModal');
+        const instagramModalLink = document.getElementById('instagramModalLink');
+
+        function showInstagramModal(link) {
+            instagramModalLink.value = link;
+            instagramModal.classList.add('show');
+        }
+
+        function closeInstagramModal() {
+            instagramModal.classList.remove('show');
+        }
+
+        document.getElementById('instagramModalClose')?.addEventListener('click', closeInstagramModal);
+        document.getElementById('instagramModalOk')?.addEventListener('click', closeInstagramModal);
+        document.getElementById('instagramModalRedirect')?.addEventListener('click', () => {
+            closeInstagramModal();
+        });
+
+        document.getElementById('instagramModalCopy')?.addEventListener('click', function () {
+            instagramModalLink.select();
+            navigator.clipboard?.writeText(instagramModalLink.value).then(() => {
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check" style="color:var(--accent-primary)"></i>';
+                setTimeout(() => this.innerHTML = originalHtml, 2000);
+            });
+        });
+
+        instagramModal?.addEventListener('click', (e) => {
+            if (e.target === instagramModal) closeInstagramModal();
         });
 
 

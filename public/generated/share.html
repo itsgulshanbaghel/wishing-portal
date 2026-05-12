@@ -653,13 +653,12 @@
       bottom: 0;
       width: 150%;
       height: 4px;
-      background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.1) 40%,
-        rgba(255, 255, 255, 0.8) 50%,
-        rgba(255, 255, 255, 0.1) 60%,
-        transparent 100%
-      );
+      background: linear-gradient(90deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.1) 40%,
+          rgba(255, 255, 255, 0.8) 50%,
+          rgba(255, 255, 255, 0.1) 60%,
+          transparent 100%);
       transform: rotate(-45deg) translate(-50%, -50%);
       transform-origin: top left;
       animation: slantScan 2s ease-in-out infinite;
@@ -688,12 +687,15 @@
         left: -100%;
         opacity: 0;
       }
+
       10% {
         opacity: 1;
       }
+
       90% {
         opacity: 1;
       }
+
       100% {
         top: 100%;
         left: 100%;
@@ -702,10 +704,13 @@
     }
 
     @keyframes shinePulse {
-      0%, 100% {
+
+      0%,
+      100% {
         transform: translate(-50%, -50%) scale(0.6);
         opacity: 0.6;
       }
+
       50% {
         transform: translate(-50%, -50%) scale(1.2);
         opacity: 1;
@@ -752,10 +757,13 @@
     }
 
     @keyframes cornerPulse {
-      0%, 100% {
+
+      0%,
+      100% {
         opacity: 0.3;
         transform: scale(0.9);
       }
+
       50% {
         opacity: 1;
         transform: scale(1.1);
@@ -1380,7 +1388,7 @@
             <i class="fab fa-instagram"></i>
           </div>
         </div>
-        <div class="modal-message" id="instagramModalMessage">Share this magical link on Instagram</div>
+        <div class="modal-message" id="instagramModalMessage">Copy & Share this link on Instagram</div>
         <div class="modal-link-box">
           <input type="text" id="instagramModalLink" readonly>
           <button class="modal-copy-btn" id="instagramModalCopy"><i class="far fa-copy"></i></button>
@@ -1533,7 +1541,7 @@
       });
 
       document.getElementById('openTabBtn').addEventListener('click', () => { if (fullLink) window.open(fullLink, '_blank'); });
-      document.getElementById('backToCustomizeBtn').addEventListener('click', () => { 
+      document.getElementById('backToCustomizeBtn').addEventListener('click', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const viewId = urlParams.get('view');
         if (viewId) {
@@ -1567,7 +1575,9 @@
           shareOn: "Share on",
           downloadQr: "Download QR Code",
           shareQr: "Share QR Code",
-          copyAlert: "Link copied to clipboard!"
+          copyAlert: "Link copied to clipboard!",
+          instaTitle: "Copy & Share this link on Instagram",
+          instaBtn: "Go to Instagram"
         },
         hi: {
           nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"], signin: "लॉगिन करें",
@@ -1581,7 +1591,9 @@
           shareOn: "शेयर करें",
           downloadQr: "QR कोड डाउनलोड करें",
           shareQr: "QR कोड शेयर करें",
-          copyAlert: "लिंक कॉपी हो गया!"
+          copyAlert: "लिंक कॉपी हो गया!",
+          instaTitle: "इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें",
+          instaBtn: "इंस्टाग्राम पर जाएं"
         }
       };
 
@@ -1612,6 +1624,8 @@
         document.getElementById('shareHeading').innerText = t.shareOn;
         document.getElementById('downloadQrText').innerText = t.downloadQr;
         document.getElementById('shareQrText').innerText = t.shareQr;
+        if (document.getElementById('instagramModalMessage')) document.getElementById('instagramModalMessage').innerText = t.instaTitle;
+        if (document.getElementById('instagramModalRedirect')) document.getElementById('instagramModalRedirect').innerText = t.instaBtn;
         document.querySelector('#langToggleBtn span').innerText = lang === 'en' ? 'हिन्दी' : 'English';
 
         // *** CRITICAL: Update title HTML so emojis keep original color ***
@@ -1750,23 +1764,23 @@
 
         // Get the original HD canvas from the QR code (1200x1200)
         const originalCanvas = qrCodeContainer.querySelector('canvas');
-        
+
         if (originalCanvas) {
           // Create a new canvas to show the original HD QR code at appropriate size
           const displayCanvas = document.createElement('canvas');
           const ctx = displayCanvas.getContext('2d');
-          
+
           // Calculate display size (responsive but maintain quality)
           const maxSize = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.7, 800);
           displayCanvas.width = maxSize;
           displayCanvas.height = maxSize;
-          
+
           // The original QR code is 1200x1200, draw it at display size
           // This maintains HD quality since we're scaling down from HD, not up from SD
           ctx.drawImage(originalCanvas, 0, 0, 1200, 1200, 0, 0, maxSize, maxSize);
-          
+
           qrFullscreenImage.appendChild(displayCanvas);
-          
+
           // Show modal immediately
           qrFullscreenModal.classList.add('show');
           document.body.style.overflow = 'hidden';

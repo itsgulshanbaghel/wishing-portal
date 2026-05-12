@@ -634,7 +634,7 @@
       display: flex;
       flex-direction: column;
       height: 100%;
-      overflow: hidden;
+      overflow-y: hidden;
       margin-left: 4px;
     }
 
@@ -661,8 +661,13 @@
 
     .scroll-features {
       flex: 1;
-      overflow-y: auto;
       padding: 18px 18px 8px;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .scroll-features::-webkit-scrollbar {
+      display: none;
     }
 
     .feature-category {
@@ -936,13 +941,14 @@
     }
 
     .action-bar {
-      padding: 12px 20px 16px 20px;
+      padding: 10px 20px 10px 20px;
       border-top: 1px solid var(--card-border);
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
+      background: transparent;
       display: flex;
       gap: 12px;
       flex-shrink: 0;
+      margin-top: auto;
+      /* Push to bottom if content is short */
     }
 
     .action-btn {
@@ -1417,7 +1423,12 @@
         flex-direction: column;
         width: 100%;
         min-height: 0;
-        overflow: hidden;
+        overflow-y: auto;
+        scrollbar-width: none;
+      }
+
+      .panel::-webkit-scrollbar {
+        display: none;
       }
 
       .panel-header {
@@ -1425,17 +1436,17 @@
       }
 
       .scroll-features {
-        flex: 1;
-        overflow-y: auto;
-        padding: 12px 16px 80px;
+        flex: none;
+        padding: 12px 16px 20px;
+        overflow-y: visible;
       }
 
       .action-bar {
-        position: sticky;
-        bottom: 0;
-        background: var(--bg-primary);
+        background: transparent;
         z-index: 10;
         border-top: 1px solid var(--card-border);
+        padding: 20px 16px calc(30px + env(safe-area-inset-bottom, 16px));
+        gap: 12px;
       }
 
       /* REDUCED TOGGLE BUTTONS, HEADER, FOOTER */
@@ -1451,10 +1462,7 @@
         font-size: 0.7rem;
       }
 
-      .action-bar {
-        padding: 12px 16px;
-        gap: 12px;
-      }
+
 
       .action-btn {
         padding: 8px 0;
@@ -1602,11 +1610,11 @@
       }
 
       .scroll-features {
-        padding: 10px 12px 80px;
+        padding: 10px 12px 20px;
       }
 
       .action-bar {
-        padding: 10px 12px;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 20px));
         gap: 8px;
       }
 
@@ -1637,12 +1645,8 @@
     <!-- Navbar -->
     <nav class="navbar">
       <a href="../index.html" class="logo">
-        <img
-          src="../assets/Light_logo.png"
-          alt="Greeter Logo" class="logo-light">
-        <img
-          src="../assets/Dark_logo.png"
-          alt="Greeter Logo" class="logo-dark">
+        <img src="../assets/Light_logo.png" alt="Greeter Logo" class="logo-light">
+        <img src="../assets/Dark_logo.png" alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
         <a href="../index.html" id="navHome">Home</a>
@@ -1874,7 +1878,7 @@
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
           featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
           featImageExplosion: "\uD83D\uDCA5 Magic Photo", featAddImages: "\uD83D\uDCF7 Add Images", featAddTextBox: "\uD83D\uDCDD Add Text Box", featFinalSurprise: "\uD83C\uDF89 Final Message",
-          featMagicMusic: "\uD83C\uDFB5 Melody", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
+          featMagicMusic: "\uD83C\uDFB5 Add Music", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
           uploadImages: "\uD83D\uDCF7 Upload Images", alertCopy: "Link copied!", alertGenerateFirst: "Generate the link first!",
           alertPreviewNotReady: "Preview not ready", shareInsta: "\uD83D\uDCF7 Copy this link to share on Instagram:",
           shareTikTok: "\uD83C\uDFB5 Copy this link to share on TikTok:",
@@ -1938,14 +1942,14 @@
           refreshTooltip: "प्रीव्यू रिफ्रेश करें",
           catOpening: "🎭 शुरुआती जादू", catFloral: "🌸 फूल और प्रकृति", catPlayful: "🎈 मस्ती भरे इंटरैक्शन",
           catHeart: "💌 दिल की बातें और संदेश", catFinale: "✨ भव्य समापन",
-          featLock: "🔒 लॉक", featCurtainReveal: "🎭 पर्दा उठाओ", featWelcomeTyping: "💬 स्वागत संदेश", featFireworksText: "🎆 आतिशबाजी टेक्स्ट",
-          featFlowerRain: "🌸 फूलों की बारिश", featCanvasStarfall: "🌌 सितारों की बारिश", featFlyingSwans: "🕊️ उड़ते पंछी ",
-          featBalloonParty: "🎈 क्लासिक गुब्बारे", featFloatingBalloonsNamed: "🎈 नाम वाले गुब्बारे", featFireworksClick: "✨ क्लिक पर आतिशबाजी",
+          featLock: "🔒 लॉक", featCurtainReveal: "🎭 पर्दा", featWelcomeTyping: "💬 स्वागत संदेश", featFireworksText: "🎆 पटाखे वाला टेक्स्ट",
+          featFlowerRain: "🌸 फूलों की बारिश", featCanvasStarfall: "🌌 सितारों का आसमान", featFlyingSwans: "🕊️ उड़ते पंछी ",
+          featBalloonParty: "🎈 क्लासिक गुब्बारे", featFloatingBalloonsNamed: "🎈 नाम वाले गुब्बारे", featFireworksClick: "✨ क्लिक पर पटाखे",
           featBombExplosion: "💣 बम धमाका", featGiftBoxOpen: "🎁 गिफ्ट बॉक्स", featTextFormation: "✍️ टाइपिंग कार्ड",
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
-          featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 गले लगाओ + आसमानी पत्र", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
-          featImageExplosion: "💥 मैजिक फोटो", featAddImages: "📷 ऐड इमेजेस", featAddTextBox: "📝 ऐड टेक्स्ट बॉक्स", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
-          featMagicMusic: "🎶 धुन", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
+          featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
+          featImageExplosion: "💥 मैजिक फोटो", featAddImages: "📷 तस्वीरें जोड़ें", featAddTextBox: "📝 टेक्स्ट बॉक्स", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
+          featMagicMusic: "🎶 गाना लगायें", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
           uploadImages: "📷 तस्वीरें अपलोड करें", alertCopy: "लिंक कॉपी हो गया!", alertGenerateFirst: "पहले लिंक जेनरेट करें!",
           alertPreviewNotReady: "प्रीव्यू तैयार नहीं है", shareInsta: "📷 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:",
           shareTikTok: "🎶 TikTok पर शेयर करने के लिए यह लिंक कॉपी करें:",
@@ -2062,7 +2066,7 @@
       };
       document.getElementById('modeToggle').addEventListener('click', window.toggleTheme);
       if (localStorage.getItem('greeter-theme') === 'dark') { body.classList.add('dark'); themeIcon.className = 'fas fa-moon'; } else themeIcon.className = 'fas fa-sun';
-      window.goBack = () => window.history.back();
+      window.goBack = () => { window.location.href = "preview.html"; };
       window.toggleMobileMenu = () => document.getElementById('navLinks').classList.toggle('show');
 
       function getEventData() {
@@ -2103,7 +2107,7 @@
           const restoreId = urlParams.get('restore');
           const stateKey = viewId ? 'customizationState_' + viewId : (restoreId ? 'customizationState_' + restoreId : 'customizationState');
           const savedState = localStorage.getItem(stateKey);
-          
+
           if (savedState) {
             const state = JSON.parse(savedState);
             if (state.activeFeatures) {
@@ -3746,7 +3750,7 @@
           refreshFeatureIfActive('imageExplosion', getUserName(), existing.text, existing.images);
         }
       });
-      document.getElementById("backBtn").onclick = () => window.history.back();
+      document.getElementById("backBtn").onclick = () => { window.location.href = "preview.html"; };
 
       // Text editing mode
       let editModeActive = false;
@@ -3850,7 +3854,7 @@
 </style>
 `;
           const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";localStorage.setItem("greeter_lang",lang);localStorage.setItem("customizer_lang",lang);var urlParams=new URLSearchParams(window.location.search);if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);window.history.replaceState({},"",newUrl);}})();</scr' + 'ipt>';
-          const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } // Hide content immediately to prevent visibility before features load document.documentElement.style.visibility = "hidden"; document.body.style.visibility = "hidden"; document.body.style.overflow = "hidden"; window.addEventListener("load",function(){ setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }, 10); }); })();</scr' + 'ipt>';
+          const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } /* Hide content immediately to prevent visibility before features load */ document.documentElement.style.visibility = "hidden"; document.body.style.visibility = "hidden"; document.body.style.overflow = "hidden"; window.addEventListener("load",function(){ setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }, 10); }); })();</scr' + 'ipt>';
 
           const ctaHtml = `
 <style>

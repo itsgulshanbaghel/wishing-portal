@@ -1531,6 +1531,8 @@
           eventOptions: { birthday: "Birthday 🎂", proposal: "Proposal 💍", anniversary: "Anniversary ❤️", festival: "Festival 🎉" },
           moodOptions: { romantic: "Romantic 😍", funny: "Funny 😂", emotional: "Emotional 🥹", happy: "Happy 😇", roast: "Roast 😈", normal: "Normal 😊" },
           shareMessages: { instaAlert: "📸 Instagram sharing: Copy the link: " },
+          proposalForLabel: "Proposal for", proposalForErrorMsg: "Please select what you're proposing for",
+          proposalOptions: { placeholder: "-- Select Relationship --", girlfriend: "Girlfriend 💕", boyfriend: "Boyfriend 💕", wife: "Wife 💍", husband: "Husband 💍", bestfriend: "Best Friend 💖", friend: "Friend 💖", partner: "Partner 💕" },
           aiErrors: { quotaExceeded: "⚠️ Please try again after some time.", genericFail: "AI generation failed: ", missingEvent: "🎯 Please select an event first — it helps us set the right mood!", missingMood: "😊 Don't forget to choose a mood for the perfect tone.", missingName: "👤 We need a name to personalize this special message.", missingFestival: "🎉 Which festival are we celebrating? Please enter the name." }
         },
         hi: {
@@ -1545,6 +1547,8 @@
           eventOptions: { birthday: "जन्मदिन 🎂", proposal: "प्रपोज़ल 💍", anniversary: "सालगिरह ❤️", festival: "त्योहार 🎉" },
           moodOptions: { romantic: "रोमांटिक 😍", funny: "मज़ाकिया 😂", emotional: "इमोशनल 🥹", happy: "खुश 😇", roast: "रोस्ट 😈", normal: "सामान्य 😊" },
           shareMessages: { instaAlert: "📸 इंस्टाग्राम पर शेयर करने के लिए लिंक कॉपी करें: " },
+          proposalForLabel: "किसके लिए प्रपोज़ल", proposalForErrorMsg: "कृपया चुनें कि आप किसे प्रपोज़ कर रहे हैं",
+          proposalOptions: { placeholder: "-- रिश्ता चुनें --", girlfriend: "गर्लफ्रेंड 💕", boyfriend: "बॉयफ्रेंड 💕", wife: "पत्नी 💍", husband: "पति 💍", bestfriend: "बेस्ट फ्रेंड 💖", friend: "दोस्त 💖", partner: "पार्टनर 💕" },
           aiErrors: { quotaExceeded: "⚠️ कृपया कुछ समय बाद प्रयास करें।", genericFail: "AI जनरेशन फेल हो गया: ", missingEvent: "🎯 कृपया पहले कोई मौका चुनें — यह सही माहौल बनाने में मदद करता है!", missingMood: "😊 सही टोन के लिए मूड चुनना न भूलें।", missingName: "👤 इस खास संदेश को व्यक्तिगत बनाने के लिए नाम की ज़रूरत है।", missingFestival: "🎉 हम कौन सा त्योहार मना रहे हैं? कृपया नाम बताएं।" }
         }
       };
@@ -1574,6 +1578,8 @@
         document.getElementById('nameError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.nameErrorMsg}`;
         document.getElementById('eventError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.eventErrorMsg}`;
         document.getElementById('moodError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.moodErrorMsg}`;
+        document.getElementById('proposalForLabel').innerHTML = `<i class="fas fa-ring"></i> ${t.proposalForLabel}`;
+        document.getElementById('proposalForError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.proposalForErrorMsg}`;
         document.getElementById('copyrightText').innerText = t.copyright;
         ['footerTemplates', 'footerFeatures', 'footerShowcase', 'footerHelp', 'footerPrivacy'].forEach((id, idx) => { if (document.getElementById(id)) document.getElementById(id).innerText = t.footer[idx]; });
         for (let i = 1; i < eventSelect.options.length; i++) {
@@ -1583,6 +1589,14 @@
         for (let i = 1; i < moodSelect.options.length; i++) {
           const key = moodSelect.options[i].value;
           if (t.moodOptions[key]) moodSelect.options[i].innerText = t.moodOptions[key];
+        }
+        const proposalSelect = document.getElementById('proposalForSelect');
+        if (proposalSelect) {
+          proposalSelect.options[0].innerText = t.proposalOptions.placeholder;
+          for (let i = 1; i < proposalSelect.options.length; i++) {
+            const key = proposalSelect.options[i].value;
+            if (t.proposalOptions[key]) proposalSelect.options[i].innerText = t.proposalOptions[key];
+          }
         }
         updateDatalists(lang);
         currentLang = lang;
@@ -1705,7 +1719,8 @@
       // Backend API - Proxy Integration (Groq via Server)
       async function callGroq(prompt, retryForCompletion = true) {
         try {
-          const response = await fetch('/api/generate', {
+          const apiBase = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : '';
+          const response = await fetch(apiBase + '/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt })

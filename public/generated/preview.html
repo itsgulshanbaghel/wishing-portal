@@ -669,8 +669,46 @@
     }
 
     @keyframes loading-shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    .gallery-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+      gap: 16px;
+      width: 100%;
+    }
+
+    .modern-spinner {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, transparent 0%, transparent 40%, var(--accent-solid) 100%);
+      animation: spin 1s linear infinite;
+      position: relative;
+    }
+
+    .modern-spinner::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      background: var(--sidebar-bg);
+      border-radius: 50%;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .template-card iframe {
@@ -1175,12 +1213,8 @@
   <div class="container">
     <nav class="navbar">
       <a href="../index.html" class="logo">
-        <img
-          src="../assets/Light_logo.png"
-          alt="Greeter Logo" class="logo-light">
-        <img
-          src="../assets/Dark_logo.png"
-          alt="Greeter Logo" class="logo-dark">
+        <img src="../assets/Light_logo.png" alt="Greeter Logo" class="logo-light">
+        <img src="../assets/Dark_logo.png" alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
         <a href="../index.html" id="navHome">Home</a>
@@ -1460,8 +1494,20 @@
         const eventBar = document.getElementById('eventCategoryBar');
         if (activeChip && eventBar) activeChip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
+      function showGalleryLoading() {
+        const listContainer = document.getElementById("templateList");
+        if (!listContainer) return;
+        const msg = currentLang === 'hi' ? 'टेम्पलेट्स लोड हो रहे हैं...' : 'Loading templates...';
+        listContainer.innerHTML = `
+          <div class="gallery-loader">
+            <div class="modern-spinner"></div>
+            <p style="font-weight: 600; font-size: 0.95rem;">${msg}</p>
+          </div>
+        `;
+      }
       async function loadTemplatesForEvent(event) {
         currentEvent = event;
+        showGalleryLoading();
         templates = await loadAvailableTemplates(event);
         if (templates.length === 0) templates = await loadAvailableTemplates('birthday');
         renderTemplates();
