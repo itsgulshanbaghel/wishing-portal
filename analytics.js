@@ -195,9 +195,45 @@ class AnalyticsStore {
   // ── Dashboard Data ──
   async getDashboardData(days = 7) {
     try {
+      console.log('[Analytics] getDashboardData called with days:', days);
+      
       const now = new Date();
       // Create today at midnight UTC to match MongoDB timestamps
       const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      
+      // Check MongoDB connection state
+      const dbState = mongoose.connection.readyState;
+      console.log('[Analytics] MongoDB connection state:', dbState, '(0=disconnecting, 1=connected, 2=connecting, 3=disconnecting)');
+      
+      if (dbState !== 1) {
+        console.log('[Analytics] MongoDB not connected, returning empty data');
+        return {
+          period: days,
+          overview: {
+            totalPageViews: 0,
+            totalWebsitesCreated: 0,
+            periodUniqueVisitors: 0,
+            todayViews: 0,
+            todayUniqueVisitors: 0,
+            todayWebsitesCreated: 0,
+            totalWebsiteViews: 0
+          },
+          charts: {
+            trendData: [],
+            deviceDistribution: {},
+            browserDistribution: {},
+            osDistribution: {},
+            eventTypeDistribution: {},
+            websitesByEventType: {},
+            hourlyDistribution: []
+          },
+          recentActivity: [],
+          websites: [],
+          topWebsites: [],
+          fallbackMode: true,
+          message: 'MongoDB not connected'
+        };
+      }
       
       // Handle different time periods correctly
       let cutoff;
