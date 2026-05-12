@@ -130,13 +130,19 @@
     try {
       dashData = await apiFetch(`/api/admin/dashboard?days=${period}`);
       console.log(`[Admin] Dashboard data (period: ${period}d) received:`, dashData);
-      renderAll();
-      lastUpdated.textContent = 'Updated: ' + new Date().toLocaleTimeString();
     } catch (err) {
       console.error('Dashboard load error:', err);
-    } finally {
-      loadingOverlay.classList.add('hidden');
+      dashData = {
+        overview: {},
+        charts: { trendData: [] },
+        recentActivity: [],
+        websites: [],
+        topWebsites: []
+      };
     }
+    renderAll();
+    lastUpdated.textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    loadingOverlay.classList.add('hidden');
   }
 
   document.getElementById('refreshBtn').addEventListener('click', loadDashboard);
