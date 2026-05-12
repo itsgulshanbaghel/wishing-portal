@@ -194,16 +194,16 @@
 
   // ── KPIs ──
   function renderKPIs() {
-    const o = dashData.overview;
+    const o = dashData.overview || {};
     const period = document.getElementById('periodSelector')?.value || '7';
     const periodLabel = period === '-1' ? 'All Time' : (period === '0' ? 'Today' : `${period}d`);
-    
-    setText('kpiTotalViews', formatNum(o.totalPageViews));
-    setText('kpiTotalWebsites', formatNum(o.totalWebsitesCreated));
-    setText('kpiWeekVisitors', formatNum(o.periodUniqueVisitors));
-    setText('kpiTodayViews', formatNum(o.todayViews));
-    setText('kpiTodayWebsites', formatNum(o.todayWebsitesCreated));
-    setText('kpiWebsiteViews', formatNum(o.totalWebsiteViews));
+
+    setText('kpiTotalViews', formatNum(o.totalPageViews || 0));
+    setText('kpiTotalWebsites', formatNum(o.totalWebsitesCreated || 0));
+    setText('kpiWeekVisitors', formatNum(o.periodUniqueVisitors || 0));
+    setText('kpiTodayViews', formatNum(o.todayViews || 0));
+    setText('kpiTodayWebsites', formatNum(o.todayWebsitesCreated || 0));
+    setText('kpiWebsiteViews', formatNum(o.totalWebsiteViews || 0));
 
     // Update labels to reflect period
     const labels = {
@@ -236,7 +236,7 @@
   }
 
   function renderTrendChart() {
-    const d = dashData.charts.trendData;
+    const d = dashData.charts?.trendData || [];
     const period = document.getElementById('periodSelector')?.value || '7';
     const periodLabel = period === '-1' ? 'All Time' : (period === '0' ? 'Today' : `${period} Days`);
     
@@ -270,16 +270,16 @@
     });
   }
 
-  function renderDeviceChart() { renderDonut('deviceChart', dashData.charts.deviceDistribution); }
-  function renderBrowserChart() { renderDonut('browserChart', dashData.charts.browserDistribution); }
-  function renderOSChart() { renderDonut('osChart', dashData.charts.osDistribution); }
-  function renderDeviceChart2() { renderDonut('deviceChart2', dashData.charts.deviceDistribution); }
-  function renderOSChart2() { renderDonut('osChart2', dashData.charts.osDistribution); }
-  function renderEventTypeChart() { renderDonut('eventTypeChart', dashData.charts.eventTypeDistribution); }
-  function renderCategoryChart() { renderDonut('categoryChart', dashData.charts.websitesByEventType); }
+  function renderDeviceChart() { renderDonut('deviceChart', dashData.charts?.deviceDistribution || {}); }
+  function renderBrowserChart() { renderDonut('browserChart', dashData.charts?.browserDistribution || {}); }
+  function renderOSChart() { renderDonut('osChart', dashData.charts?.osDistribution || {}); }
+  function renderDeviceChart2() { renderDonut('deviceChart2', dashData.charts?.deviceDistribution || {}); }
+  function renderOSChart2() { renderDonut('osChart2', dashData.charts?.osDistribution || {}); }
+  function renderEventTypeChart() { renderDonut('eventTypeChart', dashData.charts?.eventTypeDistribution || {}); }
+  function renderCategoryChart() { renderDonut('categoryChart', dashData.charts?.websitesByEventType || {}); }
 
   function renderHourlyChart() {
-    const d = dashData.charts.hourlyDistribution;
+    const d = dashData.charts?.hourlyDistribution || [];
     makeChart('hourlyChart', {
       type: 'bar',
       data: { labels: d.map((_, i) => i + ':00'), datasets: [{ label: 'Views', data: d, backgroundColor: COLORS_ALPHA[0], borderColor: COLORS[0], borderWidth: 1, borderRadius: 4 }] },
@@ -297,13 +297,13 @@
     });
   }
 
-  function renderPageViewsChart() { renderBarChart('pageViewsChart', dashData.charts.pageViewsByPage, '#7b5df6'); }
-  function renderRefererChart() { renderBarChart('refererChart', dashData.charts.refererDistribution, '#06b6d4'); }
-  function renderExitChart() { renderBarChart('exitChart', dashData.charts.exitPages, '#ef4444'); }
-  function renderGeoChart() { renderBarChart('geoChart', dashData.charts.geoDistribution, '#22c55e'); }
+  function renderPageViewsChart() { renderBarChart('pageViewsChart', dashData.charts?.pageViewsByPage || {}, '#7b5df6'); }
+  function renderRefererChart() { renderBarChart('refererChart', dashData.charts?.refererDistribution || {}, '#06b6d4'); }
+  function renderExitChart() { renderBarChart('exitChart', dashData.charts?.exitPages || {}, '#ef4444'); }
+  function renderGeoChart() { renderBarChart('geoChart', dashData.charts?.geoDistribution || {}, '#22c55e'); }
 
   function renderFeatureChart() {
-    const fs = dashData.charts.featureStats;
+    const fs = dashData.charts?.featureStats || {};
     const keys = Object.keys(fs).slice(0, 15);
     makeChart('featureChart', {
       type: 'bar',
@@ -331,7 +331,7 @@
   }
 
   function renderCreationTrendChart() {
-    const d = dashData.charts.trendData;
+    const d = dashData.charts?.trendData || [];
     makeChart('creationTrendChart', {
       type: 'line',
       data: { labels: d.map(x => x.date.slice(5)), datasets: [{ label: 'Websites', data: d.map(x => x.websitesCreated), borderColor: '#ec4899', backgroundColor: 'rgba(236,72,153,0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2 }] },
@@ -536,10 +536,10 @@
 
   // ── Realtime ──
   function renderRealtime() {
-    const o = dashData.overview;
-    setText('rtTodayViews', formatNum(o.todayViews));
-    setText('rtTodayUnique', formatNum(o.todayUniqueVisitors));
-    setText('rtTodayCreated', formatNum(o.todayWebsitesCreated));
+    const o = dashData.overview || {};
+    setText('rtTodayViews', formatNum(o.todayViews || 0));
+    setText('rtTodayUnique', formatNum(o.todayUniqueVisitors || 0));
+    setText('rtTodayCreated', formatNum(o.todayWebsitesCreated || 0));
 
     const tbody = document.querySelector('#realtimeTable tbody');
     tbody.innerHTML = '';
