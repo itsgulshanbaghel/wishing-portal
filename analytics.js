@@ -196,62 +196,109 @@ class AnalyticsStore {
   async getDashboardData(days = 7) {
     try {
       const now = new Date();
-      const today = new Date(now.setUTCHours(0,0,0,0));
-      const cutoff = new Date(today);
-      if (days > 0) cutoff.setDate(cutoff.getDate() - days);
+      // Create today at midnight UTC to match MongoDB timestamps
+      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      
+      // Handle different time periods correctly
+      let cutoff;
+      let timeFilter;
+      
+      if (days === -1) {
+        // All Time - no date filter
+        cutoff = null;
+        timeFilter = {}; // No date filter for all time
+      } else if (days === 0) {
+        // Today
+        cutoff = today;
+        timeFilter = { $gte: today };
+      } else {
+        // Last X days
+        cutoff = new Date(today);
+        cutoff.setDate(cutoff.getDate() - days);
+        timeFilter = { $gte: cutoff };
+      }
 
-      // Basic totals
-      const totalPageViews = await Event.countDocuments({ type: 'pageview', timestamp: { $gte: cutoff } });
-      const totalWebsites = await Website.countDocuments({ createdAt: { $gte: cutoff } });
-      const uniqueVisitors = await Event.distinct('visitorId', { timestamp: { $gte: cutoff } });
+      // Basic totals - handle All Time case
+      const pageViewFilter = days === -1 ? { type: 'pageview' } : { type: 'pageview', timestamp: timeFilter };
+      const websiteFilter = days === -1 ? {} : { createdAt: timeFilter };
+      const eventFilter = days === -1 ? {} : { timestamp: timeFilter };
+      
+      const totalPageViews = await Event.countDocuments(pageViewFilter);
+      const totalWebsites = await Website.countDocuments(websiteFilter);
+      const uniqueVisitors = await Event.distinct('visitorId', eventFilter);
       
       const todayViews = await Event.countDocuments({ type: 'pageview', timestamp: { $gte: today } });
       const todayWebsites = await Website.countDocuments({ createdAt: { $gte: today } });
       const todayUnique = await Event.distinct('visitorId', { timestamp: { $gte: today } });
+      
+      // Calculate total website views for the period (sum of views in period)
+      const websiteViewsFilter = days === -1 ? {} : { createdAt: timeFilter };
+      const websiteViewsAgg = await Website.aggregate([
+        { $match: websiteViewsFilter },
+        { $group: { _id: null, totalViews: { $sum: '$views' } } }
+      ]);
+      const totalWebsiteViews = websiteViewsAgg && websiteViewsAgg.length > 0 ? websiteViewsAgg[0].totalViews : 0;
 
-      // Recent Activity
-      const recentEvents = await Event.find({ timestamp: { $gte: cutoff } })
+      // Recent Activity - handle All Time case, include all relevant event types
+      const recentEventsFilter = days === -1 ? {} : { timestamp: timeFilter };
+      const recentEvents = await Event.find(recentEventsFilter)
         .sort({ timestamp: -1 })
         .limit(50);
 
-      // Websites List
-      const websites = await Website.find()
+      // Websites List - respect time period filter
+      const websitesListFilter = days === -1 ? {} : { createdAt: timeFilter };
+      const websites = await Website.find(websitesListFilter)
         .sort({ createdAt: -1 })
         .limit(500);
 
-      // Top Websites
-      const topWebsites = await Website.find()
+      // Top Websites - respect time period filter
+      const topWebsitesFilter = days === -1 ? {} : { createdAt: timeFilter };
+      const topWebsites = await Website.find(topWebsitesFilter)
         .sort({ views: -1 })
         .limit(20);
 
-      // Daily Stats for charts
+      // Daily Stats for charts - handle All Time case
+      const dailyStatsFilter = days === -1 ? {} : { timestamp: timeFilter };
       const dailyStats = await Event.aggregate([
-        { $match: { timestamp: { $gte: cutoff } } },
+        { $match: dailyStatsFilter },
         { $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } },
           views: { $sum: { $cond: [{ $eq: ["$type", "pageview"] }, 1, 0] } },
           uniqueVisitors: { $addToSet: "$visitorId" }
+        }},
+        { $project: {
+          _id: 1,
+          views: 1,
+          uniqueVisitors: { $size: "$uniqueVisitors" }
         }},
         { $sort: { _id: 1 } }
       ]);
 
+      const websiteStatsFilter = days === -1 ? {} : { createdAt: timeFilter };
       const websiteStats = await Website.aggregate([
-        { $match: { createdAt: { $gte: cutoff } } },
+        { $match: websiteStatsFilter },
         { $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "UTC" } },
           count: { $sum: 1 }
         }},
         { $sort: { _id: 1 } }
       ]);
 
-      // Merge stats for trend chart
-      const trendData = dailyStats.map(stat => {
-        const wStat = websiteStats.find(w => w._id === stat._id);
+      // Merge stats for trend chart - include all dates from both datasets
+      const allDates = new Set([
+        ...dailyStats.map(s => s._id),
+        ...websiteStats.map(w => w._id)
+      ]);
+      
+      const trendData = Array.from(allDates).sort().map(date => {
+        const eventStat = dailyStats.find(s => s._id === date);
+        const websiteStat = websiteStats.find(w => w._id === date);
+        
         return {
-          date: stat._id,
-          views: stat.views,
-          uniqueVisitors: stat.uniqueVisitors.length,
-          websitesCreated: wStat ? wStat.count : 0
+          date: date,
+          views: eventStat ? eventStat.views : 0,
+          uniqueVisitors: eventStat ? eventStat.uniqueVisitors : 0,
+          websitesCreated: websiteStat ? websiteStat.count : 0
         };
       });
 
@@ -263,7 +310,8 @@ class AnalyticsStore {
           periodUniqueVisitors: uniqueVisitors.length,
           todayViews,
           todayUniqueVisitors: todayUnique.length,
-          todayWebsitesCreated: todayWebsites
+          todayWebsitesCreated: todayWebsites,
+          totalWebsiteViews
         },
         charts: {
           trendData,

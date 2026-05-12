@@ -367,8 +367,9 @@
       const time = a.timestamp ? new Date(a.timestamp).toLocaleString() : '--';
       const badge = getBadge(a.type);
       let details = '';
-      if (a.type === 'pageView') details = a.page || '';
+      if (a.type === 'pageview' || a.type === 'pageView') details = a.page || '';
       else if (a.type === 'event') details = (a.eventType || '') + ' ' + (a.details ? JSON.stringify(a.details).slice(0, 60) : '');
+      else if (a.type === 'website-view') details = `Website: ${a.websiteId || 'Unknown'} | View`;
       else if (a.type === 'websiteCreated') details = `ID: ${a.websiteId || ''} | ${a.recipientName || ''}`;
       const loc = a.geo ? `${a.geo.city || ''}, ${a.geo.country || ''}` : '--';
       tr.innerHTML = `<td>${time}</td><td>${badge}</td><td>${details}</td><td>${loc}</td>`;
@@ -599,7 +600,13 @@
   function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
   function formatNum(n) { if (n == null) return '0'; if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'; if (n >= 1000) return (n / 1000).toFixed(1) + 'K'; return n.toString(); }
   function getBadge(type) {
-    const map = { pageView: ['Page View', 'badge-cyan'], event: ['Event', 'badge-orange'], websiteCreated: ['Created', 'badge-green'] };
+    const map = { 
+      pageview: ['Page View', 'badge-cyan'], 
+      pageView: ['Page View', 'badge-cyan'], 
+      event: ['Event', 'badge-orange'], 
+      'website-view': ['Website View', 'badge-blue'], 
+      websiteCreated: ['Created', 'badge-green'] 
+    };
     const [label, cls] = map[type] || [type, 'badge-purple'];
     return `<span class="badge ${cls}">${label}</span>`;
   }

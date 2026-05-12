@@ -672,7 +672,8 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
           periodUniqueVisitors: 0,
           todayViews: 0,
           todayUniqueVisitors: 0,
-          todayWebsitesCreated: 0
+          todayWebsitesCreated: 0,
+          totalWebsiteViews: 0
         },
         charts: {
           trendData: []
@@ -699,7 +700,8 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
           periodUniqueVisitors: 0,
           todayViews: 0,
           todayUniqueVisitors: 0,
-          todayWebsitesCreated: 0
+          todayWebsitesCreated: 0,
+          totalWebsiteViews: 0
         },
         charts: {
           trendData: []
