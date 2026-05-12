@@ -315,7 +315,13 @@ class AnalyticsStore {
         },
         charts: {
           trendData,
-          // Other distributions would go here...
+          // Distribution charts for frontend
+          deviceDistribution: {},
+          browserDistribution: {},
+          osDistribution: {},
+          eventTypeDistribution: {},
+          websitesByEventType: {},
+          hourlyDistribution: []
         },
         recentActivity: recentEvents,
         websites: websites,
