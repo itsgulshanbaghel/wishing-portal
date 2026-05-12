@@ -494,69 +494,45 @@ const analyticsLimiter = rateLimit({
 
 app.post('/api/analytics/pageview', analyticsLimiter, async (req, res) => {
   try {
-    console.log('[Analytics] Page view tracked:', req.body.page || 'unknown');
     await analytics.trackPageView(req, req.body.page || 'unknown');
     res.status(204).end();
-  } catch (e) { 
-    console.error('[Analytics] Page view tracking error:', e);
-    res.status(204).end(); 
-  }
+  } catch (e) { res.status(204).end(); }
 });
 
 app.post('/api/analytics/session', analyticsLimiter, async (req, res) => {
   try {
-    console.log('[Analytics] Session tracked:', req.body.entryPage);
     await analytics.trackSession(req, req.body);
     res.status(204).end();
-  } catch (e) { 
-    console.error('[Analytics] Session tracking error:', e);
-    res.status(204).end(); 
-  }
+  } catch (e) { res.status(204).end(); }
 });
 
 app.post('/api/analytics/event', analyticsLimiter, async (req, res) => {
   try {
-    console.log('[Analytics] Event tracked:', req.body.type, req.body.details);
     await analytics.trackEvent(req, req.body);
     res.status(204).end();
-  } catch (e) { 
-    console.error('[Analytics] Event tracking error:', e);
-    res.status(204).end(); 
-  }
+  } catch (e) { res.status(204).end(); }
 });
 
 app.post('/api/analytics/feature', analyticsLimiter, async (req, res) => {
   try {
-    console.log('[Analytics] Feature tracked:', req.body.feature, req.body.action);
     await analytics.trackFeatureUsage(req, req.body);
     res.status(204).end();
-  } catch (e) { 
-    console.error('[Analytics] Feature tracking error:', e);
-    res.status(204).end(); 
-  }
+  } catch (e) { res.status(204).end(); }
 });
 
 app.post('/api/analytics/exit', analyticsLimiter, async (req, res) => {
   try {
-    console.log('[Analytics] Exit tracked:', req.body.timeSpent);
     await analytics.trackExit(req, req.body);
     res.status(204).end();
-  } catch (e) { 
-    console.error('[Analytics] Exit tracking error:', e);
-    res.status(204).end(); 
-  }
+  } catch (e) { res.status(204).end(); }
 });
 
 app.post('/api/analytics/website-view', analyticsLimiter, async (req, res) => {
   try {
-    console.log('[Analytics] Website view tracked:', req.body.websiteId);
     await analytics.trackWebsiteView(req, req.body.websiteId);
     await analytics.trackPageView(req, 'shared_website');
     res.status(204).end();
-  } catch (e) { 
-    console.error('[Analytics] Website view tracking error:', e);
-    res.status(204).end(); 
-  }
+  } catch (e) { res.status(204).end(); }
 });
 
 // ══════════════════════════════════════════════════════════════
