@@ -289,11 +289,11 @@ class AnalyticsStore {
         ...dailyStats.map(s => s._id),
         ...websiteStats.map(w => w._id)
       ]);
-      
+
       const trendData = Array.from(allDates).sort().map(date => {
         const eventStat = dailyStats.find(s => s._id === date);
         const websiteStat = websiteStats.find(w => w._id === date);
-        
+
         return {
           date: date,
           views: eventStat ? eventStat.views : 0,
@@ -301,6 +301,84 @@ class AnalyticsStore {
           websitesCreated: websiteStat ? websiteStat.count : 0
         };
       });
+
+      // Distribution charts
+      const pageviewFilter = days === -1 ? { type: 'pageview' } : { type: 'pageview', timestamp: timeFilter };
+
+      const deviceDistribution = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: { _id: '$details.device', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+
+      const browserDistribution = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: { _id: '$details.browser', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+
+      const osDistribution = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: { _id: '$details.os', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+
+      const eventTypeDistribution = await Event.aggregate([
+        { $match: eventFilter },
+        { $group: { _id: '$type', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+
+      const websitesByEventType = await Website.aggregate([
+        { $match: websiteFilter },
+        { $group: { _id: '$eventType', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+
+      const hourlyDistribution = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: {
+          _id: { $hour: '$timestamp' },
+          count: { $sum: 1 }
+        }},
+        { $sort: { '_id': 1 } }
+      ]);
+
+      // Additional distributions
+      const pageViewsByPage = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: { _id: '$page', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 }
+      ]);
+
+      const refererDistribution = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: { _id: '$details.referer', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 }
+      ]);
+
+      const exitPages = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'exit' } },
+        { $group: { _id: '$page', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 }
+      ]);
+
+      const geoDistribution = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: { _id: '$geo.country', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 }
+      ]);
+
+      const featureUsage = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'feature' } },
+        { $group: { _id: '$details.feature', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 }
+      ]);
 
       return {
         period: days,
@@ -315,13 +393,17 @@ class AnalyticsStore {
         },
         charts: {
           trendData,
-          // Distribution charts for frontend
-          deviceDistribution: {},
-          browserDistribution: {},
-          osDistribution: {},
-          eventTypeDistribution: {},
-          websitesByEventType: {},
-          hourlyDistribution: []
+          deviceDistribution: deviceDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          browserDistribution: browserDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          osDistribution: osDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          eventTypeDistribution: eventTypeDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          websitesByEventType: websitesByEventType.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          hourlyDistribution: hourlyDistribution.map(item => ({ hour: item._id, count: item.count })),
+          pageViewsByPage: pageViewsByPage.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          refererDistribution: refererDistribution.reduce((acc, item) => { acc[item._id || 'Direct'] = item.count; return acc; }, {}),
+          exitPages: exitPages.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          geoDistribution: geoDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          featureUsage: featureUsage.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {})
         },
         recentActivity: recentEvents,
         websites: websites,
