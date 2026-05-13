@@ -42,8 +42,33 @@ const websiteSchema = new mongoose.Schema({
     metadata: mongoose.Schema.Types.Mixed
 });
 
+const feedbackSchema = new mongoose.Schema({
+    websiteId: String, // Optional, if tied to a specific website
+    responses: {
+        websiteType: String,
+        experience: String,
+        customization: String,
+        feature: String,
+        attractive: String,
+        receiver: String,
+        performance: String,
+        issues: String,
+        device: String,
+        recommend: String,
+        newFeatures: String,
+        suggestions: String
+    },
+    submittedAt: { type: Date, default: Date.now },
+    ip: String,
+    geo: {
+        city: String,
+        country: String
+    }
+});
+
 const Visitor = mongoose.model('Visitor', visitorSchema);
 const Event = mongoose.model('Event', eventSchema);
 const Website = mongoose.model('Website', websiteSchema);
+const Feedback = mongoose.model('Feedback', feedbackSchema);
 
-module.exports = { Visitor, Event, Website };
+module.exports = { Visitor, Event, Website, Feedback };

@@ -30,9 +30,11 @@
   const dashScreen = document.getElementById('dashboardScreen');
   const loginForm = document.getElementById('loginForm');
   const loginError = document.getElementById('loginError');
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const sectionTitle = document.getElementById('sectionTitle');
-  const lastUpdated = document.getElementById('lastUpdated');
+   const loadingOverlay = document.getElementById('loadingOverlay');
+   const sectionTitle = document.getElementById('sectionTitle');
+   const lastUpdated = document.getElementById('lastUpdated');
+   const allFeedbackModal = document.getElementById('allFeedbackModal');
+   const allFeedbackTableBody = document.querySelector('#allFeedbackTable tbody');
 
   // ── Auth ──
   loginForm.addEventListener('submit', async (e) => {
@@ -130,7 +132,16 @@
     try {
       dashData = await apiFetch(`/api/admin/dashboard?days=${period}`);
       console.log(`[Admin] Dashboard data (period: ${period}d) received:`, dashData);
-      
+
+      // Load feedback data separately
+      try {
+        dashData.feedback = await apiFetch('/api/admin/feedback-analytics');
+        console.log('[Admin] Feedback data received:', dashData.feedback);
+      } catch (fbErr) {
+        console.error('Feedback load error:', fbErr);
+        dashData.feedback = { totalFeedback: 0, recentFeedback: [], questionStats: {} };
+      }
+
       // Show fallback mode indicator if applicable
       if (dashData.fallbackMode) {
         console.log('[Admin] Dashboard running in fallback mode:', dashData.message);
@@ -149,6 +160,7 @@
         recentActivity: [],
         websites: [],
         topWebsites: [],
+        feedback: { totalFeedback: 0, recentFeedback: [], questionStats: {} },
         fallbackMode: true,
         message: 'Failed to load dashboard data'
       };
@@ -208,6 +220,7 @@
     renderFeatureChart();
     renderCategoryChart();
     renderCreationTrendChart();
+    renderFeedback();
     renderRealtime();
   }
 
@@ -566,7 +579,87 @@
     }
   });
 
+  // View All Feedback
+  document.getElementById('viewAllFeedbackBtn').addEventListener('click', async () => {
+    try {
+      const fbData = await apiFetch('/api/admin/feedback-analytics?all=true');
+      renderAllFeedbackModal(fbData.recentFeedback || []);
+      allFeedbackModal.style.display = 'block';
+    } catch (err) {
+      console.error('Failed to load all feedback:', err);
+      alert('Failed to load all feedback data.');
+    }
+  });
+
+  document.getElementById('viewAllFeedbackBtn').addEventListener('click', () => {
+    allFeedbackModal.style.display = 'block';
+  });
+
+  document.getElementById('closeAllFeedbackModal').addEventListener('click', () => {
+    allFeedbackModal.style.display = 'none';
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target === allFeedbackModal) {
+      allFeedbackModal.style.display = 'none';
+    }
+  });
+
   // ── Realtime ──
+  function renderFeedback() {
+    const fb = dashData.feedback || {};
+    setText('feedbackTotal', formatNum(fb.totalFeedback || 0));
+
+    // Render charts
+    renderDonut('experienceChart', fb.questionStats?.experience || {});
+    renderDonut('websiteTypeChart', fb.questionStats?.websiteType || {});
+    renderDonut('recommendChart', fb.questionStats?.recommend || {});
+    renderDonut('deviceChartFb', fb.questionStats?.device || {});
+
+    // Recent feedback table
+    const tbody = document.querySelector('#feedbackTable tbody');
+    tbody.innerHTML = '';
+    (fb.recentFeedback || []).slice(0, 30).forEach(f => {
+      const tr = document.createElement('tr');
+      const time = f.submittedAt ? new Date(f.submittedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '--';
+      const type = f.responses?.websiteType || '--';
+      const exp = f.responses?.experience || '--';
+      const rec = f.responses?.recommend || '--';
+      const issues = (f.responses?.issues || '').slice(0, 50) + ((f.responses?.issues || '').length > 50 ? '...' : '');
+      tr.innerHTML = `<td>${time}</td><td>${type}</td><td>${exp}</td><td>${rec}</td><td>${issues}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAllFeedbackModal(feedbacks) {
+    allFeedbackTableBody.innerHTML = '';
+    feedbacks.forEach(f => {
+      const tr = document.createElement('tr');
+      const time = f.submittedAt ? new Date(f.submittedAt).toLocaleString() : '--';
+      const userId = f.ip || '--';
+      const location = f.geo ? `${f.geo.city || ''}, ${f.geo.country || ''}`.replace(/^, |, $/, '') : '--';
+      const responses = f.responses || {};
+      tr.innerHTML = `
+        <td>${time}</td>
+        <td>${userId}</td>
+        <td>${location}</td>
+        <td>${responses.websiteType || '--'}</td>
+        <td>${responses.experience || '--'}</td>
+        <td>${responses.customization || '--'}</td>
+        <td>${responses.feature || '--'}</td>
+        <td>${responses.attractive || '--'}</td>
+        <td>${responses.receiver || '--'}</td>
+        <td>${responses.performance || '--'}</td>
+        <td>${responses.issues || '--'}</td>
+        <td>${responses.device || '--'}</td>
+        <td>${responses.recommend || '--'}</td>
+        <td>${responses.newFeatures || '--'}</td>
+        <td>${responses.suggestions || '--'}</td>
+      `;
+      allFeedbackTableBody.appendChild(tr);
+    });
+  }
+
   function renderRealtime() {
     const o = dashData.overview || {};
     setText('rtTodayViews', formatNum(o.todayViews || 0));

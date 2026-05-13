@@ -373,12 +373,23 @@ class AnalyticsStore {
         { $limit: 20 }
       ]);
 
-      const featureUsage = await Event.aggregate([
+      const featureStatsAgg = await Event.aggregate([
         { $match: { ...eventFilter, type: 'feature' } },
-        { $group: { _id: '$details.feature', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 20 }
+        { $group: {
+          _id: { feature: '$details.feature', action: '$details.action' },
+          count: { $sum: 1 }
+        }},
+        { $sort: { count: -1 } }
       ]);
+
+      const featureStats = {};
+      featureStatsAgg.forEach(item => {
+        const feature = item._id.feature || 'Unknown';
+        const action = item._id.action;
+        if (!featureStats[feature]) featureStats[feature] = { enabled: 0, disabled: 0 };
+        if (action === 'enable' || action === 'enabled') featureStats[feature].enabled += item.count;
+        else if (action === 'disable' || action === 'disabled') featureStats[feature].disabled += item.count;
+      });
 
       return {
         period: days,
@@ -403,7 +414,7 @@ class AnalyticsStore {
           refererDistribution: refererDistribution.reduce((acc, item) => { acc[item._id || 'Direct'] = item.count; return acc; }, {}),
           exitPages: exitPages.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
           geoDistribution: geoDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          featureUsage: featureUsage.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {})
+          featureStats: featureStats
         },
         recentActivity: recentEvents,
         websites: websites,

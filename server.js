@@ -14,7 +14,7 @@ const https = require('https');
 
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
-const { Website } = require('./models');
+const { Website, Feedback } = require('./models');
 const analytics = require('./analytics');
 
 
@@ -366,7 +366,28 @@ app.post('/api/generate', async (req, res) => {
 
 });
 
+// Save feedback responses
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const { websiteId, responses } = req.body;
+    if (!responses || typeof responses !== 'object') {
+      return res.status(400).json({ error: 'Responses are required' });
+    }
 
+    const feedback = new Feedback({
+      websiteId,
+      responses,
+      ip: req.ip,
+      geo: {} // Could be populated if geo service is available
+    });
+
+    await feedback.save();
+    res.json({ success: true, message: 'Feedback submitted successfully' });
+  } catch (err) {
+    console.error('Error saving feedback:', err);
+    res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
 
 app.get('/api/magic', (req, res) => {
 
@@ -715,6 +736,48 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
     } else {
       res.status(500).json({ error: 'Failed to load dashboard data', details: err.message });
     }
+  }
+});
+
+// Feedback analytics
+app.get('/api/admin/feedback-analytics', adminAuth, async (req, res) => {
+  try {
+    const dbState = mongoose.connection.readyState;
+    if (dbState !== 1) {
+      return res.json({
+        totalFeedback: 0,
+        recentFeedback: [],
+        questionStats: {},
+        fallbackMode: true,
+        message: 'MongoDB not connected'
+      });
+    }
+
+    const totalFeedback = await Feedback.countDocuments();
+    const all = req.query.all === 'true';
+    const limit = all ? 0 : 50;
+    const recentFeedback = await Feedback.find().sort({ submittedAt: -1 }).limit(limit);
+
+    // Aggregate stats for each question
+    const questionStats = {};
+    const questions = ['websiteType', 'experience', 'customization', 'feature', 'attractive', 'receiver', 'performance', 'device', 'recommend'];
+    for (const q of questions) {
+      const stats = await Feedback.aggregate([
+        { $group: { _id: `$responses.${q}`, count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+      questionStats[q] = stats.reduce((acc, stat) => { acc[stat._id || 'N/A'] = stat.count; return acc; }, {});
+    }
+
+    res.json({
+      totalFeedback,
+      recentFeedback,
+      questionStats,
+      fallbackMode: false
+    });
+  } catch (err) {
+    console.error('Feedback analytics error:', err);
+    res.status(500).json({ error: 'Failed to load feedback analytics' });
   }
 });
 

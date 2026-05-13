@@ -43,14 +43,15 @@
         <div class="sidebar-logo"><i class="fas fa-chart-line"></i> <span>Greeter</span></div>
         <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
       </div>
-      <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" data-section="overview"><i class="fas fa-gauge-high"></i> Overview</a>
-        <a href="#" class="nav-item" data-section="traffic"><i class="fas fa-chart-area"></i> Traffic</a>
-        <a href="#" class="nav-item" data-section="websites"><i class="fas fa-globe"></i> Websites</a>
-        <a href="#" class="nav-item" data-section="audience"><i class="fas fa-users"></i> Audience</a>
-        <a href="#" class="nav-item" data-section="behavior"><i class="fas fa-mouse-pointer"></i> Behavior</a>
-        <a href="#" class="nav-item" data-section="realtime"><i class="fas fa-bolt"></i> Real-time</a>
-      </nav>
+        <nav class="sidebar-nav">
+         <a href="#" class="nav-item active" data-section="overview"><i class="fas fa-gauge-high"></i> Overview</a>
+         <a href="#" class="nav-item" data-section="traffic"><i class="fas fa-chart-area"></i> Traffic</a>
+         <a href="#" class="nav-item" data-section="websites"><i class="fas fa-globe"></i> Websites</a>
+         <a href="#" class="nav-item" data-section="audience"><i class="fas fa-users"></i> Audience</a>
+         <a href="#" class="nav-item" data-section="behavior"><i class="fas fa-mouse-pointer"></i> Behavior</a>
+         <a href="#" class="nav-item" data-section="feedback"><i class="fas fa-comments"></i> Feedback</a>
+         <a href="#" class="nav-item" data-section="realtime"><i class="fas fa-bolt"></i> Real-time</a>
+       </nav>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-btn"><i class="fas fa-right-from-bracket"></i> Logout</button>
       </div>
@@ -179,6 +180,29 @@
           </div>
         </section>
 
+        <!-- FEEDBACK SECTION -->
+        <section id="sec-feedback" class="section">
+          <div class="kpi-grid">
+            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-comments"></i></div><div class="kpi-info"><span class="kpi-value" id="feedbackTotal">--</span><span class="kpi-label">Total Feedback</span></div></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-chart-pie"></i> Experience Ratings</h3><canvas id="experienceChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-star"></i> Website Types</h3><canvas id="websiteTypeChart"></canvas></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-thumbs-up"></i> Recommendations</h3><canvas id="recommendChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Devices Used</h3><canvas id="deviceChartFb"></canvas></div>
+          </div>
+          <!-- Recent Feedback -->
+          <div class="table-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3><i class="fas fa-list"></i> Recent Feedback</h3>
+              <button class="action-btn" id="viewAllFeedbackBtn"><i class="fas fa-database"></i> View All Responses</button>
+            </div>
+            <div class="table-scroll"><table id="feedbackTable"><thead><tr><th>Submitted</th><th>Website Type</th><th>Experience</th><th>Recommend</th><th>Issues</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </section>
+
         <!-- REALTIME SECTION -->
         <section id="sec-realtime" class="section">
           <div class="kpi-grid">
@@ -199,6 +223,42 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- ALL FEEDBACK MODAL -->
+  <div id="allFeedbackModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>All Feedback Responses</h2>
+        <button id="closeAllFeedbackModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="table-scroll">
+          <table id="allFeedbackTable">
+            <thead>
+              <tr>
+                <th>Submitted</th>
+                <th>User ID</th>
+                <th>Location</th>
+                <th>Website Type</th>
+                <th>Experience</th>
+                <th>Customization</th>
+                <th>Feature</th>
+                <th>Attractive</th>
+                <th>Receiver</th>
+                <th>Performance</th>
+                <th>Issues</th>
+                <th>Device</th>
+                <th>Recommend</th>
+                <th>New Features</th>
+                <th>Suggestions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="assets/admin.js"></script>
