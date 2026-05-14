@@ -3990,23 +3990,23 @@
         document.body.style.overflow = "";
       };
       
-      if (lockActive) {
-        const data = customData.get('lock') || {};
-        window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-        // Content remains hidden until lock is unlocked
-        const handler = () => {
-          window.removeEventListener('lockUnlocked', handler);
-          // Apply other features after unlock
-          for (const [id, active] of activeFeatureStates.entries()) {
-            if (id !== 'lock' && active) {
-              const data = customData.get(id) || {};
-              window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-            }
-          }
+        if (lockActive) {
+          const data = customData.get('lock') || {};
+          window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          // Reveal document so lock overlay is visible; other content remains beneath overlay
           showContent();
-        };
-        window.addEventListener('lockUnlocked', handler);
-      } else if (curtainActive) {
+          const handler = () => {
+            window.removeEventListener('lockUnlocked', handler);
+            // Apply other features after unlock
+            for (const [id, active] of activeFeatureStates.entries()) {
+              if (id !== 'lock' && active) {
+                const data = customData.get(id) || {};
+                window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+              }
+            }
+          };
+          window.addEventListener('lockUnlocked', handler);
+        } else if (curtainActive) {
         // Apply curtain reveal first, then show content
         const data = customData.get('curtainReveal') || {};
         window.applyFeature('curtainReveal', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
@@ -4106,6 +4106,16 @@
               return false;
             }
           };
+
+          // Track final feature usage before saving
+          if (config.activeFeatures) {
+            config.activeFeatures.forEach(([featureId, isActive]) => {
+              if (isActive && window._gtTrackFeature) {
+                // featureId may be an internal id like 'flowerRain' — send that
+                window._gtTrackFeature(featureId, 'used');
+              }
+            });
+          }
 
           // Save to server for cross-browser sharing
           fetch('https://wishing-portal.onrender.com/api/config', {

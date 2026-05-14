@@ -76,6 +76,17 @@ function _parseOS(ua) {
 // ─── Analytics Data Store ────────────────────────────────────────────────────
 
 class AnalyticsStore {
+  // Normalize feature identifiers to a canonical key and preserve display name
+  _normalizeFeature(raw) {
+    const s = (raw || 'Unknown').toString().trim();
+    // keep a readable display name and a safe canonical key
+    const display = s;
+    let key = s.toLowerCase();
+    key = key.replace(/\s+/g, ' ');
+    key = key.replace(/[^a-z0-9 \-_/]/g, '');
+    key = key.replace(/\s+/g, '_');
+    return { key, display };
+  }
   // ── Track Page View ──
   async trackPageView(req, page) {
     try {
@@ -384,11 +395,230 @@ class AnalyticsStore {
 
       const featureStats = {};
       featureStatsAgg.forEach(item => {
+        const rawFeature = item._id.feature || 'Unknown';
+        const { key: featureKey, display: featureDisplay } = this._normalizeFeature(rawFeature);
+        const action = (item._id.action || '').toString().trim();
+        if (!featureStats[featureKey]) featureStats[featureKey] = {
+          display: featureDisplay,
+          enabled: 0, disabled: 0, total: 0,
+          tried: 0, used: 0, triedEnabled: 0, triedDisabled: 0
+        };
+
+        // Legacy logic and mapping for backward compatibility
+        if (action === 'enable' || action === 'enabled') {
+          featureStats[featureKey].enabled += item.count;
+          // Treat legacy immediate enable as a 'tried' interaction
+          featureStats[featureKey].triedEnabled += item.count;
+          featureStats[featureKey].tried += item.count;
+        } else if (action === 'disable' || action === 'disabled') {
+          featureStats[featureKey].disabled += item.count;
+          featureStats[featureKey].triedDisabled += item.count;
+          featureStats[featureKey].tried += item.count;
+        }
+
+        // New logic for tried vs used
+        if (action === 'tried_enable') {
+          featureStats[featureKey].triedEnabled += item.count;
+          featureStats[featureKey].tried += item.count;
+        } else if (action === 'tried_disable') {
+          featureStats[featureKey].triedDisabled += item.count;
+          featureStats[featureKey].tried += item.count;
+        } else if (action === 'used' || action === 'use') {
+          // Accept both 'used' and legacy 'use'
+          featureStats[featureKey].used += item.count;
+        }
+
+        // Also accept plain 'use' as a tried interaction if needed
+        if (action === 'use') {
+          featureStats[featureKey].tried += item.count;
+        }
+
+        featureStats[featureKey].total += item.count;
+      });
+
+      // Feature usage over time
+      const featureTrendAgg = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'feature' } },
+        { $group: {
+          _id: { date: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } }, feature: '$details.feature' },
+          count: { $sum: 1 }
+        }},
+        { $sort: { '_id.date': 1 } }
+      ]);
+
+       // Build featureTrend, featureByDevice, featureByBrowser, featureByHour using normalized keys
+       const featureTrendRaw = {};
+       featureTrendAgg.forEach(item => {
+         const date = item._id.date;
+         const feature = item._id.feature || 'Unknown';
+         if (!featureTrendRaw[date]) featureTrendRaw[date] = {};
+         featureTrendRaw[date][feature] = item.count;
+       });
+
+       // Normalize feature keys across trend/device/browser/hour datasets
+       const featureTrend = {};
+       Object.keys(featureTrendRaw).forEach(date => {
+         featureTrend[date] = {};
+         Object.keys(featureTrendRaw[date]).forEach(rawF => {
+           const { key } = this._normalizeFeature(rawF);
+           featureTrend[date][key] = (featureTrend[date][key] || 0) + featureTrendRaw[date][rawF];
+         });
+       });
+
+       // Feature usage by device
+       const featureDeviceAgg = await Event.aggregate([
+         { $match: { ...eventFilter, type: 'feature' } },
+         { $group: {
+           _id: { device: '$details.device', feature: '$details.feature' },
+           count: { $sum: 1 }
+         }},
+         { $sort: { count: -1 } }
+       ]);
+
+       const featureByDeviceRaw = {};
+       featureDeviceAgg.forEach(item => {
+         const device = item._id.device || 'Unknown';
+         const feature = item._id.feature || 'Unknown';
+         if (!featureByDeviceRaw[device]) featureByDeviceRaw[device] = {};
+         featureByDeviceRaw[device][feature] = item.count;
+       });
+
+       const featureByDevice = {};
+       Object.keys(featureByDeviceRaw).forEach(device => {
+         featureByDevice[device] = {};
+         Object.keys(featureByDeviceRaw[device]).forEach(rawF => {
+           const { key } = this._normalizeFeature(rawF);
+           featureByDevice[device][key] = (featureByDevice[device][key] || 0) + featureByDeviceRaw[device][rawF];
+         });
+       });
+
+       const featureBrowserAgg = await Event.aggregate([
+         { $match: { ...eventFilter, type: 'feature' } },
+         { $group: {
+           _id: { browser: '$details.browser', feature: '$details.feature' },
+           count: { $sum: 1 }
+         }},
+         { $sort: { count: -1 } }
+       ]);
+
+       const featureByBrowserRaw = {};
+       featureBrowserAgg.forEach(item => {
+         const browser = item._id.browser || 'Unknown';
+         const feature = item._id.feature || 'Unknown';
+         if (!featureByBrowserRaw[browser]) featureByBrowserRaw[browser] = {};
+         featureByBrowserRaw[browser][feature] = item.count;
+       });
+
+       const featureByBrowser = {};
+       Object.keys(featureByBrowserRaw).forEach(browser => {
+         featureByBrowser[browser] = {};
+         Object.keys(featureByBrowserRaw[browser]).forEach(rawF => {
+           const { key } = this._normalizeFeature(rawF);
+           featureByBrowser[browser][key] = (featureByBrowser[browser][key] || 0) + featureByBrowserRaw[browser][rawF];
+         });
+       });
+
+       // Feature usage by hour
+       const featureHourAgg = await Event.aggregate([
+         { $match: { ...eventFilter, type: 'feature' } },
+         { $group: {
+           _id: { hour: { $hour: '$timestamp' }, feature: '$details.feature' },
+           count: { $sum: 1 }
+         }},
+         { $sort: { '_id.hour': 1 } }
+       ]);
+
+       const featureByHourRaw = {};
+       featureHourAgg.forEach(item => {
+         const hour = item._id.hour;
+         const feature = item._id.feature || 'Unknown';
+         if (!featureByHourRaw[hour]) featureByHourRaw[hour] = {};
+         featureByHourRaw[hour][feature] = item.count;
+       });
+
+       const featureByHour = {};
+       Object.keys(featureByHourRaw).forEach(hour => {
+         featureByHour[hour] = {};
+         Object.keys(featureByHourRaw[hour]).forEach(rawF => {
+           const { key } = this._normalizeFeature(rawF);
+           featureByHour[hour][key] = (featureByHour[hour][key] || 0) + featureByHourRaw[hour][rawF];
+         });
+       });
+
+
+      // Unique visitor counts for tried vs used (better conversion metric)
+      const triedVisitorAgg = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'feature', $or: [ { 'details.action': 'tried_enable' }, { 'details.action': 'tried_disable' }, { 'details.action': 'enable' }, { 'details.action': 'disable' } ] } },
+        { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
+      ]);
+
+      const triedEnableVisitorAgg = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'feature', $or: [ { 'details.action': 'tried_enable' }, { 'details.action': 'enable' }, { 'details.action': 'enabled' } ] } },
+        { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
+      ]);
+
+      const usedVisitorAgg = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'feature', $or: [ { 'details.action': 'used' }, { 'details.action': 'use' } ] } },
+        { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
+      ]);
+
+      const triedVisitorsMap = {};
+      triedVisitorAgg.forEach(item => { triedVisitorsMap[item._id || 'Unknown'] = (item.visitors || []).length; });
+      const triedEnabledVisitorsMap = {};
+      triedEnableVisitorAgg.forEach(item => { triedEnabledVisitorsMap[item._id || 'Unknown'] = (item.visitors || []).length; });
+      const usedVisitorsMap = {};
+      usedVisitorAgg.forEach(item => { usedVisitorsMap[item._id || 'Unknown'] = (item.visitors || []).length; });
+
+      // Attach unique visitor counts to featureStats
+      Object.keys(featureStats).forEach(f => {
+        featureStats[f].triedVisitors = triedVisitorsMap[featureStats[f].display] || triedVisitorsMap[f] || 0;
+        featureStats[f].triedEnabledVisitors = triedEnabledVisitorsMap[featureStats[f].display] || triedEnabledVisitorsMap[f] || 0;
+        featureStats[f].usedVisitors = usedVisitorsMap[featureStats[f].display] || usedVisitorsMap[f] || 0;
+      });
+
+      // Calculate trending features (recent growth)
+      const currentTime = new Date();
+      const recentDays = 3;
+      const recentCutoff = new Date(currentTime);
+      recentCutoff.setDate(recentCutoff.getDate() - recentDays);
+
+      const recentFeatureAgg = await Event.aggregate([
+        { $match: { timestamp: { $gte: recentCutoff }, type: 'feature' } },
+        { $group: {
+          _id: { feature: '$details.feature' },
+          recentCount: { $sum: 1 }
+        }}
+      ]);
+
+      const olderCutoff = new Date(recentCutoff);
+      olderCutoff.setDate(olderCutoff.getDate() - recentDays);
+
+      const olderFeatureAgg = await Event.aggregate([
+        { $match: { timestamp: { $gte: olderCutoff, $lt: recentCutoff }, type: 'feature' } },
+        { $group: {
+          _id: { feature: '$details.feature' },
+          olderCount: { $sum: 1 }
+        }}
+      ]);
+
+      const trendingFeatures = {};
+      recentFeatureAgg.forEach(item => {
         const feature = item._id.feature || 'Unknown';
-        const action = item._id.action;
-        if (!featureStats[feature]) featureStats[feature] = { enabled: 0, disabled: 0 };
-        if (action === 'enable' || action === 'enabled') featureStats[feature].enabled += item.count;
-        else if (action === 'disable' || action === 'disabled') featureStats[feature].disabled += item.count;
+        trendingFeatures[feature] = { recent: item.recentCount, older: 0 };
+      });
+
+      olderFeatureAgg.forEach(item => {
+        const feature = item._id.feature || 'Unknown';
+        if (!trendingFeatures[feature]) trendingFeatures[feature] = { recent: 0, older: 0 };
+        trendingFeatures[feature].older = item.olderCount;
+      });
+
+      // Calculate growth rate
+      Object.keys(trendingFeatures).forEach(feature => {
+        const data = trendingFeatures[feature];
+        const growth = data.older > 0 ? ((data.recent - data.older) / data.older) * 100 : (data.recent > 0 ? 100 : 0);
+        data.growth = growth;
+        data.total = data.recent + data.older;
       });
 
       return {
@@ -414,7 +644,12 @@ class AnalyticsStore {
           refererDistribution: refererDistribution.reduce((acc, item) => { acc[item._id || 'Direct'] = item.count; return acc; }, {}),
           exitPages: exitPages.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
           geoDistribution: geoDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          featureStats: featureStats
+          featureStats: featureStats,
+          featureTrend: featureTrend,
+          featureByDevice: featureByDevice,
+          featureByBrowser: featureByBrowser,
+          featureByHour: featureByHour,
+          trendingFeatures: trendingFeatures
         },
         recentActivity: recentEvents,
         websites: websites,

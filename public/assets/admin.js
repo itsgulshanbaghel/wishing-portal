@@ -218,6 +218,13 @@
     renderDeviceChart2();
     renderOSChart2();
     renderFeatureChart();
+    renderFeatureTrendChart();
+    renderFeatureTable();
+    renderFeatureDeviceChart();
+    renderFeatureBrowserChart();
+    renderFeatureHourChart();
+    renderTrendingFeaturesChart();
+    renderMostUsedFeaturesChart();
     renderCategoryChart();
     renderCreationTrendChart();
     renderFeedback();
@@ -334,19 +341,480 @@
   function renderExitChart() { renderBarChart('exitChart', dashData.charts?.exitPages || {}, '#ef4444'); }
   function renderGeoChart() { renderBarChart('geoChart', dashData.charts?.geoDistribution || {}, '#22c55e'); }
 
+  // Merge feature entries by normalized display to avoid duplicates (e.g. "Flower Rain" vs "flowerRain")
+  function _buildFeatureSummary(rawFs) {
+    const merged = {};
+    function normName(n) { return (n || '').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+    Object.keys(rawFs || {}).forEach(key => {
+      const entry = rawFs[key] || {};
+      const display = (entry.display || key || '').toString();
+      const norm = normName(display) || normName(key);
+      if (!merged[norm]) merged[norm] = { display: display, tried: 0, used: 0, triedEnabled: 0, triedDisabled: 0, triedVisitors: 0, triedEnabledVisitors: 0, usedVisitors: 0 };
+      merged[norm].tried += Number(entry.tried || 0);
+      merged[norm].used += Number(entry.used || 0);
+      merged[norm].triedEnabled += Number(entry.triedEnabled || 0);
+      merged[norm].triedDisabled += Number(entry.triedDisabled || 0);
+      merged[norm].triedVisitors += Number(entry.triedVisitors || 0);
+      merged[norm].triedEnabledVisitors += Number(entry.triedEnabledVisitors || 0);
+      merged[norm].usedVisitors += Number(entry.usedVisitors || 0);
+    });
+    return merged;
+  }
+
   function renderFeatureChart() {
-    const fs = dashData.charts?.featureStats || {};
-    const keys = Object.keys(fs).slice(0, 15);
+    const rawFs = dashData.charts?.featureStats || {};
+    const fs = _buildFeatureSummary(rawFs);
+    const keys = Object.keys(fs).sort((a, b) => (fs[b].used || 0) - (fs[a].used || 0)).slice(0, 15);
     makeChart('featureChart', {
       type: 'bar',
       data: {
-        labels: keys.map(k => k.length > 20 ? k.slice(0, 20) + '…' : k),
+        labels: keys.map(k => (fs[k].display && fs[k].display.length > 20) ? fs[k].display.slice(0, 20) + '…' : (fs[k].display || k)),
         datasets: [
-          { label: 'Enabled', data: keys.map(k => fs[k].enabled), backgroundColor: 'rgba(34,197,94,0.4)', borderColor: '#22c55e', borderWidth: 1, borderRadius: 4 },
-          { label: 'Disabled', data: keys.map(k => fs[k].disabled), backgroundColor: 'rgba(239,68,68,0.4)', borderColor: '#ef4444', borderWidth: 1, borderRadius: 4 }
+          { label: 'Used (Final)', data: keys.map(k => fs[k].used || 0), backgroundColor: 'rgba(34,197,94,0.6)', borderColor: '#22c55e', borderWidth: 1, borderRadius: 4 },
+          { label: 'Tried', data: keys.map(k => fs[k].tried || 0), backgroundColor: 'rgba(59,130,246,0.4)', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }
         ]
       },
-      options: { responsive: true, plugins: { legend: { position: 'top', labels: { boxWidth: 10 } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }, x: { grid: { display: false } } } }
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 10 } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const featureKey = keys[context.dataIndex];
+                const stats = fs[featureKey];
+                if (context.datasetIndex === 0) { // Used
+                  return `Used: ${context.parsed.y} (${stats.used || 0})`;
+                } else { // Tried
+                  return `Tried: ${context.parsed.y} (${stats.tried || 0})`;
+                }
+              }
+            }
+          }
+        },
+        scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }, x: { grid: { display: false } } }
+      }
+    });
+  }
+
+  function renderFeatureTrendChart() {
+    const ft = dashData.charts?.featureTrend || {};
+    const dates = Object.keys(ft).sort();
+
+    // Handle empty data
+    if (dates.length === 0) {
+      makeChart('featureTrendChart', {
+        type: 'line',
+        data: {
+          labels: ['No data'],
+          datasets: [{
+            label: 'No feature usage data available',
+            data: [0],
+            borderColor: '#666',
+            backgroundColor: 'rgba(102,102,102,0.1)',
+            borderWidth: 1,
+            pointRadius: 0,
+            tension: 0.4,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+      return;
+    }
+
+    const topFeatures = Object.keys(dashData.charts?.featureStats || {})
+      .sort((a, b) => (dashData.charts.featureStats[b].total || 0) - (dashData.charts.featureStats[a].total || 0))
+      .slice(0, 5);
+
+    if (topFeatures.length === 0) {
+      // No features found
+      makeChart('featureTrendChart', {
+        type: 'line',
+        data: {
+          labels: dates.map(d => d.slice(5)),
+          datasets: [{
+            label: 'No feature data',
+            data: new Array(dates.length).fill(0),
+            borderColor: '#666',
+            backgroundColor: 'rgba(102,102,102,0.1)',
+            borderWidth: 1,
+            pointRadius: 0,
+            tension: 0.4,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+      return;
+    }
+
+    const datasets = topFeatures.map((feature, i) => ({
+      label: feature.length > 15 ? feature.slice(0, 15) + '…' : feature,
+      data: dates.map(date => ft[date]?.[feature] || 0),
+      borderColor: COLORS[i % COLORS.length],
+      backgroundColor: COLORS_ALPHA[i % COLORS.length],
+      borderWidth: 2,
+      pointRadius: 2,
+      tension: 0.4,
+      fill: false
+    }));
+
+    makeChart('featureTrendChart', {
+      type: 'line',
+      data: {
+        labels: dates.map(d => d.slice(5)),
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  function renderFeatureTable() {
+    const tbody = document.querySelector('#featureTable tbody');
+    tbody.innerHTML = '';
+    const fs = dashData.charts?.featureStats || {};
+    const features = Object.keys(fs).sort((a, b) => (fs[b].used || 0) - (fs[a].used || 0)); // Sort by used features
+
+    // Build a merged summary to avoid duplicate feature display
+    const merged = _buildFeatureSummary(dashData.charts?.featureStats || {});
+    const keys = Object.keys(merged).sort((a, b) => (merged[b].used || 0) - (merged[a].used || 0));
+
+    keys.slice(0, 20).forEach(k => {
+      const stats = merged[k] || {};
+      const tried = Number(stats.tried || 0);
+      const used = Number(stats.used || 0);
+      const triedEnabled = Number(stats.triedEnabled || 0);
+      const triedDisabled = Number(stats.triedDisabled || 0);
+      const triedVisitors = Number(stats.triedVisitors || 0);
+      const triedEnabledVisitors = Number(stats.triedEnabledVisitors || 0);
+      const usedVisitors = Number(stats.usedVisitors || 0);
+      let conversionRate = null;
+
+      // Use raw counts for conversion rate since that's what's displayed in the table
+      if (tried > 0) {
+        conversionRate = (used / tried) * 100;
+      } else {
+        conversionRate = null;
+      }
+
+      if (conversionRate !== null) conversionRate = Math.round(conversionRate * 10) / 10;
+
+      if ((conversionRate === 0 || conversionRate === null) && used > 0) console.warn('[Admin] Feature used>0 but conversion low/missing', k, stats);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${stats.display || k}</td>
+        <td>${formatNum(tried)}</td>
+        <td>${formatNum(used)}</td>
+        <td>${formatNum(triedEnabled)}</td>
+        <td>${formatNum(triedDisabled)}</td>
+        <td>${conversionRate !== null ? conversionRate + '%' : '--'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderFeatureDeviceChart() {
+    // For device/browser charts, we'll show tried interactions since used events don't have device/browser context
+    const fd = dashData.charts?.featureByDevice || {};
+    const devices = Object.keys(fd).slice(0, 5);
+    const topFeatures = Object.keys(dashData.charts?.featureStats || {})
+      .sort((a, b) => (dashData.charts.featureStats[b].used || 0) - (dashData.charts.featureStats[a].used || 0))
+      .slice(0, 3);
+
+    if (devices.length === 0 || topFeatures.length === 0) {
+      makeChart('featureDeviceChart', {
+        type: 'bar',
+        data: {
+          labels: ['No data'],
+          datasets: [{
+            label: 'No device data',
+            data: [0],
+            backgroundColor: 'rgba(102,102,102,0.3)',
+            borderColor: '#666',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+      return;
+    }
+
+    const datasets = devices.map((device, i) => ({
+      label: device,
+      data: topFeatures.map(feature => fd[device]?.[feature] || 0),
+      backgroundColor: COLORS[i % COLORS.length] + '60',
+      borderColor: COLORS[i % COLORS.length],
+      borderWidth: 1,
+      borderRadius: 4
+    }));
+
+    makeChart('featureDeviceChart', {
+      type: 'bar',
+      data: {
+        labels: topFeatures.map(f => f.length > 15 ? f.slice(0, 15) + '…' : f),
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 10 } },
+          title: { display: true, text: 'Feature Interactions by Device (Tried)', font: { size: 12 } }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  function renderFeatureBrowserChart() {
+    // For device/browser charts, we'll show tried interactions since used events don't have device/browser context
+    const fb = dashData.charts?.featureByBrowser || {};
+    const browsers = Object.keys(fb).slice(0, 5);
+    const topFeatures = Object.keys(dashData.charts?.featureStats || {})
+      .sort((a, b) => (dashData.charts.featureStats[b].used || 0) - (dashData.charts.featureStats[a].used || 0))
+      .slice(0, 3);
+
+    if (browsers.length === 0 || topFeatures.length === 0) {
+      makeChart('featureBrowserChart', {
+        type: 'bar',
+        data: {
+          labels: ['No data'],
+          datasets: [{
+            label: 'No browser data',
+            data: [0],
+            backgroundColor: 'rgba(102,102,102,0.3)',
+            borderColor: '#666',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+      return;
+    }
+
+    const datasets = browsers.map((browser, i) => ({
+      label: browser,
+      data: topFeatures.map(feature => fb[browser]?.[feature] || 0),
+      backgroundColor: COLORS[i % COLORS.length] + '60',
+      borderColor: COLORS[i % COLORS.length],
+      borderWidth: 1,
+      borderRadius: 4
+    }));
+
+    makeChart('featureBrowserChart', {
+      type: 'bar',
+      data: {
+        labels: topFeatures.map(f => f.length > 15 ? f.slice(0, 15) + '…' : f),
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 10 } },
+          title: { display: true, text: 'Feature Interactions by Browser (Tried)', font: { size: 12 } }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  function renderFeatureHourChart() {
+    const fh = dashData.charts?.featureByHour || {};
+    const hours = Array.from({length: 24}, (_, i) => i);
+    const topFeatures = Object.keys(dashData.charts?.featureStats || {})
+      .sort((a, b) => (dashData.charts.featureStats[b].total || 0) - (dashData.charts.featureStats[a].total || 0))
+      .slice(0, 3);
+
+    const datasets = topFeatures.map((feature, i) => ({
+      label: feature.length > 15 ? feature.slice(0, 15) + '…' : feature,
+      data: hours.map(hour => fh[hour]?.[feature] || 0),
+      borderColor: COLORS[i % COLORS.length],
+      backgroundColor: COLORS_ALPHA[i % COLORS.length],
+      borderWidth: 2,
+      pointRadius: 2,
+      tension: 0.4,
+      fill: false
+    }));
+
+    makeChart('featureHourChart', {
+      type: 'line',
+      data: {
+        labels: hours.map(h => `${h}:00`),
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  function renderTrendingFeaturesChart() {
+    const tf = dashData.charts?.trendingFeatures || {};
+    const features = Object.keys(tf)
+      .filter(f => tf[f].total > 0)
+      .sort((a, b) => (tf[b].growth || 0) - (tf[a].growth || 0))
+      .slice(0, 10);
+
+    const data = features.map(feature => ({
+      feature: feature,
+      growth: tf[feature].growth || 0,
+      recent: tf[feature].recent || 0,
+      total: tf[feature].total || 0
+    }));
+
+    makeChart('trendingFeaturesChart', {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.feature.length > 15 ? d.feature.slice(0, 15) + '…' : d.feature),
+        datasets: [{
+          label: 'Growth %',
+          data: data.map(d => d.growth),
+          backgroundColor: data.map(d => d.growth >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)'),
+          borderColor: data.map(d => d.growth >= 0 ? '#22c55e' : '#ef4444'),
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const d = data[context.dataIndex];
+                return [
+                  `Growth: ${d.growth.toFixed(1)}%`,
+                  `Recent: ${d.recent}`,
+                  `Total: ${d.total}`
+                ];
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255,255,255,0.03)' },
+            title: { display: true, text: 'Growth Rate (%)' }
+          },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  function renderMostUsedFeaturesChart() {
+    const fs = dashData.charts?.featureStats || {};
+    const features = Object.keys(fs)
+      .filter(f => (fs[f].used || 0) > 0) // Only show features that were actually used
+      .sort((a, b) => (fs[b].used || 0) - (fs[a].used || 0))
+      .slice(0, 10);
+
+    if (features.length === 0) {
+      makeChart('mostUsedFeaturesChart', {
+        type: 'bar',
+        data: {
+          labels: ['No data'],
+          datasets: [{
+            label: 'No used features',
+            data: [0],
+            backgroundColor: 'rgba(102,102,102,0.3)',
+            borderColor: '#666',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+      return;
+    }
+
+    makeChart('mostUsedFeaturesChart', {
+      type: 'bar',
+      data: {
+        labels: features.map(f => f.length > 15 ? f.slice(0, 15) + '…' : f),
+        datasets: [{
+          label: 'Final Usage',
+          data: features.map(f => fs[f].used || 0),
+          backgroundColor: 'rgba(34,197,94,0.6)',
+          borderColor: '#22c55e',
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+          x: { grid: { display: false } }
+        }
+      }
     });
   }
 

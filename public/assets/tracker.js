@@ -262,14 +262,16 @@
         });
       }
 
-      // Track feature toggle
+      // Track feature toggle (tried, not used yet) — use feature ID when available
       const toggle = e.target.closest('.toggle-row');
       if (toggle) {
         const label = toggle.querySelector('.toggle-label');
         const isActive = toggle.classList.contains('active');
+        // toggle element id is 'toggle-<featureId>' in the customizer
+        const fid = (toggle.id && toggle.id.startsWith('toggle-')) ? toggle.id.replace(/^toggle-/, '') : (label?.textContent?.trim() || 'unknown');
         window._gtTrackFeature(
-          label?.textContent?.trim() || 'unknown',
-          isActive ? 'disable' : 'enable'
+          fid,
+          isActive ? 'tried_enable' : 'tried_disable'
         );
       }
 
