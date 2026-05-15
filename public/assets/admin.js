@@ -5,6 +5,7 @@
   'use strict';
 
   const API = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : window.location.origin;
+  const ADDITIONAL_API = (window.APP_CONFIG && window.APP_CONFIG.ADDITIONAL_API_BASE_URL) ? window.APP_CONFIG.ADDITIONAL_API_BASE_URL : null;
   let authToken = localStorage.getItem('_gt_admin_token') || '';
   let dashData = null;
   let charts = {};
@@ -140,6 +141,132 @@
       } catch (fbErr) {
         console.error('Feedback load error:', fbErr);
         dashData.feedback = { totalFeedback: 0, recentFeedback: [], questionStats: {} };
+      }
+
+      // If configured, also fetch the same admin endpoints from the additional site and merge
+      if (ADDITIONAL_API) {
+        try {
+          // Lightweight fetch for additional dashboard data
+          async function additionalFetch(url, options = {}) {
+            const headers = { 'Authorization': 'Basic ' + authToken, 'Content-Type': 'application/json', ...options.headers };
+            const r = await fetch(ADDITIONAL_API + url, { ...options, headers });
+            const text = await r.text();
+            try { return JSON.parse(text); } catch (e) { console.warn('[Admin] Additional API returned non-JSON', text.slice(0,200)); return null; }
+          }
+
+          function mergeOverview(primary, other) {
+            if (!other || !other.overview) return;
+            primary.overview = primary.overview || {};
+            const keys = ['totalPageViews','totalWebsitesCreated','periodUniqueVisitors','todayViews','todayWebsitesCreated','totalWebsiteViews','todayUniqueVisitors'];
+            keys.forEach(k => { primary.overview[k] = (Number(primary.overview[k] || 0) + Number(other.overview[k] || 0)); });
+          }
+
+          function mergeTrend(primaryArr, otherArr) {
+            const map = {};
+            (primaryArr || []).concat(otherArr || []).forEach(item => {
+              if (!item || !item.date) return;
+              map[item.date] = map[item.date] || { date: item.date, views: 0, uniqueVisitors: 0, websitesCreated: 0 };
+              map[item.date].views += Number(item.views || 0);
+              map[item.date].uniqueVisitors += Number(item.uniqueVisitors || 0);
+              map[item.date].websitesCreated += Number(item.websitesCreated || 0);
+            });
+            return Object.values(map).sort((a,b) => a.date.localeCompare(b.date));
+          }
+
+          function mergeDistribution(primaryObj, otherObj) {
+            const res = Object.assign({}, primaryObj || {});
+            Object.keys(otherObj || {}).forEach(k => { res[k] = (Number(res[k] || 0) + Number(otherObj[k] || 0)); });
+            return res;
+          }
+
+          function mergeHourly(primaryArr, otherArr) {
+            const len = Math.max((primaryArr || []).length, (otherArr || []).length, 24);
+            const out = new Array(len).fill(0);
+            for (let i = 0; i < len; i++) out[i] = (Number(primaryArr?.[i] || 0) + Number(otherArr?.[i] || 0));
+            return out;
+          }
+
+          function mergeArraysByDate(primary, other, keyDate = 'timestamp') {
+            const merged = (primary || []).concat(other || []);
+            merged.sort((a,b) => (b[keyDate] || '').localeCompare(a[keyDate] || ''));
+            return merged.slice(0, 200);
+          }
+
+          function mergeWebsites(primaryList, otherList) {
+            const map = {};
+            (primaryList || []).concat(otherList || []).forEach(w => { if (!w || !w.id) return; const prev = map[w.id]; if (!prev) map[w.id] = w; else { // keep the one with latest createdAt or higher views
+                if ((w.createdAt && prev.createdAt && new Date(w.createdAt) > new Date(prev.createdAt)) || (Number(w.views || 0) > Number(prev.views || 0))) map[w.id] = w; }
+            });
+            return Object.values(map);
+          }
+
+          // Fetch other dashboard
+          const otherDash = await additionalFetch(`/api/admin/dashboard?days=${period}`);
+          if (otherDash) {
+            console.log('[Admin] Additional dashboard received from', ADDITIONAL_API, otherDash);
+
+            // Ensure structures
+            dashData.charts = dashData.charts || {};
+            otherDash.charts = otherDash.charts || {};
+
+            // Merge overviews
+            mergeOverview(dashData, otherDash);
+
+            // Merge trend data
+            dashData.charts.trendData = mergeTrend(dashData.charts.trendData || [], otherDash.charts.trendData || []);
+
+            // Merge simple distributions
+            const distKeys = ['deviceDistribution','browserDistribution','osDistribution','eventTypeDistribution','refererDistribution','exitPages','geoDistribution','pageViewsByPage','websitesByEventType','featureStats'];
+            distKeys.forEach(k => { dashData.charts[k] = mergeDistribution(dashData.charts[k] || {}, otherDash.charts[k] || {}); });
+
+            // Merge hourly
+            dashData.charts.hourlyDistribution = mergeHourly(dashData.charts.hourlyDistribution || [], otherDash.charts.hourlyDistribution || []);
+
+            // Merge feature-related aggregates if present
+            dashData.charts.featureStats = dashData.charts.featureStats || {};
+            Object.keys(otherDash.charts.featureStats || {}).forEach(fk => {
+              if (!dashData.charts.featureStats[fk]) dashData.charts.featureStats[fk] = otherDash.charts.featureStats[fk];
+              else {
+                const src = otherDash.charts.featureStats[fk];
+                const tgt = dashData.charts.featureStats[fk];
+                ['tried','used','triedEnabled','triedDisabled','triedVisitors','triedEnabledVisitors','usedVisitors','total'].forEach(nk => { tgt[nk] = (Number(tgt[nk]||0) + Number(src[nk]||0)); });
+              }
+            });
+
+            // Merge recent activity and websites
+            dashData.recentActivity = mergeArraysByDate(dashData.recentActivity, otherDash.recentActivity, 'timestamp');
+            dashData.websites = mergeWebsites(dashData.websites || [], otherDash.websites || []);
+
+            // Merge topWebsites by views
+            const combinedTop = (dashData.topWebsites || []).concat(otherDash.topWebsites || []);
+            dashData.topWebsites = combinedTop.sort((a,b) => (Number(b.views||0) - Number(a.views||0))).slice(0,20);
+
+            // Merge feedback
+            if (otherDash.feedback) {
+              dashData.feedback = dashData.feedback || { totalFeedback:0, recentFeedback:[], questionStats:{} };
+              dashData.feedback.totalFeedback = Number(dashData.feedback.totalFeedback || 0) + Number(otherDash.feedback.totalFeedback || 0);
+              dashData.feedback.recentFeedback = (dashData.feedback.recentFeedback || []).concat(otherDash.feedback.recentFeedback || []).sort((a,b) => (b.submittedAt||'').localeCompare(a.submittedAt||'')).slice(0,200);
+
+              // Merge questionStats (assume object maps)
+              Object.keys(otherDash.feedback.questionStats || {}).forEach(qk => {
+                dashData.feedback.questionStats[qk] = mergeDistribution(dashData.feedback.questionStats[qk] || {}, otherDash.feedback.questionStats[qk] || {});
+              });
+            }
+          }
+
+          // Also attempt to fetch detailed feedback (all=true) from additional site to populate modal if available
+          try {
+            const otherFb = await additionalFetch('/api/admin/feedback-analytics?all=true');
+            if (otherFb && otherFb.recentFeedback) {
+              dashData.feedback = dashData.feedback || { totalFeedback:0, recentFeedback:[], questionStats:{} };
+              dashData.feedback.recentFeedback = (dashData.feedback.recentFeedback || []).concat(otherFb.recentFeedback || []).sort((a,b) => (b.submittedAt||'').localeCompare(a.submittedAt||'')).slice(0,500);
+            }
+          } catch (inner) {
+            console.warn('Additional feedback fetch failed:', inner);
+          }
+        } catch (errAdd) {
+          console.warn('[Admin] Failed to fetch/merge additional API data from', ADDITIONAL_API, errAdd);
+        }
       }
 
       // Show fallback mode indicator if applicable
@@ -361,38 +488,140 @@
     return merged;
   }
 
-  function renderFeatureChart() {
+function renderFeatureChart() {
     const rawFs = dashData.charts?.featureStats || {};
     const fs = _buildFeatureSummary(rawFs);
-    const keys = Object.keys(fs).sort((a, b) => (fs[b].used || 0) - (fs[a].used || 0)).slice(0, 15);
+
+    const items = Object.keys(fs || {}).map(k => ({ key: k, display: (fs[k].display || k || '').toString(), tried: Number(fs[k].tried || 0), used: Number(fs[k].used || 0) }));
+
+    function tokenizeLabel(s) {
+      if (!s) return [];
+      const clean = s.toString()
+        .normalize('NFKC')
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .replace(/[^\p{L}\p{N}_\s]/gu, ' ')
+        .replace(/([a-z])([A-Z])/g, '$1 $2');
+      return Array.from(new Set(clean.toLowerCase().split(/[^a-z0-9]+/).filter(t => t && t.length >= 3)));
+    }
+
+    const groups = [];
+    items.forEach(it => {
+      const toks = tokenizeLabel(it.display);
+      if (toks.length === 0) toks.push(it.key.toString().toLowerCase().replace(/[^a-z0-9]+/g, ''));
+      let placed = false;
+      for (const g of groups) {
+        const inter = g.tokens.filter(t => toks.indexOf(t) !== -1);
+        if (inter.length > 0) {
+          g.tried += it.tried;
+          g.used += it.used;
+          g.sources.push(it.key);
+          if (it.display.length > g.display.length) g.display = it.display;
+          // merge tokens
+          g.tokens = Array.from(new Set(g.tokens.concat(toks)));
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) groups.push({ display: it.display, tried: it.tried, used: it.used, tokens: toks, sources: [it.key] });
+    });
+
+    // Secondary pass: group by primary token (first token) to catch cases like 'finalSurprise' vs 'Final Message'
+    const primaryMap = {};
+    groups.forEach(g => {
+      const primary = g.tokens && g.tokens.length ? g.tokens[0] : null;
+      if (!primary) return;
+      if (!primaryMap[primary]) primaryMap[primary] = { display: g.display, tried: 0, used: 0, tokens: [], sources: [] };
+      primaryMap[primary].tried += g.tried;
+      primaryMap[primary].used += g.used;
+      primaryMap[primary].tokens = Array.from(new Set((primaryMap[primary].tokens || []).concat(g.tokens || [])));
+      primaryMap[primary].sources = (primaryMap[primary].sources || []).concat(g.sources || []);
+      if (g.display.length > (primaryMap[primary].display || '').length) primaryMap[primary].display = g.display;
+    });
+
+    let finalGroups = Object.keys(primaryMap).length > 0 ? Object.keys(primaryMap).map(k => primaryMap[k]) : groups;
+
+    // If primary grouping collapsed too aggressively (result count equals original), fallback to token groups
+    if (finalGroups.length === groups.length) finalGroups = groups;
+
+    // Apply canonical overrides for known variants to force merging
+    const canonicalMap = [
+      { patterns: ['final', 'finalsurprise', 'finalmessage'], label: 'Final Message' },
+      { patterns: ['flying', 'flyingbirds', 'flyingswans'], label: 'Flying Birds' },
+      { patterns: ['welcome', 'welcometyping', 'welcomemessage'], label: 'Welcome Message' },
+      { patterns: ['scratch', 'scratchcard'], label: 'Scratch Card' },
+      { patterns: ['flower', 'flowerrain'], label: 'Flower Rain' },
+      { patterns: ['gift', 'giftbox', 'giftboxopen'], label: 'Gift Box' },
+      { patterns: ['balloon', 'classicballoons', 'namedballoons', 'balloonparty'], label: 'Balloons' },
+      { patterns: ['bomb', 'bombexplosion'], label: 'Bomb' },
+      { patterns: ['stardust'], label: 'Stardust' }
+    ];
+
+    function findCanonicalKey(display) {
+      const key = display.toString().toLowerCase().replace(/[^a-z0-9]+/g, '');
+      for (const c of canonicalMap) {
+        for (const p of c.patterns) {
+          if (key.indexOf(p) !== -1) return c.label;
+        }
+      }
+      return null;
+    }
+
+    // Merge finalGroups by canonical label when detected
+    const canonicalAgg = {};
+    finalGroups.forEach(g => {
+      const canon = findCanonicalKey(g.display) || g.display;
+      if (!canonicalAgg[canon]) canonicalAgg[canon] = { display: canon, tried: 0, used: 0, sources: [] };
+      canonicalAgg[canon].tried += g.tried || 0;
+      canonicalAgg[canon].used += g.used || 0;
+      canonicalAgg[canon].sources = canonicalAgg[canon].sources.concat(g.sources || []);
+      // prefer the most descriptive label (without emoji) — keep if longer
+      if (g.display && g.display.length > canonicalAgg[canon].display.length) canonicalAgg[canon].display = g.display;
+    });
+
+    finalGroups = Object.keys(canonicalAgg).map(k => canonicalAgg[k]);
+    finalGroups.sort((a, b) => (b.used || 0) - (a.used || 0));
+
+    const labels = finalGroups.map(g => g.display);
+    const usedData = finalGroups.map(g => g.used || 0);
+    const triedData = finalGroups.map(g => g.tried || 0);
+
+    // Debug
+    console.log('[Admin] Feature raw keys:', Object.keys(rawFs || {}));
+    console.log('[Admin] Feature merged keys (from _buildFeatureSummary):', Object.keys(fs || {}));
+    console.log('[Admin] Feature final labels:', labels);
+    const multipleSources = finalGroups.filter(g => (g.sources || []).length > 1);
+    if (multipleSources.length) console.warn('[Admin] Grouped labels with multiple normalized sources:', multipleSources.map(g => ({label: g.display, sources: g.sources}))); 
+    console.log('[Admin] Display -> normalized sources mapping:', Object.fromEntries(finalGroups.map(g => [g.display, g.sources])));
+
     makeChart('featureChart', {
       type: 'bar',
       data: {
-        labels: keys.map(k => (fs[k].display && fs[k].display.length > 20) ? fs[k].display.slice(0, 20) + '…' : (fs[k].display || k)),
+        labels: labels,
         datasets: [
-          { label: 'Used (Final)', data: keys.map(k => fs[k].used || 0), backgroundColor: 'rgba(34,197,94,0.6)', borderColor: '#22c55e', borderWidth: 1, borderRadius: 4 },
-          { label: 'Tried', data: keys.map(k => fs[k].tried || 0), backgroundColor: 'rgba(59,130,246,0.4)', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }
+          { label: 'Used (Final)', data: usedData, backgroundColor: 'rgba(34,197,94,0.6)', borderColor: '#22c55e', borderWidth: 1, borderRadius: 4 },
+          { label: 'Tried', data: triedData, backgroundColor: 'rgba(59,130,246,0.4)', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }
         ]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: { position: 'top', labels: { boxWidth: 10 } },
           tooltip: {
             callbacks: {
               label: function(context) {
-                const featureKey = keys[context.dataIndex];
-                const stats = fs[featureKey];
-                if (context.datasetIndex === 0) { // Used
-                  return `Used: ${context.parsed.y} (${stats.used || 0})`;
-                } else { // Tried
-                  return `Tried: ${context.parsed.y} (${stats.tried || 0})`;
-                }
+                const idx = context.dataIndex;
+                const stats = groups[idx] || { used: 0, tried: 0 };
+                if (context.datasetIndex === 0) return `Used: ${context.parsed.y} (${stats.used || 0})`;
+                return `Tried: ${context.parsed.y} (${stats.tried || 0})`;
               }
             }
           }
         },
-        scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }, x: { grid: { display: false } } }
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+          x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } }
+        }
       }
     });
   }
@@ -432,8 +661,10 @@
       return;
     }
 
-    const topFeatures = Object.keys(dashData.charts?.featureStats || {})
-      .sort((a, b) => (dashData.charts.featureStats[b].total || 0) - (dashData.charts.featureStats[a].total || 0))
+    // Use merged feature keys to avoid duplicates caused by different display names/casing
+    const mergedStats = _buildFeatureSummary(dashData.charts?.featureStats || {});
+    const topFeatures = Object.keys(mergedStats)
+      .sort((a, b) => (mergedStats[b].total || mergedStats[b].used || 0) - (mergedStats[a].total || mergedStats[a].used || 0))
       .slice(0, 5);
 
     if (topFeatures.length === 0) {
@@ -468,8 +699,18 @@
     }
 
     const datasets = topFeatures.map((feature, i) => ({
-      label: feature.length > 15 ? feature.slice(0, 15) + '…' : feature,
-      data: dates.map(date => ft[date]?.[feature] || 0),
+      label: mergedStats[feature].display.length > 15 ? mergedStats[feature].display.slice(0, 15) + '…' : mergedStats[feature].display,
+      data: dates.map(date => {
+        // featureTrend stores counts keyed by original feature names; map them to normalized key
+        const perDate = ft[date] || {};
+        // sum across possible variants that normalize to the same key
+        let sum = 0;
+        Object.keys(perDate).forEach(orig => {
+          const norm = (orig || '').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+          if (norm === feature) sum += Number(perDate[orig] || 0);
+        });
+        return sum;
+      }),
       borderColor: COLORS[i % COLORS.length],
       backgroundColor: COLORS_ALPHA[i % COLORS.length],
       borderWidth: 2,
@@ -762,10 +1003,12 @@
   }
 
   function renderMostUsedFeaturesChart() {
-    const fs = dashData.charts?.featureStats || {};
-    const features = Object.keys(fs)
-      .filter(f => (fs[f].used || 0) > 0) // Only show features that were actually used
-      .sort((a, b) => (fs[b].used || 0) - (fs[a].used || 0))
+    // Use merged (normalized) summary to avoid duplicate feature entries caused by different key casings/formatting
+    const rawFs = dashData.charts?.featureStats || {};
+    const merged = _buildFeatureSummary(rawFs);
+    const features = Object.keys(merged)
+      .filter(f => (merged[f].used || 0) > 0) // Only show features that were actually used
+      .sort((a, b) => (merged[b].used || 0) - (merged[a].used || 0))
       .slice(0, 10);
 
     if (features.length === 0) {
@@ -797,10 +1040,10 @@
     makeChart('mostUsedFeaturesChart', {
       type: 'bar',
       data: {
-        labels: features.map(f => f.length > 15 ? f.slice(0, 15) + '…' : f),
+        labels: features.map(f => (merged[f].display || f).length > 15 ? (merged[f].display || f).slice(0, 15) + '…' : (merged[f].display || f)),
         datasets: [{
           label: 'Final Usage',
-          data: features.map(f => fs[f].used || 0),
+          data: features.map(f => merged[f].used || 0),
           backgroundColor: 'rgba(34,197,94,0.6)',
           borderColor: '#22c55e',
           borderWidth: 1,

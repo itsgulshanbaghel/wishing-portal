@@ -183,6 +183,16 @@ option { background:var(--bg-surface); color:var(--text); }
   display:flex; align-items:center; gap:8px; }
 .chart-card h3 i { color:var(--accent); font-size:0.85rem; }
 .chart-card canvas { width:100% !important; max-height:300px; }
+.chart-card.wide { position: relative; }
+.chart-card.wide .chart-scroll-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  min-height: 350px;
+}
+.chart-card.wide .chart-scroll-container canvas {
+  min-width: 100%;
+}
 
 /* Tables */
 .table-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
