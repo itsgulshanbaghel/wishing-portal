@@ -1449,11 +1449,6 @@
         gap: 12px;
       }
 
-      /* Ensure panel has extra bottom padding so action-bar isn't overlapped by mobile nav */
-      .panel {
-        padding-bottom: calc(80px + env(safe-area-inset-bottom, 16px));
-      }
-
       /* REDUCED TOGGLE BUTTONS, HEADER, FOOTER */
       .panel-header {
         padding: 12px 16px 4px;
@@ -3810,21 +3805,8 @@
             return;
           }
 
-          // Save edited content map BEFORE disabling (preserves all user pencil edits)
-          const contentSnapshot = {};
-          try {
-            const allEls = doc.querySelectorAll('[id]');
-            allEls.forEach(function (el) {
-              if (el.id && el.id !== 'resizable-text-section' && el.innerHTML && el.innerHTML.length < 100000) {
-                contentSnapshot[el.id] = el.innerHTML;
-              }
-            });
-          } catch (e) { console.error('Content snapshot error', e); }
-
           // Temporarily disable all features to get clean DOM snapshot
-          // Skip addTextBox/resizableText so user-created text boxes are preserved
           for (let [id, active] of activeFeatureStates.entries()) {
-            if (id === 'addTextBox' || id === 'resizableText') continue;
             if (active && FEATURE_MAP[id] && FEATURE_MAP[id].disable) {
               try { FEATURE_MAP[id].disable(doc); } catch (e) { console.error("Error disabling " + id, e); }
             }
@@ -3853,8 +3835,7 @@
           }
 
           // Prevent the template script from overwriting edited text in the generated HTML
-          html = html.replace(/(applyLanguage\w*|renderGallery|renderTimeline|renderReasons|syncLang)\s*\(\s*\)\s*;/g, '');
-          html = html.replace(/document\.getElementById\(['"]heroName['"]\)\.innerHTML\s*=\s*[^;]+;/g, '');
+          html = html.replace(/applyLanguage\w*\(\);/g, '');
 
           const mobileFixStyles = `
 <style>
@@ -4101,14 +4082,6 @@
            const runtimeEl = doc2.createElement('div');
            runtimeEl.innerHTML = magicRuntime;
            container.insertBefore(runtimeEl, container.firstChild);
-
-           // Inject content restoration script to preserve all pencil edits
-           if (Object.keys(contentSnapshot).length > 0) {
-             const restoreScript = doc2.createElement('script');
-             restoreScript.id = 'greeter-content-restore';
-             restoreScript.textContent = '(function(){try{var m=' + JSON.stringify(contentSnapshot) + ';function r(){for(var k in m){try{var e=document.getElementById(k);if(e){e.innerHTML=m[k];}}catch(ex){}}}if(document.readyState==="complete"){setTimeout(r,800)}else{window.addEventListener("load",function(){setTimeout(r,800)})}}catch(er){}})();';
-             container.appendChild(restoreScript);
-           }
 
           // Inject analytics tracker into the generated HTML
           const configScript = doc2.createElement('script');
