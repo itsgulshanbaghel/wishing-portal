@@ -1445,8 +1445,16 @@
         background: transparent;
         z-index: 10;
         border-top: 1px solid var(--card-border);
-        padding: 20px 16px calc(30px + env(safe-area-inset-bottom, 16px));
+        /* Increased bottom padding to ensure buttons sit well above mobile nav */
+        padding: 24px 16px calc(44px + env(safe-area-inset-bottom, 20px));
         gap: 12px;
+        /* Ensure action buttons sit above mobile OS navigation bars */
+        margin-bottom: calc(18px + env(safe-area-inset-bottom, 20px));
+      }
+
+      /* Add extra bottom padding to panel so action-bar is not overlapped */
+      .panel {
+        padding-bottom: calc(28px + env(safe-area-inset-bottom, 20px));
       }
 
       /* REDUCED TOGGLE BUTTONS, HEADER, FOOTER */
@@ -3935,6 +3943,11 @@
             eventType: localEventData.event || urlParams.get('event') || 'birthday',
             templateName: templateFile.replace('.html', '') || urlParams.get('template') || 'birthday1'
           };
+
+          // Ensure the generated page has the user's name available early (templates may read localStorage or window._sharedUserName)
+          const userDataScript = '<scr' + 'ipt>(function(){try{var ud = JSON.parse(localStorage.getItem("userData")||"{}"); ud.name = ' + JSON.stringify(config.userName) + '; localStorage.setItem("userData", JSON.stringify(ud)); window._sharedUserName = ' + JSON.stringify(config.userName) + '; }catch(e){} })();</scr' + 'ipt>';
+          const s3 = doc2.createElement('script'); s3.textContent = userDataScript.replace(/<\/?script>/g, '');
+          container.insertBefore(s3, container.firstChild);
 
           const magicRuntime = `
 <script>
