@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <title>गंगा दशहरा की हार्दिक शुभकामनाएं</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght@400;500;700;800&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            background:
+                radial-gradient(circle at top, #123c7a 0%, #08152f 45%, #020814 100%);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+            backdrop-filter: blur(3px);
+        }
+
+        @keyframes floatUp {
+            from {
+                transform: translateY(0) scale(1);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-120vh) scale(1.4);
+                opacity: 0;
+            }
+        }
+
+
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .top-glow {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            background: #4fc3ff;
+            filter: blur(120px);
+            top: -120px;
+            left: -100px;
+            opacity: .35;
+            z-index: -1;
+        }
+
+        .hero {
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        .wish-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.18);
+            border-radius: 28px;
+            padding: 25px 18px;
+            backdrop-filter: blur(14px);
+            box-shadow:
+                0 0 25px rgba(0, 183, 255, 0.35),
+                0 0 60px rgba(255, 215, 0, 0.15);
+            animation: glow 3s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow:
+                    0 0 20px rgba(0, 183, 255, 0.25),
+                    0 0 50px rgba(255, 215, 0, 0.12);
+            }
+
+            to {
+                box-shadow:
+                    0 0 35px rgba(0, 183, 255, 0.55),
+                    0 0 80px rgba(255, 215, 0, 0.25);
+            }
+        }
+
+        .top-line {
+            font-size: 1.2rem;
+            color: #ffd86f;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .username {
+            color: #ffffff;
+            background: linear-gradient(45deg, #ffdf6b, #ff9800, #ffd86f);
+            padding: 4px 15px;
+            border-radius: 40px;
+            display: inline-block;
+            margin: 0 4px;
+            box-shadow: 0 0 15px rgba(255, 193, 7, .7);
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            line-height: 1.2;
+            margin-top: 10px;
+            background: linear-gradient(45deg, #ffffff, #ffe082, #ffd54f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
+            font-weight: 800;
+        }
+
+        .subtitle {
+            margin-top: 18px;
+            font-size: 1.1rem;
+            color: #e7f4ff;
+            line-height: 1.8;
+        }
+
+        .image-wrapper {
+            margin-top: 30px;
+            position: relative;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow:
+                0 10px 40px rgba(0, 0, 0, .55),
+                0 0 40px rgba(0, 183, 255, .28);
+            border: 3px solid rgba(255, 255, 255, .15);
+            animation: floatCard 5s ease-in-out infinite;
+        }
+
+        @keyframes floatCard {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .main-image {
+            width: 100%;
+            display: block;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top,
+                    rgba(0, 0, 0, .45),
+                    transparent 45%);
+        }
+
+        .quote-box {
+            margin-top: 35px;
+            padding: 28px 20px;
+            border-radius: 25px;
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, .12),
+                    rgba(255, 255, 255, .06));
+            border: 1px solid rgba(255, 255, 255, .18);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quote-box::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 191, 255, .2);
+            border-radius: 50%;
+            top: -80px;
+            right: -80px;
+            filter: blur(20px);
+        }
+
+        .quote {
+            font-size: 1.4rem;
+            line-height: 1.9;
+            color: #fff8dc;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+        }
+
+        .quote span {
+            color: #ffd54f;
+            font-size: 1.6rem;
+        }
+
+        .btn-area {
+            margin-top: 35px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* magic-cta-section — app injects feature buttons here */
+        #magic-cta-section {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .3s;
+            text-decoration: none;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            z-index: -1;
+        }
+
+        .btn.gold::before {
+            background: linear-gradient(45deg, #ffb300, #ff6f00);
+        }
+
+        .btn:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .35);
+        }
+
+        /* Gallery / Memories removed */
+
+        footer {
+            text-align: center;
+            padding: 40px 10px 25px;
+            color: #cfd8dc;
+            font-size: .95rem;
+            line-height: 1.8;
+        }
+
+        .river {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 90px;
+            background: linear-gradient(to top,
+                    rgba(0, 140, 255, .65),
+                    transparent);
+            z-index: -1;
+            filter: blur(10px);
+        }
+
+        /* Responsive */
+        @media(max-width:768px) {
+
+            h1 {
+                font-size: 2.3rem;
+            }
+
+            .quote {
+                font-size: 1.1rem;
+            }
+
+            .quote span {
+                font-size: 1.25rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .top-line {
+                font-size: 1rem;
+            }
+
+            .wish-box {
+                padding: 20px 14px;
+            }
+        }
+
+        @media(max-width:480px) {
+
+            h1 {
+                font-size: 1.9rem;
+            }
+
+            .quote {
+                font-size: 1rem;
+                line-height: 1.7;
+            }
+
+            .btn,
+            #magic-cta-section .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Animated Background -->
+    <div class="bg-animation" id="bg"></div>
+
+    <div class="river"></div>
+
+    <div class="container">
+
+        <div class="top-glow"></div>
+
+        <section class="hero" id="sections-container">
+
+            <div class="wish-box">
+
+                <div class="top-line" style="font-size:48px">
+                    आप सभी को <br>
+                    <span class="username" id="userNameDisplay">Aman</span><br>
+                    की ओर से
+                </div>
+
+                <h1>
+                    गंगा दशहरा <br>
+                    की हार्दिक शुभकामनाएँ
+                </h1>
+
+                <p class="subtitle" id="subtitleText">
+                    माँ गंगा की कृपा से आपके जीवन में सुख, शांति,
+                    समृद्धि और उत्तम स्वास्थ्य का वास हो।
+                </p>
+
+            </div>
+
+            <!-- Main Image -->
+            <div class="image-wrapper">
+
+                <img src="image.png" alt="गंगा दशहरा" class="main-image">
+
+                <div class="overlay"></div>
+
+            </div>
+
+            <!-- Quote Section -->
+            <div class="quote-box">
+                <div class="quote" id="quoteText">
+                    ✨ इस पावन अवसर पर माँ गंगा आपके जीवन को
+                    <span>खुशियों, सफलता और सकारात्मक ऊर्जा</span>
+                    से भर दें। ✨
+                </div>
+            </div>
+
+            <!-- Celebration Section -->
+            <div id="magic-cta-section">
+                <button class="btn" id="celebrateBtn"
+                        onclick="triggerCelebration()">🌊 पूजा अर्चना करें</button>
+                <button class="btn gold" onclick="sharePage()">📤 शुभकामना शेयर करें</button>
+            </div>
+
+        </section>
+
+        <footer>
+            🌊 हर हर गंगे 🌊 <br>
+            माँ गंगा आप सभी के जीवन में प्रेम, शांति और समृद्धि लाएँ।
+        </footer>
+
+    </div>
+
+    <script>
+        (function () {
+
+            // ── EDIT MODE detection ──
+            const urlParams = new URLSearchParams(window.location.search);
+            const EDIT_MODE = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
+            if (EDIT_MODE) document.body.classList.add('edit-mode');
+
+            // ── LANGUAGES ──
+            function getLang() {
+                try {
+                    const urlParam = new URLSearchParams(location.search).get('lang');
+                    if (urlParam === 'hi' || urlParam === 'en') return urlParam;
+                    const stored = localStorage.getItem('greeter_lang');
+                    if (stored === 'hi' || stored === 'en') return stored;
+                    return 'hi';
+                } catch (e) { return 'hi'; }
+            }
+
+            const TRANSLATIONS = {
+                hi: {
+                    subtitle: "माँ गंगा की कृपा से आपके जीवन में सुख, शांति, समृद्धि और उत्तम स्वास्थ्य का वास हो।",
+                    quoteP1: "✨ इस पावन अवसर पर माँ गंगा आपके जीवन को",
+                    quoteSpan: "खुशियों, सफलता और सकारात्मक ऊर्जा",
+                    quoteP2: "से भर दें। ✨",
+                    celebrateBtn: "🌊 पूजा अर्चना करें",
+                    shareBtn: "📤 शुभकामना शेयर करें",
+                    greetName: "प्रिय "
+                },
+                en: {
+                    subtitle: "May Mother Ganga bless your life with happiness, peace, prosperity and good health.",
+                    quoteP1: "✨ On this holy occasion, may Mother Ganga fill your life with",
+                    quoteSpan: "joy, success and positive energy",
+                    quoteP2: ". ✨",
+                    celebrateBtn: "🌊 Offer Prayers & Celebrate",
+                    shareBtn: "📤 Share Wishes",
+                    greetName: "Dear "
+                }
+            };
+
+            let currentLang = getLang();
+            let t = TRANSLATIONS[currentLang];
+
+            // ── USER DATA ──
+            let userData = { name: "", festival: "गंगा दशहरा" };
+            try {
+                const raw = localStorage.getItem('userData');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    userData.name = parsed.name || "";
+                    userData.festival = parsed.festival || "गंगा दशहरा";
+                }
+            } catch (e) { }
+
+            function saveUserData() {
+                localStorage.setItem('userData', JSON.stringify(userData));
+                window.dispatchEvent(new StorageEvent('storage', { key: 'userData', newValue: JSON.stringify(userData) }));
+            }
+
+            const userNameDisplay = document.getElementById('userNameDisplay');
+            const subtitleText = document.getElementById('subtitleText');
+            const quoteText = document.getElementById('quoteText');
+
+            function refreshTexts() {
+                t = TRANSLATIONS[currentLang];
+                subtitleText.innerText = t.subtitle;
+                quoteText.innerHTML = t.quoteP1 + ' <span>' + t.quoteSpan + '</span> ' + t.quoteP2;
+                const displayName = (userData.name && userData.name.trim())
+                    ? userData.name.trim()
+                    : (currentLang === 'hi' ? "प्रिय" : "Dear");
+                userNameDisplay.innerText = displayName;
+            }
+
+            refreshTexts();
+
+            // ── CELEBRATE ──
+            window.triggerCelebration = function () {
+                canvasConfetti({ particleCount: 220, spread: 100, origin: { y: 0.6 }, colors: ['#4fc3ff', '#ffd54f', '#00c6ff', '#ff6f00'], startVelocity: 18 });
+                canvasConfetti({ particleCount: 140, spread: 130, origin: { y: 0.4, x: 0.2 }, angle: 70, colors: ['#4fc3ff', '#0072ff'] });
+                canvasConfetti({ particleCount: 140, spread: 130, origin: { y: 0.5, x: 0.8 }, angle: 110, colors: ['#ffd54f', '#ffb300'] });
+                setTimeout(() => {
+                    canvasConfetti({ particleCount: 500, spread: 120, origin: { y: 0.7 }, startVelocity: 16, colors: ['#4fc3ff', '#00c6ff', '#ffd54f'] });
+                }, 280);
+            };
+
+            // ── SHARE ──
+            window.sharePage = function () {
+                const text = "🌸 गंगा दशहरा की हार्दिक शुभकामनाएँ 🌸";
+                if (navigator.share) {
+                    navigator.share({
+                        title: "गंगा दशहरा शुभकामनाएँ",
+                        text: text,
+                        url: window.location.href
+                    });
+                }
+            };
+
+            // ── FLOATING BUBBLES ──
+            const bg = document.getElementById("bg");
+            for (let i = 0; i < 35; i++) {
+                let bubble = document.createElement("div");
+                bubble.classList.add("bubble");
+                let size = Math.random() * 35 + 10;
+                bubble.style.width = size + "px";
+                bubble.style.height = size + "px";
+                bubble.style.left = Math.random() * 100 + "%";
+                bubble.style.animationDuration = (Math.random() * 12 + 8) + "s";
+                bubble.style.animationDelay = Math.random() * 5 + "s";
+                bg.appendChild(bubble);
+            }
+
+            // ── LANGUAGE SYNC ──
+            function syncLanguageFromURL() {
+                const newLang = getLang();
+                if (newLang !== currentLang) {
+                    currentLang = newLang;
+                    t = TRANSLATIONS[currentLang];
+                    refreshTexts();
+                }
+            }
+
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'userData') {
+                    try {
+                        const newData = JSON.parse(e.newValue);
+                        if (newData) {
+                            userData.name = newData.name || "";
+                            saveUserData();
+                            refreshTexts();
+                        }
+                    } catch (err) { }
+                }
+                if (e.key === 'greeter_lang') {
+                    const newLang = e.newValue;
+                    if (newLang === 'hi' || newLang === 'en') {
+                        currentLang = newLang;
+                        t = TRANSLATIONS[currentLang];
+                        refreshTexts();
+                    }
+                }
+            });
+
+            window.addEventListener('focus', () => {
+                syncLanguageFromURL();
+                try {
+                    const freshData = localStorage.getItem('userData');
+                    if (freshData) {
+                        const parsed = JSON.parse(freshData);
+                        if (parsed.name !== userData.name) { userData.name = parsed.name; saveUserData(); refreshTexts(); }
+                    }
+                } catch (e) { }
+            });
+
+        })();
+    </script>
+
+</body>
+
+</html>
