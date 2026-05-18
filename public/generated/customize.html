@@ -1447,6 +1447,13 @@
         border-top: 1px solid var(--card-border);
         padding: 20px 16px calc(30px + env(safe-area-inset-bottom, 16px));
         gap: 12px;
+        position: relative; /* Normal flow — do not pin to viewport */
+        margin-top: auto;
+      }
+
+      /* Ensure panel has extra bottom padding so content isn't obscured by device UI */
+      .panel {
+        padding-bottom: calc(48px + env(safe-area-inset-bottom, 16px));
       }
 
       /* REDUCED TOGGLE BUTTONS, HEADER, FOOTER */
