@@ -1658,7 +1658,7 @@
       <div class="nav-links" id="navLinks">
         <a href="../index.html" id="navHome">Home</a>
         <a href="../create.html" id="navCreate">Create</a>
-        <a href="../WhyWe.html" id="navWhy">Why Greeter</a>
+        <a href="../WhyGreeter.html" id="navWhy">Why Greeter</a>
         <a href="../privacy.html" id="navShowcase">Privacy</a>
         <a href="../ContactUs.html" id="navPricing">Contact Us</a>
       </div>
@@ -3949,10 +3949,58 @@
   try {
     const config = ${JSON.stringify(config).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
     const magicRaw = "${window._magicRaw || ""}";
-    window._magicConfig = config;
+        window._magicConfig = config;
+    window.__IS_GENERATED_PAGE__ = true;
     const activeFeatureStates = new Map(config.activeFeatures || []);
     const customData = new Map(config.customData || []);
     const userName = config.userName || 'Loved One';
+
+    // Lock DOM modifications to preserve user edits from the snapshot
+    let isLocked = true;
+    const lockMethod = (obj, prop, original) => {
+      if (!original) return;
+      Object.defineProperty(obj, prop, {
+        value: function(...args) { if (isLocked) return args[0]; return original.apply(this, args); },
+        writable: true, configurable: true
+      });
+    };
+    const lockAccessor = (obj, prop, originalDesc) => {
+      if (!originalDesc) return;
+      Object.defineProperty(obj, prop, {
+        set: function(val) { if (isLocked) return; originalDesc.set.call(this, val); },
+        get: originalDesc.get,
+        configurable: true
+      });
+    };
+
+        const origAppendChild = Node.prototype.appendChild;
+    const origInsertBefore = Node.prototype.insertBefore;
+    const origReplaceChild = Node.prototype.replaceChild;
+    const origRemoveChild = Node.prototype.removeChild;
+    const origAppend = Element.prototype.append;
+    const origPrepend = Element.prototype.prepend;
+    const origReplaceChildren = Element.prototype.replaceChildren;
+
+    lockMethod(Node.prototype, 'appendChild', origAppendChild);
+    lockMethod(Node.prototype, 'insertBefore', origInsertBefore);
+    lockMethod(Node.prototype, 'replaceChild', origReplaceChild);
+    lockMethod(Node.prototype, 'removeChild', origRemoveChild);
+    if (Element.prototype.append) lockMethod(Element.prototype, 'append', origAppend);
+    if (Element.prototype.prepend) lockMethod(Element.prototype, 'prepend', origPrepend);
+    if (Element.prototype.replaceChildren) lockMethod(Element.prototype, 'replaceChildren', origReplaceChildren);
+
+    const origInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    const origInnerText = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'innerText');
+    const origTextContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
+
+    lockAccessor(Element.prototype, 'innerHTML', origInnerHTML);
+    lockAccessor(HTMLElement.prototype, 'innerText', origInnerText);
+    lockAccessor(Node.prototype, 'textContent', origTextContent);
+
+    // Unlock safely after synchronous script execution
+    const unlock = () => { isLocked = false; };
+    document.addEventListener('DOMContentLoaded', unlock);
+    setTimeout(unlock, 100);
 
     window.escapeHtml = function(str) { return (str||"").replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); };
     window.getUserName = () => userName;
@@ -4066,7 +4114,8 @@
     }
     // Ensure features are applied immediately to prevent content visibility before lock/curtain
     if (document.readyState === 'loading') { 
-      document.addEventListener('DOMContentLoaded', () => {
+      if (document.readyState !== 'loading') isLocked = false;
+    document.addEventListener('DOMContentLoaded', () => {
         // Apply features immediately without delay
         setTimeout(initMagic, 0);
       }); 

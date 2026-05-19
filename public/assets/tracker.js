@@ -7,17 +7,17 @@
   'use strict';
 
   const API_BASE = (function () {
+    const loc = window.location;
+    // Local development: use same origin
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
+      return loc.origin;
+    }
     // Check if we have a global config from config.js
     if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
       return window.APP_CONFIG.API_BASE_URL;
     }
-    
-    const loc = window.location;
-    // Default fallback logic
-    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
-      return loc.origin;
-    }
-    return loc.origin; // Default to same origin
+    // Always point to the Render backend for analytics
+    return 'https://wishing-portal.onrender.com';
   })();
 
   // ── Utilities ──

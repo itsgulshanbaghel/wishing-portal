@@ -186,7 +186,7 @@ class AnalyticsStore {
           $inc: { views: 1 },
           $addToSet: { uniqueViewers: visitorId }
         },
-        { new: true }
+        { returnDocument: 'after' }
       );
 
       if (website) {

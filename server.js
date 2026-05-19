@@ -59,6 +59,7 @@ const PORT = process.env.PORT || 3000;
 // CORS configuration
 const corsOptions = {
   origin: [
+    'https://thegreeter.in',
     'https://thegreeterindia.web.app',
     'https://thegreeterindia.firebaseapp.com',
     'http://localhost:3000',
