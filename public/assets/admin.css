@@ -184,14 +184,24 @@ option { background:var(--bg-surface); color:var(--text); }
 .chart-card h3 i { color:var(--accent); font-size:0.85rem; }
 .chart-card canvas { width:100% !important; max-height:300px; }
 .chart-card.wide { position: relative; }
-.chart-card.wide .chart-scroll-container {
+.chart-scroll-container {
   overflow-x: auto;
   overflow-y: hidden;
   width: 100%;
-  min-height: 350px;
+  padding-bottom: 8px; /* Room for scrollbar */
 }
-.chart-card.wide .chart-scroll-container canvas {
-  min-width: 100%;
+.canvas-wrapper {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+.canvas-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+}
+.chart-card.wide .canvas-wrapper {
+  height: 350px;
 }
 
 /* Tables */

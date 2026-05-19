@@ -345,11 +345,9 @@
     renderDeviceChart2();
     renderOSChart2();
     renderFeatureChart();
-    renderFeatureTrendChart();
     renderFeatureTable();
     renderFeatureDeviceChart();
     renderFeatureBrowserChart();
-    renderFeatureHourChart();
     renderTrendingFeaturesChart();
     renderMostUsedFeaturesChart();
     renderCategoryChart();
@@ -468,130 +466,102 @@
   function renderExitChart() { renderBarChart('exitChart', dashData.charts?.exitPages || {}, '#ef4444'); }
   function renderGeoChart() { renderBarChart('geoChart', dashData.charts?.geoDistribution || {}, '#22c55e'); }
 
-  // Merge feature entries by normalized display to avoid duplicates (e.g. "Flower Rain" vs "flowerRain")
+  // Merge feature entries by normalized display to avoid duplicates
+  const CLEAN_NAME_MAP = {
+    'lock': 'Lock',
+    'curtainreveal': 'Curtain Reveal',
+    'welcometyping': 'Welcome Message',
+    'welcomemessage': 'Welcome Message',
+    'fireworkstext': 'Fireworks Text',
+    'flowerrain': 'Flower Rain',
+    'canvasstarfall': 'Stardust',
+    'stardust': 'Stardust',
+    'flyingswans': 'Flying Birds',
+    'flyingbirds': 'Flying Birds',
+    'balloonparty': 'Classic Balloons',
+    'classicballoons': 'Classic Balloons',
+    'floatingballoonsnamed': 'Named Balloons',
+    'namedballoons': 'Named Balloons',
+    'fireworksclick': 'Click Fireworks',
+    'clickfireworks': 'Click Fireworks',
+    'bombexplosion': 'Bomb',
+    'bomb': 'Bomb',
+    'giftboxopen': 'Gift Box',
+    'giftbox': 'Gift Box',
+    'imageexplosion': 'Magic Photo',
+    'magicphoto': 'Magic Photo',
+    'addimages': 'Add Images',
+    'scratchreveal': 'Scratch Card',
+    'scratchcard': 'Scratch Card',
+    'textformation': 'Typing Card',
+    'typingcard': 'Typing Card',
+    'memorytimeline': 'Timeline',
+    'timeline': 'Timeline',
+    'heartsonscroll': 'Hearts Scroll',
+    'heartsscroll': 'Hearts Scroll',
+    'oldpaperletter': 'Secret Letter',
+    'secretletter': 'Secret Letter',
+    'hugskyletter': 'Hug + Sky Letter',
+    'hugsky': 'Hug + Sky Letter',
+    'floatingpolaroids': 'Floating Memories',
+    'floatingmemories': 'Floating Memories',
+    'addtextbox': 'Add Text Box',
+    'finalsurprise': 'Final Message',
+    'finalmessage': 'Final Message',
+    'magicmusic': 'Add Music',
+    'addmusic': 'Add Music'
+  };
+
+  function getCleanName(rawKey) {
+    if (!rawKey) return 'Unknown';
+    const clean = rawKey.toString()
+      .normalize('NFKC')
+      .toLowerCase()
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/[^\p{L}\p{N}]/gu, '')
+      .trim();
+    return CLEAN_NAME_MAP[clean] || rawKey;
+  }
+
+  // Merge feature entries by clean display name to avoid duplicates
   function _buildFeatureSummary(rawFs) {
     const merged = {};
-    function normName(n) { return (n || '').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+
     Object.keys(rawFs || {}).forEach(key => {
       const entry = rawFs[key] || {};
-      const display = (entry.display || key || '').toString();
-      const norm = normName(display) || normName(key);
-      if (!merged[norm]) merged[norm] = { display: display, tried: 0, used: 0, triedEnabled: 0, triedDisabled: 0, triedVisitors: 0, triedEnabledVisitors: 0, usedVisitors: 0 };
-      merged[norm].tried += Number(entry.tried || 0);
-      merged[norm].used += Number(entry.used || 0);
-      merged[norm].triedEnabled += Number(entry.triedEnabled || 0);
-      merged[norm].triedDisabled += Number(entry.triedDisabled || 0);
-      merged[norm].triedVisitors += Number(entry.triedVisitors || 0);
-      merged[norm].triedEnabledVisitors += Number(entry.triedEnabledVisitors || 0);
-      merged[norm].usedVisitors += Number(entry.usedVisitors || 0);
+      const cleanDisplay = getCleanName(entry.display || key || '');
+
+      if (!merged[cleanDisplay]) {
+        merged[cleanDisplay] = { 
+          display: cleanDisplay,
+          tried: 0, used: 0, triedEnabled: 0, triedDisabled: 0, 
+          triedVisitors: 0, triedEnabledVisitors: 0, usedVisitors: 0 
+        };
+      }
+
+      merged[cleanDisplay].tried += Number(entry.tried || 0);
+      merged[cleanDisplay].used += Number(entry.used || 0);
+      merged[cleanDisplay].triedEnabled += Number(entry.triedEnabled || 0);
+      merged[cleanDisplay].triedDisabled += Number(entry.triedDisabled || 0);
+      merged[cleanDisplay].triedVisitors += Number(entry.triedVisitors || 0);
+      merged[cleanDisplay].triedEnabledVisitors += Number(entry.triedEnabledVisitors || 0);
+      merged[cleanDisplay].usedVisitors += Number(entry.usedVisitors || 0);
     });
     return merged;
   }
 
-function renderFeatureChart() {
+  function renderFeatureChart() {
     const rawFs = dashData.charts?.featureStats || {};
     const fs = _buildFeatureSummary(rawFs);
+    
+    const features = Object.values(fs).sort((a, b) => (b.used - a.used) || (b.tried - a.tried));
+    
+    const labels = features.map(f => f.display);
+    const usedData = features.map(f => f.used);
+    const triedData = features.map(f => f.tried);
 
-    const items = Object.keys(fs || {}).map(k => ({ key: k, display: (fs[k].display || k || '').toString(), tried: Number(fs[k].tried || 0), used: Number(fs[k].used || 0) }));
-
-    function tokenizeLabel(s) {
-      if (!s) return [];
-      const clean = s.toString()
-        .normalize('NFKC')
-        .replace(/[\u200B-\u200D\uFEFF]/g, '')
-        .replace(/[^\p{L}\p{N}_\s]/gu, ' ')
-        .replace(/([a-z])([A-Z])/g, '$1 $2');
-      return Array.from(new Set(clean.toLowerCase().split(/[^a-z0-9]+/).filter(t => t && t.length >= 3)));
-    }
-
-    const groups = [];
-    items.forEach(it => {
-      const toks = tokenizeLabel(it.display);
-      if (toks.length === 0) toks.push(it.key.toString().toLowerCase().replace(/[^a-z0-9]+/g, ''));
-      let placed = false;
-      for (const g of groups) {
-        const inter = g.tokens.filter(t => toks.indexOf(t) !== -1);
-        if (inter.length > 0) {
-          g.tried += it.tried;
-          g.used += it.used;
-          g.sources.push(it.key);
-          if (it.display.length > g.display.length) g.display = it.display;
-          // merge tokens
-          g.tokens = Array.from(new Set(g.tokens.concat(toks)));
-          placed = true;
-          break;
-        }
-      }
-      if (!placed) groups.push({ display: it.display, tried: it.tried, used: it.used, tokens: toks, sources: [it.key] });
-    });
-
-    // Secondary pass: group by primary token (first token) to catch cases like 'finalSurprise' vs 'Final Message'
-    const primaryMap = {};
-    groups.forEach(g => {
-      const primary = g.tokens && g.tokens.length ? g.tokens[0] : null;
-      if (!primary) return;
-      if (!primaryMap[primary]) primaryMap[primary] = { display: g.display, tried: 0, used: 0, tokens: [], sources: [] };
-      primaryMap[primary].tried += g.tried;
-      primaryMap[primary].used += g.used;
-      primaryMap[primary].tokens = Array.from(new Set((primaryMap[primary].tokens || []).concat(g.tokens || [])));
-      primaryMap[primary].sources = (primaryMap[primary].sources || []).concat(g.sources || []);
-      if (g.display.length > (primaryMap[primary].display || '').length) primaryMap[primary].display = g.display;
-    });
-
-    let finalGroups = Object.keys(primaryMap).length > 0 ? Object.keys(primaryMap).map(k => primaryMap[k]) : groups;
-
-    // If primary grouping collapsed too aggressively (result count equals original), fallback to token groups
-    if (finalGroups.length === groups.length) finalGroups = groups;
-
-    // Apply canonical overrides for known variants to force merging
-    const canonicalMap = [
-      { patterns: ['final', 'finalsurprise', 'finalmessage'], label: 'Final Message' },
-      { patterns: ['flying', 'flyingbirds', 'flyingswans'], label: 'Flying Birds' },
-      { patterns: ['welcome', 'welcometyping', 'welcomemessage'], label: 'Welcome Message' },
-      { patterns: ['scratch', 'scratchcard'], label: 'Scratch Card' },
-      { patterns: ['flower', 'flowerrain'], label: 'Flower Rain' },
-      { patterns: ['gift', 'giftbox', 'giftboxopen'], label: 'Gift Box' },
-      { patterns: ['balloon', 'classicballoons', 'namedballoons', 'balloonparty'], label: 'Balloons' },
-      { patterns: ['bomb', 'bombexplosion'], label: 'Bomb' },
-      { patterns: ['stardust'], label: 'Stardust' }
-    ];
-
-    function findCanonicalKey(display) {
-      const key = display.toString().toLowerCase().replace(/[^a-z0-9]+/g, '');
-      for (const c of canonicalMap) {
-        for (const p of c.patterns) {
-          if (key.indexOf(p) !== -1) return c.label;
-        }
-      }
-      return null;
-    }
-
-    // Merge finalGroups by canonical label when detected
-    const canonicalAgg = {};
-    finalGroups.forEach(g => {
-      const canon = findCanonicalKey(g.display) || g.display;
-      if (!canonicalAgg[canon]) canonicalAgg[canon] = { display: canon, tried: 0, used: 0, sources: [] };
-      canonicalAgg[canon].tried += g.tried || 0;
-      canonicalAgg[canon].used += g.used || 0;
-      canonicalAgg[canon].sources = canonicalAgg[canon].sources.concat(g.sources || []);
-      // prefer the most descriptive label (without emoji) — keep if longer
-      if (g.display && g.display.length > canonicalAgg[canon].display.length) canonicalAgg[canon].display = g.display;
-    });
-
-    finalGroups = Object.keys(canonicalAgg).map(k => canonicalAgg[k]);
-    finalGroups.sort((a, b) => (b.used || 0) - (a.used || 0));
-
-    const labels = finalGroups.map(g => g.display);
-    const usedData = finalGroups.map(g => g.used || 0);
-    const triedData = finalGroups.map(g => g.tried || 0);
-
-    // Debug
-    console.log('[Admin] Feature raw keys:', Object.keys(rawFs || {}));
-    console.log('[Admin] Feature merged keys (from _buildFeatureSummary):', Object.keys(fs || {}));
-    console.log('[Admin] Feature final labels:', labels);
-    const multipleSources = finalGroups.filter(g => (g.sources || []).length > 1);
-    if (multipleSources.length) console.warn('[Admin] Grouped labels with multiple normalized sources:', multipleSources.map(g => ({label: g.display, sources: g.sources}))); 
-    console.log('[Admin] Display -> normalized sources mapping:', Object.fromEntries(finalGroups.map(g => [g.display, g.sources])));
+    const wrapper = document.getElementById('wrap-featureChart');
+    if (wrapper) wrapper.style.minWidth = Math.max(100, labels.length * 50) + 'px';
 
     makeChart('featureChart', {
       type: 'bar',
@@ -605,19 +575,7 @@ function renderFeatureChart() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top', labels: { boxWidth: 10 } },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const idx = context.dataIndex;
-                const stats = groups[idx] || { used: 0, tried: 0 };
-                if (context.datasetIndex === 0) return `Used: ${context.parsed.y} (${stats.used || 0})`;
-                return `Tried: ${context.parsed.y} (${stats.tried || 0})`;
-              }
-            }
-          }
-        },
+        plugins: { legend: { position: 'top', labels: { boxWidth: 10 } } },
         scales: {
           y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
           x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } }
@@ -626,157 +584,32 @@ function renderFeatureChart() {
     });
   }
 
-  function renderFeatureTrendChart() {
-    const ft = dashData.charts?.featureTrend || {};
-    const dates = Object.keys(ft).sort();
-
-    // Handle empty data
-    if (dates.length === 0) {
-      makeChart('featureTrendChart', {
-        type: 'line',
-        data: {
-          labels: ['No data'],
-          datasets: [{
-            label: 'No feature usage data available',
-            data: [0],
-            borderColor: '#666',
-            backgroundColor: 'rgba(102,102,102,0.1)',
-            borderWidth: 1,
-            pointRadius: 0,
-            tension: 0.4,
-            fill: false
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-            x: { grid: { display: false } }
-          }
-        }
-      });
-      return;
-    }
-
-    // Use merged feature keys to avoid duplicates caused by different display names/casing
-    const mergedStats = _buildFeatureSummary(dashData.charts?.featureStats || {});
-    const topFeatures = Object.keys(mergedStats)
-      .sort((a, b) => (mergedStats[b].total || mergedStats[b].used || 0) - (mergedStats[a].total || mergedStats[a].used || 0))
-      .slice(0, 5);
-
-    if (topFeatures.length === 0) {
-      // No features found
-      makeChart('featureTrendChart', {
-        type: 'line',
-        data: {
-          labels: dates.map(d => d.slice(5)),
-          datasets: [{
-            label: 'No feature data',
-            data: new Array(dates.length).fill(0),
-            borderColor: '#666',
-            backgroundColor: 'rgba(102,102,102,0.1)',
-            borderWidth: 1,
-            pointRadius: 0,
-            tension: 0.4,
-            fill: false
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-            x: { grid: { display: false } }
-          }
-        }
-      });
-      return;
-    }
-
-    const datasets = topFeatures.map((feature, i) => ({
-      label: mergedStats[feature].display.length > 15 ? mergedStats[feature].display.slice(0, 15) + '…' : mergedStats[feature].display,
-      data: dates.map(date => {
-        // featureTrend stores counts keyed by original feature names; map them to normalized key
-        const perDate = ft[date] || {};
-        // sum across possible variants that normalize to the same key
-        let sum = 0;
-        Object.keys(perDate).forEach(orig => {
-          const norm = (orig || '').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
-          if (norm === feature) sum += Number(perDate[orig] || 0);
-        });
-        return sum;
-      }),
-      borderColor: COLORS[i % COLORS.length],
-      backgroundColor: COLORS_ALPHA[i % COLORS.length],
-      borderWidth: 2,
-      pointRadius: 2,
-      tension: 0.4,
-      fill: false
-    }));
-
-    makeChart('featureTrendChart', {
-      type: 'line',
-      data: {
-        labels: dates.map(d => d.slice(5)),
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } }
-        },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-          x: { grid: { display: false } }
-        }
-      }
-    });
-  }
-
   function renderFeatureTable() {
     const tbody = document.querySelector('#featureTable tbody');
     tbody.innerHTML = '';
-    const fs = dashData.charts?.featureStats || {};
-    const features = Object.keys(fs).sort((a, b) => (fs[b].used || 0) - (fs[a].used || 0)); // Sort by used features
+    const rawFs = dashData.charts?.featureStats || {};
+    const fs = _buildFeatureSummary(rawFs);
+    
+    const features = Object.values(fs).sort((a, b) => (b.used - a.used) || (b.tried - a.tried));
 
-    // Build a merged summary to avoid duplicate feature display
-    const merged = _buildFeatureSummary(dashData.charts?.featureStats || {});
-    const keys = Object.keys(merged).sort((a, b) => (merged[b].used || 0) - (merged[a].used || 0));
-
-    keys.slice(0, 20).forEach(k => {
-      const stats = merged[k] || {};
-      const tried = Number(stats.tried || 0);
-      const used = Number(stats.used || 0);
-      const triedEnabled = Number(stats.triedEnabled || 0);
-      const triedDisabled = Number(stats.triedDisabled || 0);
-      const triedVisitors = Number(stats.triedVisitors || 0);
-      const triedEnabledVisitors = Number(stats.triedEnabledVisitors || 0);
-      const usedVisitors = Number(stats.usedVisitors || 0);
+    features.forEach(stats => {
+      // Calculate conversion rate based on Unique Visitors where available, cap at 100%
+      const triedCount = stats.triedVisitors > 0 ? stats.triedVisitors : stats.triedEnabled;
+      const usedCount = stats.usedVisitors > 0 ? stats.usedVisitors : stats.used;
+      
       let conversionRate = null;
-
-      // Use raw counts for conversion rate since that's what's displayed in the table
-      if (tried > 0) {
-        conversionRate = (used / tried) * 100;
-      } else {
-        conversionRate = null;
+      if (triedCount > 0) {
+        conversionRate = Math.min((usedCount / triedCount) * 100, 100);
+        conversionRate = Math.round(conversionRate * 10) / 10;
       }
-
-      if (conversionRate !== null) conversionRate = Math.round(conversionRate * 10) / 10;
-
-      if ((conversionRate === 0 || conversionRate === null) && used > 0) console.warn('[Admin] Feature used>0 but conversion low/missing', k, stats);
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${stats.display || k}</td>
-        <td>${formatNum(tried)}</td>
-        <td>${formatNum(used)}</td>
-        <td>${formatNum(triedEnabled)}</td>
-        <td>${formatNum(triedDisabled)}</td>
+        <td>${stats.display}</td>
+        <td>${formatNum(stats.tried)}</td>
+        <td>${formatNum(stats.used)}</td>
+        <td>${formatNum(stats.triedEnabled)}</td>
+        <td>${formatNum(stats.triedDisabled)}</td>
         <td>${conversionRate !== null ? conversionRate + '%' : '--'}</td>
       `;
       tbody.appendChild(tr);
@@ -784,232 +617,153 @@ function renderFeatureChart() {
   }
 
   function renderFeatureDeviceChart() {
-    // For device/browser charts, we'll show tried interactions since used events don't have device/browser context
     const fd = dashData.charts?.featureByDevice || {};
-    const devices = Object.keys(fd).slice(0, 5);
-    const topFeatures = Object.keys(dashData.charts?.featureStats || {})
-      .sort((a, b) => (dashData.charts.featureStats[b].used || 0) - (dashData.charts.featureStats[a].used || 0))
-      .slice(0, 3);
+    const devices = Object.keys(fd);
+    
+    const rawFs = dashData.charts?.featureStats || {};
+    const fs = _buildFeatureSummary(rawFs);
+    const features = Object.values(fs).sort((a, b) => (b.used - a.used) || (b.tried - a.tried));
 
-    if (devices.length === 0 || topFeatures.length === 0) {
+    if (devices.length === 0 || features.length === 0) {
       makeChart('featureDeviceChart', {
         type: 'bar',
-        data: {
-          labels: ['No data'],
-          datasets: [{
-            label: 'No device data',
-            data: [0],
-            backgroundColor: 'rgba(102,102,102,0.3)',
-            borderColor: '#666',
-            borderWidth: 1,
-            borderRadius: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-            x: { grid: { display: false } }
-          }
-        }
+        data: { labels: ['No data'], datasets: [{ label: 'No device data', data: [0] }] },
+        options: { responsive: true, plugins: { legend: { display: false } } }
       });
       return;
     }
 
-    const datasets = devices.map((device, i) => ({
-      label: device,
-      data: topFeatures.map(feature => fd[device]?.[feature] || 0),
-      backgroundColor: COLORS[i % COLORS.length] + '60',
-      borderColor: COLORS[i % COLORS.length],
-      borderWidth: 1,
-      borderRadius: 4
-    }));
+    const datasets = devices.map((device, i) => {
+      const counts = features.map(feat => {
+        let sum = 0;
+        Object.keys(fd[device] || {}).forEach(rawFeat => {
+          if (getCleanName(rawFeat) === feat.display) {
+            sum += Number(fd[device][rawFeat] || 0);
+          }
+        });
+        return sum;
+      });
+
+      return {
+        label: device,
+        data: counts,
+        backgroundColor: COLORS[i % COLORS.length] + '60',
+        borderColor: COLORS[i % COLORS.length],
+        borderWidth: 1, borderRadius: 4
+      };
+    });
+
+    const wrapper = document.getElementById('wrap-featureDeviceChart');
+    if (wrapper) wrapper.style.minWidth = Math.max(100, features.length * 40) + 'px';
 
     makeChart('featureDeviceChart', {
       type: 'bar',
-      data: {
-        labels: topFeatures.map(f => f.length > 15 ? f.slice(0, 15) + '…' : f),
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top', labels: { boxWidth: 10 } },
-          title: { display: true, text: 'Feature Interactions by Device (Tried)', font: { size: 12 } }
-        },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-          x: { grid: { display: false } }
-        }
-      }
+      data: { labels: features.map(f => f.display.length > 15 ? f.display.slice(0, 15) + '…' : f.display), datasets: datasets },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Feature Interactions by Device (Tried)', font: { size: 12 } } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } } }
     });
   }
 
   function renderFeatureBrowserChart() {
-    // For device/browser charts, we'll show tried interactions since used events don't have device/browser context
     const fb = dashData.charts?.featureByBrowser || {};
-    const browsers = Object.keys(fb).slice(0, 5);
-    const topFeatures = Object.keys(dashData.charts?.featureStats || {})
-      .sort((a, b) => (dashData.charts.featureStats[b].used || 0) - (dashData.charts.featureStats[a].used || 0))
-      .slice(0, 3);
+    const browsers = Object.keys(fb);
+    
+    const rawFs = dashData.charts?.featureStats || {};
+    const fs = _buildFeatureSummary(rawFs);
+    const features = Object.values(fs).sort((a, b) => (b.used - a.used) || (b.tried - a.tried));
 
-    if (browsers.length === 0 || topFeatures.length === 0) {
+    if (browsers.length === 0 || features.length === 0) {
       makeChart('featureBrowserChart', {
         type: 'bar',
-        data: {
-          labels: ['No data'],
-          datasets: [{
-            label: 'No browser data',
-            data: [0],
-            backgroundColor: 'rgba(102,102,102,0.3)',
-            borderColor: '#666',
-            borderWidth: 1,
-            borderRadius: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-            x: { grid: { display: false } }
-          }
-        }
+        data: { labels: ['No data'], datasets: [{ label: 'No browser data', data: [0] }] },
+        options: { responsive: true, plugins: { legend: { display: false } } }
       });
       return;
     }
 
-    const datasets = browsers.map((browser, i) => ({
-      label: browser,
-      data: topFeatures.map(feature => fb[browser]?.[feature] || 0),
-      backgroundColor: COLORS[i % COLORS.length] + '60',
-      borderColor: COLORS[i % COLORS.length],
-      borderWidth: 1,
-      borderRadius: 4
-    }));
+    const datasets = browsers.map((browser, i) => {
+      const counts = features.map(feat => {
+        let sum = 0;
+        Object.keys(fb[browser] || {}).forEach(rawFeat => {
+          if (getCleanName(rawFeat) === feat.display) {
+            sum += Number(fb[browser][rawFeat] || 0);
+          }
+        });
+        return sum;
+      });
+
+      return {
+        label: browser,
+        data: counts,
+        backgroundColor: COLORS[i % COLORS.length] + '60',
+        borderColor: COLORS[i % COLORS.length],
+        borderWidth: 1, borderRadius: 4
+      };
+    });
+
+    const wrapper = document.getElementById('wrap-featureBrowserChart');
+    if (wrapper) wrapper.style.minWidth = Math.max(100, features.length * 40) + 'px';
 
     makeChart('featureBrowserChart', {
       type: 'bar',
-      data: {
-        labels: topFeatures.map(f => f.length > 15 ? f.slice(0, 15) + '…' : f),
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top', labels: { boxWidth: 10 } },
-          title: { display: true, text: 'Feature Interactions by Browser (Tried)', font: { size: 12 } }
-        },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-          x: { grid: { display: false } }
-        }
-      }
-    });
-  }
-
-  function renderFeatureHourChart() {
-    const fh = dashData.charts?.featureByHour || {};
-    const hours = Array.from({length: 24}, (_, i) => i);
-    const topFeatures = Object.keys(dashData.charts?.featureStats || {})
-      .sort((a, b) => (dashData.charts.featureStats[b].total || 0) - (dashData.charts.featureStats[a].total || 0))
-      .slice(0, 3);
-
-    const datasets = topFeatures.map((feature, i) => ({
-      label: feature.length > 15 ? feature.slice(0, 15) + '…' : feature,
-      data: hours.map(hour => fh[hour]?.[feature] || 0),
-      borderColor: COLORS[i % COLORS.length],
-      backgroundColor: COLORS_ALPHA[i % COLORS.length],
-      borderWidth: 2,
-      pointRadius: 2,
-      tension: 0.4,
-      fill: false
-    }));
-
-    makeChart('featureHourChart', {
-      type: 'line',
-      data: {
-        labels: hours.map(h => `${h}:00`),
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } }
-        },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-          x: { grid: { display: false } }
-        }
-      }
+      data: { labels: features.map(f => f.display.length > 15 ? f.display.slice(0, 15) + '…' : f.display), datasets: datasets },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Feature Interactions by Browser (Tried)', font: { size: 12 } } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } } }
     });
   }
 
   function renderTrendingFeaturesChart() {
     const tf = dashData.charts?.trendingFeatures || {};
-    const features = Object.keys(tf)
-      .filter(f => tf[f].total > 0)
-      .sort((a, b) => (tf[b].growth || 0) - (tf[a].growth || 0))
-      .slice(0, 10);
+    
+    // Group trending features by clean name
+    const groupedTf = {};
+    Object.keys(tf).forEach(key => {
+      const cleanName = getCleanName(key);
+      const entry = tf[key] || {};
+      if (!groupedTf[cleanName]) {
+        groupedTf[cleanName] = { growth: 0, recent: 0, total: 0, count: 0 };
+      }
+      groupedTf[cleanName].growth += Number(entry.growth || 0);
+      groupedTf[cleanName].recent += Number(entry.recent || 0);
+      groupedTf[cleanName].total += Number(entry.total || 0);
+      groupedTf[cleanName].count += 1;
+    });
+
+    // Average the growth rates for grouped items
+    Object.keys(groupedTf).forEach(name => {
+      if (groupedTf[name].count > 0) {
+        groupedTf[name].growth = groupedTf[name].growth / groupedTf[name].count;
+      }
+    });
+
+    const features = Object.keys(groupedTf)
+      .filter(f => groupedTf[f].total > 0)
+      .sort((a, b) => (groupedTf[b].growth || 0) - (groupedTf[a].growth || 0));
 
     const data = features.map(feature => ({
       feature: feature,
-      growth: tf[feature].growth || 0,
-      recent: tf[feature].recent || 0,
-      total: tf[feature].total || 0
+      growth: groupedTf[feature].growth || 0,
+      recent: groupedTf[feature].recent || 0,
+      total: groupedTf[feature].total || 0
     }));
+
+    const wrapper = document.getElementById('wrap-trendingFeaturesChart');
+    if (wrapper) wrapper.style.minWidth = Math.max(100, data.length * 50) + 'px';
 
     makeChart('trendingFeaturesChart', {
       type: 'bar',
       data: {
         labels: data.map(d => d.feature.length > 15 ? d.feature.slice(0, 15) + '…' : d.feature),
-        datasets: [{
-          label: 'Growth %',
-          data: data.map(d => d.growth),
-          backgroundColor: data.map(d => d.growth >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)'),
-          borderColor: data.map(d => d.growth >= 0 ? '#22c55e' : '#ef4444'),
-          borderWidth: 1,
-          borderRadius: 4
-        }]
+        datasets: [{ label: 'Growth %', data: data.map(d => d.growth), backgroundColor: data.map(d => d.growth >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)'), borderColor: data.map(d => d.growth >= 0 ? '#22c55e' : '#ef4444'), borderWidth: 1, borderRadius: 4 }]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const d = data[context.dataIndex];
-                return [
-                  `Growth: ${d.growth.toFixed(1)}%`,
-                  `Recent: ${d.recent}`,
-                  `Total: ${d.total}`
-                ];
-              }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(255,255,255,0.03)' },
-            title: { display: true, text: 'Growth Rate (%)' }
-          },
-          x: { grid: { display: false } }
-        }
-      }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { const d = data[context.dataIndex]; return [`Growth: ${d.growth.toFixed(1)}%`, `Recent: ${d.recent}`, `Total: ${d.total}`]; } } } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Growth Rate (%)' } }, x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } } }
     });
   }
 
   function renderMostUsedFeaturesChart() {
-    // Use merged (normalized) summary to avoid duplicate feature entries caused by different key casings/formatting
     const rawFs = dashData.charts?.featureStats || {};
     const merged = _buildFeatureSummary(rawFs);
     const features = Object.keys(merged)
-      .filter(f => (merged[f].used || 0) > 0) // Only show features that were actually used
-      .sort((a, b) => (merged[b].used || 0) - (merged[a].used || 0))
-      .slice(0, 10);
+      .filter(f => (merged[f].used || 0) > 0)
+      .sort((a, b) => (merged[b].used || 0) - (merged[a].used || 0));
 
     if (features.length === 0) {
       makeChart('mostUsedFeaturesChart', {
@@ -1037,6 +791,9 @@ function renderFeatureChart() {
       return;
     }
 
+    const wrapper = document.getElementById('wrap-mostUsedFeaturesChart');
+    if (wrapper) wrapper.style.minWidth = Math.max(100, features.length * 40) + 'px';
+
     makeChart('mostUsedFeaturesChart', {
       type: 'bar',
       data: {
@@ -1052,10 +809,11 @@ function renderFeatureChart() {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
           y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
-          x: { grid: { display: false } }
+          x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } }
         }
       }
     });

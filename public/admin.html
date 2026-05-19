@@ -173,17 +173,15 @@
 
         <!-- BEHAVIOR SECTION -->
         <section id="sec-behavior" class="section">
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-toggle-on"></i> Feature Usage</h3><div class="chart-scroll-container"><canvas id="featureChart"></canvas></div></div></div>
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> Feature Usage Trend</h3><canvas id="featureTrendChart"></canvas></div></div>
+          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-toggle-on"></i> Feature Usage</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-featureChart"><canvas id="featureChart"></canvas></div></div></div></div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Feature Usage by Device</h3><canvas id="featureDeviceChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-compass"></i> Feature Usage by Browser</h3><canvas id="featureBrowserChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Feature Usage by Device</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-featureDeviceChart"><canvas id="featureDeviceChart"></canvas></div></div></div>
+            <div class="chart-card"><h3><i class="fas fa-compass"></i> Feature Usage by Browser</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-featureBrowserChart"><canvas id="featureBrowserChart"></canvas></div></div></div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-clock"></i> Feature Usage by Hour</h3><canvas id="featureHourChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-fire"></i> Trending Features</h3><canvas id="trendingFeaturesChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-fire"></i> Trending Features</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-trendingFeaturesChart"><canvas id="trendingFeaturesChart"></canvas></div></div></div>
+            <div class="chart-card"><h3><i class="fas fa-trophy"></i> Most Used Features</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-mostUsedFeaturesChart"><canvas id="mostUsedFeaturesChart"></canvas></div></div></div>
           </div>
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-trophy"></i> Most Used Features</h3><canvas id="mostUsedFeaturesChart"></canvas></div></div>
           <!-- Feature Usage Table -->
           <div class="table-card">
             <h3><i class="fas fa-table"></i> Detailed Feature Analytics</h3>
