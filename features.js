@@ -1090,6 +1090,8 @@
     imageExplosion: {
         enable(d, w, userName, customText, images) {
             let section = d.getElementById("magic-image-explosion-section");
+            const isEditMode = !w.__IS_GENERATED_PAGE__ && (!w.parent || !w.parent.__IS_GENERATED_PAGE__) && (w.location.search.includes("mode=edit") || d.body.classList.contains("edit-mode"));
+
             if (section) {
                 // Update existing image if any
                 const img = section.querySelector("img");
@@ -1107,14 +1109,24 @@
                 const removeBtn = section.querySelector('.remove-btn');
                 const container = section.querySelector('div[style*="text-align: center"]'); // Assuming it's the imageContainer
                 if (uploadBtn && removeBtn && container) {
-                    if (images && images.length > 0) {
-                        uploadBtn.style.display = 'none';
-                        removeBtn.style.display = 'block';
-                        container.style.background = 'transparent';
+                    if (isEditMode) {
+                        if (images && images.length > 0) {
+                            uploadBtn.style.display = 'none';
+                            removeBtn.style.display = 'block';
+                            container.style.background = 'transparent';
+                        } else {
+                            uploadBtn.style.display = 'block';
+                            removeBtn.style.display = 'none';
+                            container.style.background = 'rgba(255,255,255,0.1)';
+                        }
                     } else {
-                        uploadBtn.style.display = 'block';
+                        uploadBtn.style.display = 'none';
                         removeBtn.style.display = 'none';
-                        container.style.background = 'rgba(255,255,255,0.1)';
+                        if (images && images.length > 0) {
+                            container.style.background = 'transparent';
+                        } else {
+                            container.style.background = 'rgba(255,255,255,0.1)';
+                        }
                     }
                 }
                 const p = section.querySelector("p");
@@ -1138,7 +1150,7 @@
             section.appendChild(title);
 
             const imageContainer = d.createElement("div");
-            imageContainer.style.cssText = "width: min(60vw, 300px); height: auto; background: rgba(255,255,255,0.1); text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-height: 100px;";
+            imageContainer.style.cssText = "width: min(60vw, 300px); height: auto; background: rgba(255,255,255,0.1); text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; min-height: 100px; transform: scale(0.7) translateY(60px) rotate(-5deg); opacity: 0; filter: blur(12px); transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 1s ease-out, filter 1s ease-out;";
 
             const img = d.createElement("img");
             if (images && images.length > 0) {
@@ -1170,35 +1182,71 @@
             removeBtn.onclick = () => {
                 img.src = "https://placehold.co/200x250/FFF9F0/5D4037?text=Upload+any+image+here";
                 img.style.cssText = "width: 100%; height: 100%; object-fit: contain; border: 3px solid #ff7a2f; border-radius: 24px; opacity: 0.6;";
-                uploadBtn.style.display = 'block';
+                uploadBtn.style.display = isEditMode ? 'block' : 'none';
                 removeBtn.style.display = 'none';
                 imageContainer.style.background = 'rgba(255,255,255,0.1)';
-                window.parent.postMessage({ type: 'removeImageExplosion' }, '*');
+                w.parent.postMessage({ type: 'removeImageExplosion' }, '*');
             };
             imageContainer.appendChild(removeBtn);
 
             // Initially set button visibility and background
-            if (images && images.length > 0) {
-                uploadBtn.style.display = 'none';
-                removeBtn.style.display = 'block';
-                imageContainer.style.background = 'transparent';
+            if (isEditMode) {
+                if (images && images.length > 0) {
+                    uploadBtn.style.display = 'none';
+                    removeBtn.style.display = 'block';
+                    imageContainer.style.background = 'transparent';
+                } else {
+                    uploadBtn.style.display = 'block';
+                    removeBtn.style.display = 'none';
+                    imageContainer.style.background = 'rgba(255,255,255,0.1)';
+                }
             } else {
-                uploadBtn.style.display = 'block';
+                uploadBtn.style.display = 'none';
                 removeBtn.style.display = 'none';
-                imageContainer.style.background = 'rgba(255,255,255,0.1)';
+                if (images && images.length > 0) {
+                    imageContainer.style.background = 'transparent';
+                } else {
+                    imageContainer.style.background = 'rgba(255,255,255,0.1)';
+                }
             }
 
             fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    const url = URL.createObjectURL(file);
-                    img.src = url;
-                    img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
-                    img.style.opacity = "1";
-                    uploadBtn.style.display = 'none';
-                    removeBtn.style.display = 'block';
-                    imageContainer.style.background = 'transparent';
-                    window.parent.postMessage({ type: 'updateImageExplosion', image: url }, '*');
+                    uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+                    uploadBtn.disabled = true;
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', 'Greeter');
+
+                    fetch('https://api.cloudinary.com/v1_1/dzjq2xb5r/image/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.secure_url) {
+                            img.src = data.secure_url;
+                            img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
+                            img.style.opacity = "1";
+                            uploadBtn.style.display = 'none';
+                            removeBtn.style.display = isEditMode ? 'block' : 'none';
+                            imageContainer.style.background = 'transparent';
+                            
+                            w.parent.postMessage({ type: 'updateImageExplosion', image: data.secure_url }, '*');
+                        } else {
+                            throw new Error(data.error?.message || 'Upload failed');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Direct Cloudinary upload failed:', err);
+                        alert(window.currentLang === 'hi' ? 'छवि अपलोड विफल रही। कृपया पुनः प्रयास करें।' : 'Image upload failed. Please try again.');
+                    })
+                    .finally(() => {
+                        uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+                        uploadBtn.disabled = false;
+                    });
                 }
             };
             section.appendChild(imageContainer);
@@ -1220,9 +1268,13 @@
             crackersAudio.style.display = 'none';
             d.body.appendChild(crackersAudio);
 
+            let interval = null;
             const observer = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting) {
-                    imageContainer.style.transform = "scale(1.05)";
+                    // Beautiful spring-loaded entrance style
+                    imageContainer.style.transform = "scale(1.05) translateY(0) rotate(0deg)";
+                    imageContainer.style.opacity = "1";
+                    imageContainer.style.filter = "blur(0)";
 
                     // Play crackers sound
                     crackersAudio.currentTime = 0;
@@ -1233,33 +1285,53 @@
                     if (confettiFn) {
                         const duration = 5 * 1000;
                         const animationEnd = Date.now() + duration;
-                        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+                        const defaults = { startVelocity: 35, spread: 360, ticks: 60, zIndex: 9999 };
 
                         function randomInRange(min, max) { return Math.random() * (max - min) + min; }
 
-                        const interval = setInterval(function () {
+                        if (interval) clearInterval(interval);
+                        interval = setInterval(function () {
                             const timeLeft = animationEnd - Date.now();
-                            if (timeLeft <= 0) return clearInterval(interval);
-                            const particleCount = 50 * (timeLeft / duration);
+                            if (timeLeft <= 0) {
+                                clearInterval(interval);
+                                interval = null;
+                                return;
+                            }
+                            // Increased particle counts for more attractive celebration
+                            const particleCount = 120 * (timeLeft / duration);
                             confettiFn(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
                             confettiFn(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
                         }, 250);
 
-                        // Additional "explosion" effect
+                        // Additional massive "explosion" effect
                         setTimeout(() => {
                             confettiFn({
-
-                                particleCount: 150,
-                                spread: 70,
-                                origin: { y: 0.6 }
+                                particleCount: 300,
+                                spread: 100,
+                                origin: { y: 0.6 },
+                                zIndex: 9999
                             });
                         }, 500);
+                    }
+                } else {
+                    // Reset animation state when leaving viewport so it triggers again on scroll
+                    imageContainer.style.transform = "scale(0.7) translateY(60px) rotate(-5deg)";
+                    imageContainer.style.opacity = "0";
+                    imageContainer.style.filter = "blur(12px)";
+                    if (interval) {
+                        clearInterval(interval);
+                        interval = null;
                     }
                 }
             }, { threshold: 0.2 });
             observer.observe(section);
 
-            return { cleanup: () => observer.disconnect() };
+            return {
+                cleanup: () => {
+                    observer.disconnect();
+                    if (interval) clearInterval(interval);
+                }
+            };
         },
         disable(d) {
             d?.getElementById("magic-image-explosion-section")?.remove();

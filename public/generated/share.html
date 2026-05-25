@@ -777,6 +777,173 @@
       display: block;
     }
 
+    /* QR Loading Animation (exact same visual as .generation-loader on customize.html) */
+    .qr-loader {
+      position: absolute;
+      inset: 0;
+      background: rgba(250, 248, 255, 0.96);
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-family: 'Inter', 'Quicksand', sans-serif;
+      color: #2c1f4a;
+      text-align: center;
+      border-radius: 24px;
+    }
+    body.dark .qr-loader {
+      background: rgba(26, 18, 48, 0.96);
+      color: #f0edff;
+    }
+    .qr-loader .logo-ring-wrapper {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 12px rgba(123, 93, 246, 0.18));
+    }
+    .qr-loader .colorful-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg,
+          #7b5df6 0deg 60deg,
+          #ff7a2f 60deg 130deg,
+          #a78bfa 130deg 200deg,
+          #fb923c 200deg 280deg,
+          #7b5df6 280deg 360deg);
+      animation: ring-rotate 2.6s linear infinite;
+      -webkit-mask: radial-gradient(transparent 67%, #000 68%);
+      mask: radial-gradient(transparent 67%, #000 68%);
+      box-shadow:
+        0 0 20px rgba(123, 93, 246, 0.5),
+        0 0 10px rgba(255, 122, 47, 0.4);
+    }
+    .qr-loader .colorful-ring::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: linear-gradient(85deg,
+          transparent 15%,
+          rgba(255, 255, 255, 0.65) 42%,
+          rgba(255, 255, 255, 0.35) 52%,
+          transparent 85%);
+      animation: ring-shine 2.4s linear infinite;
+      z-index: 1;
+      mix-blend-mode: soft-light;
+      opacity: 0.9;
+    }
+    .qr-loader .colorful-ring::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 50%;
+      background: linear-gradient(200deg,
+          transparent 25%,
+          rgba(180, 160, 255, 0.25) 48%,
+          transparent 75%);
+      animation: ring-shine 3.8s linear infinite reverse;
+      z-index: 1;
+      mix-blend-mode: soft-light;
+      opacity: 0.85;
+    }
+    .qr-loader .loader-logo {
+      position: relative;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      object-fit: cover;
+      z-index: 2;
+      border: 4px solid #fff;
+      box-shadow: 0 8px 25px rgba(123, 93, 246, 0.28), 0 0 0 6px rgba(255, 255, 255, 0.96), 0 0 0 10px rgba(250, 248, 255, 0.7);
+      animation: logo-breath 3.8s ease-in-out infinite;
+    }
+    body.dark .qr-loader .loader-logo {
+      border-color: #2a1f40;
+      box-shadow: 0 8px 25px rgba(123, 93, 246, 0.28), 0 0 0 6px rgba(26, 18, 48, 0.96);
+    }
+    .qr-loader .loader-logo::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(123, 93, 246, 0.38);
+      z-index: 3;
+      pointer-events: none;
+      box-shadow: 0 0 8px rgba(123, 93, 246, 0.18);
+    }
+    .qr-loader .loader-logo::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 122, 47, 0.25);
+      z-index: 4;
+      pointer-events: none;
+      box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.3);
+    }
+    .qr-loader .generation-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      color: #2c1f4a;
+      margin-bottom: 4px;
+    }
+    body.dark .qr-loader .generation-text {
+      color: #e2d9f5;
+    }
+    .qr-loader .generation-progress {
+      width: 110px;
+      height: 3px;
+      background: rgba(123, 93, 246, 0.1);
+      border-radius: 999px;
+      margin: 4px auto 2px;
+      position: relative;
+      overflow: hidden;
+    }
+    body.dark .qr-loader .generation-progress {
+      background: rgba(167, 139, 250, 0.15);
+    }
+    .qr-loader .generation-progress::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -40%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #7b5df6 25%,
+        #a78bfa 50%,
+        #7b5df6 75%,
+        transparent
+      );
+      border-radius: 999px;
+      animation: progress-shine 1.65s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      box-shadow: 0 0 4px rgba(123, 93, 246, 0.35);
+    }
+    @keyframes ring-rotate {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes ring-shine {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes logo-breath {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.042); }
+    }
+    @keyframes progress-shine {
+      0% { left: -40%; }
+      100% { left: 110%; }
+    }
+
     .download-qr-btn {
       background: var(--accent-gradient);
       color: white;
@@ -1082,55 +1249,108 @@
       color: var(--text-primary);
     }
 
-    /* Feedback Form Styles */
+    /* Feedback Form Styles - Professional & User-Friendly */
+    #feedbackModal .modal-card {
+      max-width: 620px;
+      width: 94%;
+      max-height: 88vh;
+      overflow-y: visible;
+    }
     .feedback-form {
       display: grid;
-      gap: 20px;
-      max-height: 70vh;
+      gap: 14px;
+      max-height: 58vh;
       overflow-y: auto;
-      padding: 10px;
+      padding: 4px 6px;
+      scrollbar-width: thin;
+    }
+    .feedback-form::-webkit-scrollbar {
+      width: 6px;
+    }
+    .feedback-form::-webkit-scrollbar-thumb {
+      background: var(--accent-solid);
+      border-radius: 3px;
+      opacity: 0.65;
+    }
+    .feedback-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .feedback-icon { font-size: 1.85rem; }
+    .feedback-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin: 0;
+    }
+    .feedback-intro {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin: 0 0 14px;
+      line-height: 1.45;
+      max-width: 460px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .feedback-section {
+      margin-top: 6px;
+    }
+    .feedback-section h4 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--accent-solid);
+      margin: 0 0 8px 2px;
+      opacity: 0.9;
     }
     .feedback-question {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-    .feedback-question:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-      border-color: var(--accent-solid);
+      border-radius: 14px;
+      padding: 14px 16px;
+      transition: all 0.2s ease;
     }
     .feedback-question label {
       display: block;
       font-weight: 600;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       color: var(--text-primary);
-      font-size: 1rem;
+      font-size: 0.93rem;
     }
     .radio-group {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .radio-group label {
       position: relative;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 9px;
       cursor: pointer;
       font-weight: 500;
-      padding: 12px 16px;
-      border: 2px solid transparent;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      transition: all 0.2s ease;
+      padding: 9px 13px;
+      border: 1.5px solid var(--card-border);
+      border-radius: 999px;
+      background: var(--bg-secondary);
+      transition: all 0.15s ease;
+      font-size: 0.87rem;
+      flex: 1 1 auto;
+      min-width: 118px;
+      justify-content: flex-start;
     }
     .radio-group label:hover {
-      background: rgba(123, 93, 246, 0.1);
       border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.06);
+      transform: translateY(-1px);
     }
     .radio-group input[type="radio"] {
       position: absolute;
@@ -1139,43 +1359,51 @@
     }
     .radio-group input[type="radio"]:checked + .radio-custom {
       background: var(--accent-gradient);
-      border-color: var(--accent-solid);
+      border-color: #fff;
+      box-shadow: 0 0 0 3px rgba(123, 93, 246, 0.2);
     }
     .radio-group input[type="radio"]:checked + .radio-custom::before {
       opacity: 1;
       transform: scale(1);
     }
+    .radio-group label:has(input:checked) {
+      background: rgba(123, 93, 246, 0.08);
+      border-color: var(--accent-solid);
+      color: var(--text-primary);
+    }
     .radio-custom {
-      width: 20px;
-      height: 20px;
+      width: 17px;
+      height: 17px;
       border: 2px solid var(--text-secondary);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       flex-shrink: 0;
+      background: transparent;
     }
     .radio-custom::before {
       content: '';
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       background: white;
       border-radius: 50%;
       opacity: 0;
       transform: scale(0);
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
     textarea {
       width: 100%;
-      padding: 12px 16px;
-      border: 2px solid var(--card-border);
-      border-radius: 12px;
+      padding: 10px 13px;
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px;
       background: var(--bg-secondary);
       color: var(--text-primary);
       font-family: inherit;
       resize: vertical;
-      min-height: 100px;
+      min-height: 78px;
+      font-size: 0.9rem;
       transition: border-color 0.2s ease;
     }
     textarea:focus {
@@ -1185,6 +1413,32 @@
     }
     textarea::placeholder {
       color: var(--text-secondary);
+    }
+    .feedback-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      justify-content: flex-end;
+    }
+    .feedback-success {
+      text-align: center;
+      padding: 32px 18px;
+    }
+    .feedback-success .success-icon {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .feedback-success h3 {
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+    .feedback-success p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      max-width: 280px;
+      margin: 0 auto 16px;
     }
 
     /* Responsive */
@@ -1388,6 +1642,7 @@
       }
     }
   </style>
+  <script src="/assets/config.js"></script>
   <script src="/assets/tracker.js" defer></script>
 </head>
 
@@ -1474,6 +1729,14 @@
             <div id="qrCodeCanvas">
               <div class="qr-scan-line"></div>
               <div class="qr-scan-corners"></div>
+              <div id="qrLoader" class="qr-loader" style="display:flex;">
+                <div class="logo-ring-wrapper">
+                  <div class="colorful-ring"></div>
+                  <img src="../assets/CLOGO.jpg" class="loader-logo" alt="Greeter Logo">
+                </div>
+                <div class="generation-text" id="qrLoaderText">Generating QR Code...</div>
+                <div class="generation-progress"></div>
+              </div>
             </div>
             <button class="download-qr-btn" id="downloadQrBtn">
               <i class="fas fa-download"></i> <span id="downloadQrText">Download QR Code</span>
@@ -1523,112 +1786,152 @@
     <div class="custom-modal" id="feedbackModal">
       <div class="modal-card">
         <div class="modal-close" id="feedbackModalClose"><i class="fas fa-times"></i></div>
-        <h2 style="text-align: center; margin-bottom: 20px;">💖 The Greeter Feedback Form</h2>
+
+        <!-- Feedback Header -->
+        <div class="feedback-header">
+          <span class="feedback-icon">💬</span>
+          <h2 class="feedback-title">Help Us Improve</h2>
+        </div>
+        <p class="feedback-intro">Your feedback shapes the future of Greeter. This quick 12-question form takes under 2 minutes.</p>
+
         <form id="feedbackForm" class="feedback-form">
-          <div class="feedback-question">
-            <label>1. What type of website did you create?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="websiteType" value="Birthday"><span class="radio-custom"></span> Birthday</label>
-              <label><input type="radio" name="websiteType" value="Anniversary"><span class="radio-custom"></span> Anniversary</label>
-              <label><input type="radio" name="websiteType" value="Proposal"><span class="radio-custom"></span> Proposal</label>
-              <label><input type="radio" name="websiteType" value="Festival Wish"><span class="radio-custom"></span> Festival Wish</label>
-              <label><input type="radio" name="websiteType" value="Friendship"><span class="radio-custom"></span> Friendship</label>
-              <label><input type="radio" name="websiteType" value="Other"><span class="radio-custom"></span> Other</label>
+          <!-- Section: Your Creation -->
+          <div class="feedback-section">
+            <h4>Your Creation</h4>
+            <div class="feedback-question">
+              <label>1. What type of website did you create?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="websiteType" value="Birthday"><span class="radio-custom"></span> Birthday</label>
+                <label><input type="radio" name="websiteType" value="Anniversary"><span class="radio-custom"></span> Anniversary</label>
+                <label><input type="radio" name="websiteType" value="Proposal"><span class="radio-custom"></span> Proposal</label>
+                <label><input type="radio" name="websiteType" value="Festival Wish"><span class="radio-custom"></span> Festival Wish</label>
+                <label><input type="radio" name="websiteType" value="Friendship"><span class="radio-custom"></span> Friendship</label>
+                <label><input type="radio" name="websiteType" value="Other"><span class="radio-custom"></span> Other</label>
+              </div>
             </div>
           </div>
-          <div class="feedback-question">
-            <label>2. How would you rate your overall experience with The Greeter?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="experience" value="1"><span class="radio-custom"></span> ⭐ 1</label>
-              <label><input type="radio" name="experience" value="2"><span class="radio-custom"></span> ⭐⭐ 2</label>
-              <label><input type="radio" name="experience" value="3"><span class="radio-custom"></span> ⭐⭐⭐ 3</label>
-              <label><input type="radio" name="experience" value="4"><span class="radio-custom"></span> ⭐⭐⭐⭐ 4</label>
-              <label><input type="radio" name="experience" value="5"><span class="radio-custom"></span> ⭐⭐⭐⭐⭐ 5</label>
+
+          <!-- Section: Experience -->
+          <div class="feedback-section">
+            <h4>Overall Experience</h4>
+            <div class="feedback-question">
+              <label>2. How would you rate your overall experience?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="experience" value="1"><span class="radio-custom"></span> ⭐ 1</label>
+                <label><input type="radio" name="experience" value="2"><span class="radio-custom"></span> ⭐⭐ 2</label>
+                <label><input type="radio" name="experience" value="3"><span class="radio-custom"></span> ⭐⭐⭐ 3</label>
+                <label><input type="radio" name="experience" value="4"><span class="radio-custom"></span> ⭐⭐⭐⭐ 4</label>
+                <label><input type="radio" name="experience" value="5"><span class="radio-custom"></span> ⭐⭐⭐⭐⭐ 5</label>
+              </div>
+            </div>
+            <div class="feedback-question">
+              <label>3. Was customization easy?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="customization" value="Very Easy"><span class="radio-custom"></span> Very Easy</label>
+                <label><input type="radio" name="customization" value="Easy"><span class="radio-custom"></span> Easy</label>
+                <label><input type="radio" name="customization" value="Average"><span class="radio-custom"></span> Average</label>
+                <label><input type="radio" name="customization" value="Difficult"><span class="radio-custom"></span> Difficult</label>
+              </div>
             </div>
           </div>
-          <div class="feedback-question">
-            <label>3. Was the website customization process easy?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="customization" value="Very Easy"><span class="radio-custom"></span> Very Easy</label>
-              <label><input type="radio" name="customization" value="Easy"><span class="radio-custom"></span> Easy</label>
-              <label><input type="radio" name="customization" value="Average"><span class="radio-custom"></span> Average</label>
-              <label><input type="radio" name="customization" value="Difficult"><span class="radio-custom"></span> Difficult</label>
+
+          <!-- Section: Design & Impact -->
+          <div class="feedback-section">
+            <h4>Look &amp; Impact</h4>
+            <div class="feedback-question">
+              <label>4. How attractive was the final website?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="attractive" value="Extremely Attractive"><span class="radio-custom"></span> 😍 Extremely</label>
+                <label><input type="radio" name="attractive" value="Good"><span class="radio-custom"></span> 😊 Good</label>
+                <label><input type="radio" name="attractive" value="Average"><span class="radio-custom"></span> 😐 Average</label>
+                <label><input type="radio" name="attractive" value="Needs Improvement"><span class="radio-custom"></span> 😕 Needs Work</label>
+              </div>
+            </div>
+            <div class="feedback-question">
+              <label>5. Did the receiver enjoy the surprise?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="receiver" value="Loved It"><span class="radio-custom"></span> ❤️ Loved It</label>
+                <label><input type="radio" name="receiver" value="Liked It"><span class="radio-custom"></span> 😊 Liked It</label>
+                <label><input type="radio" name="receiver" value="Average Reaction"><span class="radio-custom"></span> 😐 Average</label>
+                <label><input type="radio" name="receiver" value="Not Much"><span class="radio-custom"></span> 😕 Not Much</label>
+              </div>
             </div>
           </div>
-          <div class="feedback-question">
-            <label>4. Which feature did you like the most?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="feature" value="Animations"><span class="radio-custom"></span> Animations</label>
-              <label><input type="radio" name="feature" value="Music"><span class="radio-custom"></span> Music</label>
-              <label><input type="radio" name="feature" value="Fireworks"><span class="radio-custom"></span> Fireworks</label>
-              <label><input type="radio" name="feature" value="Templates"><span class="radio-custom"></span> Templates</label>
-              <label><input type="radio" name="feature" value="QR Code"><span class="radio-custom"></span> QR Code</label>
-              <label><input type="radio" name="feature" value="Sharing Options"><span class="radio-custom"></span> Sharing Options</label>
-              <label><input type="radio" name="feature" value="AI Features"><span class="radio-custom"></span> AI Features</label>
-              <label><input type="radio" name="feature" value="Photo Upload"><span class="radio-custom"></span> Photo Upload</label>
-              <label><input type="radio" name="feature" value="Other"><span class="radio-custom"></span> Other</label>
+
+          <!-- Section: Features & Performance -->
+          <div class="feedback-section">
+            <h4>Features &amp; Performance</h4>
+            <div class="feedback-question">
+              <label>6. Favorite feature?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="feature" value="Animations"><span class="radio-custom"></span> Animations</label>
+                <label><input type="radio" name="feature" value="Music"><span class="radio-custom"></span> Music</label>
+                <label><input type="radio" name="feature" value="Fireworks"><span class="radio-custom"></span> Fireworks</label>
+                <label><input type="radio" name="feature" value="Templates"><span class="radio-custom"></span> Templates</label>
+                <label><input type="radio" name="feature" value="QR Code"><span class="radio-custom"></span> QR Code</label>
+                <label><input type="radio" name="feature" value="Sharing Options"><span class="radio-custom"></span> Sharing</label>
+                <label><input type="radio" name="feature" value="AI Features"><span class="radio-custom"></span> AI</label>
+                <label><input type="radio" name="feature" value="Photo Upload"><span class="radio-custom"></span> Photos</label>
+                <label><input type="radio" name="feature" value="Other"><span class="radio-custom"></span> Other</label>
+              </div>
+            </div>
+            <div class="feedback-question">
+              <label>7. How fast &amp; smooth was it?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="performance" value="Very Fast"><span class="radio-custom"></span> ⚡ Very Fast</label>
+                <label><input type="radio" name="performance" value="Smooth"><span class="radio-custom"></span> 😊 Smooth</label>
+                <label><input type="radio" name="performance" value="Average"><span class="radio-custom"></span> 😐 Average</label>
+                <label><input type="radio" name="performance" value="Slow"><span class="radio-custom"></span> 🐌 Slow</label>
+              </div>
+            </div>
+            <div class="feedback-question">
+              <label>8. Device used?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="device" value="Mobile"><span class="radio-custom"></span> Mobile</label>
+                <label><input type="radio" name="device" value="Laptop/Desktop"><span class="radio-custom"></span> Laptop/Desktop</label>
+                <label><input type="radio" name="device" value="Tablet"><span class="radio-custom"></span> Tablet</label>
+              </div>
             </div>
           </div>
-          <div class="feedback-question">
-            <label>5. How attractive did the final website look?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="attractive" value="Extremely Attractive"><span class="radio-custom"></span> 😍 Extremely Attractive</label>
-              <label><input type="radio" name="attractive" value="Good"><span class="radio-custom"></span> 😊 Good</label>
-              <label><input type="radio" name="attractive" value="Average"><span class="radio-custom"></span> 😐 Average</label>
-              <label><input type="radio" name="attractive" value="Needs Improvement"><span class="radio-custom"></span> 😕 Needs Improvement</label>
+
+          <!-- Section: Feedback & Future -->
+          <div class="feedback-section">
+            <h4>Your Voice</h4>
+            <div class="feedback-question">
+              <label>9. Any issues faced while creating?</label>
+              <textarea name="issues" placeholder="Describe any bugs, confusion or slowdowns..."></textarea>
+            </div>
+            <div class="feedback-question">
+              <label>10. Would you recommend Greeter?</label>
+              <div class="radio-group">
+                <label><input type="radio" name="recommend" value="Yes Definitely"><span class="radio-custom"></span> Yes Definitely</label>
+                <label><input type="radio" name="recommend" value="Maybe"><span class="radio-custom"></span> Maybe</label>
+                <label><input type="radio" name="recommend" value="No"><span class="radio-custom"></span> No</label>
+              </div>
+            </div>
+            <div class="feedback-question">
+              <label>11. New features you'd love to see?</label>
+              <textarea name="newFeatures" placeholder="E.g. more templates, video backgrounds..."></textarea>
+            </div>
+            <div class="feedback-question">
+              <label>12. Any other suggestions?</label>
+              <textarea name="suggestions" placeholder="How can we make Greeter even better?"></textarea>
             </div>
           </div>
-          <div class="feedback-question">
-            <label>6. Did the receiver enjoy the surprise website?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="receiver" value="Loved It"><span class="radio-custom"></span> ❤️ Loved It</label>
-              <label><input type="radio" name="receiver" value="Liked It"><span class="radio-custom"></span> 😊 Liked It</label>
-              <label><input type="radio" name="receiver" value="Average Reaction"><span class="radio-custom"></span> 😐 Average Reaction</label>
-              <label><input type="radio" name="receiver" value="Not Much"><span class="radio-custom"></span> 😕 Not Much</label>
-            </div>
-          </div>
-          <div class="feedback-question">
-            <label>7. How fast and smooth was the website?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="performance" value="Very Fast"><span class="radio-custom"></span> ⚡ Very Fast</label>
-              <label><input type="radio" name="performance" value="Smooth"><span class="radio-custom"></span> 😊 Smooth</label>
-              <label><input type="radio" name="performance" value="Average"><span class="radio-custom"></span> 😐 Average</label>
-              <label><input type="radio" name="performance" value="Slow"><span class="radio-custom"></span> 🐌 Slow</label>
-            </div>
-          </div>
-          <div class="feedback-question">
-            <label>8. Did you face any issue while creating the website?</label>
-            <textarea name="issues" placeholder="Write your answer"></textarea>
-          </div>
-          <div class="feedback-question">
-            <label>9. Which device did you use?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="device" value="Mobile"><span class="radio-custom"></span> Mobile</label>
-              <label><input type="radio" name="device" value="Laptop/Desktop"><span class="radio-custom"></span> Laptop/Desktop</label>
-              <label><input type="radio" name="device" value="Tablet"><span class="radio-custom"></span> Tablet</label>
-            </div>
-          </div>
-          <div class="feedback-question">
-            <label>10. Would you recommend The Greeter to your friends or family?</label>
-            <div class="radio-group">
-              <label><input type="radio" name="recommend" value="Yes Definitely"><span class="radio-custom"></span> Yes Definitely</label>
-              <label><input type="radio" name="recommend" value="Maybe"><span class="radio-custom"></span> Maybe</label>
-              <label><input type="radio" name="recommend" value="No"><span class="radio-custom"></span> No</label>
-            </div>
-          </div>
-          <div class="feedback-question">
-            <label>11. What new features would you like to see in future?</label>
-            <textarea name="newFeatures" placeholder="Write your answer"></textarea>
-          </div>
-          <div class="feedback-question">
-            <label>12. Any suggestions to improve The Greeter?</label>
-            <textarea name="suggestions" placeholder="Write your answer"></textarea>
-          </div>
-          <div class="modal-buttons" style="margin-top: 20px;">
+
+          <div class="feedback-actions">
             <button type="button" class="modal-button secondary" id="feedbackCancel">Cancel</button>
             <button type="submit" class="modal-button">Submit Feedback</button>
           </div>
         </form>
+
+        <!-- Success State -->
+        <div id="feedbackSuccess" class="feedback-success" style="display:none;">
+          <span class="success-icon">🙏</span>
+          <h3>Thank You!</h3>
+          <p>Your feedback has been received. We truly appreciate you helping make Greeter magical for everyone.</p>
+          <button type="button" class="modal-button" id="feedbackDoneBtn" style="margin-top:8px;">Done</button>
+        </div>
       </div>
     </div>
 
@@ -1684,6 +1987,8 @@
       // ========== SHARE LINK LOGIC ==========
       const urlParams = new URLSearchParams(window.location.search);
       const viewId = urlParams.get('view');
+      const isFestival = urlParams.get('festival') === '1';
+      const senderName = decodeURIComponent(urlParams.get('sender') || '');
       const linkInput = document.getElementById('shareLinkInput');
       let fullLink = '';
       if (!viewId) {
@@ -1691,6 +1996,13 @@
       } else {
         fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}`;
         linkInput.value = fullLink;
+      }
+
+      function getFestivalShareText(lang) {
+        const name = senderName || (lang === 'en' ? 'Someone' : 'कोई');
+        return lang === 'en'
+          ? `${name} has sent something for you`
+          : `${name} ने आपके लिए कुछ भेजा है`;
       }
 
       // Copy link
@@ -1710,7 +2022,13 @@
       function shareOn(platform) {
         if (!fullLink) return;
         const url = encodeURIComponent(fullLink);
-        const title = encodeURIComponent('Greeter – I created a magical surprise just for you!');
+        const title = encodeURIComponent(
+          isFestival
+            ? getFestivalShareText(currentLang)
+            : (currentLang === 'en' 
+                ? '✨ I made a magical surprise just for you! ✨' 
+                : '✨ मैंने आपके लिए एक जादुई सरप्राइज़ बनाया है! ✨')
+        );
         let shareUrl = '';
         switch (platform) {
           case 'whatsapp': shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`; break;
@@ -1723,7 +2041,7 @@
             if (navigator.share) {
               navigator.share({
                 title: 'Greeter',
-                text: currentLang === 'en' ? 'Check out this magical surprise website!' : 'यह जादुई सरप्राइज़ वेबसाइट देखें!',
+                text: isFestival ? getFestivalShareText(currentLang) : (currentLang === 'en' ? '✨ I made a magical surprise just for you! ✨' : '✨ मैंने आपके लिए एक जादुई सरप्राइज़ बनाया है! ✨'),
                 url: fullLink
               }).catch(() => { });
             }
@@ -1796,6 +2114,7 @@
           shareOn: "Share on",
           downloadQr: "Download QR Code",
           shareQr: "Share QR Code",
+          qrLoading: "Generating QR Code...",
           copyAlert: "Link copied to clipboard!",
           instaTitle: "Copy & Share this link on Instagram",
           instaBtn: "Go to Instagram"
@@ -1812,6 +2131,7 @@
           shareOn: "शेयर करें",
           downloadQr: "QR कोड डाउनलोड करें",
           shareQr: "QR कोड शेयर करें",
+          qrLoading: "QR कोड बना रहे हैं...",
           copyAlert: "लिंक कॉपी हो गया!",
           instaTitle: "इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें",
           instaBtn: "इंस्टाग्राम पर जाएं"
@@ -1845,6 +2165,7 @@
         document.getElementById('shareHeading').innerText = t.shareOn;
         document.getElementById('downloadQrText').innerText = t.downloadQr;
         document.getElementById('shareQrText').innerText = t.shareQr;
+        if (document.getElementById('qrLoaderText')) document.getElementById('qrLoaderText').innerText = t.qrLoading;
         if (document.getElementById('instagramModalMessage')) document.getElementById('instagramModalMessage').innerText = t.instaTitle;
         if (document.getElementById('instagramModalRedirect')) document.getElementById('instagramModalRedirect').innerText = t.instaBtn;
         document.querySelector('#langToggleBtn span').innerText = lang === 'en' ? 'हिन्दी' : 'English';
@@ -1894,13 +2215,21 @@
 
         if (!fullLink) {
           qrCodeSection.style.display = 'none';
+          const l = document.getElementById('qrLoader'); if (l) l.style.display = 'none';
           return;
         }
 
-        // Clear QR container but keep animation elements
+        // Clear QR container but keep loader (for loading animation) + preserve scan elems refs
         const scanLine = qrCodeContainer.querySelector('.qr-scan-line');
         const scanCorners = qrCodeContainer.querySelector('.qr-scan-corners');
+        const qrLoader = qrCodeContainer.querySelector('#qrLoader');
         qrCodeContainer.innerHTML = '';
+
+        // Re-add loader right away so the fancy loading anim shows while QR renders
+        if (qrLoader) {
+          qrCodeContainer.appendChild(qrLoader);
+          qrLoader.style.display = 'flex';
+        }
 
         qrCode = new QRCodeStyling({
           width: 1200,
@@ -1961,8 +2290,9 @@
 
         qrCode.append(qrCodeContainer);
 
-        // Re-add animation elements after QR code is generated
+        // Hide loader (QR now ready) then re-add scan animations on top of finished QR
         setTimeout(() => {
+          if (qrLoader) qrLoader.style.display = 'none';
           if (scanLine) qrCodeContainer.appendChild(scanLine);
           if (scanCorners) qrCodeContainer.appendChild(scanCorners);
         }, 100);
@@ -2075,7 +2405,7 @@
           await navigator.share({
             files: [file],
             title: 'Greeter QR Code',
-            text: 'Scan this QR code to see my magical surprise!'
+            text: isFestival ? getFestivalShareText(currentLang) : (currentLang === 'en' ? '✨ I made a magical surprise just for you! ✨' : '✨ मैंने आपके लिए एक जादुई सरप्राइज़ बनाया है! ✨')
           });
         } catch (err) {
           console.error('File sharing failed:', err);
@@ -2083,7 +2413,7 @@
             // Fallback: share just the link
             await navigator.share({
               title: 'Greeter Surprise',
-              text: 'Check out this magical surprise!',
+              text: isFestival ? getFestivalShareText(currentLang) : (currentLang === 'en' ? '✨ I made a magical surprise just for you! ✨' : '✨ मैंने आपके लिए एक जादुई सरप्राइज़ बनाया है! ✨'),
               url: fullLink
             });
           } catch (err2) {
@@ -2109,22 +2439,32 @@
       const feedbackModalClose = document.getElementById('feedbackModalClose');
       const feedbackCancel = document.getElementById('feedbackCancel');
       const feedbackForm = document.getElementById('feedbackForm');
+      const feedbackSuccess = document.getElementById('feedbackSuccess');
+      const feedbackDoneBtn = document.getElementById('feedbackDoneBtn');
+
+      function resetFeedbackUI() {
+        if (feedbackForm) feedbackForm.style.display = '';
+        if (feedbackSuccess) feedbackSuccess.style.display = 'none';
+        if (feedbackForm) feedbackForm.reset();
+      }
 
       function showFeedbackModal() {
+        resetFeedbackUI();
         feedbackModal.classList.add('show');
       }
       function closeFeedbackModal() {
         feedbackModal.classList.remove('show');
+        setTimeout(resetFeedbackUI, 300);
       }
 
       feedbackBtn.addEventListener('click', showFeedbackModal);
       feedbackModalClose.addEventListener('click', closeFeedbackModal);
       feedbackCancel.addEventListener('click', closeFeedbackModal);
+      feedbackDoneBtn?.addEventListener('click', closeFeedbackModal);
       feedbackModal.addEventListener('click', (e) => { if (e.target === feedbackModal) closeFeedbackModal(); });
 
       feedbackForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        // Collect form data
         const formData = new FormData(feedbackForm);
         const responses = {};
         for (let [key, value] of formData.entries()) {
@@ -2132,23 +2472,32 @@
         }
         const urlParams = new URLSearchParams(window.location.search);
         const websiteId = urlParams.get('view') || null;
+        const submitBtn = feedbackForm.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
         try {
-          const response = await fetch('/api/feedback', {
+          // Use the same production backend as the rest of the app (Firebase frontend + Render backend)
+          const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+            ? window.APP_CONFIG.API_BASE_URL
+            : 'https://wishing-portal.onrender.com';
+
+          const response = await fetch(API_BASE + '/api/feedback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ websiteId, responses })
           });
           const result = await response.json();
           if (response.ok) {
-            alert('Thank you for your feedback!');
-            closeFeedbackModal();
-            feedbackForm.reset();
+            feedbackForm.style.display = 'none';
+            feedbackSuccess.style.display = 'block';
           } else {
             alert('Error submitting feedback: ' + (result.error || 'Unknown error'));
           }
         } catch (err) {
           console.error('Feedback submission error:', err);
           alert('Error submitting feedback. Please try again.');
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
         }
       });
     })();

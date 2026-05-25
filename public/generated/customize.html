@@ -997,6 +997,202 @@
       }
     }
 
+    .generation-loader {
+      position: fixed;
+      inset: 0;
+      background: rgba(250, 248, 255, 0.96);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-family: 'Inter', 'Quicksand', sans-serif;
+      color: #2c1f4a;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .generation-loader.show {
+      opacity: 1;
+    }
+
+    .logo-ring-wrapper {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 30px rgba(123, 93, 246, 0.18));
+    }
+
+    .colorful-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg,
+          #7b5df6 0deg 60deg,
+          #ff7a2f 60deg 130deg,
+          #a78bfa 130deg 200deg,
+          #fb923c 200deg 280deg,
+          #7b5df6 280deg 360deg);
+      animation: ring-rotate 2.6s linear infinite;
+      -webkit-mask: radial-gradient(transparent 67%, #000 68%);
+      mask: radial-gradient(transparent 67%, #000 68%);
+      box-shadow:
+        0 0 48px rgba(123, 93, 246, 0.5),
+        0 0 24px rgba(255, 122, 47, 0.4),
+        0 0 70px rgba(167, 139, 250, 0.25),
+        inset 0 0 24px rgba(255, 255, 255, 0.6),
+        inset 0 3px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .colorful-ring::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: linear-gradient(85deg,
+          transparent 15%,
+          rgba(255, 255, 255, 0.65) 42%,
+          rgba(255, 255, 255, 0.35) 52%,
+          transparent 85%);
+      animation: ring-shine 2.4s linear infinite;
+      z-index: 1;
+      mix-blend-mode: soft-light;
+      opacity: 0.9;
+    }
+
+    .colorful-ring::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: linear-gradient(200deg,
+          transparent 25%,
+          rgba(180, 160, 255, 0.25) 48%,
+          transparent 75%);
+      animation: ring-shine 3.8s linear infinite reverse;
+      z-index: 1;
+      mix-blend-mode: soft-light;
+      opacity: 0.85;
+    }
+
+    .loader-logo {
+      position: relative;
+      width: 172px;
+      height: 172px;
+      border-radius: 50%;
+      object-fit: cover;
+      z-index: 2;
+      border: 6px solid #fff;
+      box-shadow: 0 18px 55px rgba(123, 93, 246, 0.28), 0 0 0 9px rgba(255, 255, 255, 0.96), 0 0 0 16px rgba(250, 248, 255, 0.7), 0 0 0 24px rgba(167, 139, 250, 0.15), 0 0 0 32px rgba(123, 93, 246, 0.08);
+      animation: logo-breath 3.8s ease-in-out infinite;
+    }
+
+    .loader-logo::after {
+      content: '';
+      position: absolute;
+      inset: -11px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(123, 93, 246, 0.38);
+      z-index: 3;
+      pointer-events: none;
+      box-shadow: 0 0 16px rgba(123, 93, 246, 0.18);
+    }
+
+    .loader-logo::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 122, 47, 0.25);
+      z-index: 4;
+      pointer-events: none;
+      box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes ring-rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes ring-shine {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes logo-breath {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.042);
+      }
+    }
+
+    .generation-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+      color: #2c1f4a;
+    }
+
+    .generation-sub {
+      font-size: 0.82rem;
+      color: #5e4a7d;
+      opacity: 0.85;
+    }
+
+    .generation-progress {
+      width: 240px;
+      height: 4px;
+      background: rgba(123, 93, 246, 0.1);
+      border-radius: 999px;
+      margin: 16px auto 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .generation-progress::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -40%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg,
+          transparent,
+          #7b5df6 25%,
+          #a78bfa 50%,
+          #7b5df6 75%,
+          transparent);
+      border-radius: 999px;
+      animation: progress-shine 1.65s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      box-shadow: 0 0 6px rgba(123, 93, 246, 0.35);
+    }
+
+    @keyframes progress-shine {
+      0% {
+        left: -40%;
+      }
+
+      100% {
+        left: 110%;
+      }
+    }
+
     /* ---------- SHARE POPUP ---------- */
     .share-popup-overlay {
       position: fixed;
@@ -1447,7 +1643,8 @@
         border-top: 1px solid var(--card-border);
         padding: 20px 16px calc(30px + env(safe-area-inset-bottom, 16px));
         gap: 12px;
-        position: relative; /* Normal flow — do not pin to viewport */
+        position: relative;
+        /* Normal flow — do not pin to viewport */
         margin-top: auto;
       }
 
@@ -1783,7 +1980,7 @@
           <button class="modal-copy-btn" id="modalCopyBtn"><i class="far fa-copy"></i></button>
         </div>
       </div>
-      <button class="modal-button" onclick="closeModal()">OK</button>
+      <button class="modal-button" id="customModalOkBtn" onclick="closeModal()">OK</button>
     </div>
   </div>
 
@@ -1841,6 +2038,10 @@
       function showInstagramModal(link) {
         instagramModalLink.value = link;
         instagramModalMessage.innerText = currentLang === 'en' ? 'Share this magical link on Instagram' : 'इंस्टाग्राम पर यह जादुई लिंक शेयर करें';
+        const redirBtn = document.getElementById('instagramModalRedirect');
+        const okBtn = document.getElementById('instagramModalOk');
+        if (redirBtn) redirBtn.innerText = currentLang === 'en' ? 'Go to Instagram' : 'इंस्टाग्राम पर जाएं';
+        if (okBtn) okBtn.innerText = currentLang === 'en' ? 'OK' : 'ठीक है';
         instagramModal.classList.add('show');
       }
 
@@ -1890,7 +2091,7 @@
           alertPreviewNotReady: "Preview not ready", shareInsta: "\uD83D\uDCF7 Copy this link to share on Instagram:",
           shareTikTok: "\uD83C\uDFB5 Copy this link to share on TikTok:",
           defaultWelcomeTyping: (ev, fest) => {
-            if (ev === 'festival') return `\u2728 May this ${fest || 'festival'} bring you endless joy \u2728`;
+            if (ev === 'festival') return `\u2728 May this festival brings Your endless joy \u2728`;
             if (ev === 'anniversary') return "\u2728 Celebrating Our Beautiful Journey \u2728";
             if (ev === 'wedding') return "\u2728 Wishing You a Lifetime of Happiness \u2728";
             return "\u2728 A Special Surprise Is Waiting For You \u2728";
@@ -2037,6 +2238,7 @@
         document.getElementById('nativeShareText').innerText = t.nativeShareText;
         document.querySelector('#langToggleBtn span').innerText = lang === 'en' ? 'हिन्दी' : 'English';
         document.getElementById('openTabText').innerText = t.openTabText;
+        const okBtn = document.getElementById('customModalOkBtn'); if (okBtn) okBtn.innerText = lang === 'en' ? 'OK' : 'ठीक है';
         if (window.featureCategoriesRendered) renderCategoriesWithLanguage(t);
         document.querySelectorAll('.custom-panel textarea[data-placeholder-key="text"]').forEach(ta => ta.placeholder = t.placeholderText);
         document.querySelectorAll('.custom-panel textarea[data-placeholder-key="emoji"]').forEach(ta => ta.placeholder = t.placeholderEmoji);
@@ -2052,7 +2254,8 @@
         }
       }
       function toggleLanguage() { const newLang = currentLang === 'en' ? 'hi' : 'en'; currentLang = newLang; applyLanguage(currentLang); document.querySelector('#langToggleBtn span').textContent = currentLang === 'en' ? 'हिन्दी' : 'English'; }
-      const savedLang = localStorage.getItem('greeter_lang') || localStorage.getItem('customizer_lang') || 'en';
+      const urlParamsLang = new URLSearchParams(window.location.search).get('lang');
+      const savedLang = (urlParamsLang === 'hi' || urlParamsLang === 'en') ? urlParamsLang : (localStorage.getItem('greeter_lang') || localStorage.getItem('customizer_lang') || 'en');
       currentLang = savedLang; applyLanguage(currentLang);
       document.querySelector('#langToggleBtn span').textContent = currentLang === 'en' ? 'हिन्दी' : 'English';
       document.getElementById('langToggleBtn').onclick = toggleLanguage;
@@ -2085,6 +2288,31 @@
       }
       function getUserName() {
         if (window._sharedUserName) return window._sharedUserName;
+
+        // After personalization (especially on festival sites via CTA), read the freshest name from the live preview iframe
+        try {
+          const f = document.getElementById('frame');
+          if (f && f.contentWindow) {
+            const cw = f.contentWindow;
+
+            // Preferred: the exposed getter (updated after personalize)
+            if (typeof cw.getUserName === 'function') {
+              const liveName = cw.getUserName();
+              if (liveName && liveName !== 'Loved One' && liveName !== 'Special One') {
+                return liveName;
+              }
+            }
+
+            // Fallback: directly from the magic config object inside the iframe (doPersonalize updates this)
+            if (cw._magicConfig && cw._magicConfig.userName) {
+              const cfgName = cw._magicConfig.userName;
+              if (cfgName && cfgName !== 'Loved One' && cfgName !== 'Special One') {
+                return cfgName;
+              }
+            }
+          }
+        } catch (e) { }
+
         return getEventData().name || "Loved One";
       }
       let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null;
@@ -3440,7 +3668,7 @@
                   fileInput.value = "";
                 }).catch(err => {
                   console.error('Image upload error:', err);
-                  showModal('Image upload failed. Please check your Cloudinary configuration and try again.');
+                  showModal(currentLang === 'hi' ? 'इमेज अपलोड फेल हो गया। कृपया Cloudinary कॉन्फिग चेक करें और दोबारा कोशिश करें।' : 'Image upload failed. Please check your Cloudinary configuration and try again.');
                 });
               };
               const existingImages = customData.get(id)?.images || [];
@@ -3780,11 +4008,21 @@
       // Share popup
       const overlayShare = document.getElementById('sharePopupOverlay');
       const linkInput = document.getElementById('generatedLinkInput');
+      if (linkInput) linkInput.value = currentLang === 'hi' ? 'तैयार हो रहा है...' : 'generating...';
       const nativeShareBtnPopup = document.getElementById('nativeShareBtnPopup');
       if (navigator.share) nativeShareBtnPopup.style.display = 'flex';
-      window.nativeShare = function () { if (navigator.share) { navigator.share({ title: 'Greeter Magic', text: 'Check out this magical website!', url: linkInput.value }).catch(() => { }); } overlayShare.classList.remove('show'); };
+      window.nativeShare = function () {
+        const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
+        const ev = getEventData().event || '';
+        const isFest = /festival/i.test(template) || ev === 'festival';
+        const sender = getUserName() || (currentLang === 'en' ? 'Someone' : 'कोई');
+        const festivalText = currentLang === 'en' ? `${sender} has sent something for you` : `${sender} ने आपके लिए कुछ भेजा है`;
+        const generalText = currentLang === 'en' ? '✨ I made a magical surprise just for you! ✨' : '✨ मैंने आपके लिए एक जादुई सरप्राइज़ बनाया है! ✨';
+        const shareText = isFest ? festivalText : generalText;
+        if (navigator.share) { navigator.share({ title: 'Greeter Magic', text: shareText, url: linkInput.value }).catch(() => { }); }
+        overlayShare.classList.remove('show');
+      };
       function generateShareLink() {
-        // Turn off edit mode immediately when generate is clicked
         const doc = getIframeDocument();
         if (doc) {
           doc.body.contentEditable = false;
@@ -3792,14 +4030,53 @@
         editModeActive = false;
         editToggleBtn.classList.remove('active');
 
-        const audio = document.getElementById('generateShareAudio');
         const btn = document.getElementById("generateLinkBtn");
+        if (btn) {
+          btn.disabled = true;
+          btn.classList.add('generating');
+          const span = btn.querySelector('span');
+          if (span) span.textContent = currentLang === 'hi' ? 'जादू तैयार हो रहा है...' : 'Generating Magic...';
+        }
+
+        // Show proper loading animation overlay
+        let loader = document.getElementById('generationLoader');
+        if (!loader) {
+          loader = document.createElement('div');
+          loader.id = 'generationLoader';
+          loader.className = 'generation-loader';
+          loader.innerHTML = `
+            <div class="logo-ring-wrapper">
+              <div class="colorful-ring"></div>
+              <img src="/assets/CLOGO.jpg" class="loader-logo" alt="Greeter Logo">
+            </div>
+            <div class="generation-text">${currentLang === 'hi' ? 'आपकी जादुई वेबसाइट तैयार हो रही है...' : 'Crafting your magical website...'}</div>
+            <div class="generation-progress"></div>
+            <div class="generation-sub">${currentLang === 'hi' ? 'बस एक पल लगेगा' : 'This will only take a moment'}</div>
+          `;
+          document.body.appendChild(loader);
+        }
+        loader.style.display = 'flex';
+        requestAnimationFrame(() => loader.classList.add('show'));
+
+        window.hideGenerationLoader = function () {
+          const l = document.getElementById('generationLoader');
+          if (l) {
+            l.classList.remove('show');
+            setTimeout(() => { l.style.display = 'none'; }, 320);
+          }
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('generating');
+            const span = btn.querySelector('span');
+            if (span) span.textContent = currentLang === 'hi' ? 'बनाएं और शेयर करें' : 'Generate & Share';
+          }
+        };
+
+        const audio = document.getElementById('generateShareAudio');
         if (audio && btn) {
           audio.currentTime = 0;
           audio.play().catch(e => console.log(e));
-          btn.classList.add('generating');
           audio.onended = () => {
-            btn.classList.remove('generating');
             proceedGenerate();
           };
         } else {
@@ -3809,6 +4086,7 @@
           const doc = getIframeDocument();
           if (!doc) {
             showModal(t('previewNotReady'));
+            hideGenerationLoader();
             return;
           }
 
@@ -3829,14 +4107,16 @@
             html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
             // Check HTML size to prevent crashes
             const htmlSizeBytes = new Blob([html]).size;
-            if (htmlSizeBytes > 10 * 1024 * 1024) { // 10MB limit
-              showModal("The page is too large to generate a link. Try disabling some features or using fewer images.");
+            if (htmlSizeBytes > 10 * 1024 * 1024) {
+              showModal(currentLang === 'hi' ? "पेज बहुत बड़ा है लिंक जनरेट करने के लिए। कुछ फीचर्स बंद करें या कम तस्वीरें यूज करें।" : "The page is too large to generate a link. Try disabling some features or using fewer images.");
+              if (window.hideGenerationLoader) window.hideGenerationLoader();
               refreshAll();
               return;
             }
           } catch (e) {
             console.error("Error generating HTML snapshot:", e);
-            showModal("Failed to generate page content. Please try again.");
+            showModal(currentLang === 'hi' ? "पेज कंटेंट जनरेट करने में विफल। कृपया दोबारा कोशिश करें।" : "Failed to generate page content. Please try again.");
+            if (window.hideGenerationLoader) window.hideGenerationLoader();
             refreshAll();
             return;
           }
@@ -3860,10 +4140,14 @@
   }
 </style>
 `;
-          const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";localStorage.setItem("greeter_lang",lang);localStorage.setItem("customizer_lang",lang);var urlParams=new URLSearchParams(window.location.search);if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);window.history.replaceState({},"",newUrl);}})();</scr' + 'ipt>';
+          const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";localStorage.setItem("greeter_lang",lang);localStorage.setItem("customizer_lang",lang);var urlParams=new URLSearchParams(window.location.search);if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);window.history.replaceState({},"",newUrl);}function applyCTA(){document.querySelectorAll(".greeter-cta-section [data-en],.festival-cta-section [data-en]").forEach(function(el){var en=el.getAttribute("data-en"),hi=el.getAttribute("data-hi");if(lang==="hi"&&hi)el.textContent=hi;else if(en)el.textContent=en;});var ov=document.getElementById("namePopupOverlay");if(ov){ov.querySelectorAll("[data-en]").forEach(function(el){var en=el.getAttribute("data-en"),hi=el.getAttribute("data-hi");if(lang==="hi"&&hi)el.textContent=hi;else if(en)el.textContent=en;});var inp=document.getElementById("recipientNameInput");if(inp){var phe=inp.getAttribute("data-placeholder-en"),phh=inp.getAttribute("data-placeholder-hi");if(lang==="hi"&&phh)inp.placeholder=phh;else if(phe)inp.placeholder=phe;}}}applyCTA();window.addEventListener("load",applyCTA);})();</scr' + 'ipt>';
           const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } /* Hide content immediately to prevent visibility before features load */ document.documentElement.style.visibility = "hidden"; document.body.style.visibility = "hidden"; document.body.style.overflow = "hidden"; window.addEventListener("load",function(){ setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }, 10); }); })();</scr' + 'ipt>';
 
-          const ctaHtml = `
+          const storedTemplateForCta = localStorage.getItem("selectedTemplate") || "";
+          const templateFileForCta = storedTemplateForCta.split('/').pop() || new URLSearchParams(window.location.search).get('template') || 'birthday1';
+          const isFestival = /festival/i.test(templateFileForCta);
+
+          const regularCtaHtml = `
 <style>
 .greeter-cta-section { margin: 60px auto 40px; padding: 40px 30px; max-width: 600px; text-align: center; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 28px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); color: inherit; font-family: 'Inter', 'Quicksand', sans-serif; position: relative; z-index: 100; }
 .greeter-cta-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; color: inherit; line-height: 1.3; }
@@ -3879,9 +4163,10 @@
     <p class="greeter-cta-desc" data-en="Surprise your loved ones with a personalized website just like this one. No coding required!" data-hi="बिल्कुल इसी तरह की वेबसाइट से अपने प्रियजनों को सरप्राइज़ दें। कोई कोडिंग जरूरी नहीं!">Surprise your loved ones with a personalized website just like this one. No coding required!</p>
     <a href="/index.html" target="_blank" class="greeter-cta-btn" data-en="Press this red button to create your own website in minutes" data-hi="मिनटों में अपनी वेबसाइट बनाने के लिए यह लाल बटन दबाएं">Press this red button to create your own website in minutes</a>
 </div>
- <script>
+   <script>
 (function(){
-  var lang = localStorage.getItem("greeter_lang") || "en";
+  var urlLang = new URLSearchParams(window.location.search).get("lang");
+  var lang = (urlLang==="hi"||urlLang==="en") ? urlLang : "${currentLang}";
   var section = document.querySelector(".greeter-cta-section");
   if(section) {
     var title = section.querySelector(".greeter-cta-title");
@@ -3896,6 +4181,78 @@
 })();
 </scr` + `ipt>
 `;
+
+          const festivalCtaHtml = `
+<style>
+.festival-cta-section { margin: 60px auto 40px; padding: 36px 24px; max-width: 620px; text-align: center; background: rgba(255,255,255,0.18); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,200,80,0.35); border-radius: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); color: inherit; font-family: 'Inter','Quicksand',sans-serif; position:relative; z-index:100; }
+.festival-cta-title { font-size: 1.65rem; font-weight: 800; margin-bottom: 6px; color: inherit; }
+.festival-cta-desc { font-size: 1.02rem; margin-bottom: 22px; opacity: 0.92; line-height: 1.45; }
+.festival-cta-buttons { display: flex; flex-direction: column; gap: 11px; align-items: center; }
+@media (min-width: 520px) { .festival-cta-buttons { flex-direction: row; justify-content: center; } }
+.fest-btn { display: inline-flex; align-items: center; justify-content: center; padding: 13px 26px; font-size: 0.98rem; font-weight: 700; border-radius: 9999px; text-decoration: none; border: none; cursor: pointer; transition: transform .2s ease, box-shadow .2s ease; min-width: 210px; letter-spacing: .4px; }
+.fest-btn-primary { background: linear-gradient(135deg,#ff6a00,#ff2a5f); color: #fff !important; box-shadow: 0 8px 22px rgba(255,106,0,.38); }
+.fest-btn-primary:hover { transform: translateY(-2px) scale(1.015); box-shadow: 0 12px 28px rgba(255,106,0,.55); }
+.fest-btn-secondary { background: rgba(255,255,255,0.12); color: inherit; border: 1px solid rgba(255,255,255,0.35); backdrop-filter: blur(8px); }
+.fest-btn-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
+.name-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; align-items: center; justify-content: center; z-index: 999999; padding: 16px; }
+.name-popup-overlay.show { display: flex; }
+.name-popup-card { background: #fff; color: #1a1025; border-radius: 20px; padding: 24px 20px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; font-family: 'Inter',sans-serif; }
+.name-popup-card h3 { font-size: 1.25rem; margin: 0 0 6px; color: #e85d04; }
+.name-popup-card p { font-size: .9rem; color: #555; margin: 0 0 14px; line-height: 1.35; }
+.name-popup-card input { width: 100%; padding: 12px 16px; font-size: 1.05rem; border: 2px solid #ff6a00; border-radius: 9999px; outline: none; margin-bottom: 16px; text-align: center; box-sizing: border-box; }
+.name-popup-actions { display: flex; gap: 10px; }
+.name-popup-actions button { flex: 1; padding: 11px 16px; border-radius: 9999px; font-weight: 700; font-size: .9rem; border: none; cursor: pointer; }
+.name-popup-actions .cancel { background: #f2f2f2; color: #333; }
+.name-popup-actions .primary { background: linear-gradient(135deg,#ff6a00,#ff2a5f); color: #fff; }
+@media (max-width: 600px) { .festival-cta-section { margin: 36px 14px; padding: 28px 18px; } .fest-btn { min-width: 170px; padding: 11px 18px; font-size: .9rem; } }
+</style>
+<div class="festival-cta-section">
+  <div style="font-size:2rem;margin-bottom:4px;">🪔✨</div>
+  <h2 class="festival-cta-title" data-en="Loved this Festival Wish?" data-hi="क्या आपको यह त्योहार की शुभकामना पसंद आई?">Loved this Festival Wish?</h2>
+  <p class="festival-cta-desc" data-en="Enter a special name to instantly create &amp; share your own personalized version of this website!" data-hi="आपना नाम डालें और अपने दोस्तों व परिवार के साथ शेयर करें!">Enter a special name to instantly create &amp; share your own personalized version of this website!</p>
+  <div class="festival-cta-buttons">
+    <button class="fest-btn fest-btn-primary" id="btn-personalize" data-en="🌟 Enter Your Name &amp; Share" data-hi="🌟 अपना नाम डालें और शेयर करें">🌟 Enter Your Name &amp; Share</button>
+    <button class="fest-btn fest-btn-secondary" id="btn-another" data-en="✨ Create Another Website" data-hi="✨ अलग वेबसाइट बनाएं">✨ Create Another Website</button>
+  </div>
+</div>
+<div class="name-popup-overlay" id="namePopupOverlay">
+  <div class="name-popup-card">
+    <h3 data-en="✨ Personalize This Wish" data-hi="✨ इस शुभकामना को अपने नाम के साथ शेयर करें">✨ Personalize This Wish</h3>
+    <p data-en="Enter Your name for the personalized festival greeting:" data-hi="त्योहार की शुभकामना भेजने के लिए अपना नाम डालें:">Enter your name for the personalized festival greeting:</p>
+    <input type="text" id="recipientNameInput" data-placeholder-en="Enter Your Name Here" data-placeholder-hi="यहाँ अपना नाम लिखें" placeholder="Enter Your Name Here">
+    <div class="name-popup-actions">
+      <button class="cancel" id="nameCancelBtn" data-en="Cancel" data-hi="रद्द करें">Cancel</button>
+      <button class="primary" id="nameGenerateBtn" data-en="Generate &amp; Share Link" data-hi="बनाएं और शेयर लिंक">Generate &amp; Share Link</button>
+    </div>
+  </div>
+</div>
+<scr` + `ipt>
+(function(){
+  var urlLang = new URLSearchParams(window.location.search).get("lang");
+  var lang = (urlLang==="hi"||urlLang==="en") ? urlLang : "${currentLang}";
+  function applyText(el){ if(!el) return; var en=el.getAttribute("data-en"), hi=el.getAttribute("data-hi"); if(lang==="hi"&&hi) el.textContent=hi; else if(en) el.textContent=en; }
+  function applyPh(el){ if(!el) return; var en=el.getAttribute("data-placeholder-en"), hi=el.getAttribute("data-placeholder-hi"); if(lang==="hi"&&hi) el.placeholder=hi; else if(en) el.placeholder=en; }
+  document.querySelectorAll(".festival-cta-section [data-en]").forEach(applyText);
+  var ov = document.getElementById("namePopupOverlay");
+  if(ov){ ov.querySelectorAll("[data-en]").forEach(applyText); applyPh(document.getElementById("recipientNameInput")); }
+  var btnP = document.getElementById("btn-personalize");
+  var btnA = document.getElementById("btn-another");
+  if(btnA) btnA.onclick = function(ev){ ev.preventDefault(); window.location.href="/index.html"; };
+  function showP(){ if(!ov) return; ov.style.display="flex"; ov.classList.add("show"); setTimeout(function(){ var i=document.getElementById("recipientNameInput"); if(i) i.focus(); },120); }
+  function hideP(){ if(!ov) return; ov.style.display="none"; ov.classList.remove("show"); }
+  if(btnP) btnP.onclick = function(ev){ ev.preventDefault(); showP(); };
+  var cBtn = document.getElementById("nameCancelBtn");
+  var gBtn = document.getElementById("nameGenerateBtn");
+  if(cBtn) cBtn.onclick=hideP;
+  if(gBtn) gBtn.onclick=function(){ var i=document.getElementById("recipientNameInput"); var n=(i&&i.value.trim())||"Special One"; hideP(); doPersonalize(n); };
+  var inp = document.getElementById("recipientNameInput");
+  if(inp){ inp.onkeypress=function(e){ if(e.key==="Enter"){ var n=inp.value.trim()||"Special One"; hideP(); doPersonalize(n); } }; if(ov) ov.onclick=function(e){ if(e.target===ov) hideP(); }; }
+  function doPersonalize(newName){try{var oldName=(window._magicConfig&&window._magicConfig.userName)||"Loved One";if(oldName===newName){alert(lang==="hi"?"नाम पहले से ही ऐसा ही है!":"Name is already the same!");return;}if(oldName.length>1){var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false);var nd;while(nd=walker.nextNode()){if(nd.nodeValue&&nd.nodeValue.indexOf(oldName)>-1)nd.nodeValue=nd.nodeValue.split(oldName).join(newName);}if(document.title.indexOf(oldName)>-1)document.title=document.title.split(oldName).join(newName);}var html="<!DOCTYPE html>\\n"+document.documentElement.outerHTML;var newSafe=newName.replace(/"/g,"\\\\\\\"");html=html.split('"userName":"'+oldName+'"').join('"userName":"'+newSafe+'"');html=html.split('"recipientName":"'+oldName+'"').join('"recipientName":"'+newSafe+'"');if(oldName.length>1){html=html.split(oldName).join(newName);}var upCfg=window._magicConfig?JSON.parse(JSON.stringify(window._magicConfig)):{};upCfg.userName=newName;var ldr=document.createElement("div");ldr.id="persoLoader";ldr.style.cssText="position:fixed;inset:0;background:rgba(250,248,255,0.96);backdrop-filter:blur(22px);z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#2c1f4a;text-align:center;font-family:Inter,'Quicksand',sans-serif;opacity:0;transition:opacity .4s ease";var st=document.createElement("style");st.textContent=".ldr-ring-wrap{position:relative;width:260px;height:260px;margin-bottom:20px;display:flex;align-items:center;justify-content:center}.ldr-ring{position:absolute;width:100%;height:100%;border-radius:50%;background:conic-gradient(from 0deg,#7b5df6 0deg 60deg,#ff7a2f 60deg 130deg,#a78bfa 130deg 200deg,#fb923c 200deg 280deg,#7b5df6 280deg 360deg);animation:ldr-rot 2.6s linear infinite;-webkit-mask:radial-gradient(transparent 56%,#000 57%);mask:radial-gradient(transparent 56%,#000 57%);box-shadow:0 0 48px rgba(123,93,246,.25),0 0 24px rgba(255,122,47,.2),inset 0 0 24px rgba(255,255,255,.7)}.ldr-ring::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:linear-gradient(85deg,transparent 15%,rgba(255,255,255,.65) 42%,rgba(255,255,255,.35) 52%,transparent 85%);animation:ldr-shine 2.4s linear infinite;z-index:1;mix-blend-mode:soft-light;opacity:0.9}.ldr-ring::before{content:'';position:absolute;inset:-2px;border-radius:50%;background:linear-gradient(200deg,transparent 25%,rgba(180,160,255,.2) 48%,transparent 75%);animation:ldr-shine 3.8s linear infinite reverse;z-index:1;mix-blend-mode:soft-light;opacity:0.85}.ldr-logo{width:190px;height:190px;border-radius:50%;object-fit:cover;z-index:2;border:4px solid #fff;box-shadow:0 18px 55px rgba(123,93,246,.2),0 0 0 8px rgba(255,255,255,.96),0 0 0 16px rgba(250,248,255,.7),0 0 0 24px rgba(167,139,250,.12);animation:ldr-breath 3.8s ease-in-out infinite}@keyframes ldr-rot{to{transform:rotate(360deg)}}@keyframes ldr-shine{to{transform:rotate(360deg)}}@keyframes ldr-breath{0%,100%{transform:scale(1)}50%{transform:scale(1.042)}}";document.head.appendChild(st);ldr.innerHTML='<div class="ldr-ring-wrap"><div class="ldr-ring"></div><img src="/assets/CLOGO.jpg" class="ldr-logo" alt="Logo"></div><div style="font-size:1.08rem;font-weight:600;margin-bottom:4px;letter-spacing:0.3px">'+(lang==="hi"?"आपकी जादुई व्यक्तिगत वेबसाइट तैयार हो रही है...":"Crafting your personalized magical website...")+'</div><div style="font-size:.78rem;opacity:.85">'+(lang==="hi"?"बस एक पल लगेगा":"This will only take a moment")+'</div>';document.body.appendChild(ldr);setTimeout(function(){ldr.style.opacity="1"},20);fetch("https://wishing-portal.onrender.com/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({html:html,config:upCfg})}).then(function(r){if(!r.ok)throw new Error("save fail");return r.json();}).then(function(d){if(d&&d.id){if(ldr.parentNode)ldr.parentNode.removeChild(ldr);window.location.href="share.html?view="+d.id+"&festival=1&sender="+encodeURIComponent(newName||"Someone");}else throw new Error("no id");}).catch(function(err){console.error(err);if(ldr.parentNode)ldr.parentNode.removeChild(ldr);alert(lang==="hi"?"सेव नहीं हो पाया। कृपया पुनः प्रयास करें।":"Could not save. Please try again.");});}catch(e){console.error(e);alert("Error personalizing. Please try again.");}}
+})();
+</scr` + `ipt>
+`;
+          const ctaHtml = isFestival ? festivalCtaHtml : regularCtaHtml;
+
 
           // Build the final document using DOMParser to ensure structure
           const parser = new DOMParser();
@@ -3929,6 +4286,8 @@
           ctaContainer.id = 'magic-cta-section';
           ctaContainer.innerHTML = ctaHtml;
           container.appendChild(ctaContainer);
+
+          const nudgeEl = doc2.createElement("script"); nudgeEl.textContent = "(function(){var l=localStorage.getItem(\"greeter_lang\")||localStorage.getItem(\"customizer_lang\")||\"en\";var h=l===\"hi\";var t=h?\"यह सरप्राइज़ पसंद आया?\":\"Liked it? Create your own!\";var m=h?\"क्या आप भी सिर्फ 2 मिनिट इसी तरह की अपनी जादुई वेबसाइट बनाना चाहते हैं?\":\"Want to create your own magical website just like this in 2 minutes only?\";var y=h?\"हाँ, बनाएं!\":\"Yes, create mine!\";var n=h?\"नहीं, धन्यवाद\":\"No thanks\";setTimeout(function showNudge(){if(document.getElementById(\"create-nudge-popup\"))return;var p=document.createElement(\"div\");p.id=\"create-nudge-popup\";p.style.cssText=\"position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(12px);z-index:999999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease;\";p.innerHTML=\"<div style=\\\"background:var(--bg-secondary,#fff);color:var(--text-primary,#1a1025);max-width:340px;width:92%;border-radius:28px;padding:26px 22px 22px;text-align:center;box-shadow:0 30px 60px -15px rgba(0,0,0,0.35);border:1px solid var(--card-border,rgba(0,0,0,0.08));position:relative;font-family:Inter,system-ui,sans-serif;\\\"><div style=\\\"font-size:42px;margin-bottom:6px;\\\">✨🪄</div><h3 style=\\\"margin:0 0 10px;font-size:1.18rem;font-weight:800;line-height:1.2;\\\">\"+t+\"</h3><p style=\\\"margin:0 0 22px;font-size:0.95rem;opacity:.82;line-height:1.45;\\\">\"+m+\"</p><div style=\\\"display:flex;gap:12px;\\\"><button id=\\\"nudge-no\\\" style=\\\"flex:1;padding:12px 0;border-radius:999px;border:1.5px solid var(--card-border,#e5e0f0);background:transparent;color:inherit;font-weight:600;font-size:0.92rem;cursor:pointer;\\\">\"+n+\"</button><button id=\\\"nudge-yes\\\" style=\\\"flex:1;padding:12px 0;border-radius:999px;border:none;background:linear-gradient(145deg,#7b5df6 0%,#ff7a2f 100%);color:#fff;font-weight:700;font-size:0.92rem;cursor:pointer;box-shadow:0 6px 16px rgba(123,93,246,0.35);\\\">\"+y+\"</button></div><div style=\\\"position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;color:#666;cursor:pointer;\\\" onclick=\\\"var pp=document.getElementById('create-nudge-popup');if(pp)pp.remove();\\\">×</div></div>\";document.body.appendChild(p);setTimeout(function(){p.style.opacity=\"1\";},30);var yy=p.querySelector(\"#nudge-yes\"),nn=p.querySelector(\"#nudge-no\");var rm=function(){if(p&&p.parentNode)p.parentNode.removeChild(p);};if(nn)nn.onclick=function(){rm();setTimeout(showNudge,60000);};if(yy)yy.onclick=function(){rm();var cta=document.getElementById(\"magic-cta-section\")||document.querySelector(\".greeter-cta-section,.festival-cta-section\");if(cta){cta.scrollIntoView({behavior:\"smooth\",block:\"center\"});}else{window.scrollTo({top:document.body.scrollHeight,behavior:\"smooth\"});}};setTimeout(function(){var pp=document.getElementById(\"create-nudge-popup\");if(pp&&pp.parentNode)pp.parentNode.removeChild(pp);},600000);},12000);})();"; container.appendChild(nudgeEl);
 
           const urlParams = new URLSearchParams(window.location.search);
           const localEventData = getEventData();
@@ -4193,7 +4552,13 @@
               if (data.id) {
                 // Save customization state before navigating
                 saveCustomizationState(data.id);
-                window.location.href = `share.html?view=${data.id}`;
+                const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
+                const ev = getEventData().event || '';
+                const isFest = /festival/i.test(template) || ev === 'festival';
+                const sender = encodeURIComponent(getUserName() || '');
+                let target = `share.html?view=${data.id}`;
+                if (isFest) target += `&festival=1&sender=${sender}`;
+                window.location.href = target;
               } else {
                 throw new Error('No ID returned');
               }
@@ -4202,13 +4567,20 @@
               console.error("Server save failed, falling back to local storage", err);
               const fallbackId = Math.random().toString(36).substring(2, 12);
               if (err.message === 'Page too large for server' || !saveLocally(fallbackId)) {
-                linkInput.value = "Error: Page too large to share";
-                showModal("The page is too large to share automatically. Try disabling some features or using fewer images.");
+                linkInput.value = currentLang === 'hi' ? "त्रुटि: शेयर करने के लिए पेज बहुत बड़ा" : "Error: Page too large to share";
+                showModal(currentLang === 'hi' ? "पेज अपने आप शेयर करने के लिए बहुत बड़ा है। कुछ फीचर्स बंद करें या कम इमेज यूज करें।" : "The page is too large to share automatically. Try disabling some features or using fewer images.");
               } else {
-                window.location.href = `share.html?view=${fallbackId}`;
+                const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
+                const ev = getEventData().event || '';
+                const isFest = /festival/i.test(template) || ev === 'festival';
+                const sender = encodeURIComponent(getUserName() || '');
+                let target = `share.html?view=${fallbackId}`;
+                if (isFest) target += `&festival=1&sender=${sender}`;
+                window.location.href = target;
               }
             })
             .finally(() => {
+              if (window.hideGenerationLoader) window.hideGenerationLoader();
               refreshAll();
             });
         }
@@ -4218,7 +4590,14 @@
       window.copyGeneratedLink = () => { linkInput.select(); navigator.clipboard?.writeText(linkInput.value).then(() => showModal(t('copyAlert'))); };
       window.openInNewTab = () => { const link = linkInput.value; if (link && link !== 'generating...') window.open(link, '_blank'); else showModal(t('generateAlert')); };
       window.sharePopup = (platform) => {
-        const url = encodeURIComponent(linkInput.value), title = encodeURIComponent('Check out this magical website!');
+        const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
+        const ev = getEventData().event || '';
+        const isFest = /festival/i.test(template) || ev === 'festival';
+        const sender = getUserName() || (currentLang === 'en' ? 'Someone' : 'कोई');
+        const festivalText = currentLang === 'en' ? `${sender} has sent something for you` : `${sender} ने आपके लिए कुछ भेजा है`;
+        const generalText = currentLang === 'en' ? '✨ I made a magical surprise just for you! ✨' : '✨ मैंने आपके लिए एक जादुई सरप्राइज़ बनाया है! ✨';
+        const shareTitle = isFest ? festivalText : generalText;
+        const url = encodeURIComponent(linkInput.value), title = encodeURIComponent(shareTitle);
         let shareUrl = '';
         if (platform === 'facebook') shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
         else if (platform === 'twitter') shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
