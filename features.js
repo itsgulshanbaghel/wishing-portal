@@ -747,27 +747,101 @@
                 for (let i = 0; i < 50; i++) { ctx.beginPath(); ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 20, 0, 2 * Math.PI); ctx.fill(); }
                 ctx.fillStyle = "#fff"; ctx.font = "bold 40px Poppins"; ctx.textAlign = "center"; ctx.fillText("SCRATCH ME!", canvas.width / 2, canvas.height / 2 + 15);
                 let scratched = false, drawing = false, lastX = 0, lastY = 0, audioPlaying = false;
+                // Use an area-based heuristic to avoid expensive and sometimes-failing getImageData calls
+                let scratchedArea = 0;
+                function estimateStrokeArea(dx, dy, w) {
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    // approximate as circle area for the cap + rectangle for the stroke length
+                    const capArea = Math.PI * (w / 2) * (w / 2);
+                    const rectArea = w * dist;
+                    return capArea + rectArea;
+                }
+
                 const scratch = (x, y) => {
-                    ctx.globalCompositeOperation = "destination-out"; ctx.lineWidth = 80; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); lastX = x; lastY = y;
-                    if (!scratched) {
-                        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data; let transparent = 0; for (let i = 3; i < imgData.length; i += 4) if (imgData[i] === 0) transparent++;
-                        if (transparent / (canvas.width * canvas.height) > 0.6) { scratched = true; audio.pause(); audioPlaying = false; canvas.style.transition = "opacity 0.6s"; canvas.style.opacity = "0"; setTimeout(() => canvas.remove(), 600); }
+                    try {
+                        // scale line width to canvas coordinate space so visual size is stable across DPR
+                        const rect = canvas.getBoundingClientRect();
+                        const scale = canvas.width / rect.width || 1;
+                        ctx.globalCompositeOperation = "destination-out";
+                        ctx.lineWidth = Math.max(24, 80 * scale);
+                        ctx.lineCap = "round";
+                        ctx.beginPath();
+                        ctx.moveTo(lastX, lastY);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+
+                        // Update estimated scratched area
+                        const dx = x - lastX;
+                        const dy = y - lastY;
+                        scratchedArea += estimateStrokeArea(dx, dy, ctx.lineWidth);
+
+                        lastX = x;
+                        lastY = y;
+
+                        // Decide threshold conservatively (use 35% of canvas area)
+                        const totalArea = canvas.width * canvas.height;
+                        if (!scratched && totalArea > 0 && (scratchedArea / totalArea) > 0.35) {
+                            scratched = true;
+                            try { audio.pause(); } catch (e) {}
+                            audioPlaying = false;
+                            canvas.style.transition = "opacity 0.6s";
+                            canvas.style.opacity = "0";
+                            setTimeout(() => { try { canvas.remove(); } catch (e) {} }, 600);
+                        }
+                    } catch (err) {
+                        // If anything fails (eg. getImageData tainting in some environments), fallback to a simple single-stroke reveal
+                        console.warn('Scratch fallback triggered', err);
+                        scratched = true;
+                        try { audio.pause(); } catch (e) {}
+                        canvas.style.transition = "opacity 0.25s";
+                        canvas.style.opacity = "0";
+                        setTimeout(() => { try { canvas.remove(); } catch (e) {} }, 260);
                     }
                 };
+
                 const onStart = (e) => {
-                    e.preventDefault(); drawing = true; const rect = canvas.getBoundingClientRect(); const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
-                    if (e.touches) { lastX = (e.touches[0].clientX - rect.left) * sx; lastY = (e.touches[0].clientY - rect.top) * sy; } else { lastX = (e.clientX - rect.left) * sx; lastY = (e.clientY - rect.top) * sy; }
+                    e.preventDefault();
+                    drawing = true;
+                    const rect = canvas.getBoundingClientRect();
+                    const sx = canvas.width / rect.width || 1;
+                    const sy = canvas.height / rect.height || 1;
+                    if (e.touches && e.touches[0]) {
+                        lastX = (e.touches[0].clientX - rect.left) * sx;
+                        lastY = (e.touches[0].clientY - rect.top) * sy;
+                    } else {
+                        lastX = (e.clientX - rect.left) * sx;
+                        lastY = (e.clientY - rect.top) * sy;
+                    }
+                    // Reset small-area counter if user restarts
+                    if (!scratched) scratchedArea = 0;
                     audioPlaying = false;
                 };
+
                 const onMove = (e) => {
-                    if (!drawing || scratched) return; const rect = canvas.getBoundingClientRect(); const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
-                    let cx, cy; if (e.touches) { cx = (e.touches[0].clientX - rect.left) * sx; cy = (e.touches[0].clientY - rect.top) * sy; } else { cx = (e.clientX - rect.left) * sx; cy = (e.clientY - rect.top) * sy; }
-                    if (!audioPlaying) { audio.play().catch(e => { }); audioPlaying = true; }
+                    if (!drawing || scratched) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const sx = canvas.width / rect.width || 1;
+                    const sy = canvas.height / rect.height || 1;
+                    let cx, cy;
+                    if (e.touches && e.touches[0]) {
+                        cx = (e.touches[0].clientX - rect.left) * sx;
+                        cy = (e.touches[0].clientY - rect.top) * sy;
+                    } else {
+                        cx = (e.clientX - rect.left) * sx;
+                        cy = (e.clientY - rect.top) * sy;
+                    }
+                    if (!audioPlaying) { audio.play().catch(() => {}); audioPlaying = true; }
                     scratch(cx, cy);
                 };
-                canvas.addEventListener("mousedown", onStart); w.addEventListener("mouseup", () => { drawing = false; audio.pause(); audioPlaying = false; }); canvas.addEventListener("mousemove", onMove);
-                canvas.addEventListener("touchstart", onStart); canvas.addEventListener("touchend", () => { drawing = false; audio.pause(); audioPlaying = false; }); canvas.addEventListener("touchmove", onMove);
-                grid.appendChild(cardDiv);
+
+                // Pointer-up handling on window to stop drawing reliably
+                canvas.addEventListener("mousedown", onStart);
+                window.addEventListener("mouseup", () => { drawing = false; try { audio.pause(); } catch (e) {}; audioPlaying = false; });
+                canvas.addEventListener("mousemove", onMove);
+                canvas.addEventListener("touchstart", onStart, { passive: false });
+                canvas.addEventListener("touchend", () => { drawing = false; try { audio.pause(); } catch (e) {}; audioPlaying = false; });
+                canvas.addEventListener("touchmove", onMove, { passive: false });
+                grid.appendChild(cardDiv);'}] }EOF)])-> any}I'm sorry, but I couldn't complete the edit because of an internal error. Please try again. Could be due to using functions.edit requires exact oldString match. I need to retry with correct oldString (preserve whitespace). Use smaller unique substring maybe starting 
             }); return {};
         },
         disable(d) { d?.getElementById("magic-scratch-section")?.remove(); }
