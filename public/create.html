@@ -1513,7 +1513,7 @@
       function updateDatalists(lang) {
         const t = translations[lang];
         festivalDatalist.innerHTML = '';
-        (lang === 'en' ? ["Diwali", "Holi", "Eid", "Christmas", "Navratri", "Raksha Bandhan", "Ganesh Chaturthi", "Onam", "Pongal", "Lohri", "New Year", "Durga Puja", "Janmashtami", "Makar Sankranti"] : ["दिवाली", "होली", "ईद", "क्रिसमस", "नवरात्रि", "रक्षा बंधन", "गणेश चतुर्थी", "ओणम", "पोंगल", "लोहड़ी", "नया साल", "दुर्गा पूजा", "जन्माष्टमी", "मकर संक्रांति"]).forEach(f => { let o = document.createElement('option'); o.value = f; festivalDatalist.appendChild(o); });
+        (lang === 'en' ? ["Ganga Dussehra", "Diwali", "Holi", "Eid", "Christmas", "Navratri", "Raksha Bandhan", "Ganesh Chaturthi", "Onam", "Pongal", "Lohri", "New Year", "Durga Puja", "Janmashtami", "Makar Sankranti"] : ["गंंगा दशहरा", "दिवाली", "होली", "ईद", "क्रिसमस", "नवरात्रि", "रक्षा बंधन", "गणेश चतुर्थी", "ओणम", "पोंगल", "लोहड़ी", "नया साल", "दुर्गा पूजा", "जन्माष्टमी", "मकर संक्रांति"]).forEach(f => { let o = document.createElement('option'); o.value = f; festivalDatalist.appendChild(o); });
         relationDatalist.innerHTML = '';
         (lang === 'en' ? ["Bestfriend", "Friend", "Girlfriend", "Boyfriend", "Husband", "Wife", "Brother", "Sister", "Mother", "Father", "Son", "Daughter", "Cousin", "Colleague", "Neighbor", "Teacher", "Mentor", "Fiancé", "Fiancée", "Partner", "Soulmate", "Crush", "BFF"] : ["सबसे अच्छा दोस्त", "दोस्त", "प्रेमिका", "प्रेमी", "पति", "पत्नी", "भाई", "बहन", "माँ", "पिता", "बेटा", "बेटी", "चचेरा भाई/बहन", "सहकर्मी", "पड़ोसी", "शिक्षक", "गुरु", "मंगेतर", "मंगेतरा", "साथी", "जीवनसाथी", "क्रश", "BFF"]).forEach(r => { let o = document.createElement('option'); o.value = r; relationDatalist.appendChild(o); });
       }
@@ -1653,6 +1653,12 @@
           document.getElementById('proposalForError').style.display = 'none';
           document.getElementById('proposalForSelect').classList.remove('error-border');
         }
+        const wishesLabel = document.getElementById('wishesLabel');
+        const wishesWrapper = wishesTextarea ? wishesTextarea.parentElement : null;
+        const isFestival = eventSelect.value === 'festival';
+        if (wishesLabel) wishesLabel.style.display = isFestival ? 'none' : '';
+        if (wishesWrapper) wishesWrapper.style.display = isFestival ? 'none' : '';
+        if (isFestival && wishesTextarea) wishesTextarea.value = '';
       }
       eventSelect.addEventListener('change', toggleFestivalField);
       const presetEvent = localStorage.getItem('presetEvent');
@@ -1725,7 +1731,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt })
           });
-          
+
           if (!response.ok) throw new Error('AI generation failed');
           const data = await response.json();
           if (data.choices?.[0]?.message?.content) {
@@ -1966,17 +1972,17 @@
           const userName = nameInput.value.trim();
           const festivalName = festivalInput.value.trim();
           const emojis = getSimpleEmojis(mood);
-          
+
           if (lang === 'hi') {
-            return `${userName} द्वारा ${festivalName} के अवसर पर सभी को भेजने के लिए एक सामान्य संदेश बनाएं। मूड: ${mood}। यह संदेश किसी विशिष्ट व्यक्ति के लिए नहीं है, बल्कि सभी को भेजने के लिए है। ${userName} के रूप में लिखें, जैसे कि वह सभी को शुभकामनाएं दे रहा हो। **CRITICAL: संदेश में अवश्य "${userName}" नाम शामिल करें।** बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल संदेश दें।**`;
+            return `${userName} द्वारा ${festivalName} के अवसर पर सभी को भेजने के लिए एक सामान्य संदेश बनाएं। मूड: ${mood}। यह संदेश किसी विशिष्ट व्यक्ति के लिए नहीं है, बल्कि सभी को भेजने के लिए है। ${userName} के रूप में लिखें, जैसे कि वह सभी को शुभकामनाएं दे रहा हो।(जेसे कि - आप सभी को............)  **CRITICAL: संदेश में अवश्य "${userName}" नाम शामिल करें।** बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें। इमोजी: ${emojis}। 60 शब्दों से कम। **केवल संदेश दें।**`;
           } else {
-            return `Create a general ${festivalName} message from ${userName} that can be sent to everyone. Mood: ${mood}. This is NOT for a specific person - it's a general message for anyone. Write as ${userName}, sharing festival wishes with everyone. **CRITICAL: You MUST include "${userName}" in the message.** Use simple, everyday words like normal people use. Write like you're posting on social media or sending to a group. Use emojis: ${emojis}. Write at least 50 words but keep under 150 words. **Output ONLY message.**`;
+            return `Create a general ${festivalName} message from ${userName} that can be sent to everyone. Mood: ${mood}. This is NOT for a specific person - it's a general message for anyone. Write as ${userName}, sharing festival wishes with everyone. (Start like - 'Wishing you and your family a very happy ${festivalName}.......' or another way you can start .) **CRITICAL: You MUST include "${userName}" in the message.** Use simple, everyday words like normal people use. Write like you're posting on social media or sending to a group. Use emojis: ${emojis}. Write at least 40 words but keep under 60 words. **Output ONLY message.**`;
           }
         } else {
           // For non-festival events, use the existing logic
           const relationInstruction = getRelationInstructions(relation, mood, eventSelect.value);
           const emojis = getSimpleEmojis(mood);
-          
+
           if (lang === 'hi') {
             return `${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर एक दिल से लिखा हुआ संदेश बनाएं। मूड: ${mood}। ${relationInstruction}। संबंध के अनुसार उचित भाषा का प्रयोग करें - परिवार के लिए सम्मानजनक, दोस्तों के लिए अनौपचारिक, रोमांटिक रिश्तों के लिए सही सीमाओं के साथ। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें, जैसे कोई इंसान दोस्त या परिवार के सदस्य से बात कर रहा हो। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल संदेश दें।**`;
           } else {
@@ -2188,7 +2194,7 @@
           const userName = nameInput.value.trim();
           const festivalName = festivalInput.value.trim();
           const emojis = getSimpleEmojis(mood);
-          
+
           if (lang === 'hi') {
             return `${userName} द्वारा ${festivalName} के अवसर पर सभी को भेजने के लिए शुभकामनाओं की सूची बनाएं। मूड: ${mood}। यह शुभकामनाएं किसी विशिष्ट व्यक्ति के लिए नहीं हैं, बल्कि सभी को भेजने के लिए हैं। ${userName} के रूप में लिखें, जैसे कि वह सभी को शुभकामनाएं दे रहा हो। **CRITICAL: शुभकामनाओं में अवश्य "${userName}" नाम शामिल करें।** बुलेट पॉइंट्स (•) का उपयोग करें। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल बुलेट सूची दें।**`;
           } else {
@@ -2198,7 +2204,7 @@
           // For non-festival events, use the existing logic
           const relationInstruction = getRelationWishInstructions(relation, mood, eventSelect.value);
           const emojis = getSimpleEmojis(mood);
-          
+
           if (lang === 'hi') {
             return `${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर शुभकामनाओं की सूची बनाएं। मूड: ${mood}। ${relationInstruction}। संबंध के अनुसार उचित भाषा का प्रयोग करें - परिवार के लिए सम्मानजनक, दोस्तों के लिए अनौपचारिक, रोमांटिक रिश्तों के लिए उचित सीमाओं के साथ। बुलेट पॉइंट्स (•) का उपयोग करें। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें, जैसे कोई इंसान दोस्त या परिवार के सदस्य से बात कर रहा हो। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल बुलेट सूची दें।**`;
           } else {

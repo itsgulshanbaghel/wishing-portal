@@ -3,10 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>🪔 Diwali Wishes · TheGreeter.in</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap"
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>🌊 Ganga Dussehra Wishes · TheGreeter.in</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Quicksand:wght@400;600;700&family=Great+Vibes&family=Rozha+One&family=Cinzel:wght@600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -15,341 +17,1130 @@
         }
 
         :root {
-            --orange: #ff8c42;
-            --gold: #ffd966;
-            --deep: #2c1a0e;
-            --cream: #fff3e0;
+            --gold-accent: #ffd700;
+            --gold-gradient: linear-gradient(135deg, #ff8c00 0%, #d35400 100%);
+            --orange-primary: #ff6a00;
+            --royal-blue: #0b4f6c;
+            --text-dark: #362517;
+            --border-light: rgba(255, 122, 47, 0.22);
+            --card-glass: rgba(255, 255, 255, 0.85);
+            --glow-color: rgba(255, 122, 47, 0.2);
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(145deg, #1f1105, #3a2312);
-            color: var(--cream);
+            font-family: 'Quicksand', sans-serif;
+            background: #fff8f0;
+            color: var(--text-dark);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             overflow-x: hidden;
+            position: relative;
         }
 
-        /* Animated sparkles */
-        .sparkle {
+        /* Large display background aura */
+        .desktop-bg-blur {
             position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 25%, rgba(255, 122, 47, 0.12), transparent 55%),
+                radial-gradient(circle at 15% 75%, rgba(31, 138, 132, 0.1), transparent 50%);
+            z-index: 1;
             pointer-events: none;
-            background: radial-gradient(circle, gold, transparent);
-            border-radius: 50%;
-            animation: floatSparkle 4s linear infinite;
-            z-index: 0;
         }
 
-        @keyframes floatSparkle {
+        /* Mobile Container (Mobile-First approach) */
+        .mobile-viewport {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #fffaf2 0%, #fff1de 50%, #ebf5fc 100%);
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 50px rgba(211, 84, 0, 0.12);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 32px 20px 40px;
+            align-items: center;
+            border: 1px solid rgba(255, 122, 47, 0.15);
+        }
+
+        @media (min-width: 481px) {
+            .mobile-viewport {
+                min-height: 94vh;
+                margin: 3vh auto;
+                border-radius: 40px;
+                border: 4px solid #ffd1a4;
+            }
+        }
+
+        /* Ambient floating properties */
+        .ambient-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .float-prop {
+            position: absolute;
+            bottom: -60px;
+            font-size: var(--sz);
+            animation: riseUp linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes riseUp {
             0% {
-                transform: translateY(100vh) scale(0);
+                transform: translateY(0) scale(0.6) rotate(0deg);
                 opacity: 0;
             }
 
             10% {
-                opacity: 0.8;
+                opacity: var(--op);
             }
 
             90% {
-                opacity: 0.6;
+                opacity: var(--op);
             }
 
             100% {
-                transform: translateY(-20vh) scale(1);
+                transform: translateY(-105vh) scale(1.1) rotate(var(--rt));
                 opacity: 0;
             }
         }
 
-        .content {
-            position: relative;
-            z-index: 2;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 60px 24px;
-            text-align: center;
+        /* Doves fly across anim */
+        .flying-dove {
+            position: absolute;
+            font-size: 28px;
+            color: #ffffff;
+            opacity: 0.65;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.08));
+            pointer-events: none;
+            z-index: 3;
+            animation: flyAcross 14s linear infinite;
         }
 
-        .diya {
-            font-size: 70px;
-            display: inline-block;
-            animation: diyaGlow 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 15px var(--orange));
-        }
+        @keyframes flyAcross {
+            0% {
+                transform: translate(-100px, 100px) scale(0.5) rotate(10deg);
+                opacity: 0;
+            }
 
-        @keyframes diyaGlow {
+            10% {
+                opacity: 0.65;
+            }
 
-            0%,
+            90% {
+                opacity: 0.65;
+            }
+
             100% {
-                text-shadow: 0 0 5px var(--orange);
-                transform: scale(1);
+                transform: translate(600px, -300px) scale(1.2) rotate(10deg);
+                opacity: 0;
+            }
+        }
+
+        /* Header decorations */
+        .top-banner {
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6a00, #ffd700, #1f8a84, #ff6a00);
+            background-size: 300% 100%;
+            animation: bannerFlow 6s linear infinite;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        @keyframes bannerFlow {
+            0% {
+                background-position: 0% 50%;
             }
 
             50% {
-                text-shadow: 0 0 25px var(--orange);
-                transform: scale(1.05);
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
             }
         }
 
-        h1 {
-            font-family: 'Great Vibes', cursive;
-            font-size: clamp(2.5rem, 8vw, 4rem);
-            background: linear-gradient(135deg, var(--gold), var(--orange));
+        /* Floating Language Switcher */
+        .lang-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 122, 47, 0.3);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--orange-primary);
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .lang-button:hover {
+            background: var(--orange-primary);
+            color: white;
+            transform: scale(1.03);
+            border-color: transparent;
+        }
+
+        /* Top Header Personalized Greeting Card */
+        .top-greeting-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 24px 20px;
+            border: 1.5px solid var(--border-light);
+            box-shadow: 0 10px 25px rgba(211, 84, 0, 0.06);
+            width: 100%;
+            margin-top: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .top-greeting-card::before {
+            content: '🌸';
+            font-size: 20px;
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fffbf5;
+            padding: 0 8px;
+            border-radius: 50%;
+        }
+
+        .starting-line {
+            font-family: 'Rozha One', serif;
+            font-size: clamp(1.4rem, 6.2vw, 1.85rem);
+            color: #8c2e0b;
+            line-height: 1.45;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+
+        .english-starting-line {
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            font-size: clamp(1.15rem, 5vw, 1.45rem);
+        }
+
+        /* Beautiful username highlighting with extremely high contrast */
+        .highlight-name {
+            background: linear-gradient(135deg, #ff7a2f 0%, #e65c00 100%);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 2px 14px;
+            border-radius: 16px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(255, 106, 0, 0.25);
+            border: 1.5px solid #ffffff;
+            margin: 4px 6px;
+            transform: rotate(-1deg);
+        }
+
+        /* Devotional Quote Card */
+        .devout-quote-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 16px 18px;
+            border-left: 3.5px solid var(--orange-primary);
+            border-right: 3.5px solid var(--orange-primary);
+            font-family: 'Lora', serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #705845;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        /* Divine Main Artwork */
+        .artwork-frame {
+            width: 90%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 6px double #ff9000;
+            padding: 5px;
+            position: relative;
+            margin-bottom: 25px;
+            box-shadow: 0 12px 30px rgba(255, 106, 0, 0.18);
+            background: radial-gradient(circle, #fffaf4 60%, rgba(255, 122, 47, 0.15) 100%);
+        }
+
+        .artwork-frame::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 122, 47, 0.3);
+            animation: pulseAura 3s linear infinite alternate;
+        }
+
+        @keyframes pulseAura {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+                box-shadow: 0 0 10px var(--glow-color);
+            }
+
+            100% {
+                transform: scale(1.04);
+                opacity: 0.9;
+                box-shadow: 0 0 25px var(--glow-color);
+            }
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .marigold-garland {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 26px;
+            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.12));
+            background: #ffffff;
+            padding: 4px 16px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+            white-space: nowrap;
+            border: 1px solid var(--border-light);
+        }
+
+        /* Middle Detailed Wishes Card */
+        .wishes-detail-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 24px 20px;
+            border: 1.5px solid var(--border-light);
+            box-shadow: 0 10px 25px rgba(211, 84, 0, 0.05);
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .greeting-header {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.3rem, 6vw, 1.8rem);
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+            background: var(--gold-gradient);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin: 16px 0 8px;
         }
 
-        .festival-name {
-            font-size: 1.4rem;
-            letter-spacing: 0.2em;
-            color: var(--gold);
-            margin-bottom: 32px;
-        }
-
-        .glass-card {
-            background: rgba(44, 26, 14, 0.6);
-            backdrop-filter: blur(12px);
-            border-radius: 48px;
-            padding: 32px;
-            margin: 24px auto;
-            max-width: 700px;
-            border: 1px solid rgba(255, 216, 102, 0.3);
-        }
-
-        .story-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
+        .wishing-msg {
+            font-family: 'Lora', serif;
+            font-size: clamp(0.96rem, 3.2vw, 1.08rem);
+            line-height: 1.75;
+            color: var(--text-dark);
             font-style: italic;
         }
 
-        /* Gallery */
-        .gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin: 32px 0;
+        /* Middle Blue Gilded Card (Teal High Contrast) */
+        .gilded-blessing-card {
+            background: linear-gradient(135deg, #0b4f6c 0%, #032b3d 100%);
+            border-radius: 28px;
+            padding: 28px 22px;
+            color: #ffffff;
+            width: 100%;
+            box-shadow: 0 15px 35px rgba(3, 43, 61, 0.25);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #ffd700;
         }
 
-        .memory-card {
-            width: 160px;
-            background: rgba(255, 255, 240, 0.1);
-            border-radius: 20px;
-            padding: 12px;
-            transition: transform 0.3s;
+        .gilded-blessing-card::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 1px dashed rgba(255, 215, 0, 0.4);
+            border-radius: 22px;
+            pointer-events: none;
         }
 
-        .memory-card:hover {
-            transform: translateY(-5px);
+        .card-lotus-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+            display: inline-block;
         }
 
-        .memory-img {
+        .card-blessing-text {
+            font-family: 'Lora', serif;
+            font-size: clamp(1.02rem, 3.4vw, 1.16rem);
+            line-height: 1.7;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .card-blessing-text strong {
+            color: var(--gold-accent);
+            font-weight: 700;
+        }
+
+        /* Bottom Devotional Card */
+        .bottom-devotion-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid rgba(255, 122, 47, 0.15);
+            width: 100%;
+            text-align: center;
+            font-family: 'Lora', serif;
+            font-size: 0.96rem;
+            line-height: 1.65;
+            color: #5c4431;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .bottom-devotion-card::before {
+            content: '🌊';
+            font-size: 16px;
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff5e8;
+            padding: 0 8px;
+            border-radius: 10px;
+        }
+
+        /* Custom Memory Upload Gallery */
+        .memories-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.05rem;
+            color: #4a3c31;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .gallery-card {
+            background: white;
+            border-radius: 16px;
+            padding: 6px 6px 10px;
+            box-shadow: 0 6px 15px rgba(211, 84, 0, 0.05);
+            border: 1px solid rgba(255, 122, 47, 0.15);
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .gallery-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--orange-primary);
+        }
+
+        .gallery-img-box {
             width: 100%;
             aspect-ratio: 1;
-            border-radius: 16px;
-            background: rgba(255, 140, 66, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
+            border-radius: 12px;
             overflow: hidden;
+            background: #fffbf7;
+            position: relative;
+            border: 1px solid rgba(0, 0, 0, 0.03);
         }
 
-        .memory-img img {
+        .gallery-img-box img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .memory-caption {
-            font-size: 0.8rem;
-            margin-top: 8px;
-            color: var(--gold);
+        .gallery-cap {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #9c6c4c;
+            margin-top: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Buttons */
-        .btn-light {
-            background: linear-gradient(135deg, var(--orange), #c95a0f);
-            border: none;
-            padding: 14px 32px;
-            border-radius: 60px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 20px;
-        }
-
-        .btn-light:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px var(--orange);
-        }
-
-        /* Edit mode */
-        .edit-tools {
+        /* Customize controls */
+        .edit-controls {
             display: none;
-            gap: 8px;
+            gap: 4px;
             justify-content: center;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
-        body.edit-mode .edit-tools {
+        body.edit-mode .edit-controls {
             display: flex;
         }
 
-        body.edit-mode .memory-card {
-            cursor: pointer;
-        }
-
         .edit-btn {
-            background: rgba(255, 140, 66, 0.3);
-            border: 1px solid var(--orange);
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.7rem;
+            background: rgba(255, 122, 47, 0.1);
+            border: 1px solid var(--orange-primary);
+            color: var(--orange-primary);
+            padding: 3px 6px;
+            border-radius: 10px;
+            font-size: 0.62rem;
+            font-weight: 700;
             cursor: pointer;
-            color: var(--gold);
+            transition: 0.2s;
         }
 
-        /* Responsive */
-        @media (max-width: 640px) {
-            .gallery {
-                gap: 12px;
+        .edit-btn:hover {
+            background: var(--orange-primary);
+            color: white;
+        }
+
+        /* Virtual Aarti Section */
+        .aarti-panel {
+            width: 100%;
+            background: radial-gradient(circle, #fffdfb 0%, #ffeeda 100%);
+            border-radius: 28px;
+            border: 2px dashed rgba(255, 122, 47, 0.4);
+            padding: 24px 20px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(211, 84, 0, 0.06);
+            margin-bottom: 25px;
+        }
+
+        .diya-anim {
+            font-size: 52px;
+            display: inline-block;
+            margin-bottom: 8px;
+            animation: diyaFloat 2.5s ease-in-out infinite alternate;
+            filter: drop-shadow(0 4px 10px rgba(255, 106, 0, 0.4));
+        }
+
+        @keyframes diyaFloat {
+            0% {
+                transform: translateY(0);
             }
 
-            .memory-card {
-                width: 130px;
+            100% {
+                transform: translateY(-8px) scale(1.04);
             }
+        }
+
+        .aarti-lbl {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.2rem;
+            color: var(--orange-primary);
+            margin-bottom: 6px;
+        }
+
+        .aarti-desc {
+            font-family: 'Lora', serif;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: #5c4836;
+            margin-bottom: 18px;
+            font-style: italic;
+        }
+
+        /* Interactive prayers button */
+        .aarti-btn {
+            background: linear-gradient(135deg, var(--orange-primary) 0%, #e65c00 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 106, 0, 0.3);
+            transition: 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .aarti-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(255, 106, 0, 0.45);
+            filter: brightness(1.05);
+        }
+
+        /* Floating Aarti Blessings Toast */
+        .blessings-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border: 2px solid var(--orange-primary);
+            padding: 14px 24px;
+            border-radius: 50px;
+            z-index: 10000;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-style: italic;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 88%;
+            max-width: 400px;
+        }
+
+        .blessings-toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* Custom footer */
+        footer {
+            width: 100%;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            font-family: 'Cinzel', serif;
+            font-size: 0.78rem;
+            letter-spacing: 1.5px;
+            color: #705845;
+            font-weight: 700;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
-    <div id="sparklesContainer"></div>
-    <div class="content">
-        <div class="diya">🪔</div>
-        <h1>Happy <span id="festivalPlaceholder">Festival</span></h1>
-        <div class="festival-name" id="festivalNameDisplay"></div>
+    <div class="desktop-bg-blur"></div>
 
-        <div class="glass-card">
-            <p class="story-text" id="storyText"></p>
+    <div class="mobile-viewport">
+        <!-- Top accent line -->
+        <div class="top-banner"></div>
+
+        <!-- Floating ambient elements layer -->
+        <div class="ambient-layer" id="ambientLayer"></div>
+
+        <!-- Flying Dove overlay -->
+        <div class="flying-dove" id="flyingDove">🕊️</div>
+
+        <!-- Custom blessing toast -->
+        <div class="blessings-toast" id="blessingsToast">🌊 Har Har Gange! 🌊</div>
+
+        <!-- Lang switch button inside template -->
+        <button class="lang-button" id="langBtn">
+            <i class="fas fa-globe"></i><span id="langBtnText">हिन्दी</span>
+        </button>
+
+        <!-- Top Personalized Greeting Card (Highlights sender beautifully) -->
+        <div class="top-greeting-card">
+            <div class="starting-line" id="startingLine">
+                Wishing You All a very Happy Ganga Dussehra from <span class="highlight-name">TheGreeter</span>! 🌸
+            </div>
         </div>
 
-        <div class="gallery" id="galleryContainer"></div>
+        <!-- Goddess Ganga Divine Frame -->
+        <div class="artwork-frame">
+            <img src="../assets/devi.png" class="artwork-img" alt="Goddess Ganga blessings pot" id="artworkImg">
+            <div class="marigold-garland">🪷 🪔 🪷</div>
+        </div>
 
-        <button class="btn-light" id="lightBtn">✨ Light a Diya ✨</button>
+        <!-- Devotional quote callout -->
+        <div class="devout-quote-card" id="topQuote">
+            By the grace of Mother Ganga, may your life be filled with happiness, peace, prosperity, and good health.
+        </div>
+
+        <!-- Wishes details card -->
+        <div class="wishes-detail-card">
+            <div class="greeting-header" id="greetingHeader">Happy Ganga Dussehra!</div>
+            <div class="wishing-msg" id="wishingMsg">
+                🌸 Wishing everyone a blessed Ganga Dussehra! May the holy waters of Maa Ganga wash away all your
+                struggles, purify your soul, and fill your life with eternal peace, health, and abundant prosperity.
+                Happy Ganga Dussehra to you and your loved ones! 🌊✨
+            </div>
+        </div>
+
+        <!-- Gilded Blessing Card -->
+        <div class="gilded-blessing-card">
+            <div class="card-lotus-icon">🪷</div>
+            <div class="card-blessing-text" id="cardBlessingText">
+                On this sacred day, may Mother Ganga bless you and your family with <strong>immense happiness, success,
+                    and excellent health.</strong>
+            </div>
+        </div>
+
+        <!-- Bottom Devotional Quote -->
+        <div class="bottom-devotion-card" id="bottomQuote">
+            May Mother Ganga cleanse the impurities of every heart, grant wisdom, and give the strength to walk on the
+            right path.
+        </div>
+
+        <!-- Customize Gallery Section -->
+        <div style="width: 100%;">
+            <div class="memories-title" id="memoriesTitle">🪷 Divine Glances 🪷</div>
+            <div class="gallery-grid" id="galleryGrid"></div>
+        </div>
+
+        <!-- Interactive Virtual Aarti Card -->
+        <div class="aarti-panel">
+            <div class="diya-anim">🪔</div>
+            <div class="aarti-lbl" id="aartiTitle">Perform Ganga Aarti</div>
+            <div class="aarti-desc" id="aartiDesc">
+                On this auspicious day of Ganga Dussehra, perform a virtual Aarti and offer deepak to the holy mother
+                river. May her blessings purify your home and heart.
+            </div>
+            <button class="aarti-btn" id="aartiBtn">
+                <i class="fas fa-fire"></i> <span id="aartiBtnText">Perform Virtual Aarti</span>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <footer id="footerText">✨ JAY MAA GANGE ✨</footer>
     </div>
 
+    <!-- Canvas Confetti Library for spiritual visual burst -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+
     <script>
         (function () {
+            // Check for edit/customize mode via URL query parameter
             const urlParams = new URLSearchParams(window.location.search);
             const EDIT_MODE = (window.self !== window.top) && (urlParams.get('mode') === 'edit');
-            if (EDIT_MODE) document.body.classList.add('edit-mode');
+            if (EDIT_MODE) {
+                document.body.classList.add('edit-mode');
+            }
 
-            let userData = {};
-            try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
-            const festival = userData.festival || 'Diwali';
-            const name = userData.name || 'Loved One';
-            const story = userData.story || `May this ${festival} bring endless joy, prosperity, and togetherness into your life. You are the light that brightens every room.`;
-            const wishes = userData.wishes || `Wishing you a ${festival} filled with sweets, smiles, and beautiful memories.`;
-            const memories = userData.memories || [];
-
-            document.getElementById('festivalPlaceholder').innerText = festival;
-            document.getElementById('festivalNameDisplay').innerText = `To ${name}, with love ✨`;
-            document.getElementById('storyText').innerHTML = story;
-
-            // Gallery render
-            const gallery = document.getElementById('galleryContainer');
-            function renderGallery() {
-                gallery.innerHTML = '';
-                memories.forEach((mem, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'memory-card';
-                    const imgDiv = document.createElement('div');
-                    imgDiv.className = 'memory-img';
-                    if (mem.img && mem.img.startsWith('data:image')) {
-                        const img = document.createElement('img');
-                        img.src = mem.img;
-                        imgDiv.appendChild(img);
-                    } else {
-                        imgDiv.innerHTML = '🪔';
-                    }
-                    const cap = document.createElement('div');
-                    cap.className = 'memory-caption';
-                    cap.innerText = mem.text || '✨';
-                    card.appendChild(imgDiv);
-                    card.appendChild(cap);
-                    if (EDIT_MODE) {
-                        const tools = document.createElement('div');
-                        tools.className = 'edit-tools';
-                        const uploadBtn = document.createElement('button');
-                        uploadBtn.className = 'edit-btn';
-                        uploadBtn.innerHTML = '📷';
-                        uploadBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            const input = document.createElement('input');
-                            input.type = 'file';
-                            input.accept = 'image/*';
-                            input.onchange = (ev) => {
-                                const file = ev.target.files[0];
-                                if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (re) => {
-                                        mem.img = re.target.result;
-                                        localStorage.setItem('userData', JSON.stringify(userData));
-                                        renderGallery();
-                                    };
-                                    reader.readAsDataURL(file);
-                                }
-                            };
-                            input.click();
-                        };
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'edit-btn';
-                        removeBtn.innerHTML = '🗑️';
-                        removeBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            memories.splice(idx, 1);
-                            localStorage.setItem('userData', JSON.stringify(userData));
-                            renderGallery();
-                        };
-                        tools.appendChild(uploadBtn);
-                        tools.appendChild(removeBtn);
-                        card.appendChild(tools);
-                    }
-                    gallery.appendChild(card);
-                });
-                if (EDIT_MODE) {
-                    const addCard = document.createElement('div');
-                    addCard.className = 'memory-card';
-                    addCard.innerHTML = '<div class="memory-img" style="font-size:2rem;">+</div><div class="memory-caption">Add Memory</div>';
-                    addCard.onclick = () => {
-                        memories.push({ img: null, text: 'Festive Moment' });
-                        localStorage.setItem('userData', JSON.stringify(userData));
-                        renderGallery();
-                    };
-                    gallery.appendChild(addCard);
+            // Language determination (URL Param -> localStorage -> Default: English)
+            function getLang() {
+                try {
+                    const urlParam = urlParams.get('lang');
+                    if (urlParam === 'hi' || urlParam === 'en') return urlParam;
+                    return localStorage.getItem('greeter_lang') || 'en';
+                } catch (e) {
+                    return 'en';
                 }
             }
-            renderGallery();
 
-            // Light Diya button
-            document.getElementById('lightBtn').addEventListener('click', () => {
-                confetti({ particleCount: 150, spread: 100, colors: ['#ff8c42', '#ffd966', '#ffb347'], origin: { y: 0.6 } });
+            // Bilingual localization database
+            const translations = {
+                en: {
+                    langSwitch: "हिन्दी",
+                    topQuote: "By the grace of Mother Ganga, may your life be filled with happiness, peace, prosperity, and good health.",
+                    mainGreeting: "Happy Ganga Dussehra!",
+                    wisherFormat: "Wishing You All a very Happy Ganga Dussehra from <span class='highlight-name'>{username}</span>! 🌸",
+                    defaultWishes: "🌸 Wishing everyone a blessed Ganga Dussehra! May the holy waters of Maa Ganga wash away all your struggles, purify your soul, and fill your life with eternal peace, health, and abundant prosperity. Happy Ganga Dussehra to you and your loved ones! 🌊✨",
+                    cardBlessing: "On this sacred day, may Mother Ganga bless you and your family with <strong>immense happiness, success, and excellent health.</strong>",
+                    bottomQuote: "May Mother Ganga cleanse the impurities of every heart, grant wisdom, and give the strength to walk on the right path.",
+                    memoriesTitle: "🪷 Sacred Glances 🪷",
+                    aartiTitle: "Perform Ganga Aarti",
+                    aartiDesc: "On this auspicious day of Ganga Dussehra, perform a virtual Aarti and offer deepak to the holy mother river. May her blessings purify your home and heart.",
+                    aartiBtn: "Perform Virtual Aarti 🪔",
+                    toastBlessing: "🌊 Har Har Gange! May Maa Ganga wash away all sorrows and fulfill your prayers! 🪷",
+                    footer: "✨ JAY MAA GANGE ✨",
+                    uploadBtn: "📸 Upload",
+                    removeBtn: "Remove",
+                    defaultCap: "Divine View",
+                    defaultWisher: "Your Wellwisher"
+                },
+                hi: {
+                    langSwitch: "English",
+                    topQuote: "गंगा मैया की कृपा से आपके जीवन में सुख, शांति, समृद्धि और उत्तम स्वास्थ्य का वास हो।",
+                    mainGreeting: "पावन गंगा दशहरा!",
+                    wisherFormat: "आप सभी को <span class='highlight-name'>{username}</span> की ओर से गंगा दशहरा की हार्दिक शुभकामनाएं! 🌸",
+                    defaultWishes: "आप सभी को पावन पर्व गंगा दशहरा की हार्दिक शुभकामनाएं! 🌸 गंगा मैया आपके जीवन के सभी कष्टों और पापों का हरण करें, आपके मन को अपार शांति प्रदान करें और आपके घर-परिवार में सुख, समृद्धि और आरोग्यता का आशीर्वाद दें। हर हर गंगे! 🌊✨",
+                    cardBlessing: "इस पावन दिवस पर, माँ गंगा आपके और आपके परिवार को <strong>अपार प्रसन्नता, सफलता और उत्तम स्वास्थ्य प्रदान करें।</strong>",
+                    bottomQuote: "माँ गंगा हर हृदय की अशुद्धियों को दूर करें, सद्बुद्धि प्रदान करें और सही मार्ग पर चलने की शक्ति दें।",
+                    memoriesTitle: "🪷 पवित्र दर्शन 🪷",
+                    aartiTitle: "आभासी गंगा आरती",
+                    aartiDesc: "गंगा दशहरा के इस पावन पर्व पर, गंगा मैया को आभासी दीप अर्पित करें और अपनी मंगल प्रार्थनाएं भेजें। माँ गंगे आपका कल्याण करें।",
+                    aartiBtn: "आरती करें एवं दीपदान करें 🪔",
+                    toastBlessing: "🌊 हर हर गंगे! माँ गंगा आपके सभी कष्ट दूर करें और मनोकामनाएं पूर्ण करें! 🪷",
+                    footer: "✨ हर हर गंगे · जय माँ गंगे ✨",
+                    uploadBtn: "📸 अपलोड",
+                    removeBtn: "हटाएं",
+                    defaultCap: "पवित्र दृश्य",
+                    defaultWisher: "आपके शुभचिंतक"
+                }
+            };
+
+            let currentLang = getLang();
+            let t = translations[currentLang];
+
+            // Local user data loading
+            let userData = { name: "", story: "", wishes: "", memories: [] };
+            try {
+                const raw = localStorage.getItem('userData');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    userData.name = parsed.name || "";
+                    userData.story = parsed.story || "";
+                    userData.wishes = parsed.wishes || "";
+                    if (Array.isArray(parsed.memories)) userData.memories = parsed.memories;
+                }
+            } catch (e) { }
+
+            // Normalize gallery memories to exactly 3 slots
+            const MEM_SLOTS = 3;
+            function normalizeMemories() {
+                if (!userData.memories) userData.memories = [];
+                while (userData.memories.length < MEM_SLOTS) {
+                    userData.memories.push({ img: null, text: "" });
+                }
+                if (userData.memories.length > MEM_SLOTS) {
+                    userData.memories = userData.memories.slice(0, MEM_SLOTS);
+                }
+            }
+            normalizeMemories();
+
+            function saveUserData() {
+                localStorage.setItem('userData', JSON.stringify(userData));
+                window.dispatchEvent(new StorageEvent('storage', { key: 'userData', newValue: JSON.stringify(userData) }));
+            }
+
+            // DOM Query Elements
+            const langBtnText = document.getElementById('langBtnText');
+            const topQuoteEl = document.getElementById('topQuote');
+            const startingLineEl = document.getElementById('startingLine');
+            const greetingHeaderEl = document.getElementById('greetingHeader');
+            const wishingMsgEl = document.getElementById('wishingMsg');
+            const cardBlessingTextEl = document.getElementById('cardBlessingText');
+            const bottomQuoteEl = document.querySelector('.bottom-devotion-card');
+            const memoriesTitleEl = document.getElementById('memoriesTitle');
+            const aartiTitleEl = document.getElementById('aartiTitle');
+            const aartiDescEl = document.getElementById('aartiDesc');
+            const aartiBtnText = document.getElementById('aartiBtnText');
+            const footerTextEl = document.getElementById('footerText');
+            const galleryGrid = document.getElementById('galleryGrid');
+            const blessingsToast = document.getElementById('blessingsToast');
+            const artworkImgEl = document.getElementById('artworkImg');
+
+            // Apply Dynamic Content & Translations
+            function updateDynamicContent() {
+                t = translations[currentLang];
+                langBtnText.innerText = t.langSwitch;
+                topQuoteEl.innerText = t.topQuote;
+                greetingHeaderEl.innerText = t.mainGreeting;
+
+                // Set devi image based on language (devi.png for Hindi, devi_en.png for English)
+                if (currentLang === 'hi') {
+                    artworkImgEl.src = "../assets/devi.png";
+                } else {
+                    artworkImgEl.src = "../assets/devi_en.png";
+                }
+
+                // Render dynamic starting line: "आप सभी को <span class='highlight-name'>{username}</span> की ओर से..."
+                const userName = userData.name ? userData.name.trim() : t.defaultWisher;
+                let formattedStart = t.wisherFormat.replace('{username}', userName);
+                startingLineEl.innerHTML = formattedStart;
+
+                if (currentLang === 'hi') {
+                    startingLineEl.className = 'starting-line';
+                } else {
+                    startingLineEl.className = 'starting-line english-starting-line';
+                }
+
+                // Render wish message override or default
+                wishingMsgEl.innerText = userData.wishes ? userData.wishes : t.defaultWishes;
+
+                // Card blessing text HTML
+                cardBlessingTextEl.innerHTML = t.cardBlessing;
+                bottomQuoteEl.innerText = t.bottomQuote;
+                memoriesTitleEl.innerText = t.memoriesTitle;
+                aartiTitleEl.innerText = t.aartiTitle;
+                aartiDescEl.innerText = t.aartiDesc;
+                aartiBtnText.innerText = t.aartiBtn;
+                footerTextEl.innerText = t.footer;
+
+                renderGallery();
+            }
+
+            // Fallback default spiritual images
+            const defaultImages = [
+                "../assets/ganga_spiritual.png",
+                "../assets/ganga_aarti.png",
+                "../assets/ganga_dussehra_main.png"
+            ];
+
+            // Render polaroid custom memories
+            function renderGallery() {
+                galleryGrid.innerHTML = '';
+                for (let i = 0; i < MEM_SLOTS; i++) {
+                    const mem = userData.memories[i];
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card';
+
+                    const imgBox = document.createElement('div');
+                    imgBox.className = 'gallery-img-box';
+
+                    const img = document.createElement('img');
+                    if (mem.img && mem.img.startsWith('data:image')) {
+                        img.src = mem.img;
+                    } else {
+                        img.src = defaultImages[i];
+                    }
+                    img.alt = "Ganga Glance";
+                    imgBox.appendChild(img);
+
+                    const cap = document.createElement('div');
+                    cap.className = 'gallery-cap';
+                    cap.innerText = mem.text && mem.text.trim() ? mem.text : `${t.defaultCap} ${i + 1}`;
+
+                    card.appendChild(imgBox);
+                    card.appendChild(cap);
+
+                    // If inside editor iframe, expose upload tools
+                    if (EDIT_MODE) {
+                        const controls = document.createElement('div');
+                        controls.className = 'edit-controls';
+
+                        const upBtn = document.createElement('button');
+                        upBtn.className = 'edit-btn';
+                        upBtn.innerText = t.uploadBtn;
+
+                        const rmBtn = document.createElement('button');
+                        rmBtn.className = 'edit-btn';
+                        rmBtn.innerText = t.removeBtn;
+
+                        const fInput = document.createElement('input');
+                        fInput.type = 'file';
+                        fInput.accept = 'image/*';
+                        fInput.style.display = 'none';
+
+                        upBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            fInput.click();
+                        });
+
+                        fInput.addEventListener('change', (ev) => {
+                            const file = ev.target.files[0];
+                            if (file && file.type.startsWith('image/')) {
+                                if (file.size > 2 * 1024 * 1024) {
+                                    alert(currentLang === 'hi' ? "कृपया 2MB से छोटी फ़ाइल चुनें।" : "Please select an image smaller than 2MB.");
+                                    return;
+                                }
+                                const reader = new FileReader();
+                                reader.onload = (re) => {
+                                    userData.memories[i].img = re.target.result;
+                                    userData.memories[i].text = currentLang === 'hi' ? "पवित्र क्षण" : "Sacred Moment";
+                                    saveUserData();
+                                    renderGallery();
+                                    showToast(currentLang === 'hi' ? "📸 तस्वीर अपलोड हुई!" : "📸 Photo uploaded!");
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        });
+
+                        rmBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            userData.memories[i].img = null;
+                            userData.memories[i].text = "";
+                            saveUserData();
+                            renderGallery();
+                            showToast(currentLang === 'hi' ? "🗑️ तस्वीर हटाई गई!" : "🗑️ Photo removed!");
+                        });
+
+                        controls.appendChild(upBtn);
+                        controls.appendChild(rmBtn);
+                        card.appendChild(controls);
+                        card.appendChild(fInput);
+                    }
+
+                    galleryGrid.appendChild(card);
+                }
+            }
+
+            // Temp toast message
+            function showToast(message) {
+                blessingsToast.innerText = message;
+                blessingsToast.classList.add('show');
+                setTimeout(() => {
+                    blessingsToast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Aarti trigger confetti & sparks
+            function triggerAarti() {
+                showToast(t.toastBlessing);
+
+                // Multi-colored spiritual fireworks burst
+                const fireworkColors = ['#ff7a2f', '#ffd700', '#1f8a84', '#ffffff', '#e65c00'];
+                canvasConfetti({
+                    particleCount: 160,
+                    spread: 85,
+                    origin: { y: 0.65 },
+                    colors: fireworkColors,
+                    startVelocity: 22
+                });
+                canvasConfetti({
+                    particleCount: 80,
+                    spread: 100,
+                    origin: { y: 0.5, x: 0.15 },
+                    colors: fireworkColors,
+                    angle: 65,
+                    startVelocity: 26
+                });
+                canvasConfetti({
+                    particleCount: 80,
+                    spread: 100,
+                    origin: { y: 0.5, x: 0.85 },
+                    colors: fireworkColors,
+                    angle: 115,
+                    startVelocity: 26
+                });
+
+                // Spawn dozens of floating lit diyas rising upwards
+                for (let i = 0; i < 18; i++) {
+                    setTimeout(() => {
+                        const diya = document.createElement('div');
+                        diya.innerText = Math.random() > 0.55 ? '🪔' : '🪷';
+                        diya.style.position = 'fixed';
+                        diya.style.bottom = '-60px';
+                        diya.style.left = (10 + Math.random() * 80) + 'vw';
+                        diya.style.fontSize = (24 + Math.random() * 24) + 'px';
+                        diya.style.zIndex = '9999';
+                        diya.style.pointerEvents = 'none';
+                        diya.style.opacity = '0.9';
+                        diya.style.transition = 'transform 2.6s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 2.6s';
+                        diya.style.filter = 'drop-shadow(0 0 8px gold)';
+                        document.body.appendChild(diya);
+
+                        setTimeout(() => {
+                            diya.style.transform = `translateY(-105vh) rotate(${Math.random() > 0.5 ? 40 : -40}deg)`;
+                            diya.style.opacity = '0';
+                        }, 20);
+
+                        setTimeout(() => diya.remove(), 2800);
+                    }, i * 110);
+                }
+            }
+
+            document.getElementById('aartiBtn').addEventListener('click', triggerAarti);
+
+            // Spawn slow ambient background drifting shapes
+            const ambientLayer = document.getElementById('ambientLayer');
+            const shapes = ['🪷', '🪔', '🌊', '✨', '🌸', '🕊️'];
+            function spawnAmbientProp() {
+                const el = document.createElement('div');
+                el.className = 'float-prop';
+                const sz = 16 + Math.random() * 24;
+                const op = 0.15 + Math.random() * 0.4;
+                el.style.setProperty('--sz', sz + 'px');
+                el.style.setProperty('--op', op);
+                el.style.setProperty('--rt', (Math.random() > 0.5 ? 160 : -160) + 'deg');
+                el.style.left = Math.random() * 95 + '%';
+                el.style.animationDuration = (9 + Math.random() * 8) + 's';
+                el.innerText = shapes[Math.floor(Math.random() * shapes.length)];
+
+                ambientLayer.appendChild(el);
+                setTimeout(() => el.remove(), 16000);
+            }
+            setInterval(spawnAmbientProp, 2000);
+            for (let j = 0; j < 5; j++) {
+                setTimeout(spawnAmbientProp, j * 600);
+            }
+
+            // Dove flying animation trigger periodically
+            const doveEl = document.getElementById('flyingDove');
+            function animateDove() {
+                doveEl.style.animation = 'none';
+                doveEl.offsetHeight; // trigger reflow
+                doveEl.style.animation = 'flyAcross 14s linear infinite';
+            }
+            setInterval(animateDove, 22000);
+
+            // Switch lang button inside template
+            document.getElementById('langBtn').addEventListener('click', () => {
+                currentLang = currentLang === 'en' ? 'hi' : 'en';
+                localStorage.setItem('greeter_lang', currentLang);
+                updateDynamicContent();
+                showToast(currentLang === 'hi' ? "🌐 हिन्दी भाषा लागू की गई!" : "🌐 English language applied!");
             });
 
-            // Sparkles background
-            const sparklesDiv = document.getElementById('sparklesContainer');
-            for (let i = 0; i < 60; i++) {
-                const s = document.createElement('div');
-                s.className = 'sparkle';
-                s.style.left = Math.random() * 100 + '%';
-                s.style.width = s.style.height = (Math.random() * 6 + 2) + 'px';
-                s.style.animationDuration = (Math.random() * 5 + 3) + 's';
-                s.style.animationDelay = (Math.random() * 8) + 's';
-                sparklesDiv.appendChild(s);
-            }
+            // Sync with editor sidebar storage modifications
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'userData') {
+                    try {
+                        const parsed = JSON.parse(e.newValue);
+                        if (parsed) {
+                            userData.name = parsed.name || "";
+                            userData.story = parsed.story || "";
+                            userData.wishes = parsed.wishes || "";
+                            if (Array.isArray(parsed.memories)) userData.memories = parsed.memories;
+                            normalizeMemories();
+                            updateDynamicContent();
+                        }
+                    } catch (err) { }
+                }
+                if (e.key === 'greeter_lang') {
+                    const newLang = e.newValue;
+                    if (newLang === 'hi' || newLang === 'en') {
+                        currentLang = newLang;
+                        updateDynamicContent();
+                    }
+                }
+            });
+
+            // Focus synchronization
+            window.addEventListener('focus', () => {
+                try {
+                    const freshLang = localStorage.getItem('greeter_lang') || 'en';
+                    if (freshLang !== currentLang) {
+                        currentLang = freshLang;
+                        updateDynamicContent();
+                    }
+                    const freshData = localStorage.getItem('userData');
+                    if (freshData) {
+                        const parsed = JSON.parse(freshData);
+                        let changed = false;
+                        if (parsed.name !== userData.name) { userData.name = parsed.name || ""; changed = true; }
+                        if (parsed.story !== userData.story) { userData.story = parsed.story || ""; changed = true; }
+                        if (parsed.wishes !== userData.wishes) { userData.wishes = parsed.wishes || ""; changed = true; }
+                        if (Array.isArray(parsed.memories) && JSON.stringify(parsed.memories) !== JSON.stringify(userData.memories)) {
+                            userData.memories = parsed.memories;
+                            normalizeMemories();
+                            changed = true;
+                        }
+                        if (changed) {
+                            updateDynamicContent();
+                        }
+                    }
+                } catch (err) { }
+            });
+
+            // Initialize rendering
+            updateDynamicContent();
         })();
     </script>
 </body>
