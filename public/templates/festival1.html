@@ -811,6 +811,19 @@
                 }
             } catch (e) { }
 
+            // Hydrate sender name from embedded config (for cross-device/share links) or URL params.
+            // This ensures the real username is ALWAYS shown even if localStorage is empty on another device.
+            if (!userData.name) {
+                try {
+                    if (window._magicConfig && window._magicConfig.userName) {
+                        userData.name = window._magicConfig.userName;
+                    } else {
+                        const pName = urlParams.get('name') || urlParams.get('sender');
+                        if (pName) userData.name = decodeURIComponent(pName);
+                    }
+                } catch (e) { }
+            }
+
             // Normalize gallery memories to exactly 3 slots
             const MEM_SLOTS = 3;
             function normalizeMemories() {
@@ -872,7 +885,12 @@
                 }
 
                 // Render wish message override or default
-                wishingMsgEl.innerText = userData.wishes ? userData.wishes : t.defaultWishes;
+                // On standalone generated pages, leave baked custom wishes (from snapshot) untouched if no local override
+                if (userData.wishes) {
+                    wishingMsgEl.innerText = userData.wishes;
+                } else if (!window._magicConfig && !window.__IS_GENERATED_PAGE__) {
+                    wishingMsgEl.innerText = t.defaultWishes;
+                }
 
                 // Card blessing text HTML
                 cardBlessingTextEl.innerHTML = t.cardBlessing;

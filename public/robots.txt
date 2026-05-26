@@ -1,0 +1,26 @@
+# TheGreeter.in robots.txt
+# Updated: 2026-05-26
+
+User-agent: *
+Allow: /
+
+# Block admin and internal pages
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+
+# Block private assets
+Disallow: /assets/tracker.js
+Disallow: /assets/admin.js
+Disallow: /assets/admin.css
+
+# Allow Google to access static assets for rendering
+Allow: /assets/Light_logo.png
+Allow: /assets/Dark_logo.png
+Allow: /assets/og-cover.png
+
+# Sitemap
+Sitemap: https://thegreeter.in/sitemap.xml
+
+# Crawl delay (be polite to crawlers)
+Crawl-delay: 1
