@@ -4,52 +4,88 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- ===== HOME PAGE ===== -->
+  <!-- ===== CORE PAGES ===== -->
   <url>
     <loc>https://thegreeter.in/</loc>
-    <lastmod>2026-05-26</lastmod>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- ===== CREATOR PAGE ===== -->
   <url>
     <loc>https://thegreeter.in/create</loc>
-    <lastmod>2026-05-26</lastmod>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/WhyGreeter</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/ContactUs</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/privacy</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/terms&amp;cond</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- ===== BLOG HUB ===== -->
+  <url>
+    <loc>https://thegreeter.in/blog</loc>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- ===== WHY GREETER ===== -->
+  <!-- ===== BLOG ARTICLES ===== -->
   <url>
-    <loc>https://thegreeter.in/WhyGreeter</loc>
-    <lastmod>2026-05-26</lastmod>
+    <loc>https://thegreeter.in/blog/how-to-surprise-best-friend-online</loc>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- ===== CONTACT ===== -->
   <url>
-    <loc>https://thegreeter.in/ContactUs</loc>
-    <lastmod>2026-05-26</lastmod>
+    <loc>https://thegreeter.in/blog/long-distance-birthday-wish-ideas</loc>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
-
-  <!-- ===== PRIVACY POLICY ===== -->
   <url>
-    <loc>https://thegreeter.in/privacy</loc>
-    <lastmod>2026-05-26</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <loc>https://thegreeter.in/blog/anniversary-surprise-ideas-partner</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
-
-  <!-- ===== TERMS & CONDITIONS ===== -->
   <url>
-    <loc>https://thegreeter.in/terms&amp;cond</loc>
-    <lastmod>2026-05-26</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <loc>https://thegreeter.in/blog/how-to-create-birthday-website-free</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/romantic-ways-to-propose-online</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/best-diwali-greeting-ideas</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 
 </urlset>
