@@ -98,7 +98,7 @@ app.use(express.json({ limit: '10mb' })); // Reduced from 100mb to 10mb
 
 // Serve static files from the 'public' directory
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 
 
@@ -812,6 +812,20 @@ app.get('/api/admin/cloudinary-list', adminAuth, async (req, res) => {
 app.use('/api', (err, req, res, next) => {
   console.error('[Server API Error]', err);
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
+});
+
+app.get('/:path', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  const filePath = path.join(__dirname, 'public', req.path);
+  if (req.path.endsWith('/')) {
+    return res.sendFile(path.join(filePath, 'index.html'), err => { if (err) next(); });
+  }
+  if (!path.extname(req.path)) {
+    return res.sendFile(filePath + '.html', err => {
+      if (err) res.status(404).send('Not found');
+    });
+  }
+  next();
 });
 
 app.listen(PORT, () => {

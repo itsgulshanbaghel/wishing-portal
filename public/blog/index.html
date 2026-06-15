@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Blog & Ideas | TheGreeter — Smart Ways to Wish & Surprise</title>
-  <meta name="description" content="Discover creative ideas to surprise your loved ones. From long-distance birthday wishes to anniversary proposals — TheGreeter blog has smart, heartfelt inspiration for every occasion.">
-  <meta name="keywords" content="how to surprise someone online, smart ways to wish, birthday surprise ideas, anniversary ideas long distance, digital greeting ideas, how to wish someone special">
+  <meta name="description"
+    content="Discover creative ideas to surprise your loved ones. From long-distance birthday wishes to anniversary proposals — TheGreeter blog has smart, heartfelt inspiration for every occasion.">
+  <meta name="keywords"
+    content="how to surprise someone online, smart ways to wish, birthday surprise ideas, anniversary ideas long distance, digital greeting ideas, how to wish someone special">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <meta name="theme-color" content="#7b5df6">
   <link rel="canonical" href="https://thegreeter.in/blog">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="TheGreeter">
   <meta property="og:title" content="Blog & Ideas | Smart Ways to Wish & Surprise — TheGreeter">
-  <meta property="og:description" content="Creative ideas to surprise your loved ones digitally. Birthday, anniversary, festival & proposal inspiration.">
+  <meta property="og:description"
+    content="Creative ideas to surprise your loved ones digitally. Birthday, anniversary, festival & proposal inspiration.">
   <meta property="og:url" content="https://thegreeter.in/blog">
   <meta property="og:image" content="https://thegreeter.in/assets/og-cover.png">
   <meta property="og:locale" content="en_US">
@@ -33,1220 +37,15 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  
-  <style>
-    /* ========== CORE DESIGN SYSTEM & TOKENS ========== */
-    :root {
-      --bg-primary: #f6f3ff;
-      --bg-secondary: #ffffff;
-      --text-primary: #14092b;
-      --text-secondary: #4a3a6b;
-      --accent-gradient: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%);
-      --accent-solid: #7b5df6;
-      --card-bg: rgba(255, 255, 255, 0.75);
-      --card-border: rgba(123, 93, 246, 0.08);
-      --navbar-bg: rgba(255, 255, 255, 0.75);
-      --shadow-sm: 0 8px 24px rgba(123, 93, 246, 0.04);
-      --shadow-lg: 0 24px 56px -12px rgba(123, 93, 246, 0.12);
-      --glow: rgba(123, 93, 246, 0.12);
-      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
-      
-      /* Category Brand Colors */
-      --friendship-color: #0d9488;
-      --friendship-bg: rgba(13, 148, 136, 0.08);
-      --birthday-color: #db2777;
-      --birthday-bg: rgba(219, 39, 119, 0.08);
-      --anniversary-color: #4f46e5;
-      --anniversary-bg: rgba(79, 70, 229, 0.08);
-      --love-color: #e11d48;
-      --love-bg: rgba(225, 29, 72, 0.08);
-      --festival-color: #d97706;
-      --festival-bg: rgba(217, 119, 6, 0.08);
-      --tips-color: #7c3aed;
-      --tips-bg: rgba(124, 58, 237, 0.08);
-    }
-    
-    body.dark {
-      --bg-primary: #090514;
-      --bg-secondary: #130c22;
-      --text-primary: #f1ecff;
-      --text-secondary: #a89ec9;
-      --card-bg: rgba(19, 12, 34, 0.7);
-      --card-border: rgba(255, 255, 255, 0.05);
-      --navbar-bg: rgba(9, 5, 20, 0.75);
-      --shadow-sm: 0 8px 24px rgba(0, 0, 0, 0.3);
-      --shadow-lg: 0 32px 64px -16px rgba(0, 0, 0, 0.5);
-      --glow: rgba(123, 93, 246, 0.22);
 
-      --friendship-bg: rgba(13, 148, 136, 0.15);
-      --birthday-bg: rgba(219, 39, 119, 0.15);
-      --anniversary-bg: rgba(79, 70, 229, 0.15);
-      --love-bg: rgba(225, 29, 72, 0.15);
-      --festival-bg: rgba(217, 119, 6, 0.15);
-      --tips-bg: rgba(124, 58, 237, 0.15);
-    }
-    
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      overflow-x: hidden;
-      transition: var(--mode-transition);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    /* ========== DYNAMIC BACKGROUND METRICS & ANIMATIONS ========== */
-    .blob-bg {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: -2;
-      overflow: hidden;
-      pointer-events: none;
-    }
-    .bg-blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.12;
-      animation: floatBlobs 25s infinite alternate ease-in-out;
-      transition: var(--mode-transition);
-    }
-    .bg-blob-1 {
-      width: 500px; height: 500px;
-      background: #7b5df6;
-      top: -10%; left: -10%;
-    }
-    .bg-blob-2 {
-      width: 600px; height: 600px;
-      background: #ff7a2f;
-      bottom: -15%; right: -10%;
-      animation-delay: -6s;
-    }
-    .bg-blob-3 {
-      width: 400px; height: 400px;
-      background: #db2777;
-      top: 45%; left: 55%;
-      animation-delay: -12s;
-    }
-    @keyframes floatBlobs {
-      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-      50% { transform: translate(80px, -50px) scale(1.15) rotate(180deg); }
-      100% { transform: translate(-60px, 90px) scale(0.9) rotate(360deg); }
-    }
-    
-    /* Sequential Entrance Animations */
-    .fade-up {
-      opacity: 0;
-      transform: translateY(24px);
-      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    .d-1 { animation-delay: 0.1s; }
-    .d-2 { animation-delay: 0.2s; }
-    .d-3 { animation-delay: 0.3s; }
-    .d-4 { animation-delay: 0.4s; }
-    @keyframes fadeInUp {
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 24px;
-      position: relative;
-      flex: 1;
-    }
-    
-    /* ========== NAVBAR (Premium Glassmorphism) ========== */
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 14px 32px;
-      margin: 20px 0 16px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      background: var(--navbar-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 100px;
-      box-shadow: var(--shadow-sm);
-      position: sticky;
-      top: 16px;
-      z-index: 100;
-      transition: var(--mode-transition);
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-    }
-    .logo img {
-      height: 44px;
-      width: auto;
-    }
-    .logo .logo-light { display: block; }
-    body.dark .logo .logo-light { display: none; }
-    .logo .logo-dark { display: none; }
-    body.dark .logo .logo-dark { display: block; }
-    
-    .nav-links {
-      display: flex;
-      gap: 32px;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-    .nav-links a {
-      text-decoration: none;
-      color: inherit;
-      transition: 0.25s;
-      position: relative;
-      padding: 6px 0;
-      font-size: 0.95rem;
-    }
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 0;
-      height: 3px;
-      background: var(--accent-gradient);
-      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 4px;
-    }
-    .nav-links a:hover::after { width: 100%; }
-    .nav-links a:hover, .nav-links a.active {
-      color: var(--accent-solid);
-    }
-    
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-    }
-    .mode-toggle, .lang-toggle {
-      background: var(--bg-secondary);
-      border: 1px solid var(--card-border);
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--text-primary);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: var(--shadow-sm);
-    }
-    .mode-toggle .fa-sun { color: #fbbf24; font-size: 1.15rem; }
-    body.dark .mode-toggle .fa-sun::before {
-      content: "\f186";
-      color: #a78bfa;
-    }
-    .lang-toggle {
-      width: auto;
-      padding: 0 16px;
-      gap: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      border-radius: 40px;
-    }
-    .mode-toggle:hover, .lang-toggle:hover {
-      border-color: var(--accent-solid);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px var(--glow);
-    }
-    .btn-outline {
-      background: var(--bg-secondary);
-      border: 1px solid var(--card-border);
-      padding: 10px 24px;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.88rem;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: var(--shadow-sm);
-    }
-    .btn-outline:hover {
-      border-color: var(--accent-solid);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px var(--glow);
-    }
-    .mobile-menu-btn {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      background: var(--bg-secondary);
-      border-radius: 50%;
-      cursor: pointer;
-      border: 1px solid var(--card-border);
-      color: var(--text-primary);
-      box-shadow: var(--shadow-sm);
-    }
-    
-    /* ========== HERO SECTION (Visual Excellence) ========== */
-    .hero {
-      text-align: center;
-      padding: 64px 24px 40px;
-      max-width: 840px;
-      margin: 0 auto;
-    }
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 8px 20px;
-      border-radius: 40px;
-      font-size: .88rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow-sm);
-    }
-    .hero h1 {
-      font-family: 'Outfit', sans-serif;
-      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
-      font-weight: 800;
-      line-height: 1.25;
-      margin-bottom: 20px;
-      letter-spacing: -0.5px;
-    }
-    .hero h1 span {
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .hero p {
-      font-size: 1.15rem;
-      color: var(--text-secondary);
-      max-width: 640px;
-      margin: 0 auto 36px;
-    }
-    
-    /* ========== GLASSMORPHIC SEARCH BAR ========== */
-    .search-container {
-      max-width: 580px;
-      margin: 0 auto;
-      position: relative;
-    }
-    .search-bar {
-      display: flex;
-      background: var(--bg-secondary);
-      border: 2px solid var(--card-border);
-      border-radius: 50px;
-      padding: 6px 6px 6px 24px;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.3s;
-    }
-    .search-bar:focus-within {
-      border-color: var(--accent-solid);
-      box-shadow: 0 12px 30px var(--glow);
-      transform: translateY(-2px);
-    }
-    .search-bar input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      font-family: 'Inter', sans-serif;
-      font-size: 1rem;
-      color: var(--text-primary);
-      outline: none;
-    }
-    .search-bar input::placeholder {
-      color: var(--text-secondary);
-      opacity: 0.6;
-    }
-    .search-bar button {
-      background: var(--accent-gradient);
-      color: #fff;
-      border: none;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s;
-    }
-    .search-bar button:hover {
-      transform: scale(1.05);
-    }
-    
-    /* ========== CATEGORIES FILTER ========== */
-    .cats {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 56px;
-      justify-content: center;
-    }
-    .cat {
-      padding: 10px 24px;
-      border-radius: 40px;
-      border: 1px solid var(--card-border);
-      background: var(--card-bg);
-      font-size: .9rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      text-decoration: none;
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow-sm);
-    }
-    .cat:hover {
-      border-color: var(--accent-solid);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px var(--glow);
-    }
-    .cat.active {
-      background: var(--accent-gradient);
-      color: #fff;
-      border-color: transparent;
-      box-shadow: 0 10px 24px var(--glow);
-    }
-    
-    /* ========== FEATURED ARTICLE (Premium Asymmetric Grid) ========== */
-    .featured {
-      background: var(--bg-secondary);
-      border: 1px solid var(--card-border);
-      border-radius: 32px;
-      padding: 48px;
-      margin-bottom: 64px;
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 40px;
-      align-items: center;
-      text-decoration: none;
-      color: inherit;
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .featured::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 100% 0%, var(--glow), transparent 60%);
-      pointer-events: none;
-    }
-    .featured:hover {
-      transform: translateY(-6px);
-      border-color: var(--accent-solid);
-      box-shadow: 0 32px 60px -12px rgba(123, 93, 246, 0.18);
-    }
-    .featured-tag {
-      background: var(--accent-gradient);
-      color: white;
-      padding: 6px 18px;
-      border-radius: 40px;
-      font-size: .8rem;
-      font-weight: 700;
-      display: inline-block;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 12px var(--glow);
-    }
-    .featured h2 {
-      font-family: 'Outfit', sans-serif;
-      font-size: clamp(1.6rem, 3.2vw, 2.2rem);
-      font-weight: 800;
-      line-height: 1.25;
-      margin-bottom: 16px;
-      color: var(--text-primary);
-    }
-    .featured p {
-      color: var(--text-secondary);
-      font-size: 1.05rem;
-      line-height: 1.7;
-      margin-bottom: 28px;
-    }
-    .featured-meta {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 24px;
-      font-size: .88rem;
-      color: var(--text-secondary);
-      border-top: 1px solid var(--card-border);
-      padding-top: 20px;
-    }
-    .featured-meta span {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .featured-meta i {
-      color: var(--accent-solid);
-    }
-    
-    /* Interactive CSS illustration showing wishing page on phone */
-    .featured-visual {
-      background: linear-gradient(135deg, rgba(123, 93, 246, 0.06) 0%, rgba(255, 122, 47, 0.06) 100%);
-      border: 1.5px dashed var(--card-border);
-      border-radius: 24px;
-      height: 100%;
-      min-height: 280px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .phone-mockup {
-      width: 130px;
-      height: 220px;
-      background: var(--bg-secondary);
-      border: 6px solid var(--text-primary);
-      border-radius: 24px;
-      position: relative;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 12px 8px;
-      z-index: 2;
-      animation: floatPhone 4s ease-in-out infinite alternate;
-    }
-    .phone-notch {
-      width: 50px;
-      height: 10px;
-      background: var(--text-primary);
-      border-radius: 0 0 8px 8px;
-      position: absolute;
-      top: 0;
-    }
-    .phone-card {
-      width: 100%;
-      height: 90px;
-      background: var(--accent-gradient);
-      border-radius: 12px;
-      margin-top: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 2rem;
-      box-shadow: 0 8px 16px rgba(123, 93, 246, 0.3);
-    }
-    .phone-text {
-      width: 80%;
-      height: 6px;
-      background: var(--text-secondary);
-      opacity: 0.3;
-      border-radius: 4px;
-      margin-top: 16px;
-    }
-    .phone-text-short {
-      width: 50%;
-      height: 6px;
-      background: var(--text-secondary);
-      opacity: 0.3;
-      border-radius: 4px;
-      margin-top: 8px;
-    }
-    .floating-star {
-      position: absolute;
-      font-size: 2.2rem;
-      z-index: 1;
-      filter: drop-shadow(0 4px 10px var(--glow));
-      animation: floatStar 3s ease-in-out infinite alternate;
-    }
-    .star-1 { top: 15%; left: 15%; animation-delay: -0.5s; }
-    .star-2 { bottom: 20%; right: 15%; animation-delay: -1.5s; }
-    
-    @keyframes floatPhone {
-      0% { transform: translateY(0) rotate(0deg); }
-      100% { transform: translateY(-12px) rotate(4deg); }
-    }
-    @keyframes floatStar {
-      0% { transform: scale(0.9) rotate(0deg) translateY(0); }
-      100% { transform: scale(1.1) rotate(15deg) translateY(-8px); }
-    }
-    
-    /* ========== OCCASION TRUST STATS BANNER ========== */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-bottom: 64px;
-    }
-    .stat-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 32px 24px;
-      text-align: center;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      box-shadow: var(--shadow-sm);
-      transition: all 0.3s;
-    }
-    .stat-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent-solid);
-      box-shadow: var(--shadow-lg);
-    }
-    .stat-icon {
-      font-size: 1.8rem;
-      background: rgba(123, 93, 246, 0.08);
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      color: var(--accent-solid);
-    }
-    .stat-card h3 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.6rem;
-      font-weight: 800;
-      margin-bottom: 6px;
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .stat-card p {
-      font-size: 0.92rem;
-      color: var(--text-secondary);
-      line-height: 1.4;
-    }
-    
-    /* ========== TRENDING WISH TEMPLATES PANEL ========== */
-    .section-header {
-      text-align: center;
-      margin-bottom: 36px;
-    }
-    .section-header h2 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-    .section-header p {
-      color: var(--text-secondary);
-      font-size: 0.98rem;
-    }
-    .template-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-      margin-bottom: 64px;
-    }
-    .template-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 24px;
-      text-decoration: none;
-      color: inherit;
-      transition: all 0.3s;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-    }
-    .template-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent-solid);
-      box-shadow: var(--shadow-lg);
-    }
-    .template-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: rgba(123, 93, 246, 0.08);
-      color: var(--accent-solid);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      margin-bottom: 16px;
-    }
-    .template-card h3 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.15rem;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-    .template-card p {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      margin-bottom: 16px;
-      line-height: 1.5;
-      flex: 1;
-    }
-    .template-action {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--accent-solid);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: auto;
-    }
-    .template-card:hover .template-action i {
-      transform: translateX(4px);
-    }
-    .template-action i {
-      transition: transform 0.2s;
-    }
-    
-    /* ========== ARTICLES GRID (Premium Glass Cards) ========== */
-    .articles-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      gap: 32px;
-      margin-bottom: 80px;
-    }
-    .article-card {
-      background: var(--card-bg);
-      border: 1.5px solid var(--card-border);
-      border-radius: 28px;
-      overflow: hidden;
-      text-decoration: none;
-      color: inherit;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      display: flex;
-      flex-direction: column;
-      box-shadow: var(--shadow-sm);
-    }
-    .article-card:hover {
-      transform: translateY(-8px);
-      border-color: var(--accent-color, var(--accent-solid));
-      box-shadow: var(--card-glow, 0 24px 48px -12px rgba(123, 93, 246, 0.18));
-    }
-    
-    /* Interactive Card Header Visuals */
-    .card-visual-header {
-      height: 150px;
-      position: relative;
-      background: var(--accent-color, var(--accent-solid));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    .card-visual-pattern {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      opacity: 0.12;
-      background-image: radial-gradient(circle at 1px 1px, #fff 1.5px, transparent 0);
-      background-size: 16px 16px;
-    }
-    .card-emoji-glow {
-      font-size: 3rem;
-      z-index: 2;
-      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .article-card:hover .card-emoji-glow {
-      transform: scale(1.22) rotate(-8deg);
-    }
-    
-    .card-tag-badge {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      z-index: 2;
-      font-size: 0.72rem;
-      font-weight: 750;
-      color: #fff;
-      background: rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(8px);
-      padding: 5px 12px;
-      border-radius: 30px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    
-    .card-body {
-      padding: 24px 28px 28px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .card-body h2 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.35rem;
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 12px;
-      color: var(--text-primary);
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .card-body p {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 20px;
-      flex: 1;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .card-author-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-      opacity: 0.85;
-      margin-bottom: 16px;
-    }
-    .card-author-avatar {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: var(--accent-gradient);
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 16px;
-      border-top: 1.5px solid var(--card-border);
-      font-size: .85rem;
-      color: var(--text-secondary);
-    }
-    .card-footer span {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .read-more {
-      color: var(--accent-solid);
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: gap 0.2s;
-    }
-    .article-card:hover .read-more {
-      gap: 10px;
-      color: var(--accent-color, var(--accent-solid));
-    }
-    
-    /* Card Accent Overrides based on categories */
-    .article-card[data-cat="friendship"] {
-      --accent-color: var(--friendship-color);
-      --card-glow: 0 24px 48px -12px rgba(13, 148, 136, 0.2);
-    }
-    .article-card[data-cat="birthday"] {
-      --accent-color: var(--birthday-color);
-      --card-glow: 0 24px 48px -12px rgba(219, 39, 119, 0.2);
-    }
-    .article-card[data-cat="anniversary"] {
-      --accent-color: var(--anniversary-color);
-      --card-glow: 0 24px 48px -12px rgba(79, 70, 229, 0.2);
-    }
-    .article-card[data-cat="love"] {
-      --accent-color: var(--love-color);
-      --card-glow: 0 24px 48px -12px rgba(225, 29, 72, 0.2);
-    }
-    .article-card[data-cat="festival"] {
-      --accent-color: var(--festival-color);
-      --card-glow: 0 24px 48px -12px rgba(217, 119, 6, 0.2);
-    }
-    .article-card[data-cat="tips"] {
-      --accent-color: var(--tips-color);
-      --card-glow: 0 24px 48px -12px rgba(124, 58, 237, 0.2);
-    }
-    
-    /* Visual Background Color logic for visual headers */
-    .article-card[data-cat="friendship"] .card-visual-header { background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%); }
-    .article-card[data-cat="birthday"] .card-visual-header { background: linear-gradient(135deg, #db2777 0%, #f472b6 100%); }
-    .article-card[data-cat="anniversary"] .card-visual-header { background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%); }
-    .article-card[data-cat="love"] .card-visual-header { background: linear-gradient(135deg, #e11d48 0%, #fda4af 100%); }
-    .article-card[data-cat="festival"] .card-visual-header { background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%); }
-    .article-card[data-cat="tips"] .card-visual-header { background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); }
-    
-    /* ========== ZERO SEARCH RESULTS CONTAINER ========== */
-    .no-results {
-      text-align: center;
-      padding: 64px 32px;
-      background: var(--bg-secondary);
-      border: 1.5px dashed var(--card-border);
-      border-radius: 28px;
-      margin-bottom: 80px;
-      display: none;
-    }
-    .no-results-icon {
-      font-size: 3.5rem;
-      color: var(--text-secondary);
-      opacity: 0.5;
-      margin-bottom: 16px;
-    }
-    .no-results h3 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.4rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .no-results p {
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-size: 0.95rem;
-    }
-    .no-results button {
-      background: var(--accent-gradient);
-      border: none;
-      color: #fff;
-      padding: 12px 28px;
-      border-radius: 40px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 8px 20px var(--glow);
-    }
-    
-    /* ========== NEWSLETTER SECTION (Mesh Gradient Banner) ========== */
-    .newsletter-strip {
-      background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%);
-      border-radius: 32px;
-      padding: 56px 48px;
-      text-align: center;
-      margin-bottom: 56px;
-      color: #fff;
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-    }
-    .newsletter-strip::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.15), transparent 40%);
-    }
-    .newsletter-strip h2 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 2.2rem;
-      font-weight: 800;
-      margin-bottom: 12px;
-      letter-spacing: -0.5px;
-    }
-    .newsletter-strip p {
-      opacity: .9;
-      font-size: 1.05rem;
-      margin-bottom: 32px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .newsletter-form {
-      display: flex;
-      max-width: 460px;
-      margin: 0 auto;
-      gap: 12px;
-      position: relative;
-      z-index: 2;
-    }
-    .newsletter-form input {
-      flex: 1;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 16px 24px;
-      border-radius: 40px;
-      font-family: 'Inter', sans-serif;
-      font-size: 1rem;
-      outline: none;
-      color: #fff;
-      transition: all 0.3s;
-    }
-    .newsletter-form input::placeholder {
-      color: rgba(255, 255, 255, 0.75);
-    }
-    .newsletter-form input:focus {
-      background: rgba(255, 255, 255, 0.25);
-      border-color: #fff;
-      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
-    }
-    .newsletter-form button {
-      background: #fff;
-      color: #7b5df6;
-      border: none;
-      padding: 16px 32px;
-      border-radius: 40px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 1rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .newsletter-form button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-      color: #ff7a2f;
-    }
-    
-    /* ========== CTA STRIP (Conversion Funnel) ========== */
-    .cta-strip {
-      background: var(--bg-secondary);
-      border: 1.5px solid var(--card-border);
-      border-radius: 32px;
-      padding: 56px 48px;
-      text-align: center;
-      margin-bottom: 80px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
-    }
-    .cta-strip h2 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 2.2rem;
-      font-weight: 800;
-      margin-bottom: 12px;
-      color: var(--text-primary);
-      letter-spacing: -0.5px;
-    }
-    .cta-strip p {
-      color: var(--text-secondary);
-      font-size: 1.05rem;
-      margin-bottom: 32px;
-      max-width: 580px;
-      margin-left: auto;
-      margin-right: auto;
-      line-height: 1.7;
-    }
-    .cta-strip a {
-      background: var(--accent-gradient);
-      color: #fff;
-      padding: 16px 36px;
-      border-radius: 50px;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 10px 24px var(--glow);
-      transition: all 0.3s;
-    }
-    .cta-strip a:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 16px 36px var(--glow);
-    }
-    
-    /* ========== FOOTER ========== */
-    .footer {
-      background: var(--bg-secondary);
-      backdrop-filter: blur(12px);
-      border-top: 1.5px solid var(--card-border);
-      border-radius: 40px 40px 0 0;
-      padding: 64px 32px 32px;
-      margin-top: auto;
-    }
-    .footer-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 48px;
-    }
-    .footer-brand {
-      flex: 1;
-      min-width: 280px;
-    }
-    .footer-brand p {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      max-width: 320px;
-      margin-top: 16px;
-      line-height: 1.7;
-    }
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 80px;
-    }
-    .footer-col h4 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 20px;
-    }
-    .footer-col ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    .footer-col li {
-      margin-bottom: 12px;
-    }
-    .footer-col a {
-      text-decoration: none;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
-    .footer-col a:hover {
-      color: var(--accent-solid);
-    }
-    .footer-social {
-      min-width: 200px;
-    }
-    .footer-social h4 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 20px;
-    }
-    .social-icons {
-      display: flex;
-      gap: 12px;
-    }
-    .social-icons a {
-      width: 44px;
-      height: 44px;
-      background: var(--bg-primary);
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      color: var(--text-secondary);
-      border: 1px solid var(--card-border);
-      transition: all 0.3s;
-    }
-    .social-icons a:hover {
-      color: white !important;
-      transform: translateY(-3px);
-    }
-    .social-icons a:has(.fa-facebook-f):hover { background: #3b5998; border-color: #3b5998; }
-    .social-icons a:has(.fa-instagram):hover { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border-color: #e6683c; }
-    .social-icons a:has(.fa-whatsapp):hover { background: #25d366; border-color: #25d366; }
-    .social-icons a:has(.fa-twitter):hover { background: #1da1f2; border-color: #1da1f2; }
-    
-    .copyright {
-      text-align: center;
-      padding-top: 32px;
-      margin-top: 48px;
-      border-top: 1px solid var(--card-border);
-      color: var(--text-secondary);
-      font-size: 0.8rem;
-    }
-    
-    /* ========== RESPONSIVE DESIGN ========== */
-    @media (max-width: 1024px) {
-      .featured {
-        grid-template-columns: 1fr;
-        padding: 36px;
-      }
-      .featured-visual {
-        min-height: 240px;
-        grid-row: 1;
-      }
-    }
-    @media (max-width: 768px) {
-      .navbar {
-        padding: 10px 20px;
-        margin: 10px 0;
-        border-radius: 30px;
-      }
-      .nav-links {
-        display: none;
-        position: fixed;
-        top: 85px;
-        left: 20px;
-        right: 20px;
-        background: var(--bg-secondary);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border-radius: 28px;
-        padding: 24px;
-        flex-direction: column;
-        gap: 16px;
-        text-align: center;
-        border: 1px solid var(--card-border);
-        opacity: 0;
-        transform: translateY(-15px);
-        pointer-events: none;
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow-lg);
-      }
-      .nav-links.show {
-        display: flex;
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-      }
-      .mobile-menu-btn {
-        display: flex;
-      }
-      .nav-actions .btn-outline {
-        display: none;
-      }
-      .hero {
-        padding: 48px 16px 32px;
-      }
-      .articles-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-      .newsletter-strip, .cta-strip {
-        padding: 36px 24px;
-      }
-      .newsletter-form {
-        flex-direction: column;
-      }
-      .newsletter-form button {
-        justify-content: center;
-      }
-      .footer-inner {
-        flex-direction: column;
-        gap: 32px;
-      }
-      .footer-links {
-        gap: 40px;
-        justify-content: space-between;
-        width: 100%;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="blog-common.css">
+  <link rel="stylesheet" href="blog-index.css">
 </head>
+
 <body>
   <!-- Mesh Blobs Background -->
   <div class="blob-bg">
@@ -1256,19 +55,19 @@
   </div>
 
   <div class="container">
-    
+
     <!-- ========== NAVBAR ========== -->
     <nav class="navbar fade-up" id="navbar">
-      <a href="../index.html" class="logo">
+      <a href="../" class="logo">
         <img src="../assets/Light_logo.png" alt="Greeter Logo" class="logo-light">
         <img src="../assets/Dark_logo.png" alt="Greeter Logo" class="logo-dark">
       </a>
       <div class="nav-links" id="navLinks">
-        <a href="../index.html" id="navHome">Home</a>
-        <a href="../create.html" id="navCreate">Create</a>
-        <a href="../WhyGreeter.html" id="navWhy">Why Greeter</a>
-        <a href="index.html" class="active" id="navShowcase">Blog</a>
-        <a href="../ContactUs.html" id="navPricing">Contact Us</a>
+        <a href="../" id="navHome">Home</a>
+        <a href="../create" id="navCreate">Create</a>
+        <a href="../WhyGreeter" id="navWhy">Why Greeter</a>
+        <a href="./" class="active" id="navShowcase">Blog</a>
+        <a href="../ContactUs" id="navPricing">Contact Us</a>
       </div>
       <div class="nav-actions">
         <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
@@ -1282,11 +81,13 @@
     <section class="hero fade-up d-1">
       <div class="hero-badge"><span>✍️</span> <span id="heroBadgeText">Ideas & Inspiration</span></div>
       <h1 id="heroTitle">Smart Ways to <span>Surprise & Wish</span><br>the People You Love</h1>
-      <p id="heroDesc">Creative guides, heartfelt ideas, and step-by-step tips — for every occasion, every person, everywhere.</p>
-      
+      <p id="heroDesc">Creative guides, heartfelt ideas, and step-by-step tips — for every occasion, every person,
+        everywhere.</p>
+
       <div class="search-container">
         <div class="search-bar">
-          <input type="text" id="searchInput" placeholder="Search ideas... e.g. birthday surprise" aria-label="Search articles">
+          <input type="text" id="searchInput" placeholder="Search ideas... e.g. birthday surprise"
+            aria-label="Search articles">
           <button onclick="searchArticles()"><i class="fas fa-search"></i></button>
         </div>
       </div>
@@ -1312,11 +113,13 @@
     </div>
 
     <!-- ========== FEATURED POST ========== -->
-    <a href="how-to-surprise-best-friend-online.html" class="featured fade-up d-3" id="featuredLink" aria-label="Read featured article">
+    <a href="how-to-surprise-best-friend-online.html" class="featured fade-up d-3" id="featuredLink"
+      aria-label="Read featured article">
       <div>
         <span class="featured-tag" id="featuredTag">⭐ Most Popular</span>
         <h2 id="featuredTitle">How to Surprise Your Best Friend Online (10 Smart Ideas)</h2>
-        <p id="featuredDesc">Long distance shouldn't stop the magic. Here are the most creative, heartfelt digital surprises you can create for your best friend right now — in under 5 minutes.</p>
+        <p id="featuredDesc">Long distance shouldn't stop the magic. Here are the most creative, heartfelt digital
+          surprises you can create for your best friend right now — in under 5 minutes.</p>
         <div class="featured-meta">
           <span><i class="fas fa-clock"></i> <span id="readTime5">5 min read</span></span>
           <span><i class="fas fa-eye"></i> <span id="trendingTag">Trending</span></span>
@@ -1342,22 +145,31 @@
     </div>
     <div class="template-grid fade-up d-4">
       <a href="../create.html?event=birthday" class="template-card">
-        <div class="template-icon" style="color: var(--birthday-color); background: var(--birthday-bg)"><i class="fas fa-birthday-cake"></i></div>
+        <div class="template-icon" style="color: var(--birthday-color); background: var(--birthday-bg)"><i
+            class="fas fa-birthday-cake"></i></div>
         <h3 id="tplBdayTitle">Birthday Portal</h3>
-        <p id="tplBdayDesc">Send floating balloons, custom cake animations, photo grids, and their favorite background song.</p>
-        <span class="template-action"><span class="tplBtnLabel">Create Now</span> <i class="fas fa-arrow-right"></i></span>
+        <p id="tplBdayDesc">Send floating balloons, custom cake animations, photo grids, and their favorite background
+          song.</p>
+        <span class="template-action"><span class="tplBtnLabel">Create Now</span> <i
+            class="fas fa-arrow-right"></i></span>
       </a>
       <a href="../create.html?event=proposal" class="template-card">
-        <div class="template-icon" style="color: var(--love-color); background: var(--love-bg)"><i class="fas fa-heart"></i></div>
+        <div class="template-icon" style="color: var(--love-color); background: var(--love-bg)"><i
+            class="fas fa-heart"></i></div>
         <h3 id="tplLoveTitle">Proposal Timeline</h3>
-        <p id="tplLoveDesc">A romantic visual timeline of your relationship with interactive choice buttons and custom proposals.</p>
-        <span class="template-action"><span class="tplBtnLabel">Create Now</span> <i class="fas fa-arrow-right"></i></span>
+        <p id="tplLoveDesc">A romantic visual timeline of your relationship with interactive choice buttons and custom
+          proposals.</p>
+        <span class="template-action"><span class="tplBtnLabel">Create Now</span> <i
+            class="fas fa-arrow-right"></i></span>
       </a>
       <a href="../create.html?event=festival" class="template-card">
-        <div class="template-icon" style="color: var(--festival-color); background: var(--festival-bg)"><i class="fas fa-fire"></i></div>
+        <div class="template-icon" style="color: var(--festival-color); background: var(--festival-bg)"><i
+            class="fas fa-fire"></i></div>
         <h3 id="tplFestTitle">Festival Wishing Page</h3>
-        <p id="tplFestDesc">Send interactive wishes for Diwali, Holi, and Christmas complete with animation effects and sound tracks.</p>
-        <span class="template-action"><span class="tplBtnLabel">Create Now</span> <i class="fas fa-arrow-right"></i></span>
+        <p id="tplFestDesc">Send interactive wishes for Diwali, Holi, and Christmas complete with animation effects and
+          sound tracks.</p>
+        <span class="template-action"><span class="tplBtnLabel">Create Now</span> <i
+            class="fas fa-arrow-right"></i></span>
       </a>
     </div>
 
@@ -1365,7 +177,8 @@
     <div class="cats fade-up d-4">
       <a href="#" class="cat active" onclick="filterCat('all',this); return false;" id="catAll">All Articles</a>
       <a href="#" class="cat" onclick="filterCat('birthday',this); return false;" id="catBirthday">🎂 Birthday</a>
-      <a href="#" class="cat" onclick="filterCat('anniversary',this); return false;" id="catAnniversary">💍 Anniversary</a>
+      <a href="#" class="cat" onclick="filterCat('anniversary',this); return false;" id="catAnniversary">💍
+        Anniversary</a>
       <a href="#" class="cat" onclick="filterCat('friendship',this); return false;" id="catFriendship">🤝 Friendship</a>
       <a href="#" class="cat" onclick="filterCat('festival',this); return false;" id="catFestival">🎊 Festival</a>
       <a href="#" class="cat" onclick="filterCat('love',this); return false;" id="catLove">❤️ Love & Proposal</a>
@@ -1391,7 +204,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">How to Surprise Your Best Friend Online: 10 Smart Ideas</h2>
-          <p class="card-desc">Creative digital surprises that will make your best friend cry happy tears — even from miles away.</p>
+          <p class="card-desc">Creative digital surprises that will make your best friend cry happy tears — even from
+            miles away.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">TG</div>
             <span class="author-label">By TheGreeter Team</span>
@@ -1411,7 +225,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">10 Long-Distance Birthday Wish Ideas That Feel Personal</h2>
-          <p class="card-desc">When you can't be there in person, make your birthday wish feel like you are. These ideas will blow their mind.</p>
+          <p class="card-desc">When you can't be there in person, make your birthday wish feel like you are. These ideas
+            will blow their mind.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">MS</div>
             <span class="author-label">By Amit Sharma</span>
@@ -1431,7 +246,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">7 Anniversary Surprise Ideas Your Partner Will Never Forget</h2>
-          <p class="card-desc">Go beyond flowers and chocolates. Create a personalized digital experience that captures your whole love story.</p>
+          <p class="card-desc">Go beyond flowers and chocolates. Create a personalized digital experience that captures
+            your whole love story.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">LP</div>
             <span class="author-label">By Liam Parker</span>
@@ -1451,7 +267,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">How to Create a Birthday Website for Free in 60 Seconds</h2>
-          <p class="card-desc">Step-by-step guide to creating a stunning personalized birthday website your friend will screenshot and share.</p>
+          <p class="card-desc">Step-by-step guide to creating a stunning personalized birthday website your friend will
+            screenshot and share.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">TG</div>
             <span class="author-label">By TheGreeter Team</span>
@@ -1471,7 +288,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">8 Romantic Ways to Propose or Confess Online</h2>
-          <p class="card-desc">Not ready to say it face-to-face? These digital confession ideas are creative, heartfelt and surprisingly effective.</p>
+          <p class="card-desc">Not ready to say it face-to-face? These digital confession ideas are creative, heartfelt
+            and surprisingly effective.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">MN</div>
             <span class="author-label">By Meera Nair</span>
@@ -1491,7 +309,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">Best Diwali Greeting Ideas Beyond a WhatsApp Forward</h2>
-          <p class="card-desc">Skip the generic sticker. Send a personalized Diwali wish page that actually means something to the receiver.</p>
+          <p class="card-desc">Skip the generic sticker. Send a personalized Diwali wish page that actually means
+            something to the receiver.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">MS</div>
             <span class="author-label">By Amit Sharma</span>
@@ -1511,7 +330,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">Why Digital Wishes Are Better Than Traditional Cards</h2>
-          <p class="card-desc">Interactive, personal, and unforgettable - here's why digital wish pages are taking over traditional greeting cards.</p>
+          <p class="card-desc">Interactive, personal, and unforgettable - here's why digital wish pages are taking over
+            traditional greeting cards.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">TG</div>
             <span class="author-label">By TheGreeter Team</span>
@@ -1531,7 +351,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">Create a Festival Wish Page in Minutes</h2>
-          <p class="card-desc">Quick templates for Diwali, Holi, Christmas, Eid, and more. Personalize with photos and music.</p>
+          <p class="card-desc">Quick templates for Diwali, Holi, Christmas, Eid, and more. Personalize with photos and
+            music.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">LP</div>
             <span class="author-label">By Liam Parker</span>
@@ -1571,7 +392,8 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">9 Valentine's Day Surprise Ideas That Say 'I Love You' Perfectly</h2>
-          <p class="card-desc">Make this Valentine's Day unforgettable with creative digital surprises, interactive love letters, and playlists.</p>
+          <p class="card-desc">Make this Valentine's Day unforgettable with creative digital surprises, interactive love
+            letters, and playlists.</p>
           <div class="card-author-meta">
             <div class="card-author-avatar">LP</div>
             <span class="author-label">By Liam Parker</span>
@@ -1598,26 +420,28 @@
     <!-- ========== CTA SECTION ========== -->
     <div class="cta-strip fade-up">
       <h2 id="ctaTitle">Ready to Create Your Surprise? 🎁</h2>
-      <p id="ctaDesc">Stop reading, start creating. Build a stunning personalized wish page for free in under 60 seconds.</p>
-      <a href="../create.html" id="ctaBtn"><i class="fas fa-magic"></i> Create Your Wish Page — It's Free</a>
+      <p id="ctaDesc">Stop reading, start creating. Build a stunning personalized wish page for free in under 60
+        seconds.</p>
+      <a href="../create" id="ctaBtn"><i class="fas fa-magic"></i> Create Your Wish Page — It's Free</a>
     </div>
 
     <!-- ========== FOOTER ========== -->
     <footer class="footer fade-up">
       <div class="footer-inner">
-        <div class="footer-brand"> 
-          <a href="../index.html" class="logo">
+        <div class="footer-brand">
+          <a href="../" class="logo">
             <img src="../assets/Light_logo.png" alt="Greeter Logo" class="logo-light">
             <img src="../assets/Dark_logo.png" alt="Greeter Logo" class="logo-dark">
           </a>
-          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.</p>
+          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries
+            and festivals — no coding needed.</p>
         </div>
         <div class="footer-links">
           <div class="footer-col">
             <h4 id="exploreTitle">Explore</h4>
             <ul>
-              <li><a href="../create.html" id="exploreTemplates">Create</a></li>
-              <li><a href="../WhyGreeter.html" id="exploreFeatures">Why Greeter</a></li>
+              <li><a href="../create" id="exploreTemplates">Create</a></li>
+              <li><a href="../WhyGreeter" id="exploreFeatures">Why Greeter</a></li>
               <li><a href="../index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
               <li><a href="#" id="explorePricing">Pricing</a></li>
             </ul>
@@ -1625,10 +449,10 @@
           <div class="footer-col">
             <h4 id="supportTitle">Support</h4>
             <ul>
-              <li><a href="../ContactUs.html" id="supportHelp">Help Center</a></li>
-              <li><a href="../privacy.html" id="supportPrivacy">Privacy Policy</a></li>
-              <li><a href="../terms&cond.html" id="supportTerms">Terms of Use</a></li>
-              <li><a href="../ContactUs.html" id="supportContact">Contact</a></li>
+              <li><a href="../ContactUs" id="supportHelp">Help Center</a></li>
+              <li><a href="../privacy" id="supportPrivacy">Privacy Policy</a></li>
+              <li><a href="../terms&cond" id="supportTerms">Terms of Use</a></li>
+              <li><a href="../ContactUs" id="supportContact">Contact</a></li>
             </ul>
           </div>
         </div>
@@ -1636,7 +460,8 @@
           <h4 id="followTitle">Follow us</h4>
           <div class="social-icons">
             <a href="#" id="footerFacebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://instagram.com/thegreeter.in" id="footerInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://instagram.com/thegreeter.in" id="footerInstagram" aria-label="Instagram"><i
+                class="fab fa-instagram"></i></a>
             <a href="#" id="footerWhatsApp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
             <a href="#" id="footerTwitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
           </div>
@@ -1649,11 +474,18 @@
   </div>
 
   <!-- ========== CUSTOM POPUP MODAL ========== -->
-  <div class="custom-modal" id="customModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div class="modal-card" style="background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 24px; padding: 32px; max-width: 400px; text-align: center; position: relative; box-shadow: var(--shadow-lg);">
-      <div class="modal-close" onclick="closeModal()" style="position: absolute; top: 16px; right: 16px; cursor: pointer; color: var(--text-secondary);"><i class="fas fa-times"></i></div>
-      <div class="modal-icon" style="font-size: 3rem; color: var(--accent-solid); margin-bottom: 16px;"><i class="fas fa-info-circle"></i></div>
-      <div class="modal-message" id="modalMessage" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 24px; color: var(--text-primary); line-height: 1.5;"></div>
+  <div class="custom-modal" id="customModal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-card"
+      style="background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 24px; padding: 32px; max-width: 400px; text-align: center; position: relative; box-shadow: var(--shadow-lg);">
+      <div class="modal-close" onclick="closeModal()"
+        style="position: absolute; top: 16px; right: 16px; cursor: pointer; color: var(--text-secondary);"><i
+          class="fas fa-times"></i></div>
+      <div class="modal-icon" style="font-size: 3rem; color: var(--accent-solid); margin-bottom: 16px;"><i
+          class="fas fa-info-circle"></i></div>
+      <div class="modal-message" id="modalMessage"
+        style="font-weight: 600; font-size: 1.1rem; margin-bottom: 24px; color: var(--text-primary); line-height: 1.5;">
+      </div>
       <button class="btn-outline" onclick="closeModal()" style="margin: 0 auto; padding: 10px 32px;">OK</button>
     </div>
   </div>
@@ -1694,7 +526,7 @@
         followTitle: "Follow us",
         copyright: "© 2026 Greeter · Make every moment magical",
         signinAlert: "Sign in functionality is coming soon! Feel free to create wish pages directly without signing in.",
-        
+
         // Added Section translations
         statsSurprisesTitle: "150K+ Surprises Sent",
         statsSurprisesDesc: "Bringing smiles to loved ones worldwide.",
@@ -1714,7 +546,7 @@
         noResultsTitle: "No matching guides found",
         noResultsDesc: "Try searching for another keyword like 'birthday' or 'proposal'.",
         resetSearchBtn: "Reset Search",
-        
+
         authorLabels: [
           "By TheGreeter Team",
           "By Amit Sharma",
@@ -1785,7 +617,7 @@
         followTitle: "हमें फॉलो करें",
         copyright: "© 2026 Greeter · हर पल को जादुई बनाएं",
         signinAlert: "लॉगिन सुविधा जल्द ही आ रही है! आप बिना लॉगिन किए सीधे विश पेज बना सकते हैं।",
-        
+
         statsSurprisesTitle: "150K+ खुशियां भेजी गईं",
         statsSurprisesDesc: "दुनियाभर में प्रियजनों के चेहरों पर मुस्कान लाते हुए।",
         statsThemesTitle: "12+ सुंदर थीम्स",
@@ -1804,7 +636,7 @@
         noResultsTitle: "कोई मेल खाता गाइड नहीं मिला",
         noResultsDesc: "कृपया किसी अन्य कीवर्ड जैसे 'जन्मदिन' या 'प्रस्ताव' से खोजें।",
         resetSearchBtn: "खोज रीसेट करें",
-        
+
         authorLabels: [
           "द्वारा Greeter टीम",
           "द्वारा अमित शर्मा",
@@ -1845,11 +677,11 @@
     };
 
     let currentLang = localStorage.getItem('greeter_lang') || 'en';
-    
+
     function applyLanguage(lang) {
       const t = translations[lang];
       if (!t) return;
-      
+
       // Update Navbar
       document.getElementById('navHome').innerText = t.nav[0];
       document.getElementById('navCreate').innerText = t.nav[1];
@@ -1857,13 +689,13 @@
       document.getElementById('navShowcase').innerText = t.nav[3];
       document.getElementById('navPricing').innerText = t.nav[4];
       document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
-      
+
       // Update Hero
       document.getElementById('heroBadgeText').innerText = t.heroBadgeText;
       document.getElementById('heroTitle').innerHTML = t.heroTitle;
       document.getElementById('heroDesc').innerText = t.heroDesc;
       document.getElementById('searchInput').placeholder = lang === 'en' ? 'Search ideas... e.g. birthday surprise' : 'तलाश करें... जैसे: जन्मदिन सरप्राइज़';
-      
+
       // Update Stats Banner
       document.getElementById('statsSurprisesTitle').innerText = t.statsSurprisesTitle;
       document.getElementById('statsSurprisesDesc').innerText = t.statsSurprisesDesc;
@@ -1877,7 +709,7 @@
       if (featuredLink) {
         featuredLink.href = lang === 'en' ? 'how-to-surprise-best-friend-online.html' : 'how-to-surprise-best-friend-online.html?lang=hi';
       }
-      
+
       // Update Featured Post
       document.getElementById('featuredTag').innerText = t.featuredTag;
       document.getElementById('featuredTitle').innerText = t.featuredTitle;
@@ -1885,7 +717,7 @@
       document.getElementById('readTime5').innerText = t.readTime5;
       document.getElementById('trendingTag').innerText = t.trendingTag;
       document.getElementById('friendshipTag').innerText = t.friendshipTag;
-      
+
       // Update Trending Templates section
       document.getElementById('trendingTemplatesTitle').innerText = t.trendingTemplatesTitle;
       document.getElementById('trendingTemplatesDesc').innerText = t.trendingTemplatesDesc;
@@ -1895,7 +727,7 @@
       document.getElementById('tplLoveDesc').innerText = t.tplLoveDesc;
       document.getElementById('tplFestTitle').innerText = t.tplFestTitle;
       document.getElementById('tplFestDesc').innerText = t.tplFestDesc;
-      
+
       const tplLabels = document.querySelectorAll('.tplBtnLabel');
       tplLabels.forEach(lbl => lbl.innerText = t.tplBtnLabel);
 
@@ -1907,7 +739,7 @@
       document.getElementById('catFestival').innerText = t.catFestival;
       document.getElementById('catLove').innerText = t.catLove;
       document.getElementById('catTips').innerText = t.catTips;
-      
+
       // Update No Results State
       document.getElementById('noResultsTitle').innerText = t.noResultsTitle;
       document.getElementById('noResultsDesc').innerText = t.noResultsDesc;
@@ -1917,34 +749,34 @@
       document.getElementById('ctaTitle').innerText = t.ctaTitle;
       document.getElementById('ctaDesc').innerText = t.ctaDesc;
       document.getElementById('ctaBtn').innerHTML = `<i class="fas fa-magic"></i> ${t.ctaBtn}`;
-      
+
       // Update Newsletter
       document.getElementById('newsletterTitle').innerText = t.newsletterTitle;
       document.getElementById('newsletterDesc').innerText = t.newsletterDesc;
       document.getElementById('newsletterBtn').innerHTML = `<i class="fas fa-paper-plane"></i> ${t.newsletterBtn}`;
-      
+
       // Update Footer Brand & Titles
       document.getElementById('footerBrandText').innerText = t.footerBrand;
       document.getElementById('exploreTitle').innerText = t.exploreTitle;
       document.getElementById('supportTitle').innerText = t.supportTitle;
       document.getElementById('followTitle').innerText = t.followTitle;
       document.getElementById('copyrightText').innerText = t.copyright;
-      
+
       const exploreLinks = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
-      t.exploreLinks.forEach((text, idx) => { 
-        if (document.getElementById(exploreLinks[idx])) document.getElementById(exploreLinks[idx]).innerText = text; 
+      t.exploreLinks.forEach((text, idx) => {
+        if (document.getElementById(exploreLinks[idx])) document.getElementById(exploreLinks[idx]).innerText = text;
       });
-      
+
       const supportLinks = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
-      t.supportLinks.forEach((text, idx) => { 
-        if (document.getElementById(supportLinks[idx])) document.getElementById(supportLinks[idx]).innerText = text; 
+      t.supportLinks.forEach((text, idx) => {
+        if (document.getElementById(supportLinks[idx])) document.getElementById(supportLinks[idx]).innerText = text;
       });
-      
+
       // Update Grid Cards text
       const titles = document.querySelectorAll('.card-title');
       const descs = document.querySelectorAll('.card-desc');
       const authorLabels = document.querySelectorAll('.author-label');
-      
+
       t.cardTitles.forEach((text, idx) => { if (titles[idx]) titles[idx].innerText = text; });
       t.cardDescs.forEach((text, idx) => { if (descs[idx]) descs[idx].innerText = text; });
       t.authorLabels.forEach((text, idx) => { if (authorLabels[idx]) authorLabels[idx].innerText = text; });
@@ -1965,7 +797,7 @@
       // Update language toggle text
       const langSpan = document.querySelector('#langToggleBtn span');
       if (langSpan) langSpan.innerText = lang === 'en' ? 'हिन्दी' : 'English';
-      
+
       currentLang = lang;
       localStorage.setItem('greeter_lang', lang);
     }
@@ -1974,70 +806,16 @@
       applyLanguage(currentLang === 'en' ? 'hi' : 'en');
     });
 
-    // ========== THEME HANDLING ==========
-    const body = document.body;
-    const themeIcon = document.getElementById('themeIcon');
-    
-    function setTheme(isDark) {
-      if (isDark) { 
-        body.classList.add('dark'); 
-        themeIcon.className = 'fas fa-sun'; 
-        localStorage.setItem('greeter-theme', 'dark'); 
-      } else { 
-        body.classList.remove('dark'); 
-        themeIcon.className = 'fas fa-moon'; 
-        localStorage.setItem('greeter-theme', 'light'); 
-      }
-    }
-    
-    document.getElementById('modeToggle').addEventListener('click', () => setTheme(!body.classList.contains('dark')));
-    (localStorage.getItem('greeter-theme') === 'dark') ? setTheme(true) : setTheme(false);
-
-    // ========== SCROLL EFFECT ON NAVBAR ==========
-    window.addEventListener('scroll', () => {
-      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 15);
-    });
-
-    // ========== MOBILE MENU ==========
-    const navLinks = document.getElementById('navLinks');
-    const menuBtn = document.getElementById('mobileMenuBtn');
-    
-    function toggleMobileMenu() {
-      navLinks.classList.toggle('show');
-      const icon = menuBtn.querySelector('i');
-      icon.classList.toggle('fa-bars', !navLinks.classList.contains('show'));
-      icon.classList.toggle('fa-times', navLinks.classList.contains('show'));
-    }
-    
-    menuBtn.addEventListener('click', toggleMobileMenu);
-    
-    document.addEventListener('click', (e) => {
-      if (navLinks.classList.contains('show') && !navLinks.contains(e.target) && !menuBtn.contains(e.target)) {
-        toggleMobileMenu();
-      }
-    });
-
-    // ========== CUSTOM MODAL ALERTS ==========
-    function showModal(msg) {
-      document.getElementById('modalMessage').innerText = msg;
-      document.getElementById('customModal').style.display = 'flex';
-    }
-    
-    function closeModal() {
-      document.getElementById('customModal').style.display = 'none';
-    }
-    
-    document.getElementById('signinBtn').addEventListener('click', () => showModal(translations[currentLang].signinAlert));
 
     // ========== CATEGORY FILTERING ==========
     function filterCat(cat, el) {
       document.querySelectorAll('.cat').forEach(c => c.classList.remove('active'));
       el.classList.add('active');
-      
+
       const cards = document.querySelectorAll('.article-card');
       const noResults = document.getElementById('noResults');
       noResults.style.display = 'none';
-      
+
       cards.forEach(card => {
         const matches = (cat === 'all' || card.dataset.cat === cat);
         if (matches) {
@@ -2068,7 +846,7 @@
       const cards = document.querySelectorAll('.article-card');
       const noResults = document.getElementById('noResults');
       let matchCount = 0;
-      
+
       cards.forEach(card => {
         const text = card.textContent.toLowerCase();
         if (text.includes(q)) {
@@ -2081,22 +859,22 @@
           card.style.display = 'none';
         }
       });
-      
+
       if (matchCount === 0) {
         noResults.style.display = 'block';
       } else {
         noResults.style.display = 'none';
       }
     }
-    
+
     function resetSearch() {
       document.getElementById('searchInput').value = '';
       document.getElementById('noResults').style.display = 'none';
       filterCat('all', document.getElementById('catAll'));
     }
-    
-    document.getElementById('searchInput').addEventListener('keyup', e => { 
-      if (e.key === 'Enter') searchArticles(); 
+
+    document.getElementById('searchInput').addEventListener('keyup', e => {
+      if (e.key === 'Enter') searchArticles();
     });
 
     // ========== NEWSLETTER ACTION ==========
@@ -2107,8 +885,8 @@
         showModal(currentLang === 'en' ? 'Please enter a valid email address.' : 'कृपया एक सही ईमेल एड्रेस दर्ज करें।');
         return;
       }
-      showModal(currentLang === 'en' 
-        ? 'Thank you for subscribing! We will send you surprise ideas every week.' 
+      showModal(currentLang === 'en'
+        ? 'Thank you for subscribing! We will send you surprise ideas every week.'
         : 'सब्सक्राइब करने के लिए धन्यवाद! हम आपको हर हफ्ते बेहतरीन सरप्राइज़ आइडिया भेजेंगे।'
       );
       emailInput.value = '';
@@ -2117,7 +895,9 @@
     // ========== INITIALIZE PAGE ==========
     applyLanguage(currentLang);
   </script>
-  
+
+  <script src="blog-common.js" defer></script>
   <script src="../assets/tracker.js" defer></script>
 </body>
+
 </html>
