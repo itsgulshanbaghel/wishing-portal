@@ -73,6 +73,130 @@ function _parseOS(ua) {
   return 'Other';
 }
 
+// ─── Traffic Source Analysis ─────────────────────────────────────────────────
+
+function parseUTMParameters(url) {
+  try {
+    if (!url) return {};
+    const urlObj = new URL(url);
+    return {
+      utmSource: urlObj.searchParams.get('utm_source') || null,
+      utmMedium: urlObj.searchParams.get('utm_medium') || null,
+      utmCampaign: urlObj.searchParams.get('utm_campaign') || null,
+      utmContent: urlObj.searchParams.get('utm_content') || null,
+      utmTerm: urlObj.searchParams.get('utm_term') || null
+    };
+  } catch (e) {
+    return {};
+  }
+}
+
+function extractSearchEngine(referer) {
+  if (!referer || referer === 'Direct') return null;
+  try {
+    const hostname = new URL(referer).hostname.toLowerCase();
+
+    const searchEngines = {
+      'google': 'Google',
+      'bing': 'Bing',
+      'duckduckgo': 'DuckDuckGo',
+      'yahoo': 'Yahoo',
+      'baidu': 'Baidu',
+      'yandex': 'Yandex',
+      'ask': 'Ask',
+      'aol': 'AOL',
+      'ecosia': 'Ecosia',
+      'startpage': 'StartPage'
+    };
+
+    for (const [key, name] of Object.entries(searchEngines)) {
+      if (hostname.includes(key)) {
+        return name;
+      }
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function extractSearchKeywords(referer) {
+  if (!referer || referer === 'Direct') return null;
+  try {
+    const urlObj = new URL(referer);
+    const hostname = urlObj.hostname.toLowerCase();
+
+    // Check if it's a search engine
+    const isSearchEngine = ['google', 'bing', 'duckduckgo', 'yahoo', 'baidu', 'yandex', 'ask', 'aol'].some(se => hostname.includes(se));
+    if (!isSearchEngine) return null;
+
+    // Extract query parameter based on search engine
+    const queryParam = hostname.includes('google') ? 'q' :
+      hostname.includes('bing') ? 'q' :
+        hostname.includes('duckduckgo') ? 'q' :
+          hostname.includes('yahoo') ? 'p' :
+            hostname.includes('baidu') ? 'wd' :
+              hostname.includes('yandex') ? 'text' :
+                hostname.includes('ask') ? 'q' :
+                  'q';
+
+    const query = urlObj.searchParams.get(queryParam);
+    if (query) {
+      return decodeURIComponent(query).replace(/\+/g, ' ');
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function categorizeTrafficSource(referer, utmParams) {
+  // Check UTM parameters first (highest priority)
+  if (utmParams && utmParams.utmMedium) {
+    const medium = utmParams.utmMedium.toLowerCase();
+    if (medium === 'cpc' || medium === 'ppc') return 'Paid Search';
+    if (medium === 'email' || medium === 'mail') return 'Email';
+    if (medium === 'social') return 'Social Media';
+    if (medium === 'referral') return 'Referral';
+    if (medium === 'organic') return 'Organic Search';
+  }
+
+  // No referrer = Direct traffic
+  if (!referer || referer === 'Direct') return 'Direct';
+
+  try {
+    const hostname = new URL(referer).hostname.toLowerCase();
+
+    // Social media platforms
+    const socialPlatforms = [
+      'facebook', 'fb', 'twitter', 'x.com', 'instagram', 'linkedin',
+      'tiktok', 'pinterest', 'reddit', 'snapchat', 'whatsapp', 'telegram',
+      'youtube', 'vimeo', 'twitch', 'discord'
+    ];
+
+    if (socialPlatforms.some(platform => hostname.includes(platform))) {
+      return 'Social Media';
+    }
+
+    // Search engines
+    const searchEngines = ['google', 'bing', 'duckduckgo', 'yahoo', 'baidu', 'yandex', 'ask', 'aol'];
+    if (searchEngines.some(se => hostname.includes(se))) {
+      return 'Organic Search';
+    }
+
+    // Email clients
+    const emailClients = ['mail', 'outlook', 'gmail', 'yahoo', 'hotmail', 'protonmail'];
+    if (emailClients.some(client => hostname.includes(client))) {
+      return 'Email';
+    }
+
+    // Everything else is a referral
+    return 'Referral';
+  } catch (e) {
+    return 'Direct';
+  }
+}
+
 // ─── Analytics Data Store ────────────────────────────────────────────────────
 
 class AnalyticsStore {
@@ -94,6 +218,17 @@ class AnalyticsStore {
       const geo = getGeoFromIP(ip);
       const ua = req.headers['user-agent'] || 'Unknown';
       const visitorId = _hashIP(ip);
+      const rawReferer = req.headers['referer'] || 'Direct';
+
+      // Parse UTM parameters from referer URL
+      const utmParams = parseUTMParameters(rawReferer);
+
+      // Categorize traffic source
+      const trafficSource = categorizeTrafficSource(rawReferer, utmParams);
+
+      // Extract search engine and keywords
+      const searchEngine = extractSearchEngine(rawReferer);
+      const searchKeywords = extractSearchKeywords(rawReferer);
 
       // Update or create visitor
       await Visitor.findOneAndUpdate(
@@ -102,7 +237,7 @@ class AnalyticsStore {
         { upsert: true }
       );
 
-      // Create event
+      // Create event with enhanced traffic data
       const event = await Event.create({
         visitorId,
         type: 'pageview',
@@ -110,10 +245,18 @@ class AnalyticsStore {
         geo,
         details: {
           userAgent: ua,
-          referer: req.headers['referer'] || 'Direct',
+          referer: rawReferer,
           device: _parseDevice(ua),
           browser: _parseBrowser(ua),
-          os: _parseOS(ua)
+          os: _parseOS(ua),
+          trafficSource,
+          searchEngine,
+          searchKeywords,
+          utmSource: utmParams.utmSource,
+          utmMedium: utmParams.utmMedium,
+          utmCampaign: utmParams.utmCampaign,
+          utmContent: utmParams.utmContent,
+          utmTerm: utmParams.utmTerm
         }
       });
 
@@ -150,7 +293,7 @@ class AnalyticsStore {
     try {
       const ip = getClientIP(req);
       const geo = getGeoFromIP(ip);
-      
+
       const website = await Website.create({
         id: websiteData.id,
         recipientName: websiteData.recipientName,
@@ -182,7 +325,7 @@ class AnalyticsStore {
 
       const website = await Website.findOneAndUpdate(
         { id: websiteId },
-        { 
+        {
           $inc: { views: 1 },
           $addToSet: { uniqueViewers: visitorId }
         },
@@ -209,11 +352,11 @@ class AnalyticsStore {
       const now = new Date();
       // Create today at midnight UTC to match MongoDB timestamps
       const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      
+
       // Handle different time periods correctly
       let cutoff;
       let timeFilter;
-      
+
       if (days === -1) {
         // All Time - no date filter
         cutoff = null;
@@ -233,15 +376,15 @@ class AnalyticsStore {
       const pageViewFilter = days === -1 ? { type: 'pageview' } : { type: 'pageview', timestamp: timeFilter };
       const websiteFilter = days === -1 ? {} : { createdAt: timeFilter };
       const eventFilter = days === -1 ? {} : { timestamp: timeFilter };
-      
+
       const totalPageViews = await Event.countDocuments(pageViewFilter);
       const totalWebsites = await Website.countDocuments(websiteFilter);
       const uniqueVisitors = await Event.distinct('visitorId', eventFilter);
-      
+
       const todayViews = await Event.countDocuments({ type: 'pageview', timestamp: { $gte: today } });
       const todayWebsites = await Website.countDocuments({ createdAt: { $gte: today } });
       const todayUnique = await Event.distinct('visitorId', { timestamp: { $gte: today } });
-      
+
       // Calculate total website views for the period (sum of views in period)
       const websiteViewsFilter = days === -1 ? {} : { createdAt: timeFilter };
       const websiteViewsAgg = await Website.aggregate([
@@ -250,11 +393,11 @@ class AnalyticsStore {
       ]);
       const totalWebsiteViews = websiteViewsAgg && websiteViewsAgg.length > 0 ? websiteViewsAgg[0].totalViews : 0;
 
-      // Recent Activity - handle All Time case, include all relevant event types
+      // Recent Activity — always limit to avoid massive payloads on All Time
       const recentEventsFilter = days === -1 ? {} : { timestamp: timeFilter };
       const recentEvents = await Event.find(recentEventsFilter)
         .sort({ timestamp: -1 })
-        .limit(50);
+        .limit(200);
 
       // Websites List - respect time period filter
       const websitesListFilter = days === -1 ? {} : { createdAt: timeFilter };
@@ -272,26 +415,32 @@ class AnalyticsStore {
       const dailyStatsFilter = days === -1 ? {} : { timestamp: timeFilter };
       const dailyStats = await Event.aggregate([
         { $match: dailyStatsFilter },
-        { $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } },
-          views: { $sum: { $cond: [{ $eq: ["$type", "pageview"] }, 1, 0] } },
-          uniqueVisitors: { $addToSet: "$visitorId" }
-        }},
-        { $project: {
-          _id: 1,
-          views: 1,
-          uniqueVisitors: { $size: "$uniqueVisitors" }
-        }},
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } },
+            views: { $sum: { $cond: [{ $eq: ["$type", "pageview"] }, 1, 0] } },
+            uniqueVisitors: { $addToSet: "$visitorId" }
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            views: 1,
+            uniqueVisitors: { $size: "$uniqueVisitors" }
+          }
+        },
         { $sort: { _id: 1 } }
       ]);
 
       const websiteStatsFilter = days === -1 ? {} : { createdAt: timeFilter };
       const websiteStats = await Website.aggregate([
         { $match: websiteStatsFilter },
-        { $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "UTC" } },
-          count: { $sum: 1 }
-        }},
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "UTC" } },
+            count: { $sum: 1 }
+          }
+        },
         { $sort: { _id: 1 } }
       ]);
 
@@ -348,10 +497,12 @@ class AnalyticsStore {
 
       const hourlyDistribution = await Event.aggregate([
         { $match: pageviewFilter },
-        { $group: {
-          _id: { $hour: '$timestamp' },
-          count: { $sum: 1 }
-        }},
+        {
+          $group: {
+            _id: { $hour: '$timestamp' },
+            count: { $sum: 1 }
+          }
+        },
         { $sort: { '_id': 1 } }
       ]);
 
@@ -386,10 +537,12 @@ class AnalyticsStore {
 
       const featureStatsAgg = await Event.aggregate([
         { $match: { ...eventFilter, type: 'feature' } },
-        { $group: {
-          _id: { feature: '$details.feature', action: '$details.action' },
-          count: { $sum: 1 }
-        }},
+        {
+          $group: {
+            _id: { feature: '$details.feature', action: '$details.action' },
+            count: { $sum: 1 }
+          }
+        },
         { $sort: { count: -1 } }
       ]);
 
@@ -439,126 +592,134 @@ class AnalyticsStore {
       // Feature usage over time
       const featureTrendAgg = await Event.aggregate([
         { $match: { ...eventFilter, type: 'feature' } },
-        { $group: {
-          _id: { date: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } }, feature: '$details.feature' },
-          count: { $sum: 1 }
-        }},
+        {
+          $group: {
+            _id: { date: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } }, feature: '$details.feature' },
+            count: { $sum: 1 }
+          }
+        },
         { $sort: { '_id.date': 1 } }
       ]);
 
-       // Build featureTrend, featureByDevice, featureByBrowser, featureByHour using normalized keys
-       const featureTrendRaw = {};
-       featureTrendAgg.forEach(item => {
-         const date = item._id.date;
-         const feature = item._id.feature || 'Unknown';
-         if (!featureTrendRaw[date]) featureTrendRaw[date] = {};
-         featureTrendRaw[date][feature] = item.count;
-       });
+      // Build featureTrend, featureByDevice, featureByBrowser, featureByHour using normalized keys
+      const featureTrendRaw = {};
+      featureTrendAgg.forEach(item => {
+        const date = item._id.date;
+        const feature = item._id.feature || 'Unknown';
+        if (!featureTrendRaw[date]) featureTrendRaw[date] = {};
+        featureTrendRaw[date][feature] = item.count;
+      });
 
-       // Normalize feature keys across trend/device/browser/hour datasets
-       const featureTrend = {};
-       Object.keys(featureTrendRaw).forEach(date => {
-         featureTrend[date] = {};
-         Object.keys(featureTrendRaw[date]).forEach(rawF => {
-           const { key } = this._normalizeFeature(rawF);
-           featureTrend[date][key] = (featureTrend[date][key] || 0) + featureTrendRaw[date][rawF];
-         });
-       });
+      // Normalize feature keys across trend/device/browser/hour datasets
+      const featureTrend = {};
+      Object.keys(featureTrendRaw).forEach(date => {
+        featureTrend[date] = {};
+        Object.keys(featureTrendRaw[date]).forEach(rawF => {
+          const { key } = this._normalizeFeature(rawF);
+          featureTrend[date][key] = (featureTrend[date][key] || 0) + featureTrendRaw[date][rawF];
+        });
+      });
 
-       // Feature usage by device
-       const featureDeviceAgg = await Event.aggregate([
-         { $match: { ...eventFilter, type: 'feature' } },
-         { $group: {
-           _id: { device: '$details.device', feature: '$details.feature' },
-           count: { $sum: 1 }
-         }},
-         { $sort: { count: -1 } }
-       ]);
+      // Feature usage by device
+      const featureDeviceAgg = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'feature' } },
+        {
+          $group: {
+            _id: { device: '$details.device', feature: '$details.feature' },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { count: -1 } }
+      ]);
 
-       const featureByDeviceRaw = {};
-       featureDeviceAgg.forEach(item => {
-         const device = item._id.device || 'Unknown';
-         const feature = item._id.feature || 'Unknown';
-         if (!featureByDeviceRaw[device]) featureByDeviceRaw[device] = {};
-         featureByDeviceRaw[device][feature] = item.count;
-       });
+      const featureByDeviceRaw = {};
+      featureDeviceAgg.forEach(item => {
+        const device = item._id.device || 'Unknown';
+        const feature = item._id.feature || 'Unknown';
+        if (!featureByDeviceRaw[device]) featureByDeviceRaw[device] = {};
+        featureByDeviceRaw[device][feature] = item.count;
+      });
 
-       const featureByDevice = {};
-       Object.keys(featureByDeviceRaw).forEach(device => {
-         featureByDevice[device] = {};
-         Object.keys(featureByDeviceRaw[device]).forEach(rawF => {
-           const { key } = this._normalizeFeature(rawF);
-           featureByDevice[device][key] = (featureByDevice[device][key] || 0) + featureByDeviceRaw[device][rawF];
-         });
-       });
+      const featureByDevice = {};
+      Object.keys(featureByDeviceRaw).forEach(device => {
+        featureByDevice[device] = {};
+        Object.keys(featureByDeviceRaw[device]).forEach(rawF => {
+          const { key } = this._normalizeFeature(rawF);
+          featureByDevice[device][key] = (featureByDevice[device][key] || 0) + featureByDeviceRaw[device][rawF];
+        });
+      });
 
-       const featureBrowserAgg = await Event.aggregate([
-         { $match: { ...eventFilter, type: 'feature' } },
-         { $group: {
-           _id: { browser: '$details.browser', feature: '$details.feature' },
-           count: { $sum: 1 }
-         }},
-         { $sort: { count: -1 } }
-       ]);
+      const featureBrowserAgg = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'feature' } },
+        {
+          $group: {
+            _id: { browser: '$details.browser', feature: '$details.feature' },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { count: -1 } }
+      ]);
 
-       const featureByBrowserRaw = {};
-       featureBrowserAgg.forEach(item => {
-         const browser = item._id.browser || 'Unknown';
-         const feature = item._id.feature || 'Unknown';
-         if (!featureByBrowserRaw[browser]) featureByBrowserRaw[browser] = {};
-         featureByBrowserRaw[browser][feature] = item.count;
-       });
+      const featureByBrowserRaw = {};
+      featureBrowserAgg.forEach(item => {
+        const browser = item._id.browser || 'Unknown';
+        const feature = item._id.feature || 'Unknown';
+        if (!featureByBrowserRaw[browser]) featureByBrowserRaw[browser] = {};
+        featureByBrowserRaw[browser][feature] = item.count;
+      });
 
-       const featureByBrowser = {};
-       Object.keys(featureByBrowserRaw).forEach(browser => {
-         featureByBrowser[browser] = {};
-         Object.keys(featureByBrowserRaw[browser]).forEach(rawF => {
-           const { key } = this._normalizeFeature(rawF);
-           featureByBrowser[browser][key] = (featureByBrowser[browser][key] || 0) + featureByBrowserRaw[browser][rawF];
-         });
-       });
+      const featureByBrowser = {};
+      Object.keys(featureByBrowserRaw).forEach(browser => {
+        featureByBrowser[browser] = {};
+        Object.keys(featureByBrowserRaw[browser]).forEach(rawF => {
+          const { key } = this._normalizeFeature(rawF);
+          featureByBrowser[browser][key] = (featureByBrowser[browser][key] || 0) + featureByBrowserRaw[browser][rawF];
+        });
+      });
 
-       // Feature usage by hour
-       const featureHourAgg = await Event.aggregate([
-         { $match: { ...eventFilter, type: 'feature' } },
-         { $group: {
-           _id: { hour: { $hour: '$timestamp' }, feature: '$details.feature' },
-           count: { $sum: 1 }
-         }},
-         { $sort: { '_id.hour': 1 } }
-       ]);
+      // Feature usage by hour
+      const featureHourAgg = await Event.aggregate([
+        { $match: { ...eventFilter, type: 'feature' } },
+        {
+          $group: {
+            _id: { hour: { $hour: '$timestamp' }, feature: '$details.feature' },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { '_id.hour': 1 } }
+      ]);
 
-       const featureByHourRaw = {};
-       featureHourAgg.forEach(item => {
-         const hour = item._id.hour;
-         const feature = item._id.feature || 'Unknown';
-         if (!featureByHourRaw[hour]) featureByHourRaw[hour] = {};
-         featureByHourRaw[hour][feature] = item.count;
-       });
+      const featureByHourRaw = {};
+      featureHourAgg.forEach(item => {
+        const hour = item._id.hour;
+        const feature = item._id.feature || 'Unknown';
+        if (!featureByHourRaw[hour]) featureByHourRaw[hour] = {};
+        featureByHourRaw[hour][feature] = item.count;
+      });
 
-       const featureByHour = {};
-       Object.keys(featureByHourRaw).forEach(hour => {
-         featureByHour[hour] = {};
-         Object.keys(featureByHourRaw[hour]).forEach(rawF => {
-           const { key } = this._normalizeFeature(rawF);
-           featureByHour[hour][key] = (featureByHour[hour][key] || 0) + featureByHourRaw[hour][rawF];
-         });
-       });
+      const featureByHour = {};
+      Object.keys(featureByHourRaw).forEach(hour => {
+        featureByHour[hour] = {};
+        Object.keys(featureByHourRaw[hour]).forEach(rawF => {
+          const { key } = this._normalizeFeature(rawF);
+          featureByHour[hour][key] = (featureByHour[hour][key] || 0) + featureByHourRaw[hour][rawF];
+        });
+      });
 
 
       // Unique visitor counts for tried vs used (better conversion metric)
       const triedVisitorAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature', $or: [ { 'details.action': 'tried_enable' }, { 'details.action': 'tried_disable' }, { 'details.action': 'enable' }, { 'details.action': 'disable' } ] } },
+        { $match: { ...eventFilter, type: 'feature', $or: [{ 'details.action': 'tried_enable' }, { 'details.action': 'tried_disable' }, { 'details.action': 'enable' }, { 'details.action': 'disable' }] } },
         { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
       ]);
 
       const triedEnableVisitorAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature', $or: [ { 'details.action': 'tried_enable' }, { 'details.action': 'enable' }, { 'details.action': 'enabled' } ] } },
+        { $match: { ...eventFilter, type: 'feature', $or: [{ 'details.action': 'tried_enable' }, { 'details.action': 'enable' }, { 'details.action': 'enabled' }] } },
         { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
       ]);
 
       const usedVisitorAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature', $or: [ { 'details.action': 'used' }, { 'details.action': 'use' } ] } },
+        { $match: { ...eventFilter, type: 'feature', $or: [{ 'details.action': 'used' }, { 'details.action': 'use' }] } },
         { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
       ]);
 
@@ -584,10 +745,12 @@ class AnalyticsStore {
 
       const recentFeatureAgg = await Event.aggregate([
         { $match: { timestamp: { $gte: recentCutoff }, type: 'feature' } },
-        { $group: {
-          _id: { feature: '$details.feature' },
-          recentCount: { $sum: 1 }
-        }}
+        {
+          $group: {
+            _id: { feature: '$details.feature' },
+            recentCount: { $sum: 1 }
+          }
+        }
       ]);
 
       const olderCutoff = new Date(recentCutoff);
@@ -595,10 +758,12 @@ class AnalyticsStore {
 
       const olderFeatureAgg = await Event.aggregate([
         { $match: { timestamp: { $gte: olderCutoff, $lt: recentCutoff }, type: 'feature' } },
-        { $group: {
-          _id: { feature: '$details.feature' },
-          olderCount: { $sum: 1 }
-        }}
+        {
+          $group: {
+            _id: { feature: '$details.feature' },
+            olderCount: { $sum: 1 }
+          }
+        }
       ]);
 
       const trendingFeatures = {};
@@ -657,6 +822,200 @@ class AnalyticsStore {
       };
     } catch (err) {
       console.error('[Analytics] Error getting dashboard data:', err);
+      return {};
+    }
+  }
+
+  // ── Historical Data Migration ──
+  async migrateHistoricalTrafficData() {
+    try {
+      console.log('[Analytics] Starting historical traffic data migration...');
+
+      // Find all pageview events that don't have trafficSource
+      const eventsToMigrate = await Event.find({
+        type: 'pageview',
+        'details.trafficSource': { $exists: false }
+      });
+
+      console.log(`[Analytics] Found ${eventsToMigrate.length} events to migrate`);
+
+      let migrated = 0;
+      let errors = 0;
+
+      for (const event of eventsToMigrate) {
+        try {
+          const rawReferer = event.details.referer || 'Direct';
+          const utmParams = parseUTMParameters(rawReferer);
+          const trafficSource = categorizeTrafficSource(rawReferer, utmParams);
+          const searchEngine = extractSearchEngine(rawReferer);
+          const searchKeywords = extractSearchKeywords(rawReferer);
+
+          await Event.updateOne(
+            { _id: event._id },
+            {
+              $set: {
+                'details.trafficSource': trafficSource,
+                'details.searchEngine': searchEngine,
+                'details.searchKeywords': searchKeywords,
+                'details.utmSource': utmParams.utmSource,
+                'details.utmMedium': utmParams.utmMedium,
+                'details.utmCampaign': utmParams.utmCampaign,
+                'details.utmContent': utmParams.utmContent,
+                'details.utmTerm': utmParams.utmTerm
+              }
+            }
+          );
+
+          migrated++;
+          if (migrated % 100 === 0) {
+            console.log(`[Analytics] Migrated ${migrated}/${eventsToMigrate.length} events...`);
+          }
+        } catch (err) {
+          console.error(`[Analytics] Error migrating event ${event._id}:`, err.message);
+          errors++;
+        }
+      }
+
+      console.log(`[Analytics] Migration complete: ${migrated} migrated, ${errors} errors`);
+      return { migrated, errors, total: eventsToMigrate.length };
+    } catch (err) {
+      console.error('[Analytics] Error in historical migration:', err);
+      return { migrated: 0, errors: 1, total: 0 };
+    }
+  }
+
+  // ── Traffic Sources Analytics ──
+  async getTrafficSourcesData(days = 7) {
+    try {
+      const now = new Date();
+      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+      let timeFilter;
+      if (days === -1) {
+        timeFilter = {};
+      } else if (days === 0) {
+        timeFilter = { $gte: today };
+      } else {
+        const cutoff = new Date(today);
+        cutoff.setDate(cutoff.getDate() - days);
+        timeFilter = { $gte: cutoff };
+      }
+
+      const pageviewFilter = days === -1 ? { type: 'pageview' } : { type: 'pageview', timestamp: timeFilter };
+
+      // Traffic source distribution
+      const trafficSourceDistribution = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: { _id: '$details.trafficSource', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+
+      // Search engine distribution
+      const searchEngineDistribution = await Event.aggregate([
+        { $match: { ...pageviewFilter, 'details.trafficSource': 'Organic Search' } },
+        { $group: { _id: '$details.searchEngine', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+
+      // Top search keywords
+      const topKeywords = await Event.aggregate([
+        { $match: { ...pageviewFilter, 'details.searchKeywords': { $nin: [null, '', undefined] } } },
+        { $group: { _id: '$details.searchKeywords', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 50 }
+      ]);
+
+      // Social media platforms
+      const socialPlatforms = await Event.aggregate([
+        { $match: { ...pageviewFilter, 'details.trafficSource': 'Social Media' } },
+        { $group: { _id: { $substr: ['$details.referer', 0, 100] }, count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 }
+      ]);
+
+      // UTM campaign performance
+      const utmCampaigns = await Event.aggregate([
+        { $match: { ...pageviewFilter, 'details.utmCampaign': { $nin: [null, '', undefined] } } },
+        {
+          $group: {
+            _id: {
+              campaign: '$details.utmCampaign',
+              source: '$details.utmSource',
+              medium: '$details.utmMedium'
+            },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { count: -1 } },
+        { $limit: 50 }
+      ]);
+
+      // Top referring domains
+      const topReferrers = await Event.aggregate([
+        { $match: { ...pageviewFilter, 'details.trafficSource': 'Referral' } },
+        { $group: { _id: '$details.referer', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 30 }
+      ]);
+
+      // Traffic sources trend over time
+      const trafficTrend = await Event.aggregate([
+        { $match: pageviewFilter },
+        {
+          $group: {
+            _id: {
+              date: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } },
+              source: '$details.trafficSource'
+            },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { '_id.date': 1 } }
+      ]);
+
+      // KPI calculations
+      const totalSessions = await Event.countDocuments(pageviewFilter);
+      const organicSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Organic Search' });
+      const directTraffic = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Direct' });
+      const socialMedia = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Social Media' });
+      const referral = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Referral' });
+      const email = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Email' });
+      const paidSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Paid Search' });
+
+      // Recent traffic sessions with full details
+      const recentTraffic = await Event.find(pageviewFilter)
+        .sort({ timestamp: -1 })
+        .limit(100);
+
+      return {
+        period: days,
+        kpi: {
+          totalSessions,
+          organicSearch,
+          directTraffic,
+          socialMedia,
+          referral,
+          email,
+          paidSearch
+        },
+        charts: {
+          trafficSourceDistribution: trafficSourceDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          searchEngineDistribution: searchEngineDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          topKeywords: topKeywords.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          socialPlatforms: socialPlatforms.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          utmCampaigns: utmCampaigns.map(item => ({
+            campaign: item._id.campaign,
+            source: item._id.source,
+            medium: item._id.medium,
+            count: item.count
+          })),
+          topReferrers: topReferrers.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          trafficTrend
+        },
+        recentTraffic
+      };
+    } catch (err) {
+      console.error('[Analytics] Error getting traffic sources data:', err);
       return {};
     }
   }

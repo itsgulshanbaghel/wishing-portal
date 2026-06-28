@@ -16,6 +16,7 @@ const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
 const { Website, Feedback } = require('./models');
 const analytics = require('./analytics');
+const health = require('./health');
 
 
 
@@ -33,20 +34,48 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// MongoDB Connection with fallback
+// MongoDB Connection Manager (Lazy)
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://gulshanbaghel:greetly06@thegreeter.eu9o9le.mongodb.net/?appName=TheGreeter';
 let mongoConnected = false;
+let connectionPromise = null;
 
-mongoose.connect(MONGODB_URI)
-  .then(() => {
+async function connectToMongo() {
+  // If already connected, return immediately
+  if (mongoose.connection.readyState === 1) {
+    mongoConnected = true;
+    return true;
+  }
+
+  // If connection is in progress, wait for it
+  if (connectionPromise) {
+    await connectionPromise;
+    return mongoConnected;
+  }
+
+  // Start new connection
+  connectionPromise = mongoose.connect(MONGODB_URI);
+
+  try {
+    await connectionPromise;
     console.log('[Server] Connected to MongoDB Atlas');
     mongoConnected = true;
-  })
-  .catch(err => {
+    return true;
+  } catch (err) {
     console.error('[Server] MongoDB connection error:', err);
     console.log('[Server] Running in fallback mode - analytics will be limited');
     mongoConnected = false;
-  });
+    connectionPromise = null;
+    return false;
+  }
+}
+
+// Helper function to ensure MongoDB is connected before operations
+async function ensureMongoConnected() {
+  if (!mongoConnected) {
+    await connectToMongo();
+  }
+  return mongoConnected;
+}
 
 
 
@@ -79,7 +108,7 @@ const rateLimit = require('express-rate-limit');
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5000, 
+  max: 5000,
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -189,6 +218,7 @@ app.post('/api/config', async (req, res) => {
     // Register website in analytics
     console.log('[Server] Registering website:', metadata.id, metadata.recipientName);
     try {
+      await ensureMongoConnected();
       await analytics.registerWebsite(req, metadata);
       analytics.trackEvent(req, { type: 'website_created', details: { id, eventType: metadata.eventType } });
       console.log('[Server] Website registered successfully');
@@ -375,6 +405,8 @@ app.post('/api/feedback', async (req, res) => {
       return res.status(400).json({ error: 'Responses are required' });
     }
 
+    await ensureMongoConnected();
+
     const feedback = new Feedback({
       websiteId,
       responses,
@@ -516,6 +548,7 @@ const analyticsLimiter = rateLimit({
 
 app.post('/api/analytics/pageview', analyticsLimiter, async (req, res) => {
   try {
+    await ensureMongoConnected();
     await analytics.trackPageView(req, req.body.page || 'unknown');
     res.status(204).end();
   } catch (e) { res.status(204).end(); }
@@ -523,6 +556,7 @@ app.post('/api/analytics/pageview', analyticsLimiter, async (req, res) => {
 
 app.post('/api/analytics/session', analyticsLimiter, async (req, res) => {
   try {
+    await ensureMongoConnected();
     await analytics.trackSession(req, req.body);
     res.status(204).end();
   } catch (e) { res.status(204).end(); }
@@ -530,6 +564,7 @@ app.post('/api/analytics/session', analyticsLimiter, async (req, res) => {
 
 app.post('/api/analytics/event', analyticsLimiter, async (req, res) => {
   try {
+    await ensureMongoConnected();
     await analytics.trackEvent(req, req.body);
     res.status(204).end();
   } catch (e) { res.status(204).end(); }
@@ -537,6 +572,7 @@ app.post('/api/analytics/event', analyticsLimiter, async (req, res) => {
 
 app.post('/api/analytics/feature', analyticsLimiter, async (req, res) => {
   try {
+    await ensureMongoConnected();
     await analytics.trackFeatureUsage(req, req.body);
     res.status(204).end();
   } catch (e) { res.status(204).end(); }
@@ -544,6 +580,7 @@ app.post('/api/analytics/feature', analyticsLimiter, async (req, res) => {
 
 app.post('/api/analytics/exit', analyticsLimiter, async (req, res) => {
   try {
+    await ensureMongoConnected();
     await analytics.trackExit(req, req.body);
     res.status(204).end();
   } catch (e) { res.status(204).end(); }
@@ -551,6 +588,7 @@ app.post('/api/analytics/exit', analyticsLimiter, async (req, res) => {
 
 app.post('/api/analytics/website-view', analyticsLimiter, async (req, res) => {
   try {
+    await ensureMongoConnected();
     await analytics.trackWebsiteView(req, req.body.websiteId);
     await analytics.trackPageView(req, 'shared_website');
     res.status(204).end();
@@ -588,17 +626,15 @@ app.post('/api/admin/login', (req, res) => {
 
 app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
   console.log('[Server] POST /api/admin/sync-websites reached');
-  
+
   try {
-    // Check MongoDB connection state more reliably
-    const dbState = mongoose.connection.readyState;
-    console.log('[Admin] MongoDB connection state:', dbState);
-    
-    if (dbState !== 1) { // 1 = connected
-      console.log('[Admin] MongoDB not connected (state:', dbState, '), returning fallback response');
+    // Use lazy connection instead of checking state
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      console.log('[Admin] MongoDB not connected, returning fallback response');
       return res.json({ success: true, synced: 0, message: 'MongoDB not connected - sync skipped', fallbackMode: true });
     }
-    
+
     console.log('[Admin] Starting website sync from Cloudinary...');
     const resources = await cloudinary.api.resources({
       type: 'upload',
@@ -611,7 +647,7 @@ app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
 
     for (const resource of resources.resources) {
       const id = resource.public_id.replace('configs/', '');
-      
+
       try {
         const existing = await Website.findOne({ id });
 
@@ -639,7 +675,7 @@ app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
             const config = fullData.config || {};
             const meta = fullData.metadata || {};
             metadata.eventType = meta.eventType || config.eventType || config.category || metadata.eventType;
-            
+
             if (metadata.eventType === 'unknown' && config.customData) {
               const allText = JSON.stringify(config.customData).toLowerCase();
               if (allText.includes('birth')) metadata.eventType = 'Birthday';
@@ -679,13 +715,11 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
   try {
     const daysQuery = req.query.days;
     const days = (daysQuery !== undefined && daysQuery !== '') ? parseInt(daysQuery) : 7;
-    
-    // Check MongoDB connection state more reliably
-    const dbState = mongoose.connection.readyState;
-    console.log('[Admin] Dashboard MongoDB connection state:', dbState);
-    
-    if (dbState !== 1) { // 1 = connected
-      console.log('[Admin] MongoDB not connected (state:', dbState, '), returning fallback dashboard data');
+
+    // Use lazy connection instead of checking state
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      console.log('[Admin] MongoDB not connected, returning fallback dashboard data');
       return res.json({
         period: days,
         overview: {
@@ -707,7 +741,7 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
         message: 'MongoDB not connected - showing fallback data'
       });
     }
-    
+
     const data = await analytics.getDashboardData(days);
     res.json(data);
   } catch (err) {
@@ -743,8 +777,8 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
 // Feedback analytics
 app.get('/api/admin/feedback-analytics', adminAuth, async (req, res) => {
   try {
-    const dbState = mongoose.connection.readyState;
-    if (dbState !== 1) {
+    const connected = await ensureMongoConnected();
+    if (!connected) {
       return res.json({
         totalFeedback: 0,
         recentFeedback: [],
@@ -803,6 +837,233 @@ app.get('/api/admin/cloudinary-list', adminAuth, async (req, res) => {
   } catch (err) {
     console.error('Cloudinary list error:', err);
     res.status(500).json({ error: 'Failed to list websites' });
+  }
+});
+
+// Traffic Sources Analytics
+app.get('/api/admin/traffic-sources', adminAuth, async (req, res) => {
+  try {
+    const daysQuery = req.query.days;
+    const days = (daysQuery !== undefined && daysQuery !== '') ? parseInt(daysQuery) : 7;
+
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      console.log('[Admin] MongoDB not connected, returning fallback data');
+      return res.json({
+        period: days,
+        kpi: {
+          totalSessions: 0,
+          organicSearch: 0,
+          directTraffic: 0,
+          socialMedia: 0,
+          referral: 0,
+          email: 0,
+          paidSearch: 0
+        },
+        charts: {
+          trafficSourceDistribution: {},
+          searchEngineDistribution: {},
+          topKeywords: {},
+          socialPlatforms: {},
+          utmCampaigns: [],
+          topReferrers: {},
+          trafficTrend: []
+        },
+        recentTraffic: [],
+        fallbackMode: true,
+        message: 'MongoDB not connected'
+      });
+    }
+
+    const data = await analytics.getTrafficSourcesData(days);
+    res.json(data);
+  } catch (err) {
+    console.error('Traffic sources analytics error:', err);
+    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError' || err.message.includes('ECONNREFUSED')) {
+      res.json({
+        period: days,
+        kpi: {
+          totalSessions: 0,
+          organicSearch: 0,
+          directTraffic: 0,
+          socialMedia: 0,
+          referral: 0,
+          email: 0,
+          paidSearch: 0
+        },
+        charts: {
+          trafficSourceDistribution: {},
+          searchEngineDistribution: {},
+          topKeywords: {},
+          socialPlatforms: {},
+          utmCampaigns: [],
+          topReferrers: {},
+          trafficTrend: []
+        },
+        recentTraffic: [],
+        fallbackMode: true,
+        message: 'MongoDB connection failed'
+      });
+    } else {
+      res.status(500).json({ error: 'Failed to load traffic sources data', details: err.message });
+    }
+  }
+});
+
+// Migrate Historical Traffic Data
+app.post('/api/admin/migrate-traffic-data', adminAuth, async (req, res) => {
+  try {
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      return res.json({ success: false, message: 'MongoDB not connected' });
+    }
+
+    console.log('[Admin] Starting traffic data migration...');
+    const result = await analytics.migrateHistoricalTrafficData();
+    res.json({
+      success: true,
+      message: `Migration complete: ${result.migrated} events migrated, ${result.errors} errors`,
+      ...result
+    });
+  } catch (err) {
+    console.error('Migration error:', err);
+    res.status(500).json({ error: 'Migration failed', details: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// SYSTEM HEALTH MONITORING API
+// ══════════════════════════════════════════════════════════════
+
+// Get current health metrics
+app.get('/api/admin/health/current', adminAuth, async (req, res) => {
+  try {
+    const metrics = await health.getCurrentMetrics();
+    if (!metrics) {
+      return res.status(500).json({ error: 'Failed to get health metrics' });
+    }
+    res.json(metrics);
+  } catch (err) {
+    console.error('Health metrics error:', err);
+    res.status(500).json({ error: 'Failed to get health metrics', details: err.message });
+  }
+});
+
+// Get historical health metrics
+app.get('/api/admin/health/history', adminAuth, async (req, res) => {
+  try {
+    const hoursQuery = req.query.hours;
+    const hours = (hoursQuery !== undefined && hoursQuery !== '') ? parseInt(hoursQuery) : 24;
+
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      return res.json({
+        metrics: [],
+        fallbackMode: true,
+        message: 'MongoDB not connected'
+      });
+    }
+
+    const metrics = await health.getHistoricalMetrics(hours);
+    res.json({ metrics });
+  } catch (err) {
+    console.error('Health history error:', err);
+    res.status(500).json({ error: 'Failed to get health history', details: err.message });
+  }
+});
+
+// Get system info
+app.get('/api/admin/health/system-info', adminAuth, async (req, res) => {
+  try {
+    const systemInfo = await health.getSystemInfo();
+    res.json(systemInfo);
+  } catch (err) {
+    console.error('System info error:', err);
+    res.status(500).json({ error: 'Failed to get system info', details: err.message });
+  }
+});
+
+// Test alert email
+app.post('/api/admin/health/test-alert', adminAuth, async (req, res) => {
+  try {
+    const currentMetrics = await health.getCurrentMetrics();
+    if (!currentMetrics) {
+      return res.status(500).json({ error: 'Failed to get current metrics' });
+    }
+
+    // Force alert level to critical for testing
+    currentMetrics.alertLevel = 'critical';
+    currentMetrics.alertDetails = { test: 'This is a test alert' };
+
+    await health.sendAlertEmail(currentMetrics);
+    res.json({ success: true, message: 'Test alert sent' });
+  } catch (err) {
+    console.error('Test alert error:', err);
+    res.status(500).json({ error: 'Failed to send test alert', details: err.message });
+  }
+});
+
+// Manual health metrics collection
+app.post('/api/admin/health/collect', adminAuth, async (req, res) => {
+  try {
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      return res.status(500).json({ error: 'MongoDB not connected - cannot collect metrics' });
+    }
+
+    const metrics = await health.getCurrentMetrics();
+    if (!metrics) {
+      return res.status(500).json({ error: 'Failed to collect metrics' });
+    }
+
+    await health.storeMetrics(metrics);
+    res.json({ success: true, message: 'Health metrics collected and stored', metrics });
+  } catch (err) {
+    console.error('Manual health collection error:', err);
+    res.status(500).json({ error: 'Failed to collect health metrics', details: err.message });
+  }
+});
+
+// Manual cleanup of old metrics
+app.post('/api/admin/health/cleanup', adminAuth, async (req, res) => {
+  try {
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      return res.status(500).json({ error: 'MongoDB not connected - cannot cleanup' });
+    }
+
+    await health.cleanupOldMetrics();
+    res.json({ success: true, message: 'Old metrics cleaned up successfully' });
+  } catch (err) {
+    console.error('Manual cleanup error:', err);
+    res.status(500).json({ error: 'Failed to cleanup old metrics', details: err.message });
+  }
+});
+
+// Quick health status (for monitoring services)
+app.get('/api/admin/health/status', async (req, res) => {
+  try {
+    const metrics = await health.getCurrentMetrics();
+    const dbState = mongoose.connection.readyState;
+
+    const status = {
+      healthy: true,
+      timestamp: new Date(),
+      mongo: dbState === 1 ? 'connected' : 'disconnected',
+      alertLevel: metrics ? metrics.alertLevel : 'unknown'
+    };
+
+    if (metrics && metrics.alertLevel === 'critical') {
+      status.healthy = false;
+    }
+
+    res.json(status);
+  } catch (err) {
+    res.status(500).json({
+      healthy: false,
+      error: 'Health check failed',
+      timestamp: new Date()
+    });
   }
 });
 

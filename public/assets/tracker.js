@@ -222,11 +222,12 @@
   // ── Exit Intent Tracking ──
 
   function trackExitIntent() {
+    const pageLoadTime = Date.now() - Math.round(performance.now());
     // Track when user leaves the page
     window.addEventListener('beforeunload', function () {
       sendBeacon('/api/analytics/exit', {
         page: getPageName(),
-        timeSpent: Math.round((Date.now() - performance.timing.navigationStart) / 1000)
+        timeSpent: Math.round((Date.now() - pageLoadTime) / 1000)
       });
     });
 

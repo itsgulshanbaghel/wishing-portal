@@ -53,11 +53,13 @@
         <nav class="sidebar-nav">
          <a href="#" class="nav-item active" data-section="overview"><i class="fas fa-gauge-high"></i> Overview</a>
          <a href="#" class="nav-item" data-section="traffic"><i class="fas fa-chart-area"></i> Traffic</a>
+         <a href="#" class="nav-item" data-section="traffic-sources"><i class="fas fa-route"></i> Traffic Sources</a>
          <a href="#" class="nav-item" data-section="websites"><i class="fas fa-globe"></i> Websites</a>
          <a href="#" class="nav-item" data-section="audience"><i class="fas fa-users"></i> Audience</a>
          <a href="#" class="nav-item" data-section="behavior"><i class="fas fa-mouse-pointer"></i> Behavior</a>
          <a href="#" class="nav-item" data-section="feedback"><i class="fas fa-comments"></i> Feedback</a>
          <a href="#" class="nav-item" data-section="realtime"><i class="fas fa-bolt"></i> Real-time</a>
+         <a href="#" class="nav-item" data-section="system-health"><i class="fas fa-heartbeat"></i> System Health</a>
        </nav>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-btn"><i class="fas fa-right-from-bracket"></i> Logout</button>
@@ -120,6 +122,50 @@
           <div class="chart-row">
             <div class="chart-card"><h3><i class="fas fa-link"></i> Referrer Sources</h3><canvas id="refererChart"></canvas></div>
             <div class="chart-card"><h3><i class="fas fa-door-open"></i> Exit Pages</h3><canvas id="exitChart"></canvas></div>
+          </div>
+        </section>
+
+        <!-- TRAFFIC SOURCES SECTION -->
+        <section id="sec-traffic-sources" class="section">
+          <div class="kpi-grid">
+            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-eye"></i></div><div class="kpi-info"><span class="kpi-value" id="tsTotalSessions">--</span><span class="kpi-label">Total Sessions</span></div></div>
+            <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fas fa-search"></i></div><div class="kpi-info"><span class="kpi-value" id="tsOrganicSearch">--</span><span class="kpi-label">Organic Search</span></div></div>
+            <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fas fa-bullseye"></i></div><div class="kpi-info"><span class="kpi-value" id="tsDirectTraffic">--</span><span class="kpi-label">Direct Traffic</span></div></div>
+            <div class="kpi-card accent-orange"><div class="kpi-icon"><i class="fas fa-share-alt"></i></div><div class="kpi-info"><span class="kpi-value" id="tsSocialMedia">--</span><span class="kpi-label">Social Media</span></div></div>
+            <div class="kpi-card accent-pink"><div class="kpi-icon"><i class="fas fa-external-link-alt"></i></div><div class="kpi-info"><span class="kpi-value" id="tsReferral">--</span><span class="kpi-label">Referral</span></div></div>
+            <div class="kpi-card accent-gold"><div class="kpi-icon"><i class="fas fa-envelope"></i></div><div class="kpi-info"><span class="kpi-value" id="tsEmail">--</span><span class="kpi-label">Email</span></div></div>
+            <div class="kpi-card accent-red"><div class="kpi-icon"><i class="fas fa-ad"></i></div><div class="kpi-info"><span class="kpi-value" id="tsPaidSearch">--</span><span class="kpi-label">Paid Search</span></div></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-chart-pie"></i> Traffic Sources</h3><canvas id="trafficSourceChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-search"></i> Search Engines</h3><canvas id="searchEngineChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-hashtag"></i> Top Keywords</h3><canvas id="topKeywordsChart"></canvas></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card"><h3><i class="fas fa-share-nodes"></i> Social Platforms</h3><canvas id="socialPlatformsChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-bullhorn"></i> UTM Campaigns</h3><canvas id="utmCampaignsChart"></canvas></div>
+            <div class="chart-card"><h3><i class="fas fa-link"></i> Top Referrers</h3><canvas id="topReferrersChart"></canvas></div>
+          </div>
+          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> Traffic Sources Trend</h3><canvas id="trafficTrendChart"></canvas></div></div>
+          <!-- Traffic Source Details Table -->
+          <div class="table-card">
+            <h3><i class="fas fa-table"></i> Traffic Source Breakdown</h3>
+            <div class="table-scroll"><table id="trafficSourceTable"><thead><tr><th>Source</th><th>Sessions</th><th>Percentage</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <!-- Search Keywords Table -->
+          <div class="table-card">
+            <h3><i class="fas fa-key"></i> Top Search Keywords</h3>
+            <div class="table-scroll"><table id="keywordsTable"><thead><tr><th>Keyword</th><th>Searches</th><th>Percentage</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <!-- UTM Campaigns Table -->
+          <div class="table-card">
+            <h3><i class="fas fa-bullhorn"></i> UTM Campaign Performance</h3>
+            <div class="table-scroll"><table id="utmCampaignsTable"><thead><tr><th>Campaign</th><th>Source</th><th>Medium</th><th>Sessions</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <!-- Recent Traffic Sessions -->
+          <div class="table-card">
+            <h3><i class="fas fa-stream"></i> Recent Traffic Sessions</h3>
+            <div class="table-scroll"><table id="recentTrafficTable"><thead><tr><th>Time</th><th>Source</th><th>Search Engine</th><th>Keywords</th><th>UTM Campaign</th><th>Referer</th></tr></thead><tbody></tbody></table></div>
           </div>
         </section>
 
@@ -233,6 +279,57 @@
           <div class="table-card">
             <h3><i class="fas fa-bolt"></i> Live Feed <span class="live-dot"></span></h3>
             <div class="table-scroll"><table id="realtimeTable"><thead><tr><th>Time</th><th>Type</th><th>Details</th><th>Location</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </section>
+
+        <!-- SYSTEM HEALTH SECTION -->
+        <section id="sec-system-health" class="section">
+          <div class="kpi-grid">
+            <div class="kpi-card accent-purple" id="kpiCpuCard"><div class="kpi-icon"><i class="fas fa-microchip"></i></div><div class="kpi-info"><span class="kpi-value" id="shCpuUsage">--</span><span class="kpi-label">CPU Usage</span></div></div>
+            <div class="kpi-card accent-cyan" id="kpiMemoryCard"><div class="kpi-icon"><i class="fas fa-memory"></i></div><div class="kpi-info"><span class="kpi-value" id="shMemoryUsage">--</span><span class="kpi-label">Memory Usage</span></div></div>
+            <div class="kpi-card accent-orange" id="kpiDiskCard"><div class="kpi-icon"><i class="fas fa-hdd"></i></div><div class="kpi-info"><span class="kpi-value" id="shDiskUsage">--</span><span class="kpi-label">Disk Usage</span></div></div>
+            <div class="kpi-card accent-green" id="kpiMongoCard"><div class="kpi-icon"><i class="fas fa-database"></i></div><div class="kpi-info"><span class="kpi-value" id="shMongoConnections">--</span><span class="kpi-label">MongoDB Connections</span></div></div>
+          </div>
+          
+          <!-- Alert Status Panel -->
+          <div class="table-card" id="alertPanel">
+            <h3><i class="fas fa-exclamation-triangle"></i> Alert Status</h3>
+            <div id="alertStatus" class="alert-status normal">
+              <i class="fas fa-check-circle"></i>
+              <span>All systems normal</span>
+            </div>
+            <div style="margin-top: 15px;">
+              <button class="refresh-btn" id="testAlertBtn"><i class="fas fa-envelope"></i> Test Alert Email</button>
+              <button class="refresh-btn" id="refreshHealthBtn"><i class="fas fa-sync-alt"></i> Refresh Now</button>
+              <button class="refresh-btn" id="collectHealthBtn"><i class="fas fa-chart-line"></i> Collect Metrics</button>
+              <button class="refresh-btn" id="cleanupMetricsBtn"><i class="fas fa-trash-alt"></i> Clean Up Old Metrics</button>
+            </div>
+            <div id="healthCollectionStatus" class="status-message" style="margin-top: 10px;"></div>
+          </div>
+
+          <div class="chart-row">
+            <div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> CPU Usage Trend</h3><canvas id="cpuTrendChart"></canvas></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> Memory Usage Trend</h3><canvas id="memoryTrendChart"></canvas></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> Disk Usage Trend</h3><canvas id="diskTrendChart"></canvas></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> MongoDB Connections Trend</h3><canvas id="mongoTrendChart"></canvas></div>
+          </div>
+
+          <!-- System Info -->
+          <div class="table-card">
+            <h3><i class="fas fa-server"></i> System Information</h3>
+            <div class="table-scroll"><table id="systemInfoTable"><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody></tbody></table></div>
+          </div>
+
+          <!-- Recent Alerts History -->
+          <div class="table-card">
+            <h3><i class="fas fa-history"></i> Recent Alerts</h3>
+            <div class="table-scroll"><table id="alertsHistoryTable"><thead><tr><th>Time</th><th>Level</th><th>Details</th></tr></thead><tbody></tbody></table></div>
           </div>
         </section>
 

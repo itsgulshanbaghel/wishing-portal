@@ -105,8 +105,8 @@
     try {
       return JSON.parse(text);
     } catch (e) {
-      console.error('API Response was not JSON:', text.slice(0, 500));
-      throw new Error('Invalid JSON response');
+      console.error(`[Admin] Non-JSON response (HTTP ${r.status}) from ${url}:`, text.slice(0, 300));
+      throw new Error(`Server error (HTTP ${r.status}) — check server logs`);
     }
   }
 
@@ -141,6 +141,15 @@
       } catch (fbErr) {
         console.error('Feedback load error:', fbErr);
         dashData.feedback = { totalFeedback: 0, recentFeedback: [], questionStats: {} };
+      }
+
+      // Load traffic sources data separately
+      try {
+        dashData.trafficSources = await apiFetch(`/api/admin/traffic-sources?days=${period}`);
+        console.log('[Admin] Traffic sources data received:', dashData.trafficSources);
+      } catch (tsErr) {
+        console.error('Traffic sources load error:', tsErr);
+        dashData.trafficSources = { kpi: {}, charts: {}, recentTraffic: [] };
       }
 
       // If configured, also fetch the same admin endpoints from the additional site and merge
@@ -272,10 +281,10 @@
       // Show fallback mode indicator if applicable
       if (dashData.fallbackMode) {
         console.log('[Admin] Dashboard running in fallback mode:', dashData.message);
-        // You could add a visual indicator here if needed
         const fallbackIndicator = document.getElementById('fallbackIndicator');
         if (fallbackIndicator) {
-          fallbackIndicator.textContent = dashData.message;
+          const span = fallbackIndicator.querySelector('span');
+          if (span) span.textContent = dashData.message;
           fallbackIndicator.style.display = 'block';
         }
       }
@@ -314,6 +323,12 @@
       sectionTitle.textContent = item.textContent.trim();
       // Close mobile sidebar
       document.getElementById('sidebar').classList.remove('open');
+      
+      // Load system health when section is activated
+      if (sec === 'system-health') {
+        loadSystemHealth();
+        startHealthAutoRefresh();
+      }
     });
   });
 
@@ -354,6 +369,8 @@
     renderCreationTrendChart();
     renderFeedback();
     renderRealtime();
+    renderTrafficSources();
+    renderSystemHealth();
   }
 
   // ── KPIs ──
@@ -443,7 +460,10 @@
   function renderCategoryChart() { renderDonut('categoryChart', dashData.charts?.websitesByEventType || {}); }
 
   function renderHourlyChart() {
-    const d = dashData.charts?.hourlyDistribution || [];
+    // Server returns sparse array of {hour, count} objects — convert to dense 24-slot array
+    const raw = dashData.charts?.hourlyDistribution || [];
+    const d = new Array(24).fill(0);
+    raw.forEach(item => { if (item && item.hour != null) d[item.hour] = item.count || 0; });
     makeChart('hourlyChart', {
       type: 'bar',
       data: { labels: d.map((_, i) => i + ':00'), datasets: [{ label: 'Views', data: d, backgroundColor: COLORS_ALPHA[0], borderColor: COLORS[0], borderWidth: 1, borderRadius: 4 }] },
@@ -1060,10 +1080,6 @@
     }
   });
 
-  document.getElementById('viewAllFeedbackBtn').addEventListener('click', () => {
-    allFeedbackModal.style.display = 'block';
-  });
-
   document.getElementById('closeAllFeedbackModal').addEventListener('click', () => {
     allFeedbackModal.style.display = 'none';
   });
@@ -1137,7 +1153,7 @@
 
     const tbody = document.querySelector('#realtimeTable tbody');
     tbody.innerHTML = '';
-    (dashData.recentActivity || []).slice(0, 20).forEach(a => {
+    (dashData.recentActivity || []).forEach(a => {
       const tr = document.createElement('tr');
       const time = a.timestamp ? new Date(a.timestamp).toLocaleString() : '--';
       const badge = getBadge(a.type);
@@ -1146,6 +1162,525 @@
       tr.innerHTML = `<td>${time}</td><td>${badge}</td><td>${details}</td><td>${loc}</td>`;
       tbody.appendChild(tr);
     });
+  }
+
+  function renderTrafficSources() {
+    const ts = dashData.trafficSources || {};
+    const kpi = ts.kpi || {};
+    const charts = ts.charts || {};
+
+    // Render KPIs
+    setText('tsTotalSessions', formatNum(kpi.totalSessions || 0));
+    setText('tsOrganicSearch', formatNum(kpi.organicSearch || 0));
+    setText('tsDirectTraffic', formatNum(kpi.directTraffic || 0));
+    setText('tsSocialMedia', formatNum(kpi.socialMedia || 0));
+    setText('tsReferral', formatNum(kpi.referral || 0));
+    setText('tsEmail', formatNum(kpi.email || 0));
+    setText('tsPaidSearch', formatNum(kpi.paidSearch || 0));
+
+    // Traffic Sources Pie Chart
+    const sourceData = charts.trafficSourceDistribution || {};
+    makeChart('trafficSourceChart', {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(sourceData),
+        datasets: [{
+          data: Object.values(sourceData),
+          backgroundColor: COLORS.slice(0, Object.keys(sourceData).length),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+
+    // Search Engines Pie Chart
+    const engineData = charts.searchEngineDistribution || {};
+    makeChart('searchEngineChart', {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(engineData),
+        datasets: [{
+          data: Object.values(engineData),
+          backgroundColor: COLORS.slice(0, Object.keys(engineData).length),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+
+    // Top Keywords Bar Chart
+    const keywordsData = charts.topKeywords || {};
+    const sortedKeywords = Object.entries(keywordsData).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    makeChart('topKeywordsChart', {
+      type: 'bar',
+      data: {
+        labels: sortedKeywords.map(k => k[0]),
+        datasets: [{
+          label: 'Searches',
+          data: sortedKeywords.map(k => k[1]),
+          backgroundColor: COLORS[0]
+        }]
+      },
+      options: {
+        responsive: true,
+        indexAxis: 'y',
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // Social Platforms Pie Chart
+    const socialData = charts.socialPlatforms || {};
+    makeChart('socialPlatformsChart', {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(socialData),
+        datasets: [{
+          data: Object.values(socialData),
+          backgroundColor: COLORS.slice(0, Object.keys(socialData).length),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+
+    // UTM Campaigns Bar Chart
+    const utmData = charts.utmCampaigns || [];
+    const sortedUTM = utmData.slice(0, 10);
+    makeChart('utmCampaignsChart', {
+      type: 'bar',
+      data: {
+        labels: sortedUTM.map(u => u.campaign || 'Unknown'),
+        datasets: [{
+          label: 'Sessions',
+          data: sortedUTM.map(u => u.count),
+          backgroundColor: COLORS[1]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // Top Referrers Bar Chart
+    const referrerData = charts.topReferrers || {};
+    const sortedReferrers = Object.entries(referrerData).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    makeChart('topReferrersChart', {
+      type: 'bar',
+      data: {
+        labels: sortedReferrers.map(r => r[0].substring(0, 30)),
+        datasets: [{
+          label: 'Sessions',
+          data: sortedReferrers.map(r => r[1]),
+          backgroundColor: COLORS[2]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // Traffic Trend Line Chart
+    const trendData = charts.trafficTrend || [];
+    const sources = [...new Set(trendData.map(t => t._id?.source).filter(s => s))];
+    const dates = [...new Set(trendData.map(t => t._id?.date).filter(d => d))].sort();
+    
+    const trendDatasets = sources.map((source, idx) => ({
+      label: source,
+      data: dates.map(date => {
+        const item = trendData.find(t => t._id?.date === date && t._id?.source === source);
+        return item ? item.count : 0;
+      }),
+      borderColor: COLORS[idx % COLORS.length],
+      backgroundColor: COLORS[idx % COLORS.length] + '20',
+      fill: false,
+      tension: 0.3
+    }));
+
+    makeChart('trafficTrendChart', {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: trendDatasets
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          x: { display: true },
+          y: { display: true }
+        }
+      }
+    });
+
+    // Traffic Source Table
+    const sourceTable = document.querySelector('#trafficSourceTable tbody');
+    sourceTable.innerHTML = '';
+    const total = kpi.totalSessions || 1;
+    Object.entries(sourceData).sort((a, b) => b[1] - a[1]).forEach(([source, count]) => {
+      const tr = document.createElement('tr');
+      const pct = ((count / total) * 100).toFixed(1);
+      tr.innerHTML = `<td>${source}</td><td>${formatNum(count)}</td><td>${pct}%</td>`;
+      sourceTable.appendChild(tr);
+    });
+
+    // Keywords Table
+    const keywordsTable = document.querySelector('#keywordsTable tbody');
+    keywordsTable.innerHTML = '';
+    const totalKeywords = Object.values(keywordsData).reduce((a, b) => a + b, 0) || 1;
+    sortedKeywords.forEach(([keyword, count]) => {
+      const tr = document.createElement('tr');
+      const pct = ((count / totalKeywords) * 100).toFixed(1);
+      tr.innerHTML = `<td>${keyword}</td><td>${formatNum(count)}</td><td>${pct}%</td>`;
+      keywordsTable.appendChild(tr);
+    });
+
+    // UTM Campaigns Table
+    const utmTable = document.querySelector('#utmCampaignsTable tbody');
+    utmTable.innerHTML = '';
+    sortedUTM.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${u.campaign || '--'}</td><td>${u.source || '--'}</td><td>${u.medium || '--'}</td><td>${formatNum(u.count)}</td>`;
+      utmTable.appendChild(tr);
+    });
+
+    // Recent Traffic Table
+    const recentTrafficTable = document.querySelector('#recentTrafficTable tbody');
+    recentTrafficTable.innerHTML = '';
+    (ts.recentTraffic || []).slice(0, 50).forEach(t => {
+      const tr = document.createElement('tr');
+      const time = t.timestamp ? new Date(t.timestamp).toLocaleString() : '--';
+      const source = t.details?.trafficSource || '--';
+      const engine = t.details?.searchEngine || '--';
+      const keywords = t.details?.searchKeywords || '--';
+      const campaign = t.details?.utmCampaign || '--';
+      const referer = (t.details?.referer || '--').substring(0, 50);
+      tr.innerHTML = `<td>${time}</td><td>${source}</td><td>${engine}</td><td>${keywords}</td><td>${campaign}</td><td>${referer}</td>`;
+      recentTrafficTable.appendChild(tr);
+    });
+  }
+
+  // ── System Health ──
+  let healthData = null;
+  let healthRefreshInterval = null;
+
+  async function loadSystemHealth() {
+    try {
+      const current = await apiFetch('/api/admin/health/current');
+      const history = await apiFetch('/api/admin/health/history?hours=24');
+      const systemInfo = await apiFetch('/api/admin/health/system-info');
+      
+      healthData = {
+        current,
+        history: history.metrics || [],
+        systemInfo
+      };
+      
+      renderSystemHealth();
+    } catch (err) {
+      console.error('System health load error:', err);
+    }
+  }
+
+  function renderSystemHealth() {
+    if (!healthData || !healthData.current) return;
+    
+    const current = healthData.current;
+    
+    // Update KPI cards with color coding
+    updateHealthKPI('shCpuUsage', current.cpuUsage, 'kpiCpuCard', 70, 90);
+    updateHealthKPI('shMemoryUsage', current.memoryUsage, 'kpiMemoryCard', 80, 95);
+    updateHealthKPI('shDiskUsage', current.diskUsage, 'kpiDiskCard', 80, 95);
+    
+    // MongoDB connections
+    const mongoUsage = current.mongoPoolSize > 0 ? (current.mongoConnections / current.mongoPoolSize) * 100 : 0;
+    setText('shMongoConnections', `${current.mongoConnections}/${current.mongoPoolSize}`);
+    updateKpiColor('kpiMongoCard', mongoUsage, 80, 95);
+    
+    // Update alert status
+    updateAlertStatus(current);
+    
+    // Render trend charts
+    renderHealthTrendCharts();
+    
+    // Render system info table
+    renderSystemInfoTable();
+    
+    // Render alerts history
+    renderAlertsHistory();
+  }
+
+  function updateHealthKPI(elementId, value, cardId, warningThreshold, criticalThreshold) {
+    setText(elementId, value.toFixed(1) + '%');
+    updateKpiColor(cardId, value, warningThreshold, criticalThreshold);
+  }
+
+  function updateKpiColor(cardId, value, warningThreshold, criticalThreshold) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    
+    card.classList.remove('accent-purple', 'accent-cyan', 'accent-orange', 'accent-green', 'accent-red');
+    
+    if (value >= criticalThreshold) {
+      card.classList.add('accent-red');
+    } else if (value >= warningThreshold) {
+      card.classList.add('accent-orange');
+    } else {
+      card.classList.add('accent-green');
+    }
+  }
+
+  function updateAlertStatus(metrics) {
+    const alertStatus = document.getElementById('alertStatus');
+    if (!alertStatus) return;
+    
+    alertStatus.classList.remove('normal', 'warning', 'critical');
+    
+    if (metrics.alertLevel === 'critical') {
+      alertStatus.classList.add('critical');
+      alertStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Critical: ' + JSON.stringify(metrics.alertDetails || {}) + '</span>';
+    } else if (metrics.alertLevel === 'warning') {
+      alertStatus.classList.add('warning');
+      alertStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Warning: ' + JSON.stringify(metrics.alertDetails || {}) + '</span>';
+    } else {
+      alertStatus.classList.add('normal');
+      alertStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>All systems normal</span>';
+    }
+  }
+
+  function renderHealthTrendCharts() {
+    const history = healthData.history || [];
+    
+    if (history.length === 0) return;
+    
+    const timestamps = history.map(m => new Date(m.timestamp).toLocaleString());
+    const cpuData = history.map(m => m.cpuUsage || 0);
+    const memoryData = history.map(m => m.memoryUsage || 0);
+    const diskData = history.map(m => m.diskUsage || 0);
+    const mongoData = history.map(m => {
+      const poolSize = m.mongoPoolSize || 100;
+      return poolSize > 0 ? (m.mongoConnections / poolSize) * 100 : 0;
+    });
+    
+    // CPU Trend Chart
+    makeChart('cpuTrendChart', {
+      type: 'line',
+      data: {
+        labels: timestamps,
+        datasets: [{
+          label: 'CPU Usage %',
+          data: cpuData,
+          borderColor: COLORS[0],
+          backgroundColor: COLORS[0] + '20',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+    
+    // Memory Trend Chart
+    makeChart('memoryTrendChart', {
+      type: 'line',
+      data: {
+        labels: timestamps,
+        datasets: [{
+          label: 'Memory Usage %',
+          data: memoryData,
+          borderColor: COLORS[1],
+          backgroundColor: COLORS[1] + '20',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+    
+    // Disk Trend Chart
+    makeChart('diskTrendChart', {
+      type: 'line',
+      data: {
+        labels: timestamps,
+        datasets: [{
+          label: 'Disk Usage %',
+          data: diskData,
+          borderColor: COLORS[2],
+          backgroundColor: COLORS[2] + '20',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+    
+    // MongoDB Trend Chart
+    makeChart('mongoTrendChart', {
+      type: 'line',
+      data: {
+        labels: timestamps,
+        datasets: [{
+          label: 'Connection Pool Usage %',
+          data: mongoData,
+          borderColor: COLORS[3],
+          backgroundColor: COLORS[3] + '20',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+  }
+
+  function renderSystemInfoTable() {
+    const info = healthData.systemInfo || {};
+    const tbody = document.querySelector('#systemInfoTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    const fields = [
+      { label: 'Platform', value: info.platform || '--' },
+      { label: 'OS', value: info.distro || info.release || '--' },
+      { label: 'Architecture', value: info.arch || '--' },
+      { label: 'Hostname', value: info.hostname || '--' },
+      { label: 'CPU Model', value: info.cpuModel || '--' },
+      { label: 'CPU Cores', value: info.cpuCores || '--' },
+      { label: 'CPU Speed', value: info.cpuSpeed ? info.cpuSpeed + ' GHz' : '--' },
+      { label: 'Total Memory', value: info.totalMemory ? info.totalMemory + ' GB' : '--' },
+      { label: 'Uptime', value: info.uptimeFormatted || '--' }
+    ];
+    
+    fields.forEach(field => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${field.label}</td><td>${field.value}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAlertsHistory() {
+    const history = healthData.history || [];
+    const tbody = document.querySelector('#alertsHistoryTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    // Filter only alerts (warning or critical)
+    const alerts = history.filter(m => m.alertLevel !== 'normal').slice(-20).reverse();
+    
+    if (alerts.length === 0) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="3">No recent alerts</td>';
+      tbody.appendChild(tr);
+      return;
+    }
+    
+    alerts.forEach(alert => {
+      const tr = document.createElement('tr');
+      const time = alert.timestamp ? new Date(alert.timestamp).toLocaleString() : '--';
+      const level = alert.alertLevel || 'unknown';
+      const details = alert.alertDetails ? JSON.stringify(alert.alertDetails) : '--';
+      
+      const levelClass = level === 'critical' ? 'badge-red' : (level === 'warning' ? 'badge-orange' : 'badge-green');
+      
+      tr.innerHTML = `<td>${time}</td><td><span class="badge ${levelClass}">${level.toUpperCase()}</span></td><td>${details}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // System Health section handlers
+  document.getElementById('testAlertBtn')?.addEventListener('click', async () => {
+    try {
+      const result = await apiFetch('/api/admin/health/test-alert', { method: 'POST' });
+      alert(result.message || 'Test alert sent');
+    } catch (err) {
+      alert('Failed to send test alert');
+    }
+  });
+
+  document.getElementById('refreshHealthBtn')?.addEventListener('click', () => {
+    loadSystemHealth();
+  });
+
+  document.getElementById('collectHealthBtn')?.addEventListener('click', async () => {
+    const statusDiv = document.getElementById('healthCollectionStatus');
+    statusDiv.textContent = 'Collecting...';
+    statusDiv.style.color = '#06b6d4';
+    
+    try {
+      const result = await apiFetch('/api/admin/health/collect', { method: 'POST' });
+      if (result.success) {
+        statusDiv.textContent = 'Health metrics collected successfully!';
+        statusDiv.style.color = '#22c55e';
+        loadSystemHealth();
+      } else {
+        statusDiv.textContent = 'Failed: ' + result.error;
+        statusDiv.style.color = '#ef4444';
+      }
+    } catch (err) {
+      statusDiv.textContent = 'Error: ' + err.message;
+      statusDiv.style.color = '#ef4444';
+    }
+  });
+
+  document.getElementById('cleanupMetricsBtn')?.addEventListener('click', async () => {
+    if (!confirm('This will delete metrics older than 7 days. Continue?')) return;
+    
+    try {
+      const result = await apiFetch('/api/admin/health/cleanup', { method: 'POST' });
+      if (result.success) {
+        alert('Cleanup completed successfully!');
+      } else {
+        alert('Failed: ' + result.error);
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  });
+
+  // Auto-refresh system health every 5 minutes when section is active
+  function startHealthAutoRefresh() {
+    if (healthRefreshInterval) clearInterval(healthRefreshInterval);
+    
+    healthRefreshInterval = setInterval(() => {
+      const healthSection = document.getElementById('sec-system-health');
+      if (healthSection && healthSection.classList.contains('active')) {
+        loadSystemHealth();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
   }
 
   // Auto-refresh realtime every 30s

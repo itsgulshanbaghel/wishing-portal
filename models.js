@@ -66,9 +66,34 @@ const feedbackSchema = new mongoose.Schema({
     }
 });
 
+const healthMetricSchema = new mongoose.Schema({
+    timestamp: { type: Date, default: Date.now, index: true },
+    cpuUsage: Number,        // Percentage
+    cpuCores: Number,
+    cpuModel: String,
+    memoryUsage: Number,     // Percentage
+    memoryTotal: Number,     // GB
+    memoryUsed: Number,      // GB
+    memoryFree: Number,      // GB
+    diskUsage: Number,       // Percentage
+    diskTotal: Number,       // GB
+    diskUsed: Number,        // GB
+    diskFree: Number,        // GB
+    diskMount: String,
+    mongoConnections: Number, // Active connections
+    mongoPoolSize: Number,   // Max pool size
+    mongoDbSize: Number,     // GB
+    alertLevel: { type: String, enum: ['normal', 'warning', 'critical'], default: 'normal' },
+    alertDetails: mongoose.Schema.Types.Mixed
+});
+
+// Index for efficient time-based queries
+healthMetricSchema.index({ timestamp: -1 });
+
 const Visitor = mongoose.model('Visitor', visitorSchema);
 const Event = mongoose.model('Event', eventSchema);
 const Website = mongoose.model('Website', websiteSchema);
 const Feedback = mongoose.model('Feedback', feedbackSchema);
+const HealthMetric = mongoose.model('HealthMetric', healthMetricSchema);
 
-module.exports = { Visitor, Event, Website, Feedback };
+module.exports = { Visitor, Event, Website, Feedback, HealthMetric };
