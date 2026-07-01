@@ -1088,11 +1088,11 @@
     },
 
     addMusicSection: {
-        enable(d, w, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl) {
+        enable(d, w, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl) {
             if (typeof injectFontsIfNeeded === 'function') injectFontsIfNeeded(d);
 
             let section = d.getElementById("magic-music-section");
-            const embedUrl = spotifyEmbedUrl || youtubeEmbedUrl || "";
+            const embedUrl = spotifyEmbedUrl || youtubeEmbedUrl || instagramEmbedUrl || "";
 
             if (!section) {
                 section = d.createElement("section");
@@ -1109,9 +1109,14 @@
                 insertSectionBeforeFinal(d, section);
             }
 
+            const isInstagram = !!(instagramEmbedUrl && instagramEmbedUrl.includes('instagram.com'));
             const embedWrap = d.createElement("div");
             embedWrap.id = "magic-music-embed";
-            embedWrap.style.cssText = "max-width: 640px; margin: 24px auto; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.18); aspect-ratio: 16 / 9;";
+            if (isInstagram) {
+                embedWrap.style.cssText = "max-width: 470px; margin: 24px auto; border-radius: 12px; overflow: visible; box-shadow: 0 20px 50px rgba(0,0,0,0.18); aspect-ratio: 9 / 16;";
+            } else {
+                embedWrap.style.cssText = "max-width: 640px; margin: 24px auto; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.18); aspect-ratio: 16 / 9;";
+            }
 
             if (embedUrl) {
                 const iframe = d.createElement("iframe");

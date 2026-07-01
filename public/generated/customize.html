@@ -2015,7 +2015,7 @@
       <div class="modal-close" onclick="closeMusicModal()"><i class="fas fa-times"></i></div>
       <div class="modal-icon" style="font-size:42px; margin-bottom:10px;">🎵</div>
       <h3 style="margin:0 0 6px; font-size:1.25rem; font-weight:800; background:var(--accent-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;" id="musicModalTitle">Add Music</h3>
-      <p style="color:var(--text-secondary); margin:0 0 14px; font-size:0.9rem;" id="musicModalSub">Search YouTube or paste a Spotify / YouTube link</p>
+      <p style="color:var(--text-secondary); margin:0 0 14px; font-size:0.9rem;" id="musicModalSub">Search YouTube or paste a Spotify / YouTube / Instagram link</p>
 
       <!-- Search box -->
       <div class="modal-link-box" style="margin-bottom:10px;">
@@ -2025,7 +2025,7 @@
 
       <!-- Paste link box -->
       <div class="modal-link-box" style="margin-bottom:10px;">
-        <input type="text" id="musicLinkInput" placeholder="Paste Spotify / YouTube link here...">
+        <input type="text" id="musicLinkInput" placeholder="Paste Spotify / YouTube / Instagram link here...">
         <button class="modal-copy-btn" id="musicLinkBtn" style="cursor:pointer;"><i class="fas fa-link"></i></button>
       </div>
 
@@ -2177,12 +2177,13 @@
         const existing = customData.get("addMusicSection") || {};
         existing.spotifyEmbedUrl = "";
         existing.youtubeEmbedUrl = embedUrl;
+        existing.instagramEmbedUrl = "";
         customData.set("addMusicSection", existing);
         if (!activeFeatureStates.get("addMusicSection")) {
           activeFeatureStates.set("addMusicSection", true);
         }
         const nameVal = getUserName();
-        applyFeature("addMusicSection", true, nameVal, "", [], "", "", existing.spotifyEmbedUrl, existing.youtubeEmbedUrl);
+        applyFeature("addMusicSection", true, nameVal, "", [], "", "", existing.spotifyEmbedUrl, existing.youtubeEmbedUrl, existing.instagramEmbedUrl);
         autoSaveState();
         window.closeMusicModal();
       }
@@ -2204,6 +2205,7 @@
         let type = '';
         const spotifyMatch = raw.match(/open\.spotify\.com\/(track|playlist|album|artist)\/([a-zA-Z0-9]+)/);
         const ytMatch = raw.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+        const instaMatch = raw.match(/(?:https?:\/\/)?(?:www\.)?instagram\.com\/(p|reel|tv)\/([a-zA-Z0-9_-]+)/);
         if (spotifyMatch) {
           const kind = spotifyMatch[1];
           const id = spotifyMatch[2];
@@ -2213,20 +2215,26 @@
           const id = ytMatch[1];
           embedUrl = `https://www.youtube.com/embed/${id}`;
           type = 'youtube';
+        } else if (instaMatch) {
+          const kind = instaMatch[1];
+          const id = instaMatch[2];
+          embedUrl = `https://www.instagram.com/${kind}/${id}/embed`;
+          type = 'instagram';
         } else {
-          musicStatus.textContent = currentLang === 'hi' ? 'अमान्य लिंक' : 'Invalid link. Use a Spotify or YouTube link.';
+          musicStatus.textContent = currentLang === 'hi' ? 'अमान्य लिंक' : 'Invalid link. Use a Spotify, YouTube or Instagram link.';
           return;
         }
         const existing = customData.get("addMusicSection") || {};
         existing.spotifyEmbedUrl = "";
         existing.youtubeEmbedUrl = "";
+        existing.instagramEmbedUrl = "";
         existing[`${type}EmbedUrl`] = embedUrl;
         customData.set("addMusicSection", existing);
         if (!activeFeatureStates.get("addMusicSection")) {
           activeFeatureStates.set("addMusicSection", true);
         }
         const nameVal = getUserName();
-        applyFeature("addMusicSection", true, nameVal, "", [], "", "", existing.spotifyEmbedUrl, existing.youtubeEmbedUrl);
+        applyFeature("addMusicSection", true, nameVal, "", [], "", "", existing.spotifyEmbedUrl, existing.youtubeEmbedUrl, existing.instagramEmbedUrl);
         autoSaveState();
         window.closeMusicModal();
       });
@@ -2626,9 +2634,9 @@
               for (const [id, active] of activeFeatureStates.entries()) {
                 if (id !== 'lock' && active) {
                   const data = customData.get(id) || {};
-                  if (id === 'addMusicSection') {
-                    applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
-                  } else {
+                 if (id === 'addMusicSection') {
+                   applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+                 } else {
                     applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "");
                   }
                 }
@@ -2653,10 +2661,10 @@
         }, 30);
       }
       function refreshAll() { debouncedRefreshAll(); }
-      function refreshFeatureIfActive(id, userName, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl) {
+      function refreshFeatureIfActive(id, userName, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl) {
         if (activeFeatureStates.get(id)) {
           if (id === 'addMusicSection') {
-            applyFeature(id, true, userName, text, images, emoji, audio || "", spotifyEmbedUrl || "", youtubeEmbedUrl || "");
+            applyFeature(id, true, userName, text, images, emoji, audio || "", spotifyEmbedUrl || "", youtubeEmbedUrl || "", instagramEmbedUrl || "");
           } else {
             applyFeature(id, true, userName, text, images, emoji, audio || "");
           }
@@ -3511,7 +3519,7 @@
       ];
       const noCustomizeIds = new Set(["curtainReveal", "canvasStarfall", "fireworksClick", "magicMusic", "bombExplosion", "addImages", "addTextBox", "addMusicSection"]);
 
-      function applyFeature(id, enable, userName, customText = "", images = [], customEmoji = "", audio = "", spotifyEmbedUrl = "", youtubeEmbedUrl = "") {
+      function applyFeature(id, enable, userName, customText = "", images = [], customEmoji = "", audio = "", spotifyEmbedUrl = "", youtubeEmbedUrl = "", instagramEmbedUrl = "") {
         const f = document.getElementById("frame");
         const doc = getIframeDocument();
         const win = f ? f.contentWindow : null;
@@ -3524,7 +3532,7 @@
           if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
           else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "addImages") feature.enable(doc, win, userName, customText, images);
           else if (id === "magicMusic") feature.enable(doc, win, userName, customText, audio);
-          else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl);
+          else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
           else feature.enable(doc, win, userName, customText);
         }
         adjustIframePadding(activeFeatureStates);
@@ -3962,14 +3970,15 @@
                 const customText = textarea ? textarea.value : "";
                 const images = customData.get(id)?.images || [];
                 const emojiVal = emojiInput ? emojiInput.value : "";
-                const audio = customData.get(id)?.audio || "";
-                const spotifyEmbedUrl = customData.get(id)?.spotifyEmbedUrl || "";
-                const youtubeEmbedUrl = customData.get(id)?.youtubeEmbedUrl || "";
-                const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl };
-                customData.set(id, storeData);
-                if (id === 'addMusicSection') {
-                  applyFeature(id, true, nameVal, customText, images, emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl);
-                } else {
+                 const audio = customData.get(id)?.audio || "";
+                 const spotifyEmbedUrl = customData.get(id)?.spotifyEmbedUrl || "";
+                 const youtubeEmbedUrl = customData.get(id)?.youtubeEmbedUrl || "";
+                 const instagramEmbedUrl = customData.get(id)?.instagramEmbedUrl || "";
+                 const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl };
+                 customData.set(id, storeData);
+                 if (id === 'addMusicSection') {
+                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
+                 } else {
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio);
                 }
               }
@@ -4585,7 +4594,7 @@
       const anchor = finalMessage || cta;
       if (anchor && anchor.parentNode === container) { container.insertBefore(sectionElement, anchor); } else { container.appendChild(sectionElement); }
     };
-    window.applyFeature = function(id, active, name, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl) {
+    window.applyFeature = function(id, active, name, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl) {
       if (!window.FEATURE_MAP || !window.FEATURE_MAP[id]) return;
       const feature = window.FEATURE_MAP[id];
       if (active && feature.enable) {
@@ -4597,7 +4606,7 @@
           } else if (id === "magicMusic") {
             feature.enable(document, window, name, text, audio);
           } else if (id === "addMusicSection") {
-            feature.enable(document, window, name, text, spotifyEmbedUrl || "", youtubeEmbedUrl || "");
+            feature.enable(document, window, name, text, spotifyEmbedUrl || "", youtubeEmbedUrl || "", instagramEmbedUrl || "");
           } else {
             feature.enable(document, window, name, text);
           }
@@ -4627,16 +4636,16 @@
           const handler = () => {
             window.removeEventListener('lockUnlocked', handler);
             // Apply other features after unlock
-            for (const [id, active] of activeFeatureStates.entries()) {
-              if (id !== 'lock' && active) {
-                const data = customData.get(id) || {};
-                const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
-                if (id === 'addMusicSection') {
-                  args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
+              for (const [id, active] of activeFeatureStates.entries()) {
+                if (id !== 'lock' && active) {
+                  const data = customData.get(id) || {};
+                  const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
+                  if (id === 'addMusicSection') {
+                    args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+                  }
+                  window.applyFeature(...args);
                 }
-                window.applyFeature(...args);
               }
-            }
           };
           window.addEventListener('lockUnlocked', handler);
         } else if (curtainActive) {
@@ -4649,7 +4658,7 @@
             const data = customData.get(id) || {};
             const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
             if (id === 'addMusicSection') {
-              args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
+              args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
             }
             window.applyFeature(...args);
           }
@@ -4663,9 +4672,9 @@
           if (active) {
             const data = customData.get(id) || {};
             const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
-            if (id === 'addMusicSection') {
-              args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
-            }
+             if (id === 'addMusicSection') {
+               args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+             }
             window.applyFeature(...args);
           }
         }
