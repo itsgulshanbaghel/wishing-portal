@@ -2422,7 +2422,7 @@
         musicStatus.textContent = currentLang === 'hi' ? 'खोज रहे हैं...' : 'Searching...';
         musicResults.innerHTML = '';
         try {
-          const res = await fetch(`/api/search-youtube?q=${encodeURIComponent(query.trim())}`);
+          const res = await fetch((window.APP_CONFIG?.API_BASE_URL || window.location.origin) + `/api/search-youtube?q=${encodeURIComponent(query.trim())}`);
           const data = await res.json();
           const results = data.results || [];
           if (results.length === 0) {
