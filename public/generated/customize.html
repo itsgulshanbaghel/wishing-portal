@@ -278,6 +278,294 @@
       color: #E4405F;
     }
 
+    /* ---------- MUSIC MODAL ---------- */
+    .music-modal-card {
+      max-width: 520px;
+      width: 92%;
+      padding: 24px 20px;
+    }
+
+    .music-modal-card .modal-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .music-modal-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .music-modal-card p {
+      color: var(--text-secondary);
+      margin: 0 0 20px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .music-platform-icons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+    }
+
+    .music-platform-icons i {
+      font-size: 28px;
+      transition: all 0.3s ease;
+    }
+
+    .music-platform-icons .fa-youtube {
+      color: #FF0000;
+    }
+
+    .music-platform-icons .fa-spotify {
+      color: #1DB954;
+    }
+
+    .music-platform-icons .fa-instagram {
+      color: #E4405F;
+    }
+
+    .music-platform-icons i:hover {
+      transform: scale(1.2);
+      filter: brightness(1.1);
+    }
+
+    .music-input-group {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 4px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 12px;
+      gap: 4px;
+    }
+
+    .music-input-group input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 14px 16px;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      border-radius: 12px;
+    }
+
+    .music-input-group input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+
+    .music-action-btn {
+      background: var(--accent-gradient);
+      border: none;
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    .music-action-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px var(--glow);
+    }
+
+    .music-action-btn:active {
+      transform: scale(0.95);
+    }
+
+    #musicStatus {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      min-height: 1.4em;
+      padding: 8px 12px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    #musicResults {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      padding: 4px;
+    }
+
+    #musicResults::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #musicResults::-webkit-scrollbar-track {
+      background: var(--card-bg);
+      border-radius: 3px;
+    }
+
+    #musicResults::-webkit-scrollbar-thumb {
+      background: var(--accent-solid);
+      border-radius: 3px;
+    }
+
+    .music-result-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .music-result-item:hover {
+      background: var(--accent-solid);
+      color: white;
+      transform: translateX(4px);
+    }
+
+    .music-result-item img {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .music-result-item .info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .music-result-item .title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .music-result-item .channel {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Mobile responsive styles for music modal */
+    @media (max-width: 480px) {
+      .music-modal-card {
+        width: 94%;
+        padding: 20px 16px;
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+
+      .music-modal-card .modal-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
+      }
+
+      .music-modal-card h3 {
+        font-size: 1.15rem;
+      }
+
+      .music-modal-card p {
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+      }
+
+      .music-input-group {
+        margin-bottom: 10px;
+        border-radius: 14px;
+      }
+
+      .music-input-group input {
+        padding: 12px 14px;
+        font-size: 0.9rem;
+      }
+
+      .music-action-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+      }
+
+      #musicStatus {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        margin-bottom: 10px;
+      }
+
+      #musicResults {
+        max-height: 220px;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .music-result-item {
+        padding: 10px;
+        border-radius: 14px;
+        gap: 10px;
+      }
+
+      .music-result-item img {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+      }
+
+      .music-result-item .title {
+        font-size: 0.85rem;
+      }
+
+      .music-result-item .channel {
+        font-size: 0.75rem;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .music-modal-card {
+        width: 96%;
+        padding: 18px 14px;
+      }
+
+      .music-input-group input {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+      }
+
+      .music-result-item img {
+        width: 45px;
+        height: 45px;
+      }
+    }
+
     /* ---------- NAVBAR ---------- */
     .navbar {
       display: flex;
@@ -2011,29 +2299,36 @@
 
   <!-- Music Embed Modal -->
   <div class="custom-modal" id="musicModal">
-    <div class="modal-card" style="max-width:520px;">
+    <div class="modal-card music-modal-card">
       <div class="modal-close" onclick="closeMusicModal()"><i class="fas fa-times"></i></div>
-      <div class="modal-icon" style="font-size:42px; margin-bottom:10px;">🎵</div>
-      <h3 style="margin:0 0 6px; font-size:1.25rem; font-weight:800; background:var(--accent-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;" id="musicModalTitle">Add Music</h3>
-      <p style="color:var(--text-secondary); margin:0 0 14px; font-size:0.9rem;" id="musicModalSub">Search YouTube or paste a Spotify / YouTube / Instagram link</p>
+      <div class="modal-icon">🎵</div>
+      <h3 id="musicModalTitle">Add Music</h3>
+      <p id="musicModalSub">Search YouTube or paste a Spotify / YouTube / Instagram link</p>
+
+      <!-- Platform icons -->
+      <div class="music-platform-icons">
+        <i class="fab fa-youtube"></i>
+        <i class="fab fa-spotify"></i>
+        <i class="fab fa-instagram"></i>
+      </div>
 
       <!-- Search box -->
-      <div class="modal-link-box" style="margin-bottom:10px;">
+      <div class="music-input-group">
         <input type="text" id="musicSearchInput" placeholder="Search YouTube for a song or video...">
-        <button class="modal-copy-btn" id="musicSearchBtn" style="cursor:pointer;"><i class="fas fa-search"></i></button>
+        <button class="music-action-btn" id="musicSearchBtn"><i class="fas fa-search"></i></button>
       </div>
 
       <!-- Paste link box -->
-      <div class="modal-link-box" style="margin-bottom:10px;">
+      <div class="music-input-group">
         <input type="text" id="musicLinkInput" placeholder="Paste Spotify / YouTube / Instagram link here...">
-        <button class="modal-copy-btn" id="musicLinkBtn" style="cursor:pointer;"><i class="fas fa-link"></i></button>
+        <button class="music-action-btn" id="musicLinkBtn"><i class="fas fa-link"></i></button>
       </div>
 
       <!-- Status / error -->
-      <div id="musicStatus" style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:8px; min-height:1.2em;"></div>
+      <div id="musicStatus"></div>
 
       <!-- Results -->
-      <div id="musicResults" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; margin-bottom:10px;"></div>
+      <div id="musicResults"></div>
 
       <div class="modal-buttons">
         <button class="modal-button secondary" onclick="closeMusicModal()">Cancel</button>
@@ -2137,19 +2432,17 @@
           musicStatus.textContent = '';
           results.forEach(item => {
             const row = document.createElement('div');
-            row.style.cssText = 'display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; cursor:pointer; transition:0.2s;';
-            row.onmouseenter = () => row.style.background = 'var(--accent-solid)';
-            row.onmouseleave = () => row.style.background = 'var(--card-bg)';
+            row.className = 'music-result-item';
             const thumb = document.createElement('img');
             thumb.src = item.image || 'https://placehold.co/60x60/7b5df6/white?text=♪';
-            thumb.style.cssText = 'width:48px; height:48px; border-radius:12px; object-fit:cover; flex-shrink:0; background:#fff;';
+            thumb.alt = item.name || 'Music thumbnail';
             const info = document.createElement('div');
-            info.style.cssText = 'flex:1; min-width:0; text-align:left;';
+            info.className = 'info';
             const nameEl = document.createElement('div');
-            nameEl.style.cssText = 'font-weight:700; font-size:0.9rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+            nameEl.className = 'title';
             nameEl.textContent = item.name || '';
             const subEl = document.createElement('div');
-            subEl.style.cssText = 'font-size:0.75rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+            subEl.className = 'channel';
             subEl.textContent = [item.artist, item.album].filter(Boolean).join(' • ') || '';
             info.appendChild(nameEl);
             info.appendChild(subEl);
@@ -2261,7 +2554,7 @@
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
           featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
           featImageExplosion: "\uD83D\uDCA5 Magic Photo", featAddImages: "\uD83D\uDCF7 Add Images", featAddTextBox: "\uD83D\uDCDD Add Text Box", featFinalSurprise: "\uD83C\uDF89 Final Message",
-          featMagicMusic: "\uD83C\uDFB5 Add Music", featAddMusicSection: "\uD83C\uDFB5 Embed Music Section", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
+          featAddMusicSection: "\uD83C\uDFB5 Add Music", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
           uploadImages: "\uD83D\uDCF7 Upload Images", alertCopy: "Link copied!", alertGenerateFirst: "Generate the link first!",
           alertPreviewNotReady: "Preview not ready", shareInsta: "\uD83D\uDCF7 Copy this link to share on Instagram:",
           shareTikTok: "\uD83C\uDFB5 Copy this link to share on TikTok:",
@@ -2332,7 +2625,7 @@
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
           featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
           featImageExplosion: "💥 मैजिक फोटो", featAddImages: "📷 तस्वीरें जोड़ें", featAddTextBox: "📝 टेक्स्ट बॉक्स", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
-          featMagicMusic: "🎶 गाना लगायें", featAddMusicSection: "🎧 म्यूजिक सेक्शन एम्बेड करें", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
+          featAddMusicSection: "🎧 गाना लगाए", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
           uploadImages: "📷 तस्वीरें अपलोड करें", alertCopy: "लिंक कॉपी हो गया!", alertGenerateFirst: "पहले लिंक जेनरेट करें!",
           alertPreviewNotReady: "प्रीव्यू तैयार नहीं है", shareInsta: "📷 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:",
           shareTikTok: "🎶 TikTok पर शेयर करने के लिए यह लिंक कॉपी करें:",
@@ -2575,17 +2868,6 @@
             }
           }
 
-          // Apply audio data for magicMusic
-          if (id === 'magicMusic' && data.audio) {
-            const audioNameDiv = customPanel.querySelector('div');
-            if (audioNameDiv) {
-              audioNameDiv.innerText = "Audio: " + (data.audioName || "Uploaded Audio");
-            }
-            const volumeSlider = customPanel.querySelector('input[type="range"]');
-            if (volumeSlider && data.volume !== undefined) {
-              volumeSlider.value = data.volume;
-            }
-          }
         });
       }
 
@@ -2634,9 +2916,9 @@
               for (const [id, active] of activeFeatureStates.entries()) {
                 if (id !== 'lock' && active) {
                   const data = customData.get(id) || {};
-                 if (id === 'addMusicSection') {
-                   applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
-                 } else {
+                  if (id === 'addMusicSection') {
+                    applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+                  } else {
                     applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "");
                   }
                 }
@@ -3470,43 +3752,6 @@
           }
         };
         FEATURE_MAP.addTextBox = FEATURE_MAP.resizableText;
-        // Modify magicMusic to support custom audio
-        if (FEATURE_MAP.magicMusic) {
-          const originalEnable = FEATURE_MAP.magicMusic.enable;
-          FEATURE_MAP.magicMusic.enable = function (doc, win, userName, customText, audio) {
-            if (audio) {
-              const musicAudio = doc.createElement('audio');
-              musicAudio.src = audio;
-              musicAudio.loop = true;
-              const audioData = customData.get("magicMusic") || {};
-              musicAudio.volume = audioData.volume || 0.5;
-              musicAudio.preload = 'auto';
-              musicAudio.style.display = 'none';
-              musicAudio.id = 'magic-music-audio';
-              doc.body.appendChild(musicAudio);
-              const playWhenReady = () => {
-                musicAudio.play().then(() => {
-                  doc.removeEventListener('click', playWhenReady);
-                  doc.removeEventListener('touchstart', playWhenReady);
-                  doc.removeEventListener('keydown', playWhenReady);
-                }).catch(() => {});
-              };
-              doc.addEventListener('click', playWhenReady, { once: false });
-              doc.addEventListener('touchstart', playWhenReady, { once: false });
-              doc.addEventListener('keydown', playWhenReady, { once: false });
-            } else {
-              originalEnable.call(this, doc, win, userName, customText);
-            }
-          };
-          FEATURE_MAP.magicMusic.disable = function (doc, win) {
-            const audios = doc.querySelectorAll('audio');
-            audios.forEach(audio => {
-              audio.pause();
-              audio.currentTime = 0;
-              audio.remove();
-            });
-          };
-        }
         // Set default iframe src to share.html if not already set
         const frame = document.getElementById('frame');
         if (!frame.src) {
@@ -3515,9 +3760,9 @@
       }).catch(e => console.error("Magic API error", e));
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "canvasStarfall", nameKey: "featCanvasStarfall" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "addImages", nameKey: "featAddImages" }, { id: "addTextBox", nameKey: "featAddTextBox" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "canvasStarfall", nameKey: "featCanvasStarfall" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "addImages", nameKey: "featAddImages" }, { id: "addTextBox", nameKey: "featAddTextBox" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }
       ];
-      const noCustomizeIds = new Set(["curtainReveal", "canvasStarfall", "fireworksClick", "magicMusic", "bombExplosion", "addImages", "addTextBox", "addMusicSection"]);
+      const noCustomizeIds = new Set(["curtainReveal", "canvasStarfall", "fireworksClick", "bombExplosion", "addImages", "addTextBox", "addMusicSection"]);
 
       function applyFeature(id, enable, userName, customText = "", images = [], customEmoji = "", audio = "", spotifyEmbedUrl = "", youtubeEmbedUrl = "", instagramEmbedUrl = "") {
         const f = document.getElementById("frame");
@@ -3531,7 +3776,6 @@
         if (feature?.enable) {
           if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
           else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "addImages") feature.enable(doc, win, userName, customText, images);
-          else if (id === "magicMusic") feature.enable(doc, win, userName, customText, audio);
           else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
           else feature.enable(doc, win, userName, customText);
         }
@@ -3556,7 +3800,7 @@
           [t.catFloral]: ["flowerRain", "canvasStarfall", "flyingSwans"],
           [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "addImages", "scratchReveal"],
           [t.catHeart]: ["textFormation", "memoryTimeline", "heartsOnScroll", "oldPaperLetter", "hugSkyLetter", "floatingPolaroids", "addTextBox"],
-          [t.catFinale]: ["finalSurprise", "magicMusic", "addMusicSection"]
+          [t.catFinale]: ["finalSurprise", "addMusicSection"]
         };
         for (let [catName, ids] of Object.entries(actualCategories)) {
           const section = document.createElement("div"); section.className = "feature-category";
@@ -3569,13 +3813,12 @@
             const toggleRow = document.createElement("div"); toggleRow.className = "toggle-row"; toggleRow.id = `toggle-${id}`;
             if (activeFeatureStates.get(id)) toggleRow.classList.add("active");
             const hasCustom = !noCustomizeIds.has(id);
-            const hasAudioPanel = id === "magicMusic" && customData.get("magicMusic")?.audio;
             const labelSpan = document.createElement("span"); labelSpan.className = "toggle-label"; labelSpan.innerText = featName;
-            const chevron = (hasCustom || hasAudioPanel) ? document.createElement("span") : null;
+            const chevron = hasCustom ? document.createElement("span") : null;
             if (chevron) { chevron.className = "chevron"; chevron.innerText = "▼"; }
             const switchDiv = document.createElement("div"); switchDiv.className = "switch"; const circle = document.createElement("div"); circle.className = "circle"; switchDiv.appendChild(circle);
             toggleRow.appendChild(labelSpan);
-            if (id === "addImages" || id === "addTextBox" || id === "magicMusic" || id === "addMusicSection") {
+            if (id === "addImages" || id === "addTextBox" || id === "addMusicSection") {
               const plusIcon = document.createElement("span");
               plusIcon.className = "plus-icon";
               plusIcon.innerText = "+";
@@ -3625,89 +3868,6 @@
                   if (section) {
                     FEATURE_MAP.resizableText.addTextBox(doc, win, section);
                   }
-                };
-              }
-              if (id === "magicMusic") {
-                plusIcon.style.cursor = "pointer";
-                plusIcon.onclick = (e) => {
-                  e.stopPropagation();
-                  const parentRow = plusIcon.closest('.toggle-row');
-                  if (!parentRow.classList.contains('active')) {
-                    parentRow.click();
-                  }
-                  const fileInput = document.createElement("input");
-                  fileInput.type = "file";
-                  fileInput.accept = "audio/*";
-                  fileInput.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        const existing = customData.get("magicMusic") || {};
-                        existing.audio = reader.result;
-                        existing.audioName = file.name;
-                        existing.volume = existing.volume || 0.5;
-                        customData.set("magicMusic", existing);
-                        // Dynamically add chevron and panel if not present
-                        if (!parentRow.querySelector('.chevron')) {
-                          const chevron = document.createElement("span");
-                          chevron.className = "chevron";
-                          chevron.innerText = "▼";
-                          const switchDiv = parentRow.querySelector('.switch');
-                          parentRow.insertBefore(chevron, switchDiv);
-                          const customPanel = document.createElement("div");
-                          customPanel.className = "custom-panel";
-                          customPanel.style.display = "none";
-                          const audioNameDiv = document.createElement("div");
-                          audioNameDiv.innerText = "Audio: " + (existing.audioName || "Uploaded Audio");
-                          audioNameDiv.style.fontSize = "0.8rem";
-                          audioNameDiv.style.color = "var(--text-secondary)";
-                          audioNameDiv.style.marginBottom = "10px";
-                          customPanel.appendChild(audioNameDiv);
-                          const volumeLabel = document.createElement("label");
-                          volumeLabel.innerText = "Volume:";
-                          volumeLabel.style.fontSize = "0.8rem";
-                          volumeLabel.style.color = "var(--text-secondary)";
-                          volumeLabel.style.display = "block";
-                          volumeLabel.style.marginBottom = "5px";
-                          customPanel.appendChild(volumeLabel);
-                          const volumeSlider = document.createElement("input");
-                          volumeSlider.type = "range";
-                          volumeSlider.min = "0";
-                          volumeSlider.max = "1";
-                          volumeSlider.step = "0.1";
-                          volumeSlider.value = existing.volume;
-                          volumeSlider.style.width = "100%";
-                          customPanel.appendChild(volumeSlider);
-                          volumeSlider.oninput = () => {
-                            const ex = customData.get("magicMusic") || {};
-                            ex.volume = parseFloat(volumeSlider.value);
-                            customData.set("magicMusic", ex);
-                            const doc = getIframeDocument();
-                            if (doc) {
-                              const audio = doc.getElementById('magic-music-audio');
-                              if (audio) audio.volume = ex.volume;
-                            }
-                            autoSaveState();
-                          };
-                          parentRow.parentNode.insertBefore(customPanel, parentRow.nextSibling);
-                          let panelVisible = false;
-                          chevron.onclick = (e) => {
-                            e.stopPropagation();
-                            if (openPanelId && openPanelId !== customPanel) closeOpenPanel();
-                            panelVisible = !panelVisible;
-                            customPanel.style.display = panelVisible ? "block" : "none";
-                            chevron.innerText = panelVisible ? "▲" : "▼";
-                            openPanelId = panelVisible ? customPanel : null;
-                          };
-                        }
-                        const nameVal = getUserName();
-                        applyFeature("magicMusic", true, nameVal, "", [], "", existing.audio);
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  };
-                  fileInput.click();
                 };
               }
               if (id === "addMusicSection") {
@@ -3970,15 +4130,15 @@
                 const customText = textarea ? textarea.value : "";
                 const images = customData.get(id)?.images || [];
                 const emojiVal = emojiInput ? emojiInput.value : "";
-                 const audio = customData.get(id)?.audio || "";
-                 const spotifyEmbedUrl = customData.get(id)?.spotifyEmbedUrl || "";
-                 const youtubeEmbedUrl = customData.get(id)?.youtubeEmbedUrl || "";
-                 const instagramEmbedUrl = customData.get(id)?.instagramEmbedUrl || "";
-                 const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl };
-                 customData.set(id, storeData);
-                 if (id === 'addMusicSection') {
-                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
-                 } else {
+                const audio = customData.get(id)?.audio || "";
+                const spotifyEmbedUrl = customData.get(id)?.spotifyEmbedUrl || "";
+                const youtubeEmbedUrl = customData.get(id)?.youtubeEmbedUrl || "";
+                const instagramEmbedUrl = customData.get(id)?.instagramEmbedUrl || "";
+                const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl };
+                customData.set(id, storeData);
+                if (id === 'addMusicSection') {
+                  applyFeature(id, true, nameVal, customText, images, emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
+                } else {
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio);
                 }
               }
