@@ -22,6 +22,7 @@
     href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&family=Caveat:wght@400;700&family=Roboto:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Dancing+Script:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Merriweather:wght@300;400;700&family=Pacifico&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="/assets/config.js"></script>
 
   <style>
     /* ---------- ORIGINAL VARIABLES + MOBILE RESIZER EXTENSIONS ---------- */
@@ -2008,6 +2009,38 @@
     </div>
   </div>
 
+  <!-- Music Embed Modal -->
+  <div class="custom-modal" id="musicModal">
+    <div class="modal-card" style="max-width:520px;">
+      <div class="modal-close" onclick="closeMusicModal()"><i class="fas fa-times"></i></div>
+      <div class="modal-icon" style="font-size:42px; margin-bottom:10px;">🎵</div>
+      <h3 style="margin:0 0 6px; font-size:1.25rem; font-weight:800; background:var(--accent-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;" id="musicModalTitle">Add Music</h3>
+      <p style="color:var(--text-secondary); margin:0 0 14px; font-size:0.9rem;" id="musicModalSub">Search YouTube or paste a Spotify / YouTube link</p>
+
+      <!-- Search box -->
+      <div class="modal-link-box" style="margin-bottom:10px;">
+        <input type="text" id="musicSearchInput" placeholder="Search YouTube for a song or video...">
+        <button class="modal-copy-btn" id="musicSearchBtn" style="cursor:pointer;"><i class="fas fa-search"></i></button>
+      </div>
+
+      <!-- Paste link box -->
+      <div class="modal-link-box" style="margin-bottom:10px;">
+        <input type="text" id="musicLinkInput" placeholder="Paste Spotify / YouTube link here...">
+        <button class="modal-copy-btn" id="musicLinkBtn" style="cursor:pointer;"><i class="fas fa-link"></i></button>
+      </div>
+
+      <!-- Status / error -->
+      <div id="musicStatus" style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:8px; min-height:1.2em;"></div>
+
+      <!-- Results -->
+      <div id="musicResults" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; margin-bottom:10px;"></div>
+
+      <div class="modal-buttons">
+        <button class="modal-button secondary" onclick="closeMusicModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <audio id="generateShareAudio"
     src="https://www.dropbox.com/scl/fi/yzsnnfxh7a3eyzmgtnbkx/Generated.mp3?rlkey=xqe3p3l6ax1q4ozkjh7iwi3qo&st=mvdt1go2&dl=1"
     preload="auto"></audio>
@@ -2074,6 +2107,133 @@
         if (e.target === instagramModal) closeInstagramModal();
       });
 
+      // ---------- MUSIC MODAL ----------
+      const musicModal = document.getElementById('musicModal');
+      const musicSearchInput = document.getElementById('musicSearchInput');
+      const musicLinkInput = document.getElementById('musicLinkInput');
+      const musicResults = document.getElementById('musicResults');
+      const musicStatus = document.getElementById('musicStatus');
+
+      window.closeMusicModal = () => {
+        musicModal.classList.remove('show');
+        musicResults.innerHTML = '';
+        musicStatus.textContent = '';
+      };
+      document.querySelector('#musicModal .modal-close').addEventListener('click', window.closeMusicModal);
+      musicModal.addEventListener('click', (e) => { if (e.target === musicModal) window.closeMusicModal(); });
+
+      async function searchMusic(query) {
+        if (!query || !query.trim()) return;
+        musicStatus.textContent = currentLang === 'hi' ? 'खोज रहे हैं...' : 'Searching...';
+        musicResults.innerHTML = '';
+        try {
+          const res = await fetch(`/api/search-youtube?q=${encodeURIComponent(query.trim())}`);
+          const data = await res.json();
+          const results = data.results || [];
+          if (results.length === 0) {
+            musicStatus.textContent = currentLang === 'hi' ? 'कोई परिणाम नहीं मिला' : 'No results found';
+            return;
+          }
+          musicStatus.textContent = '';
+          results.forEach(item => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; cursor:pointer; transition:0.2s;';
+            row.onmouseenter = () => row.style.background = 'var(--accent-solid)';
+            row.onmouseleave = () => row.style.background = 'var(--card-bg)';
+            const thumb = document.createElement('img');
+            thumb.src = item.image || 'https://placehold.co/60x60/7b5df6/white?text=♪';
+            thumb.style.cssText = 'width:48px; height:48px; border-radius:12px; object-fit:cover; flex-shrink:0; background:#fff;';
+            const info = document.createElement('div');
+            info.style.cssText = 'flex:1; min-width:0; text-align:left;';
+            const nameEl = document.createElement('div');
+            nameEl.style.cssText = 'font-weight:700; font-size:0.9rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+            nameEl.textContent = item.name || '';
+            const subEl = document.createElement('div');
+            subEl.style.cssText = 'font-size:0.75rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+            subEl.textContent = [item.artist, item.album].filter(Boolean).join(' • ') || '';
+            info.appendChild(nameEl);
+            info.appendChild(subEl);
+            row.appendChild(thumb);
+            row.appendChild(info);
+            row.onclick = () => selectMusicResult(item);
+            musicResults.appendChild(row);
+          });
+        } catch (err) {
+          console.error('Music search error:', err);
+          musicStatus.textContent = currentLang === 'hi' ? 'खोज में त्रुटि' : 'Search failed. Please try again.';
+        }
+      }
+
+      function selectMusicResult(item) {
+        if (!item) return;
+        let embedUrl = '';
+        if (item.id) {
+          embedUrl = `https://www.youtube.com/embed/${item.id}`;
+        }
+        if (!embedUrl) {
+          musicStatus.textContent = currentLang === 'hi' ? 'अमान्य परिणाम' : 'Invalid result';
+          return;
+        }
+        const existing = customData.get("addMusicSection") || {};
+        existing.spotifyEmbedUrl = "";
+        existing.youtubeEmbedUrl = embedUrl;
+        customData.set("addMusicSection", existing);
+        if (!activeFeatureStates.get("addMusicSection")) {
+          activeFeatureStates.set("addMusicSection", true);
+        }
+        const nameVal = getUserName();
+        applyFeature("addMusicSection", true, nameVal, "", [], "", "", existing.spotifyEmbedUrl, existing.youtubeEmbedUrl);
+        autoSaveState();
+        window.closeMusicModal();
+      }
+
+      document.getElementById('musicSearchBtn').addEventListener('click', () => {
+        searchMusic(musicSearchInput.value);
+      });
+      musicSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') searchMusic(musicSearchInput.value);
+      });
+
+      document.getElementById('musicLinkBtn').addEventListener('click', () => {
+        const raw = (musicLinkInput.value || '').trim();
+        if (!raw) {
+          musicStatus.textContent = currentLang === 'hi' ? 'कृपया लिंक दर्ज करें' : 'Please paste a link first';
+          return;
+        }
+        let embedUrl = '';
+        let type = '';
+        const spotifyMatch = raw.match(/open\.spotify\.com\/(track|playlist|album|artist)\/([a-zA-Z0-9]+)/);
+        const ytMatch = raw.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+        if (spotifyMatch) {
+          const kind = spotifyMatch[1];
+          const id = spotifyMatch[2];
+          embedUrl = `https://open.spotify.com/embed/${kind}/${id}`;
+          type = 'spotify';
+        } else if (ytMatch) {
+          const id = ytMatch[1];
+          embedUrl = `https://www.youtube.com/embed/${id}`;
+          type = 'youtube';
+        } else {
+          musicStatus.textContent = currentLang === 'hi' ? 'अमान्य लिंक' : 'Invalid link. Use a Spotify or YouTube link.';
+          return;
+        }
+        const existing = customData.get("addMusicSection") || {};
+        existing.spotifyEmbedUrl = "";
+        existing.youtubeEmbedUrl = "";
+        existing[`${type}EmbedUrl`] = embedUrl;
+        customData.set("addMusicSection", existing);
+        if (!activeFeatureStates.get("addMusicSection")) {
+          activeFeatureStates.set("addMusicSection", true);
+        }
+        const nameVal = getUserName();
+        applyFeature("addMusicSection", true, nameVal, "", [], "", "", existing.spotifyEmbedUrl, existing.youtubeEmbedUrl);
+        autoSaveState();
+        window.closeMusicModal();
+      });
+      musicLinkInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('musicLinkBtn').click();
+      });
+
       // ---------- TRANSLATIONS ----------
       const translations = window.translations = {
         en: {
@@ -2093,7 +2253,7 @@
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
           featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
           featImageExplosion: "\uD83D\uDCA5 Magic Photo", featAddImages: "\uD83D\uDCF7 Add Images", featAddTextBox: "\uD83D\uDCDD Add Text Box", featFinalSurprise: "\uD83C\uDF89 Final Message",
-          featMagicMusic: "\uD83C\uDFB5 Add Music", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
+          featMagicMusic: "\uD83C\uDFB5 Add Music", featAddMusicSection: "\uD83C\uDFB5 Embed Music Section", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
           uploadImages: "\uD83D\uDCF7 Upload Images", alertCopy: "Link copied!", alertGenerateFirst: "Generate the link first!",
           alertPreviewNotReady: "Preview not ready", shareInsta: "\uD83D\uDCF7 Copy this link to share on Instagram:",
           shareTikTok: "\uD83C\uDFB5 Copy this link to share on TikTok:",
@@ -2164,7 +2324,7 @@
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
           featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
           featImageExplosion: "💥 मैजिक फोटो", featAddImages: "📷 तस्वीरें जोड़ें", featAddTextBox: "📝 टेक्स्ट बॉक्स", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
-          featMagicMusic: "🎶 गाना लगायें", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
+          featMagicMusic: "🎶 गाना लगायें", featAddMusicSection: "🎧 म्यूजिक सेक्शन एम्बेड करें", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
           uploadImages: "📷 तस्वीरें अपलोड करें", alertCopy: "लिंक कॉपी हो गया!", alertGenerateFirst: "पहले लिंक जेनरेट करें!",
           alertPreviewNotReady: "प्रीव्यू तैयार नहीं है", shareInsta: "📷 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:",
           shareTikTok: "🎶 TikTok पर शेयर करने के लिए यह लिंक कॉपी करें:",
@@ -2466,7 +2626,11 @@
               for (const [id, active] of activeFeatureStates.entries()) {
                 if (id !== 'lock' && active) {
                   const data = customData.get(id) || {};
-                  applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "");
+                  if (id === 'addMusicSection') {
+                    applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
+                  } else {
+                    applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+                  }
                 }
               }
               adjustIframePadding(activeFeatureStates);
@@ -2477,7 +2641,11 @@
             for (const [id, active] of activeFeatureStates.entries()) {
               if (active) {
                 const data = customData.get(id) || {};
-                applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "");
+                if (id === 'addMusicSection') {
+                  applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
+                } else {
+                  applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+                }
               }
             }
             adjustIframePadding(activeFeatureStates);
@@ -2485,7 +2653,16 @@
         }, 30);
       }
       function refreshAll() { debouncedRefreshAll(); }
-      function refreshFeatureIfActive(id, userName, text, images, emoji) { if (activeFeatureStates.get(id)) applyFeature(id, true, userName, text, images, emoji); adjustIframePadding(activeFeatureStates); }
+      function refreshFeatureIfActive(id, userName, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl) {
+        if (activeFeatureStates.get(id)) {
+          if (id === 'addMusicSection') {
+            applyFeature(id, true, userName, text, images, emoji, audio || "", spotifyEmbedUrl || "", youtubeEmbedUrl || "");
+          } else {
+            applyFeature(id, true, userName, text, images, emoji, audio || "");
+          }
+        }
+        adjustIframePadding(activeFeatureStates);
+      }
       function insertSectionBeforeFinal(doc, sectionElement) {
         const container = doc.getElementById('sections-container') || doc.body;
         const finalMessage = doc.getElementById('magic-final-surprise-section');
@@ -2521,7 +2698,8 @@
       let FEATURE_MAP = {};
       let magicLoaded = false;
 
-      fetch('https://wishing-portal.onrender.com/api/magic').then(r => r.json()).then(data => {
+      const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : '';
+      fetch((API_BASE || '') + '/api/magic').then(r => r.json()).then(data => {
         try {
           const decoded = atob(data.magic);
           window._magicRaw = data.magic; // Preserve raw base64 for standalone injection
@@ -3289,7 +3467,6 @@
           const originalEnable = FEATURE_MAP.magicMusic.enable;
           FEATURE_MAP.magicMusic.enable = function (doc, win, userName, customText, audio) {
             if (audio) {
-              // Use custom audio
               const musicAudio = doc.createElement('audio');
               musicAudio.src = audio;
               musicAudio.loop = true;
@@ -3299,13 +3476,20 @@
               musicAudio.style.display = 'none';
               musicAudio.id = 'magic-music-audio';
               doc.body.appendChild(musicAudio);
-              musicAudio.play().catch(e => console.log('Custom music play failed:', e));
+              const playWhenReady = () => {
+                musicAudio.play().then(() => {
+                  doc.removeEventListener('click', playWhenReady);
+                  doc.removeEventListener('touchstart', playWhenReady);
+                  doc.removeEventListener('keydown', playWhenReady);
+                }).catch(() => {});
+              };
+              doc.addEventListener('click', playWhenReady, { once: false });
+              doc.addEventListener('touchstart', playWhenReady, { once: false });
+              doc.addEventListener('keydown', playWhenReady, { once: false });
             } else {
-              // Use default
               originalEnable.call(this, doc, win, userName, customText);
             }
           };
-          // Override disable to stop all audio
           FEATURE_MAP.magicMusic.disable = function (doc, win) {
             const audios = doc.querySelectorAll('audio');
             audios.forEach(audio => {
@@ -3323,11 +3507,11 @@
       }).catch(e => console.error("Magic API error", e));
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "canvasStarfall", nameKey: "featCanvasStarfall" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "addImages", nameKey: "featAddImages" }, { id: "addTextBox", nameKey: "featAddTextBox" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "magicMusic", nameKey: "featMagicMusic" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "canvasStarfall", nameKey: "featCanvasStarfall" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "addImages", nameKey: "featAddImages" }, { id: "addTextBox", nameKey: "featAddTextBox" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }
       ];
-      const noCustomizeIds = new Set(["curtainReveal", "canvasStarfall", "fireworksClick", "magicMusic", "bombExplosion", "addImages", "addTextBox"]);
+      const noCustomizeIds = new Set(["curtainReveal", "canvasStarfall", "fireworksClick", "magicMusic", "bombExplosion", "addImages", "addTextBox", "addMusicSection"]);
 
-      function applyFeature(id, enable, userName, customText = "", images = [], customEmoji = "", audio = "") {
+      function applyFeature(id, enable, userName, customText = "", images = [], customEmoji = "", audio = "", spotifyEmbedUrl = "", youtubeEmbedUrl = "") {
         const f = document.getElementById("frame");
         const doc = getIframeDocument();
         const win = f ? f.contentWindow : null;
@@ -3340,6 +3524,7 @@
           if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
           else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "addImages") feature.enable(doc, win, userName, customText, images);
           else if (id === "magicMusic") feature.enable(doc, win, userName, customText, audio);
+          else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl);
           else feature.enable(doc, win, userName, customText);
         }
         adjustIframePadding(activeFeatureStates);
@@ -3363,7 +3548,7 @@
           [t.catFloral]: ["flowerRain", "canvasStarfall", "flyingSwans"],
           [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "addImages", "scratchReveal"],
           [t.catHeart]: ["textFormation", "memoryTimeline", "heartsOnScroll", "oldPaperLetter", "hugSkyLetter", "floatingPolaroids", "addTextBox"],
-          [t.catFinale]: ["finalSurprise", "magicMusic"]
+          [t.catFinale]: ["finalSurprise", "magicMusic", "addMusicSection"]
         };
         for (let [catName, ids] of Object.entries(actualCategories)) {
           const section = document.createElement("div"); section.className = "feature-category";
@@ -3382,7 +3567,7 @@
             if (chevron) { chevron.className = "chevron"; chevron.innerText = "▼"; }
             const switchDiv = document.createElement("div"); switchDiv.className = "switch"; const circle = document.createElement("div"); circle.className = "circle"; switchDiv.appendChild(circle);
             toggleRow.appendChild(labelSpan);
-            if (id === "addImages" || id === "addTextBox" || id === "magicMusic") {
+            if (id === "addImages" || id === "addTextBox" || id === "magicMusic" || id === "addMusicSection") {
               const plusIcon = document.createElement("span");
               plusIcon.className = "plus-icon";
               plusIcon.innerText = "+";
@@ -3515,6 +3700,21 @@
                     }
                   };
                   fileInput.click();
+                };
+              }
+              if (id === "addMusicSection") {
+                plusIcon.style.cursor = "pointer";
+                plusIcon.onclick = (e) => {
+                  e.stopPropagation();
+                  const parentRow = plusIcon.closest('.toggle-row');
+                  if (!parentRow.classList.contains('active')) {
+                    parentRow.click();
+                  }
+                  musicSearchInput.value = '';
+                  musicLinkInput.value = '';
+                  musicResults.innerHTML = '';
+                  musicStatus.textContent = '';
+                  musicModal.classList.add('show');
                 };
               }
               toggleRow.appendChild(plusIcon);
@@ -3763,9 +3963,15 @@
                 const images = customData.get(id)?.images || [];
                 const emojiVal = emojiInput ? emojiInput.value : "";
                 const audio = customData.get(id)?.audio || "";
-                const storeData = { text: customText, images, emoji: emojiVal, audio };
+                const spotifyEmbedUrl = customData.get(id)?.spotifyEmbedUrl || "";
+                const youtubeEmbedUrl = customData.get(id)?.youtubeEmbedUrl || "";
+                const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl };
                 customData.set(id, storeData);
-                applyFeature(id, true, nameVal, customText, images, emojiVal, audio);
+                if (id === 'addMusicSection') {
+                  applyFeature(id, true, nameVal, customText, images, emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl);
+                } else {
+                  applyFeature(id, true, nameVal, customText, images, emojiVal, audio);
+                }
               }
               if (openPanelId && openPanelId !== customPanel) closeOpenPanel();
               adjustIframePadding(activeFeatureStates);
@@ -4379,7 +4585,7 @@
       const anchor = finalMessage || cta;
       if (anchor && anchor.parentNode === container) { container.insertBefore(sectionElement, anchor); } else { container.appendChild(sectionElement); }
     };
-    window.applyFeature = function(id, active, name, text, images, emoji, audio) {
+    window.applyFeature = function(id, active, name, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl) {
       if (!window.FEATURE_MAP || !window.FEATURE_MAP[id]) return;
       const feature = window.FEATURE_MAP[id];
       if (active && feature.enable) {
@@ -4390,6 +4596,8 @@
             feature.enable(document, window, name, text, images);
           } else if (id === "magicMusic") {
             feature.enable(document, window, name, text, audio);
+          } else if (id === "addMusicSection") {
+            feature.enable(document, window, name, text, spotifyEmbedUrl || "", youtubeEmbedUrl || "");
           } else {
             feature.enable(document, window, name, text);
           }
@@ -4422,7 +4630,11 @@
             for (const [id, active] of activeFeatureStates.entries()) {
               if (id !== 'lock' && active) {
                 const data = customData.get(id) || {};
-                window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+                const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
+                if (id === 'addMusicSection') {
+                  args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
+                }
+                window.applyFeature(...args);
               }
             }
           };
@@ -4435,7 +4647,11 @@
         for (const [id, active] of activeFeatureStates.entries()) {
           if (id !== 'curtainReveal' && active) {
             const data = customData.get(id) || {};
-            window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
+            if (id === 'addMusicSection') {
+              args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
+            }
+            window.applyFeature(...args);
           }
         }
         // Show content after curtain is in place
@@ -4446,7 +4662,11 @@
         for (const [id, active] of activeFeatureStates.entries()) {
           if (active) {
             const data = customData.get(id) || {};
-            window.applyFeature(id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
+            if (id === 'addMusicSection') {
+              args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
+            }
+            window.applyFeature(...args);
           }
         }
         showContent();
@@ -4462,7 +4682,7 @@
         } catch(e) {
           console.error("Magic init failed", e);
           // Fallback: try to load features from API
-          fetch('https://wishing-portal.onrender.com/api/magic')
+          fetch((API_BASE || window.location.origin) + '/api/magic')
             .then(r => r.json())
             .then(data => {
               try {
@@ -4540,7 +4760,7 @@
           }
 
           // Save to server for cross-browser sharing
-          fetch('https://wishing-portal.onrender.com/api/config', {
+          fetch((API_BASE || '') + '/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ html, config })
@@ -4726,7 +4946,7 @@
         }
 
         // Try server first, fall back to localStorage
-        fetch('https://wishing-portal.onrender.com/api/config/' + encodeURIComponent(viewId))
+        fetch((API_BASE || window.location.origin) + '/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
           .then(data => { applySharedView(data.html, data.config); })
           .catch(() => {

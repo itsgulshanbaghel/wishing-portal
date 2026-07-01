@@ -1069,6 +1069,118 @@ app.get('/api/admin/health/status', async (req, res) => {
 
 
 
+// Spotify token cache
+let spotifyAccessToken = null;
+let spotifyTokenExpiry = 0;
+
+async function getSpotifyAccessToken() {
+  if (spotifyAccessToken && Date.now() < spotifyTokenExpiry) {
+    return spotifyAccessToken;
+  }
+
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    throw new Error('Spotify credentials not configured');
+  }
+
+  const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+  const response = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${authHeader}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Spotify token request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  spotifyAccessToken = data.access_token;
+  spotifyTokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+  return spotifyAccessToken;
+}
+
+app.get('/api/testme', (req, res) => res.json({ ok: true }));
+// Search Spotify
+app.get('/api/search-spotify', async (req, res) => {
+  try {
+    const query = (req.query.q || '').trim();
+    if (!query) return res.json({ results: [] });
+
+    const token = await getSpotifyAccessToken();
+    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=8`;
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('Spotify search failed:', response.status, text);
+      throw new Error(`Spotify search failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const results = (data.tracks?.items || []).map(track => ({
+      id: track.id,
+      name: track.name,
+      artist: track.artists?.map(a => a.name).join(', ') || '',
+      album: track.album?.name || '',
+      image: track.album?.images?.[0]?.url || '',
+      url: track.external_urls?.spotify || '',
+      type: 'track',
+    }));
+
+    res.json({ results });
+  } catch (err) {
+    console.error('Spotify search error:', err);
+    res.status(500).json({ error: 'Spotify search failed', results: [] });
+  }
+});
+
+// Search YouTube
+app.get('/api/search-youtube', async (req, res) => {
+  try {
+    const query = (req.query.q || '').trim();
+    if (!query) return res.json({ results: [] });
+
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    if (!apiKey) {
+      throw new Error('YouTube API key not configured');
+    }
+
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=8&key=${apiKey}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`YouTube search failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const results = (data.items || [])
+      .filter(item => item.id?.kind === 'youtube#video')
+      .map(item => ({
+        id: item.id.videoId,
+        name: item.snippet?.title || '',
+        artist: item.snippet?.channelTitle || '',
+        album: '',
+        image: item.snippet?.thumbnails?.medium?.url || item.snippet?.thumbnails?.default?.url || '',
+        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+        type: 'youtube',
+      }));
+
+    res.json({ results });
+  } catch (err) {
+    console.error('YouTube search error:', err);
+    res.status(500).json({ error: 'YouTube search failed', results: [] });
+  }
+});
+
 // Error handler for JSON APIs
 app.use('/api', (err, req, res, next) => {
   console.error('[Server API Error]', err);

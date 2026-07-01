@@ -1087,6 +1087,60 @@
         disable(d) { d?.getElementById("magic-bg-audio")?.remove(); }
     },
 
+    addMusicSection: {
+        enable(d, w, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl) {
+            if (typeof injectFontsIfNeeded === 'function') injectFontsIfNeeded(d);
+
+            let section = d.getElementById("magic-music-section");
+            const embedUrl = spotifyEmbedUrl || youtubeEmbedUrl || "";
+
+            if (!section) {
+                section = d.createElement("section");
+                section.id = "magic-music-section";
+                section.style.cssText = "padding: 2.5rem 1rem; text-align: center; background: linear-gradient(145deg, rgba(123,93,246,0.08), rgba(255,122,47,0.06)); border-radius: 48px; margin: 2rem 1.5rem;";
+
+                const title = d.createElement("h2");
+                title.innerText = "\uD83C\uDFB5 " + (window.currentLang === 'hi' ? "\u0917\u093E\u0928\u093E" : "Music For You");
+                title.style.fontFamily = "'Great Vibes', cursive";
+                title.style.fontSize = "2.2rem";
+                title.style.color = "#7b5df6";
+                section.appendChild(title);
+
+                insertSectionBeforeFinal(d, section);
+            }
+
+            const embedWrap = d.createElement("div");
+            embedWrap.id = "magic-music-embed";
+            embedWrap.style.cssText = "max-width: 640px; margin: 24px auto; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.18); aspect-ratio: 16 / 9;";
+
+            if (embedUrl) {
+                const iframe = d.createElement("iframe");
+                iframe.src = embedUrl;
+                iframe.style.cssText = "width: 100%; height: 100%; border: none; border-radius: 24px;";
+                iframe.allow = "encrypted-media; fullscreen";
+                iframe.setAttribute("allowfullscreen", "");
+                iframe.loading = "lazy";
+                embedWrap.appendChild(iframe);
+            } else {
+                const placeholder = d.createElement("div");
+                placeholder.style.cssText = "display:flex; align-items:center; justify-content:center; height:100%; background:rgba(123,93,246,0.06); color:var(--text-secondary,#4a3b66); font-size:1.1rem; border-radius:24px; border:2px dashed rgba(123,93,246,0.25);";
+                placeholder.innerText = window.currentLang === 'hi' ? "\u0915\u0943\u092A\u092F\u093E \u0907\u0938 \u0905\u0902\u0927\u0930 \u092E\u0947\u0902 \u0917\u093E\u0928\u093E \u091C\u094B\u095C\u0947\u0902" : "Please add music from the customizer";
+                embedWrap.appendChild(placeholder);
+            }
+
+            const oldEmbed = section.querySelector("div[id='magic-music-embed']");
+            if (oldEmbed) {
+                oldEmbed.replaceWith(embedWrap);
+            } else {
+                section.appendChild(embedWrap);
+            }
+            scrollToElement(d, section);
+            return {};
+        },
+        disable(d) {
+            d?.getElementById("magic-music-section")?.remove();
+        }
+    },
     imageExplosion: {
         enable(d, w, userName, customText, images) {
             let section = d.getElementById("magic-image-explosion-section");

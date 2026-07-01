@@ -529,7 +529,8 @@
     'finalsurprise': 'Final Message',
     'finalmessage': 'Final Message',
     'magicmusic': 'Add Music',
-    'addmusic': 'Add Music'
+    'addmusic': 'Add Music',
+    'addmusicsection': 'Embed Music Section'
   };
 
   function getCleanName(rawKey) {
