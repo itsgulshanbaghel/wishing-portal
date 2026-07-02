@@ -10,15 +10,15 @@
 
 
 
-    <head>
-      <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
+<head>
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon_io/android-chrome-512x512.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
     <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
-        
-        <script src="assets/config.js"></script>
+
+    <script src="assets/config.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -6893,9 +6893,10 @@
 
 
                 <div class="hero-buttons"><button class="btn-primary" onclick="startFlow('personal')"
-                        id="btnCreatePerson"><i class="fas fa-user-heart"></i> Create for a person</button><button
-                        class="btn-demo" onclick="window.location.href='https://thegreeter.in/generated/customize?view=44k1zhizfy'" id="btnCreateEvent"><i
-                            class="fas fa-circle-play"></i> See Demo</button></div>
+                        id="btnCreatePerson"><i class="fas fa-user-heart"></i> Create Now</button><button
+                        class="btn-demo"
+                        onclick="window.location.href='https://thegreeter.in/generated/customize?view=44k1zhizfy'"
+                        id="btnCreateEvent"><i class="fas fa-circle-play"></i> See Demo</button></div>
 
 
 
@@ -6904,7 +6905,8 @@
 
 
 
-                    <i class="fas fa-check-circle" style="color: #7b5df6;"></i> Free to start · No card required
+                    <i class="fas fa-check-circle" style="color: #11ef1f; font-size: 1.3rem;"></i> <span style="color: var(--text-primary);">Free to
+                        use · No card required</span>
 
 
 
@@ -7531,15 +7533,13 @@
                 </div>
                 <h2 class="support-title" id="supportCardTitle">Need Help?</h2>
                 <p class="support-message" id="supportCardMessage">
-                    If you are facing any issue on our website or need any help regarding our website, then message us directly on Telegram or Instagram.
+                    If you are facing any issue on our website or need any help regarding our website, then message us
+                    directly on Telegram or Instagram.
                 </p>
                 <div class="support-buttons">
                     <!-- EDIT: Replace @TheGreeter with your actual Telegram username -->
-                    <a href="https://t.me/TheGreeter"
-                       class="support-btn support-btn--telegram"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       aria-label="Message us on Telegram">
+                    <a href="https://t.me/TheGreeter" class="support-btn support-btn--telegram" target="_blank"
+                        rel="noopener noreferrer" aria-label="Message us on Telegram">
                         <span class="support-btn-icon">
                             <i class="fab fa-telegram-plane"></i>
                         </span>
@@ -7549,11 +7549,8 @@
                         </span>
                     </a>
                     <!-- EDIT: Replace @thegreeter.in with your actual Instagram username -->
-                    <a href="https://instagram.com/thegreeter.in"
-                       class="support-btn support-btn--instagram"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       aria-label="Message us on Instagram">
+                    <a href="https://instagram.com/thegreeter.in" class="support-btn support-btn--instagram"
+                        target="_blank" rel="noopener noreferrer" aria-label="Message us on Instagram">
                         <span class="support-btn-icon">
                             <i class="fab fa-instagram"></i>
                         </span>
@@ -7927,7 +7924,7 @@
 
 
 
-                btnPerson: "Create for a Person", btnEvent: "See Demo", freeText: "Free to start · No card required",
+                btnPerson: "Create Now", btnEvent: "See Demo", freeText: "Free to use · No card required",
 
 
 
@@ -8013,7 +8010,7 @@
 
 
 
-                btnPerson: "किसी व्यक्ति के लिए बनाएं", btnEvent: "See Demo", freeText: "बिलकुल - मुफ्त में शुरू करें",
+                btnPerson: "अभी बनाएं", btnEvent: "डेमो देखें", freeText: "बिलकुल - मुफ्त में शुरू करें",
 
 
 
@@ -8153,7 +8150,7 @@
 
 
 
-            document.getElementById('freeStartText').innerHTML = `<i class="fas fa-check-circle"></i> ${t.freeText}`;
+            document.getElementById('freeStartText').innerHTML = `<i class="fas fa-check-circle" style="color: #11ef1f; font-size: 1.3rem;"></i> <span style="color: var(--text-primary);">${t.freeText}</span>`;
 
 
 
