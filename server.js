@@ -508,10 +508,13 @@ const crypto = require('crypto');
 // Cashfree env vars
 const CF_APP_ID = process.env.CASHFREE_APP_ID || '';
 const CF_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
-const CF_WEBHOOK_SECRET = process.env.CASHFREE_WEBHOOK_SECRET || '';
 const CF_API_BASE = (process.env.CASHFREE_ENV === 'sandbox' || process.env.CASHFREE_ENV === 'sandbox')
   ? 'https://sandbox.cashfree.com/pg'
   : 'https://api.cashfree.com/pg';
+
+function getWebhookSecret() {
+  return process.env.CASHFREE_WEBHOOK_SECRET || CF_SECRET_KEY;
+}
 
 function cfHeaders() {
   return {
@@ -652,10 +655,31 @@ app.post('/api/payment/create-order', async (req, res) => {
       });
       const cfData = await cfRes.json();
       console.error('[Cashfree] Status:', cfRes.status, 'Body:', JSON.stringify(cfData));
-      if (cfRes.ok && cfData.payment_link) {
+
+      if (cfRes.status === 401) {
+        return res.status(502).json({
+          success: false,
+          error: 'Payment gateway authentication failed. Please contact support or try again later.',
+          orderId
+        });
+      }
+      if (cfRes.status === 400) {
+        return res.status(502).json({
+          success: false,
+          error: cfData?.message || 'Invalid order details. Please try again.',
+          orderId
+        });
+      }
+      if (!cfRes.ok) {
+        cfError = cfData?.message || cfData?.error || JSON.stringify(cfData) || 'Payment gateway error. Please try again.';
+      } else if (cfData.payment_link) {
         paymentLink = cfData.payment_link;
+      } else if (cfData.payment_session_id && cfData.payments?.url) {
+        paymentLink = cfData.payments.url;
+      } else if (cfData.payment_session_id) {
+        paymentLink = `${SITE_URL || 'https://thegreeter.in'}/generated/payment-session.html?session_id=${cfData.payment_session_id}&order_id=${orderId}`;
       } else {
-        cfError = cfData?.message || cfData?.error || JSON.stringify(cfData) || 'Failed to create payment order with gateway';
+        cfError = cfData?.message || 'Payment gateway returned an unexpected response. Please try again.';
       }
     } catch (err) {
       console.error('[Cashfree] Network Error:', err.message);
@@ -696,22 +720,25 @@ app.post('/api/payment/webhook', async (req, res) => {
     const body = req.rawBody || '';
     const signature = req.headers['x-webhook-signature'] || req.headers['X-Webhook-Signature'] || '';
     const timestamp = req.headers['x-webhook-timestamp'] || req.headers['X-Webhook-Timestamp'] || '';
+    const webhookSecret = getWebhookSecret();
 
-    // Verify signature if webhook secret is configured
-    if (CF_WEBHOOK_SECRET && signature) {
+    if (webhookSecret && signature && timestamp) {
       const expectedSignature = crypto
-        .createHmac('sha256', CF_WEBHOOK_SECRET)
-        .update(timestamp + body.toString())
+        .createHmac('sha256', webhookSecret)
+        .update(timestamp + body)
         .digest('base64');
       if (signature !== expectedSignature) {
-        console.error('Webhook signature verification failed');
+        console.error('[Webhook] Signature verification failed');
         return res.status(401).json({ error: 'Invalid signature' });
       }
+    } else if (webhookSecret && !signature) {
+      console.error('[Webhook] Signature missing but secret configured');
+      return res.status(401).json({ error: 'Missing signature' });
     }
 
     let eventData;
     try {
-      eventData = JSON.parse(body.toString());
+      eventData = JSON.parse(body);
     } catch {
       return res.status(400).json({ error: 'Invalid JSON' });
     }
