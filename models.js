@@ -68,32 +68,57 @@ const feedbackSchema = new mongoose.Schema({
 
 const healthMetricSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now, index: true },
-    cpuUsage: Number,        // Percentage
+    cpuUsage: Number,
     cpuCores: Number,
     cpuModel: String,
-    memoryUsage: Number,     // Percentage
-    memoryTotal: Number,     // GB
-    memoryUsed: Number,      // GB
-    memoryFree: Number,      // GB
-    diskUsage: Number,       // Percentage
-    diskTotal: Number,       // GB
-    diskUsed: Number,        // GB
-    diskFree: Number,        // GB
+    memoryUsage: Number,
+    memoryTotal: Number,
+    memoryUsed: Number,
+    memoryFree: Number,
+    diskUsage: Number,
+    diskTotal: Number,
+    diskUsed: Number,
+    diskFree: Number,
     diskMount: String,
-    mongoConnections: Number, // Active connections
-    mongoPoolSize: Number,   // Max pool size
-    mongoDbSize: Number,     // GB
+    mongoConnections: Number,
+    mongoPoolSize: Number,
+    mongoDbSize: Number,
     alertLevel: { type: String, enum: ['normal', 'warning', 'critical'], default: 'normal' },
     alertDetails: mongoose.Schema.Types.Mixed
 });
 
-// Index for efficient time-based queries
-healthMetricSchema.index({ timestamp: -1 });
+const customSlugSchema = new mongoose.Schema({
+    slug: { type: String, required: true, unique: true, index: true, trim: true, lowercase: true },
+    websiteId: { type: String, required: true, index: true },
+    createdAt: { type: Date, default: Date.now, index: true }
+});
+
+const paymentSchema = new mongoose.Schema({
+    orderId: { type: String, required: true, unique: true, index: true },
+    websiteId: { type: String, required: true, index: true },
+    slug: { type: String, required: true, lowercase: true, trim: true },
+    amount: { type: Number, required: true },
+    currency: { type: String, default: 'INR' },
+    status: { type: String, enum: ['PENDING', 'PAID', 'FAILED', 'CANCELLED', 'EXPIRED'], default: 'PENDING', index: true },
+    cfOrderToken: { type: String },
+    cfPaymentId: { type: String },
+    cfSignature: { type: String },
+    customerDetails: mongoose.Schema.Types.Mixed,
+    qrCenterType: { type: String, enum: ['text', 'photo', 'none'], default: 'none' },
+    qrCenterText: { type: String },
+    qrCenterPhotoUrl: { type: String },
+    paymentLink: { type: String },
+    createdAt: { type: Date, default: Date.now, index: true },
+    paidAt: { type: Date },
+    metadata: mongoose.Schema.Types.Mixed
+});
 
 const Visitor = mongoose.model('Visitor', visitorSchema);
 const Event = mongoose.model('Event', eventSchema);
 const Website = mongoose.model('Website', websiteSchema);
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 const HealthMetric = mongoose.model('HealthMetric', healthMetricSchema);
+const CustomSlug = mongoose.model('CustomSlug', customSlugSchema);
+const Payment = mongoose.model('Payment', paymentSchema);
 
-module.exports = { Visitor, Event, Website, Feedback, HealthMetric };
+module.exports = { Visitor, Event, Website, Feedback, HealthMetric, CustomSlug, Payment };

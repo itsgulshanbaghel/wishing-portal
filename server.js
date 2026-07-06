@@ -14,9 +14,10 @@ const https = require('https');
 
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
-const { Website, Feedback } = require('./models');
+const { Website, Feedback, CustomSlug, Payment } = require('./models');
 const analytics = require('./analytics');
 const health = require('./health');
+const { generateOGImage, generateOGMetaTags, saveOGImage } = require('./og-image-generator');
 
 
 
@@ -89,6 +90,7 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
   origin: [
     'https://thegreeter.in',
+    'https://wishing-portal.onrender.com',
     'https://thegreeterindia.web.app',
     'https://thegreeterindia.firebaseapp.com',
     'http://localhost:3000',
@@ -422,24 +424,532 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
-app.get('/api/magic', (req, res) => {
+const RESERVED_SLUGS = new Set([
+  'api','assets','generated','blog','admin','create','index','share','privacy',
+  'terms','contactus','whygreeter','templates','uploads','ping','testme',
+  'favicon.ico','sitemap.xml','robots.txt','crossdomain.xml'
+]);
 
+app.post('/api/custom-url', async (req, res) => {
   try {
+    const { websiteId, slug } = req.body;
 
-    const features = fs.readFileSync(path.join(__dirname, 'features.js'), 'utf8');
+    if (!websiteId || !slug) {
+      return res.status(400).json({ error: 'websiteId and slug are required' });
+    }
 
-    const encoded = Buffer.from(features).toString('base64');
+    let sanitized = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-$/g, '');
 
-    res.json({ magic: encoded });
+    if (sanitized.length < 3) {
+      return res.status(400).json({ error: 'Custom URL must be at least 3 characters long' });
+    }
+    if (sanitized.length > 30) {
+      return res.status(400).json({ error: 'Custom URL must be at most 30 characters long' });
+    }
+    if (RESERVED_SLUGS.has(sanitized)) {
+      return res.status(400).json({ error: 'This custom URL is reserved. Please choose another.' });
+    }
 
+    const ensureMongoConnectedResult = await ensureMongoConnected();
+    if (!ensureMongoConnectedResult) {
+      return res.status(503).json({ error: 'Server temporarily unavailable. Please try again later.' });
+    }
+
+    const existing = await CustomSlug.findOne({ slug: sanitized }).lean();
+    if (existing) {
+      if (existing.websiteId === websiteId) {
+        return res.status(200).json({ success: true, message: 'Custom URL already claimed', slug: sanitized });
+      }
+      return res.status(409).json({ error: 'This custom URL is already taken. Try another one.' });
+    }
+
+    await CustomSlug.create({ slug: sanitized, websiteId });
+    res.json({ success: true, message: 'Custom URL created successfully', slug: sanitized });
   } catch (err) {
-
-    console.error("Error reading features:", err);
-
-    res.status(500).json({ error: "Magic not found" });
-
+    console.error('Error setting custom URL:', err);
+    if (err.code === 11000) {
+      return res.status(409).json({ error: 'This custom URL was just taken. Try another.' });
+    }
+    res.status(500).json({ error: 'Failed to set custom URL' });
   }
+});
 
+app.get('/api/custom-url/check/:slug', async (req, res) => {
+  try {
+    const sanitized = req.params.slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-$/g, '');
+    const ensureMongoConnectedResult = await ensureMongoConnected();
+    if (!ensureMongoConnectedResult) {
+      return res.status(503).json({ available: false });
+    }
+    const existing = await CustomSlug.findOne({ slug: sanitized }).lean();
+    res.json({ available: !existing });
+  } catch (err) {
+    console.error('Custom URL check failed:', err);
+    res.status(500).json({ available: false });
+  }
+});
+
+// ============================================================
+// CASHFREE PAYMENT ROUTES
+// ============================================================
+const crypto = require('crypto');
+
+// Cashfree env vars
+const CF_APP_ID = process.env.CASHFREE_APP_ID || '';
+const CF_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
+const CF_WEBHOOK_SECRET = process.env.CASHFREE_WEBHOOK_SECRET || '';
+const CF_API_BASE = (process.env.CASHFREE_ENV === 'sandbox' || process.env.CASHFREE_ENV === 'sandbox')
+  ? 'https://sandbox.cashfree.com'
+  : 'https://api.cashfree.com';
+
+function cfHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'x-client-id': CF_APP_ID,
+    'x-client-secret': CF_SECRET_KEY,
+    'x-api-version': '2022-09-01'
+  };
+}
+
+// GET /api/payment/detect-price
+// Detects client geo location and returns appropriate price
+app.get('/api/payment/detect-price', (req, res) => {
+  try {
+    const geoip = require('geoip-lite');
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress || req.ip || '127.0.0.1';
+    const cleanIP = ip.replace('::ffff:', '').replace('::1', '127.0.0.1');
+    const geo = geoip.lookup(cleanIP);
+    const country = geo ? geo.country : 'IN';
+
+    const code = country.toUpperCase();
+    let result = { currency: 'INR', amount: 29, symbol: '₹', countryName: 'India' };
+
+    if (code !== 'IN') {
+      const euroZone = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
+      if (euroZone.includes(code)) {
+        result = { currency: 'EUR', amount: 0.99, symbol: '€', countryName: 'Europe' };
+      } else if (code === 'GB') {
+        result = { currency: 'GBP', amount: 0.99, symbol: '£', countryName: 'United Kingdom' };
+      } else if (code === 'US') {
+        result = { currency: 'USD', amount: 0.99, symbol: '$', countryName: 'United States' };
+      } else if (code === 'AU' || code === 'NZ') {
+        result = { currency: 'AUD', amount: 1.49, symbol: 'A$', countryName: 'Australia & NZ' };
+      } else {
+        result = { currency: 'USD', amount: 0.99, symbol: '$', countryName: 'Rest of World' };
+      }
+    }
+
+    res.json({ success: true, ip: cleanIP, country, ...result });
+  } catch (err) {
+    console.error('Error detecting geo price:', err);
+    res.json({ success: true, country: 'IN', currency: 'INR', amount: 29, symbol: '₹', countryName: 'India' });
+  }
+});
+
+// POST /api/payment/create-order
+// Body: { websiteId, slug, amount, currency, customerDetails?, qrCenterType, qrCenterText?, qrCenterPhotoUrl? }
+app.post('/api/payment/create-order', async (req, res) => {
+  try {
+    const { websiteId, slug, amount, currency, customerDetails, qrCenterType, qrCenterText, qrCenterPhotoUrl, qrCenterPhotoBase64 } = req.body;
+
+    if (!websiteId || !slug || !amount) {
+      return res.status(400).json({ error: 'websiteId, slug and amount are required' });
+    }
+
+    const sanitizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+
+    if (sanitizedSlug.length < 3 || sanitizedSlug.length > 30) {
+      return res.status(400).json({ error: 'Slug must be 3-30 characters' });
+    }
+
+    const mongoReady = await ensureMongoConnected();
+    if (!mongoReady) {
+      return res.status(503).json({ error: 'Server temporarily unavailable. Please try again later.' });
+    }
+
+    // Check if slug already taken by a PAID payment
+    const existingPaid = await Payment.findOne({ slug: sanitizedSlug, status: 'PAID' }).lean();
+    if (existingPaid) {
+      return res.status(409).json({ error: 'This personalized URL is already taken. Try another.' });
+    }
+
+    // Upload QR center photo to Cloudinary if provided as base64
+    let finalPhotoUrl = qrCenterPhotoUrl || '';
+    if (qrCenterPhotoBase64) {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(qrCenterPhotoBase64, {
+          folder: 'qr-centers',
+          resource_type: 'image'
+        });
+        finalPhotoUrl = uploadResult.secure_url;
+      } catch (uploadErr) {
+        console.error('Error uploading QR center photo to Cloudinary:', uploadErr);
+      }
+    }
+
+    // Check if same user already has a pending/failed order for this slug - cancel old ones
+    await Payment.updateMany(
+      { websiteId, slug: sanitizedSlug, status: { $in: ['PENDING', 'FAILED'] } },
+      { $set: { status: 'CANCELLED' } }
+    );
+
+    const orderId = `ORD_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const customer = customerDetails || { customer_name: 'Guest', customer_email: 'guest@thegreeter.in', customer_phone: '9999999999' };
+    const orderAmount = Number(amount);
+
+    // Create payment record
+    const payment = await Payment.create({
+      orderId,
+      websiteId,
+      slug: sanitizedSlug,
+      amount: orderAmount,
+      currency: currency || 'INR',
+      status: 'PENDING',
+      customerDetails: customer,
+      qrCenterType: qrCenterType || 'none',
+      qrCenterText: qrCenterText || '',
+      qrCenterPhotoUrl: finalPhotoUrl || '',
+      metadata: { source: req.headers['user-agent'] || 'web' }
+    });
+
+    // Create order on Cashfree
+    const orderPayload = {
+      order_id: orderId,
+      order_amount: orderAmount,
+      order_currency: currency || 'INR',
+      customer_details: {
+        customer_id: websiteId,
+        customer_name: customer.customer_name || 'Guest',
+        customer_email: customer.customer_email || 'guest@thegreeter.in',
+        customer_phone: customer.customer_phone || '9999999999'
+      },
+      order_meta: {
+        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`,
+        notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal.onrender.com'}/api/payment/webhook`,
+        payment_methods: 'cc,dc,upi,wallet,nb,app'
+      }
+    };
+
+    let paymentLink = '';
+    try {
+      const cfRes = await fetch(`${CF_API_BASE}/api/v1/orders`, {
+        method: 'POST',
+        headers: cfHeaders(),
+        body: JSON.stringify(orderPayload)
+      });
+      const cfData = await cfRes.json();
+      if (cfRes.ok && cfData.payment_link) {
+        paymentLink = cfData.payment_link;
+      } else {
+        console.error('Cashfree order creation failed:', cfData);
+        paymentLink = `${process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`;
+      }
+    } catch (err) {
+      console.error('Cashfree API error:', err.message);
+      paymentLink = `${process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`;
+    }
+
+    await Payment.findByIdAndUpdate(payment._id, { paymentLink });
+
+    res.json({
+      success: true,
+      orderId,
+      paymentLink,
+      amount: orderAmount,
+      currency: currency || 'INR',
+      slug: sanitizedSlug
+    });
+  } catch (err) {
+    console.error('Error creating payment order:', err);
+    res.status(500).json({ error: 'Failed to create payment order. Please try again.' });
+  }
+});
+
+// POST /api/payment/webhook - Cashfree webhook
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const signature = req.headers['x-webhook-signature'] || req.headers['X-Webhook-Signature'] || '';
+    const timestamp = req.headers['x-webhook-timestamp'] || req.headers['X-Webhook-Timestamp'] || '';
+    const body = req.body;
+
+    // Verify signature if webhook secret is configured
+    if (CF_WEBHOOK_SECRET && signature) {
+      const expectedSignature = crypto
+        .createHmac('sha256', CF_WEBHOOK_SECRET)
+        .update(timestamp + body.toString())
+        .digest('base64');
+      if (signature !== expectedSignature) {
+        console.error('Webhook signature verification failed');
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
+    }
+
+    let eventData;
+    try {
+      eventData = JSON.parse(body.toString());
+    } catch {
+      return res.status(400).json({ error: 'Invalid JSON' });
+    }
+
+    const { order_id, event, payment_id, data } = eventData;
+
+    if (!order_id) {
+      return res.status(200).json({ received: true });
+    }
+
+    const mongoReady = await ensureMongoConnected();
+    if (!mongoReady) {
+      return res.status(200).json({ received: true });
+    }
+
+    // Find the payment record
+    const payment = await Payment.findOne({ orderId: order_id }).lean();
+    if (!payment) {
+      return res.status(200).json({ received: true });
+    }
+
+    let newStatus = payment.status;
+
+    // Handle both old and new Cashfree webhook event names
+    if (event === 'PAYMENT_SUCCESS_WEBHOOK' || event === 'ORDER_PAID' || event === 'success payment') {
+      newStatus = 'PAID';
+    } else if (event === 'PAYMENT_FAILED_WEBHOOK' || event === 'PAYMENT_CANCELLED' || event === 'PAYMENT_DECLINED' || event === 'failed payment') {
+      newStatus = 'FAILED';
+    } else if (event === 'ORDER_CANCELLED' || event === 'user dropped payment') {
+      newStatus = 'CANCELLED';
+    } else if (event === 'ORDER_EXPIRED') {
+      newStatus = 'EXPIRED';
+    }
+
+    await Payment.findByIdAndUpdate(payment._id, {
+      status: newStatus,
+      cfPaymentId: payment_id || payment.cfPaymentId,
+      cfSignature: signature,
+      paidAt: newStatus === 'PAID' ? new Date() : payment.paidAt
+    });
+
+    // If payment succeeded, reserve the custom URL
+    if (newStatus === 'PAID') {
+      const { CustomSlug } = require('./models');
+      const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
+      if (!existingSlug) {
+        await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId });
+      }
+    }
+
+    console.log(`[Webhook] Order ${order_id} status updated to ${newStatus}`);
+    res.status(200).json({ received: true, status: newStatus });
+  } catch (err) {
+    console.error('Webhook processing error:', err);
+    res.status(200).json({ received: true });
+  }
+});
+
+// GET /api/payment/status/:orderId
+app.get('/api/payment/status/:orderId', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const mongoReady = await ensureMongoConnected();
+    if (!mongoReady) {
+      return res.status(503).json({ error: 'Server temporarily unavailable.' });
+    }
+    const payment = await Payment.findOne({ orderId }).lean();
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+    res.json({
+      status: payment.status,
+      slug: payment.slug,
+      amount: payment.amount,
+      currency: payment.currency,
+      paymentLink: payment.paymentLink,
+      qrCenterType: payment.qrCenterType,
+      qrCenterText: payment.qrCenterText,
+      qrCenterPhotoUrl: payment.qrCenterPhotoUrl
+    });
+  } catch (err) {
+    console.error('Payment status check error:', err);
+    res.status(500).json({ error: 'Failed to check payment status' });
+  }
+});
+
+app.get('/api/magic', (req, res) => {
+  try {
+    const features = fs.readFileSync(path.join(__dirname, 'features.js'), 'utf8');
+    const encoded = Buffer.from(features).toString('base64');
+    res.json({ magic: encoded });
+  } catch (err) {
+    console.error("Error reading features:", err);
+    res.status(500).json({ error: "Magic not found" });
+  }
+});
+
+// ===== OPEN GRAPH IMAGE & META ENDPOINTS =====
+
+/**
+ * POST /api/og-image
+ * Generates a beautiful OG preview image based on website data
+ */
+app.post('/api/og-image', async (req, res) => {
+  try {
+    const {
+      websiteId,
+      recipientName = 'Someone Special',
+      eventType = 'Birthday',
+      creatorName = 'A Friend',
+      mood = 'happy',
+      message = 'Wishing you happiness!',
+      slug = null
+    } = req.body;
+
+    if (!websiteId && !slug) {
+      return res.status(400).json({ error: 'websiteId or slug is required' });
+    }
+
+    // Generate the image
+    const imageBuffer = await generateOGImage({
+      recipientName,
+      eventType,
+      creatorName,
+      mood,
+      message,
+      color: 'gradient'
+    });
+
+    // Save the image
+    const filename = `${websiteId || slug}-og-${Date.now()}.png`;
+    const imagePath = await saveOGImage(imageBuffer, filename);
+
+    // Upload to Cloudinary for faster CDN delivery
+    const cloudinaryUrl = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          public_id: `og-images/${websiteId || slug}`,
+          folder: 'og-images',
+          resource_type: 'auto',
+          overwrite: true,
+          context: {
+            website_id: websiteId,
+            event_type: eventType,
+            recipient: recipientName,
+            generated_at: new Date().toISOString()
+          }
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result.secure_url);
+        }
+      );
+      
+      uploadStream.end(imageBuffer);
+    });
+
+    res.json({
+      success: true,
+      imageUrl: cloudinaryUrl,
+      localPath: imagePath,
+      websiteId
+    });
+
+  } catch (error) {
+    console.error('Error generating OG image:', error);
+    res.status(500).json({ error: 'Failed to generate OG image', details: error.message });
+  }
+});
+
+/**
+ * GET /api/og-meta/:id
+ * Returns OG meta tags and image URL for a website
+ */
+app.get('/api/og-meta/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const baseUrl = process.env.BASE_URL || 'https://thegreeter.in';
+
+    // Try to find the config from Cloudinary
+    const safeName = id.replace(/[^a-z0-9]/gi, '');
+    
+    try {
+      const url = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/configs/${safeName}`;
+      const response = await fetch(url);
+      
+      if (response.ok) {
+        const configData = await response.json();
+        const { config = {} } = configData;
+
+        const websiteUrl = `${baseUrl}/${config.slug || id}`;
+        const ogImageUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/og-images/${safeName}`;
+
+        const metaTags = generateOGMetaTags({
+          recipientName: config.recipientName || config.name || 'Someone Special',
+          eventType: config.eventType || config.category || 'Birthday',
+          creatorName: config.creatorName || 'A Friend',
+          message: config.message || config.story || '',
+          templateName: config.templateName || 'Standard'
+        }, websiteUrl);
+
+        return res.json({
+          success: true,
+          meta: metaTags,
+          imageUrl: ogImageUrl,
+          websiteUrl
+        });
+      }
+    } catch (e) {
+      console.log('Could not fetch config from Cloudinary:', e.message);
+    }
+
+    // Fallback meta tags
+    const websiteUrl = `${baseUrl}/${id}`;
+    const metaTags = generateOGMetaTags(
+      {
+        recipientName: 'Someone Special',
+        eventType: 'Birthday',
+        creatorName: 'A Friend',
+        message: ''
+      },
+      websiteUrl
+    );
+
+    const ogImageUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/og-images/${safeName}`;
+
+    res.json({
+      success: true,
+      meta: metaTags,
+      imageUrl: ogImageUrl,
+      websiteUrl
+    });
+
+  } catch (error) {
+    console.error('Error fetching OG meta:', error);
+    res.status(500).json({ error: 'Failed to fetch OG meta', details: error.message });
+  }
+});
+
+/**
+ * POST /api/og-meta
+ * Generates and returns meta tags for given data
+ */
+app.post('/api/og-meta', async (req, res) => {
+  try {
+    const { recipientName, eventType, creatorName, message, websiteUrl } = req.body;
+
+    const metaTags = generateOGMetaTags({
+      recipientName,
+      eventType,
+      creatorName,
+      message
+    }, websiteUrl);
+
+    res.json({
+      success: true,
+      meta: metaTags
+    });
+  } catch (error) {
+    console.error('Error generating meta tags:', error);
+    res.status(500).json({ error: 'Failed to generate meta tags' });
+  }
 });
 
 
@@ -1187,8 +1697,23 @@ app.use('/api', (err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-app.get('/:path', (req, res, next) => {
+app.get('/:path', async (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
+
+  const slug = req.params.path;
+
+  try {
+    const mongoReady = await ensureMongoConnected();
+    if (mongoReady) {
+      const entry = await CustomSlug.findOne({ slug }).lean();
+      if (entry) {
+        return res.redirect(`/generated/customize.html?view=${entry.websiteId}`);
+      }
+    }
+  } catch (dbErr) {
+    console.error('[CustomURL] lookup failed:', dbErr);
+  }
+
   const filePath = path.join(__dirname, 'public', req.path);
   if (req.path.endsWith('/')) {
     return res.sendFile(path.join(filePath, 'index.html'), err => { if (err) next(); });

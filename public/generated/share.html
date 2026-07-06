@@ -1280,12 +1280,150 @@
       font-size: 1rem;
       cursor: pointer;
       flex: 1;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .modal-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 36px rgba(123, 93, 246, 0.18);
+    }
+
+    .modal-button.primary {
+      background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%);
+      box-shadow: 0 18px 36px rgba(123, 93, 246, 0.24);
     }
 
     .modal-button.secondary {
-      background: transparent;
-      border: 1.5px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
       color: var(--text-primary);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-button.secondary:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.08);
+    }
+
+    .modal-card-advanced {
+      padding: 32px 30px 24px;
+      max-width: 520px;
+    }
+
+    .custom-url-top {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .custom-url-icon {
+      width: 54px;
+      height: 54px;
+      background: linear-gradient(135deg, rgba(123, 93, 246, 0.16), rgba(255, 122, 47, 0.15));
+      color: #7b5df6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 18px;
+      font-size: 1.35rem;
+    }
+
+    .custom-url-header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .custom-url-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(123, 93, 246, 0.12);
+      color: #7b5df6;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    .custom-url-preview-advanced {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 14px 18px;
+      border-radius: 24px;
+      margin-bottom: 12px;
+    }
+
+    .custom-url-base {
+      color: var(--text-secondary);
+      font-family: 'Inter', 'Quicksand', sans-serif;
+      font-size: 0.95rem;
+      min-width: 120px;
+      white-space: nowrap;
+    }
+
+    .custom-url-preview input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1rem;
+      outline: none;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      min-width: 0;
+    }
+
+    .custom-url-hint {
+      margin-bottom: 20px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      text-align: left;
+      min-height: 1.5em;
+    }
+
+    .custom-url-benefits {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .benefit-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 16px 16px 14px;
+      text-align: left;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .benefit-card strong {
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    .benefit-card span {
+      display: block;
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .modal-buttons-advanced {
+      gap: 14px;
     }
 
     /* Feedback Form Styles - Professional & User-Friendly */
@@ -1642,6 +1780,31 @@
         font-size: 0.8rem;
         gap: 4px;
       }
+
+      .custom-url-top {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .custom-url-header {
+        align-items: center;
+      }
+
+      .custom-url-preview-advanced {
+        grid-template-columns: 1fr;
+      }
+
+      .custom-url-benefits {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-buttons-advanced {
+        flex-direction: column;
+      }
+
+      .modal-button {
+        width: 100%;
+      }
     }
 
     @media (max-width: 480px) {
@@ -1710,9 +1873,187 @@
         padding: 8px 16px;
       }
     }
+
+    /* ===== CUSTOM URL SECTION (compact, mobile-friendly) ===== */
+    .custom-url-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 12px;
+      margin-bottom: 20px;
+      padding: 14px 18px;
+      flex-wrap: wrap;
+      background: rgba(123, 93, 246, 0.08);
+      border: 1px solid rgba(123, 93, 246, 0.16);
+      border-radius: 28px;
+    }
+
+    .custom-url-example {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      max-width: 100%;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .custom-url-example strong {
+      color: var(--accent-solid);
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    .custom-url-pill-btn {
+      background: var(--accent-solid);
+      border: 1px solid transparent;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 10px 30px rgba(123, 93, 246, 0.15);
+    }
+
+    .custom-url-pill-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 40px rgba(123, 93, 246, 0.18);
+    }
+
+    .custom-url-pill-btn:active {
+      transform: scale(0.97);
+    }
+
+    .loading-spinner-small {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .custom-url-modal-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin: 0;
+    }
+
+    .custom-url-modal-sub {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0 0 18px;
+    }
+
+    .custom-url-preview {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border-radius: 60px;
+      padding: 5px 5px 5px 20px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 8px;
+    }
+
+    .custom-url-preview .custom-url-base {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .custom-url-preview input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px 0;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      outline: none;
+      font-family: monospace;
+      min-width: 0;
+    }
+
+    .custom-url-hint {
+      font-size: 0.8rem;
+      margin: 0 0 18px;
+      text-align: left;
+      min-height: 18px;
+    }
+
+    .custom-url-hint.success {
+      color: #22c55e;
+    }
+
+    .custom-url-hint.error {
+      color: var(--error-color);
+    }
+
+    /* Mobile adjustments for custom URL */
+    @media (max-width: 768px) {
+      .custom-url-row {
+        gap: 10px;
+        margin-top: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .custom-url-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .custom-url-example {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.78rem;
+        display: flex;
+      }
+      .custom-url-pill-btn {
+        font-size: 0.8rem;
+        padding: 7px 14px;
+      }
+    }
   </style>
   <script src="/assets/config.js"></script>
   <script src="/assets/tracker.js" defer></script>
+
+  <!-- Placeholder for dynamic OG meta tags (will be populated by JavaScript) -->
+  <meta property="og:title" content="✨ Your Magical Surprise is Ready! ✨" id="ogTitle">
+  <meta property="og:description" content="I created something special just for you. Open the surprise link to discover it!" id="ogDescription">
+  <meta property="og:image" content="" id="ogImage">
+  <meta property="og:url" content="" id="ogUrl">
+  <meta property="og:type" content="website" id="ogType">
+  <meta property="og:site_name" content="TheGreeter">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" id="twitterCard">
+  <meta name="twitter:title" content="✨ Your Magical Surprise is Ready! ✨" id="twitterTitle">
+  <meta name="twitter:description" content="I created something special just for you" id="twitterDescription">
+  <meta name="twitter:image" content="" id="twitterImage">
 </head>
 
 <body>
@@ -1748,6 +2089,14 @@
       <div class="link-box">
         <input type="text" id="shareLinkInput" readonly value="Loading...">
         <button class="copy-btn" id="copyLinkBtn"><i class="far fa-copy"></i> Copy</button>
+      </div>
+
+      <!-- Custom URL row: compact example + action button -->
+      <div class="custom-url-row">
+        <p class="custom-url-example" id="customUrlExample">Use your name: thegreeter.in/<strong>YourCustomName</strong></p>
+        <button class="custom-url-pill-btn" id="openCustomUrlBtn">
+          <i class="fas fa-link"></i> <span>Personalise Your URL</span>
+        </button>
       </div>
 
       <!-- Social media and QR code layout -->
@@ -1836,6 +2185,50 @@
         <div class="modal-buttons">
           <button class="modal-button secondary" id="instagramModalRedirect">Go to Instagram</button>
           <button class="modal-button primary" id="instagramModalOk">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom URL Modal -->
+    <div class="custom-modal" id="customUrlModal">
+      <div class="modal-card modal-card-advanced">
+        <div class="modal-close" id="customUrlModalClose"><i class="fas fa-times"></i></div>
+        <div class="custom-url-top">
+          <div class="modal-icon">
+            <div class="share-icon-circle custom-url-icon">
+              <i class="fas fa-link"></i>
+            </div>
+          </div>
+          <div class="custom-url-header">
+            <span class="custom-url-badge">Brandable Link</span>
+            <h3 class="custom-url-modal-title" id="customUrlTitle">Secure your branded URL</h3>
+            <p class="custom-url-modal-sub" id="customUrlSub">Pick a memorable link your friends can open instantly.</p>
+          </div>
+        </div>
+
+        <div class="custom-url-preview custom-url-preview-advanced">
+          <span class="custom-url-base">thegreeter.in/</span>
+          <input type="text" id="customSlugInput" placeholder="your-name-or-favorite-word" maxlength="30" autocomplete="off">
+        </div>
+        <p class="custom-url-hint" id="customUrlHint">Recommended: use your name, nickname, or a short phrase.</p>
+
+        <div class="custom-url-benefits">
+          <div class="benefit-card">
+            <strong>Easy to remember</strong>
+            <span>Share one link that looks professional and personal.</span>
+          </div>
+          <div class="benefit-card">
+            <strong>Instant trust</strong>
+            <span>Visitors recognize your page before they even open it.</span>
+          </div>
+        </div>
+
+        <div class="modal-buttons modal-buttons-advanced">
+          <button class="modal-button secondary" id="customUrlCancel">Not now</button>
+          <button class="modal-button primary" id="customUrlClaimBtn" disabled>
+            <span id="customUrlClaimText">Generate Custom URL</span>
+            <span id="customUrlSpinner" class="loading-spinner-small" style="display:none;vertical-align:middle;"></span>
+          </button>
         </div>
       </div>
     </div>
@@ -2089,6 +2482,58 @@
 
   <script>
     (function () {
+      // ========== OPEN GRAPH META TAG INJECTION ==========
+      async function injectOGMetaTags() {
+        const viewId = new URLSearchParams(window.location.search).get('view');
+        if (!viewId) return;
+
+        try {
+          const response = await fetch(`/api/og-meta/${viewId}`);
+          if (!response.ok) throw new Error('Failed to fetch OG meta');
+          
+          const data = await response.json();
+          const { meta = {}, imageUrl = '', websiteUrl = '' } = data;
+
+          // Update meta tags
+          const updateMeta = (id, property, value) => {
+            let el = document.getElementById(id);
+            if (!el) {
+              el = document.createElement('meta');
+              el.id = id;
+              if (property.startsWith('og:') || property.startsWith('twitter:')) {
+                el.setAttribute('property', property);
+              } else {
+                el.setAttribute('name', property);
+              }
+              document.head.appendChild(el);
+            }
+            el.setAttribute('content', value);
+          };
+
+          // Update OG meta tags
+          updateMeta('ogTitle', 'og:title', meta.title || '✨ Your Magical Surprise is Ready! ✨');
+          updateMeta('ogDescription', 'og:description', meta.description || 'I created something special just for you');
+          updateMeta('ogUrl', 'og:url', websiteUrl || window.location.href);
+          updateMeta('ogImage', 'og:image', imageUrl);
+          updateMeta('ogType', 'og:type', meta.type || 'website');
+
+          // Update Twitter Card
+          updateMeta('twitterTitle', 'twitter:title', meta.title || '✨ Your Magical Surprise is Ready! ✨');
+          updateMeta('twitterDescription', 'twitter:description', meta.description || 'I created something special just for you');
+          updateMeta('twitterImage', 'twitter:image', imageUrl);
+
+          // Update page title
+          document.title = meta.title || '✨ Your Magical Surprise is Ready! ✨';
+
+        } catch (error) {
+          console.error('Error injecting OG meta tags:', error);
+          // Gracefully continue with defaults
+        }
+      }
+
+      // Inject OG tags immediately
+      injectOGMetaTags();
+
       // ========== SHARE LINK LOGIC ==========
       const urlParams = new URLSearchParams(window.location.search);
       const viewId = urlParams.get('view');
@@ -2100,8 +2545,14 @@
       if (!viewId) {
         linkInput.value = '❌ No link found. Please generate first.';
       } else {
-        fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}`;
-        linkInput.value = fullLink;
+        const storedCustomUrl = localStorage.getItem(`customUrl_${viewId}`);
+        if (storedCustomUrl) {
+          fullLink = storedCustomUrl;
+          linkInput.value = storedCustomUrl;
+        } else {
+          fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}`;
+          linkInput.value = fullLink;
+        }
       }
 
       function getFestivalShareText(lang) {
@@ -2227,13 +2678,16 @@
           qrLoading: "Generating QR Code...",
           copyAlert: "Link copied to clipboard!",
           instaTitle: "Copy & Share this link on Instagram",
-          instaBtn: "Go to Instagram"
+          instaBtn: "Go to Instagram",
+          claimCustomUrl: "Generate Custom URL",
+          customUrlTitle: "Get Your Custom URL",
+          customUrlSub: "Choose a unique web address for your surprise page"
         },
         hi: {
           nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"], signin: "लॉगिन करें",
           footerBrand: "जन्मदिन, प्रपोज़ल, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
           exploreTitle: "देखिए", exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "कीमतें"],
-          supportTitle: "सहायता", supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
+          supportTitle: "सहायता", supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क"],
           followTitle: "हमें फॉलो करें", copyright: "© 2026 Greeter · हर पल जादुई बनाएँ",
           signinAlert: "लॉगिन सुविधा जल्द आ रही है!",
           title: "✨ आपकी वेबसाइट तैयार है! ✨",
@@ -2244,7 +2698,10 @@
           qrLoading: "QR कोड बना रहे हैं...",
           copyAlert: "लिंक कॉपी हो गया!",
           instaTitle: "इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें",
-          instaBtn: "इंस्टाग्राम पर जाएं"
+          instaBtn: "इंस्टाग्राम पर जाएं",
+          claimCustomUrl: "कस्टम URL बनाएं",
+          customUrlTitle: "अपना कस्टम URL प्राप्त करें",
+          customUrlSub: "अपनी सरप्राइज़ के लिए एक अनोखा वेब पता चुनें"
         }
       };
 
@@ -2278,6 +2735,9 @@
         if (document.getElementById('qrLoaderText')) document.getElementById('qrLoaderText').innerText = t.qrLoading;
         if (document.getElementById('instagramModalMessage')) document.getElementById('instagramModalMessage').innerText = t.instaTitle;
         if (document.getElementById('instagramModalRedirect')) document.getElementById('instagramModalRedirect').innerText = t.instaBtn;
+        if (document.getElementById('customUrlTitle')) document.getElementById('customUrlTitle').innerText = t.customUrlTitle;
+        if (document.getElementById('customUrlSub')) document.getElementById('customUrlSub').innerText = t.customUrlSub;
+        if (document.getElementById('customUrlClaimText')) document.getElementById('customUrlClaimText').innerText = t.claimCustomUrl;
         document.querySelector('#langToggleBtn span').innerText = lang === 'en' ? 'हिन्दी' : 'English';
 
         // *** CRITICAL: Update title HTML so emojis keep original color ***
@@ -2610,6 +3070,171 @@
           if (submitBtn) submitBtn.disabled = false;
         }
       });
+      // ========== CUSTOM URL SYSTEM ==========
+      const customUrlModal = document.getElementById('customUrlModal');
+      const openCustomUrlBtn = document.getElementById('openCustomUrlBtn');
+      const customUrlClose = document.getElementById('customUrlModalClose');
+      const customUrlCancel = document.getElementById('customUrlCancel');
+      const customSlugInput = document.getElementById('customSlugInput');
+      const customUrlHint = document.getElementById('customUrlHint');
+      const customUrlClaimBtn = document.getElementById('customUrlClaimBtn');
+      const customUrlClaimText = document.getElementById('customUrlClaimText');
+      const customUrlSpinner = document.getElementById('customUrlSpinner');
+      const customUrlExample = document.getElementById('customUrlExample');
+
+      const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+        ? window.APP_CONFIG.API_BASE_URL
+        : 'https://wishing-portal.onrender.com';
+
+      const RESERVED_SLUGS_CLIENT = [
+        'api','assets','generated','blog','admin','create','index','share','privacy',
+        'terms','contactus','whygreeter','templates','uploads','ping','testme'
+      ];
+
+      function slugify(str) {
+        return str.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      }
+
+      function getSuggestedSlug() {
+        const localData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const name = localData.name || senderName || '';
+        const value = name ? name.trim() : 'YourCustomName';
+        return slugify(value || 'YourCustomName');
+      }
+
+      function openCustomUrlModalFn() {
+        const viewId = new URLSearchParams(window.location.search).get('view');
+        if (!viewId) {
+          alert(currentLang === 'hi' ? 'कृपया पहले अपना लिंक बनाएं।' : 'Please generate your link first.');
+          return;
+        }
+        window.location.href = `/generated/custom-url.html?view=${encodeURIComponent(viewId)}`;
+      }
+
+      function closeCustomUrlModalFn() {
+        customUrlModal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+
+      openCustomUrlBtn?.addEventListener('click', openCustomUrlModalFn);
+      customUrlClose?.addEventListener('click', closeCustomUrlModalFn);
+      customUrlCancel?.addEventListener('click', closeCustomUrlModalFn);
+      customUrlModal.addEventListener('click', (e) => { if (e.target === customUrlModal) closeCustomUrlModalFn(); });
+
+      // Auto-sanitize and validate slug
+      let slugDebounce;
+      customSlugInput?.addEventListener('input', () => {
+        let val = customSlugInput.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+        customSlugInput.value = val;
+
+        clearTimeout(slugDebounce);
+        slugDebounce = setTimeout(() => {
+          if (val.length < 3) {
+            customUrlHint.textContent = currentLang === 'hi' ? 'कम से कम 3 अक्षर आवश्यक' : 'At least 3 characters required';
+            customUrlHint.className = 'custom-url-hint error';
+            customUrlClaimBtn.disabled = true;
+            return;
+          }
+          if (val.length > 30) {
+            customUrlHint.textContent = currentLang === 'hi' ? 'अधिकतम 30 अक्षर' : 'Maximum 30 characters';
+            customUrlHint.className = 'custom-url-hint error';
+            customUrlClaimBtn.disabled = true;
+            return;
+          }
+          if (RESERVED_SLUGS_CLIENT.includes(val)) {
+            customUrlHint.textContent = currentLang === 'hi' ? 'यह नाम आरक्षित है' : 'This name is reserved. Choose another.';
+            customUrlHint.className = 'custom-url-hint error';
+            customUrlClaimBtn.disabled = true;
+            return;
+          }
+
+          fetch(`${API_BASE}/api/custom-url/check/${val}`)
+            .then(r => r.json())
+            .then(data => {
+              if (data.available) {
+                customUrlHint.textContent = currentLang === 'hi' ? '✓ यह URL उपलब्ध है!' : '✓ This URL is available!';
+                customUrlHint.className = 'custom-url-hint success';
+                customUrlClaimBtn.disabled = false;
+              } else {
+                customUrlHint.textContent = currentLang === 'hi' ? '✗ पहले से लिया गया. दूसरा आज़माएँ।' : '✗ Already taken. Try another.';
+                customUrlHint.className = 'custom-url-hint error';
+                customUrlClaimBtn.disabled = true;
+              }
+            })
+            .catch(() => {
+              customUrlHint.textContent = '';
+              customUrlClaimBtn.disabled = false;
+            });
+        }, 450);
+      });
+
+      customUrlClaimBtn?.addEventListener('click', async () => {
+        const slug = customSlugInput.value;
+        const viewId = new URLSearchParams(window.location.search).get('view');
+
+        if (!slug || !viewId) return;
+        if (slug.length < 3) {
+          customUrlHint.textContent = currentLang === 'hi' ? 'कम से कम 3 अक्षर आवश्यक' : 'At least 3 characters required';
+          customUrlHint.className = 'custom-url-hint error';
+          return;
+        }
+
+        customUrlClaimBtn.disabled = true;
+        customUrlClaimText.textContent = currentLang === 'hi' ? 'बना रहे हैं...' : 'Generating...';
+        customUrlSpinner.style.display = 'inline-block';
+
+        try {
+          const res = await fetch(`${API_BASE}/api/custom-url`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ websiteId: viewId, slug })
+          });
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            const customUrl = `${window.location.origin}/${slug}`;
+            linkInput.value = customUrl;
+            linkInput.readOnly = false;
+            localStorage.setItem(`customUrl_${viewId}`, customUrl);
+            closeCustomUrlModalFn();
+            
+            const orig = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => copyBtn.innerHTML = orig, 1500);
+          } else {
+            customUrlHint.textContent = data.error || (currentLang === 'hi' ? 'त्रुटि हुई' : 'Something went wrong');
+            customUrlHint.className = 'custom-url-hint error';
+          }
+        } catch (err) {
+          alert(currentLang === 'hi' ? 'सर्वर तक नहीं पहुंच सका। पुनः प्रयास करें।' : 'Could not reach server. Please try again.');
+        } finally {
+          customUrlClaimBtn.disabled = false;
+          customUrlClaimText.textContent = translations[currentLang].claimCustomUrl || 'Generate Custom URL';
+          customUrlSpinner.style.display = 'none';
+        }
+      });
+
+      // Update example text on load and on language change
+      function updateCustomUrlExample() {
+        const suggested = getSuggestedSlug();
+        if (customUrlExample) {
+          customUrlExample.innerHTML = `Use your name: thegreeter.in/<strong>${suggested}</strong>`;
+        }
+      }
+      updateCustomUrlExample();
+
+      // Re-apply example when language changes
+      const origApplyLanguage = applyLanguage;
+      applyLanguage = function (lang) {
+        origApplyLanguage(lang);
+        updateCustomUrlExample();
+      };
+
+      // ESC key for custom URL modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && customUrlModal.classList.contains('show')) closeCustomUrlModalFn();
+      });
+
     })();
   </script>
 </body>
