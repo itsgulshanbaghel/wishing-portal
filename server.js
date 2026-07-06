@@ -123,6 +123,17 @@ app.get('/ping', (req, res) => res.send('pong'));
 
 
 
+app.use('/api/payment/webhook', (req, res, next) => {
+  let rawBody = '';
+  req.setEncoding('utf8');
+  req.on('data', chunk => { rawBody += chunk; });
+  req.on('end', () => {
+    req.rawBody = rawBody;
+    next();
+  });
+  req.on('error', next);
+});
+
 app.use(express.json({ limit: '10mb' })); // Reduced from 100mb to 10mb
 
 
@@ -499,8 +510,8 @@ const CF_APP_ID = process.env.CASHFREE_APP_ID || '';
 const CF_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
 const CF_WEBHOOK_SECRET = process.env.CASHFREE_WEBHOOK_SECRET || '';
 const CF_API_BASE = (process.env.CASHFREE_ENV === 'sandbox' || process.env.CASHFREE_ENV === 'sandbox')
-  ? 'https://sandbox.cashfree.com'
-  : 'https://api.cashfree.com';
+  ? 'https://sandbox.cashfree.com/pg'
+  : 'https://api.cashfree.com/pg';
 
 function cfHeaders() {
   return {
@@ -634,20 +645,20 @@ app.post('/api/payment/create-order', async (req, res) => {
     let paymentLink = '';
     let cfError = null;
     try {
-      const cfRes = await fetch(`${CF_API_BASE}/api/v1/orders`, {
+      const cfRes = await fetch(`${CF_API_BASE}/orders`, {
         method: 'POST',
         headers: cfHeaders(),
         body: JSON.stringify(orderPayload)
       });
       const cfData = await cfRes.json();
+      console.error('[Cashfree] Status:', cfRes.status, 'Body:', JSON.stringify(cfData));
       if (cfRes.ok && cfData.payment_link) {
         paymentLink = cfData.payment_link;
       } else {
-        console.error('Cashfree order creation failed:', cfData);
-        cfError = cfData?.message || cfData?.error || 'Failed to create payment order with gateway';
+        cfError = cfData?.message || cfData?.error || JSON.stringify(cfData) || 'Failed to create payment order with gateway';
       }
     } catch (err) {
-      console.error('Cashfree API error:', err.message);
+      console.error('[Cashfree] Network Error:', err.message);
       cfError = err.message || 'Network error while connecting to payment gateway';
     }
 
@@ -675,12 +686,16 @@ app.post('/api/payment/create-order', async (req, res) => {
   }
 });
 
+app.get('/api/payment/webhook', (req, res) => {
+  res.status(200).json({ received: true });
+});
+
 // POST /api/payment/webhook - Cashfree webhook
-app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/api/payment/webhook', async (req, res) => {
   try {
+    const body = req.rawBody || '';
     const signature = req.headers['x-webhook-signature'] || req.headers['X-Webhook-Signature'] || '';
     const timestamp = req.headers['x-webhook-timestamp'] || req.headers['X-Webhook-Timestamp'] || '';
-    const body = req.body;
 
     // Verify signature if webhook secret is configured
     if (CF_WEBHOOK_SECRET && signature) {
