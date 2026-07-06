@@ -638,7 +638,7 @@ app.post('/api/payment/create-order', async (req, res) => {
       order_meta: {
         return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`,
         notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal.onrender.com'}/api/payment/webhook`,
-        payment_methods: 'cc,dc,upi,wallet,nb,app'
+        payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
       }
     };
 
