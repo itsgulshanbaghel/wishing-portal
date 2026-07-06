@@ -632,6 +632,7 @@ app.post('/api/payment/create-order', async (req, res) => {
     };
 
     let paymentLink = '';
+    let cfError = null;
     try {
       const cfRes = await fetch(`${CF_API_BASE}/api/v1/orders`, {
         method: 'POST',
@@ -643,14 +644,22 @@ app.post('/api/payment/create-order', async (req, res) => {
         paymentLink = cfData.payment_link;
       } else {
         console.error('Cashfree order creation failed:', cfData);
-        paymentLink = `${process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`;
+        cfError = cfData?.message || cfData?.error || 'Failed to create payment order with gateway';
       }
     } catch (err) {
       console.error('Cashfree API error:', err.message);
-      paymentLink = `${process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`;
+      cfError = err.message || 'Network error while connecting to payment gateway';
     }
 
     await Payment.findByIdAndUpdate(payment._id, { paymentLink });
+
+    if (!paymentLink) {
+      return res.status(502).json({
+        success: false,
+        error: cfError || 'Payment gateway unavailable. Please try again later.',
+        orderId
+      });
+    }
 
     res.json({
       success: true,
