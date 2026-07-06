@@ -639,7 +639,7 @@ app.post('/api/payment/create-order', async (req, res) => {
         customer_phone: customer.customer_phone || '9999999999'
       },
       order_meta: {
-        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`,
+        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId={order_id}`,
         notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal.onrender.com'}/api/payment/webhook`,
         payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
       }
@@ -700,6 +700,7 @@ app.post('/api/payment/create-order', async (req, res) => {
       success: true,
       orderId,
       paymentLink,
+      paymentSessionId: cfData.payment_session_id || null,
       amount: orderAmount,
       currency: currency || 'INR',
       slug: sanitizedSlug
