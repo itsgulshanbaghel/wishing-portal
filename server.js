@@ -647,13 +647,14 @@ app.post('/api/payment/create-order', async (req, res) => {
 
     let paymentLink = '';
     let cfError = null;
+    let cfData = {};
     try {
       const cfRes = await fetch(`${CF_API_BASE}/orders`, {
         method: 'POST',
         headers: cfHeaders(),
         body: JSON.stringify(orderPayload)
       });
-      const cfData = await cfRes.json();
+      cfData = await cfRes.json();
       console.error('[Cashfree] Status:', cfRes.status, 'Body:', JSON.stringify(cfData));
 
       if (cfRes.status === 401) {
