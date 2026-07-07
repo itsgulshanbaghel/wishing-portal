@@ -2296,7 +2296,7 @@
           }
 
           const data = await res.json();
-          if (data.success && data.paymentLink && !data.paymentSessionId) {
+          if (data.success && data.paymentLink) {
             window.location.href = data.paymentLink;
           } else if (data.success && data.paymentSessionId) {
             initCashfreeCheckout(data.paymentSessionId, data.orderId);
@@ -2344,12 +2344,56 @@
 
         const mode = location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'sandbox' : 'production';
 
+        // Check if Cashfree SDK is loaded
+        if (typeof Cashfree === 'undefined') {
+          console.error('Cashfree SDK not loaded');
+          alert('Payment gateway is loading. Please wait a moment and try again.');
+          checkoutContainer.remove();
+          payBtn.disabled = false;
+          payBtnSpinner.style.display = 'none';
+          updatePayBtnState();
+          return;
+        }
+
         try {
           const cashfree = new Cashfree({
             mode: mode,
             paymentSessionId: paymentSessionId
           });
-          cashfree.load();
+
+          // Add event listeners for payment events
+          cashfree.on('cashfree.payment.success', (event) => {
+            console.log('Payment success:', event);
+            window.location.href = `${window.location.pathname}?action=payment-success&orderId=${orderId}`;
+          });
+
+          cashfree.on('cashfree.payment.failure', (event) => {
+            console.error('Payment failed:', event);
+            alert('Payment failed. Please try again.');
+            checkoutContainer.remove();
+            payBtn.disabled = false;
+            payBtnSpinner.style.display = 'none';
+            updatePayBtnState();
+          });
+
+          cashfree.on('cashfree.payment.close', () => {
+            console.log('Payment modal closed');
+            checkoutContainer.remove();
+            payBtn.disabled = false;
+            payBtnSpinner.style.display = 'none';
+            updatePayBtnState();
+          });
+
+          cashfree.render(inner).then(() => {
+            console.log('Cashfree checkout rendered successfully');
+          }).catch((err) => {
+            console.error('Cashfree render failed:', err);
+            alert('Unable to load payment options. Please try again.');
+            checkoutContainer.remove();
+            payBtn.disabled = false;
+            payBtnSpinner.style.display = 'none';
+            updatePayBtnState();
+          });
         } catch (err) {
           console.error('Cashfree checkout init failed:', err);
           alert('Unable to load secure checkout. Please try again.');

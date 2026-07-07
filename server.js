@@ -677,7 +677,8 @@ app.post('/api/payment/create-order', async (req, res) => {
       } else if (cfData.payment_session_id && cfData.payments?.url) {
         paymentLink = cfData.payments.url;
       } else if (cfData.payment_session_id) {
-        paymentLink = `${SITE_URL || 'https://thegreeter.in'}/generated/payment-session.html?session_id=${cfData.payment_session_id}&order_id=${orderId}`;
+        // Return payment_session_id to client for drop-in checkout
+        paymentLink = null;
       } else {
         cfError = cfData?.message || 'Payment gateway returned an unexpected response. Please try again.';
       }
