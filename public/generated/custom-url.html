@@ -2362,12 +2362,12 @@
           });
 
           // Add event listeners for payment events
-          cashfree.on('cashfree.payment.success', (event) => {
+          cashfree.on('payment.success', (event) => {
             console.log('Payment success:', event);
             window.location.href = `${window.location.pathname}?action=payment-success&orderId=${orderId}`;
           });
 
-          cashfree.on('cashfree.payment.failure', (event) => {
+          cashfree.on('payment.failure', (event) => {
             console.error('Payment failed:', event);
             alert('Payment failed. Please try again.');
             checkoutContainer.remove();
@@ -2376,7 +2376,7 @@
             updatePayBtnState();
           });
 
-          cashfree.on('cashfree.payment.close', () => {
+          cashfree.on('payment.close', () => {
             console.log('Payment modal closed');
             checkoutContainer.remove();
             payBtn.disabled = false;

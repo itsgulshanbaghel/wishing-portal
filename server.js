@@ -689,6 +689,20 @@ app.post('/api/payment/create-order', async (req, res) => {
 
     await Payment.findByIdAndUpdate(payment._id, { paymentLink });
 
+    // If we have a payment_session_id but no payment_link, return session_id for drop-in checkout
+    if (!paymentLink && cfData.payment_session_id) {
+      res.json({
+        success: true,
+        orderId,
+        paymentLink: null,
+        paymentSessionId: cfData.payment_session_id,
+        amount: orderAmount,
+        currency: currency || 'INR',
+        slug: sanitizedSlug
+      });
+      return;
+    }
+
     if (!paymentLink) {
       return res.status(502).json({
         success: false,
