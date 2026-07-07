@@ -521,7 +521,7 @@ function cfHeaders() {
     'Content-Type': 'application/json',
     'x-client-id': CF_APP_ID,
     'x-client-secret': CF_SECRET_KEY,
-    'x-api-version': '2022-09-01'
+    'x-api-version': '2023-08-01'
   };
 }
 
