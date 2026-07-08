@@ -1806,15 +1806,25 @@ app.use('/api', (err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-app.get('/:path', async (req, res, next) => {
+app.get('/:slug', async (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
 
-  const slug = req.params.path;
+  const slug = req.params.slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 
   try {
     const mongoReady = await ensureMongoConnected();
     if (mongoReady) {
-      const entry = await CustomSlug.findOne({ slug }).lean();
+      // First check CustomSlug collection (created by webhook)
+      let entry = await CustomSlug.findOne({ slug }).lean();
+
+      // If not found, check PAID Payment records as fallback
+      if (!entry) {
+        const paidPayment = await Payment.findOne({ slug: slug, status: 'PAID' }).lean();
+        if (paidPayment) {
+          entry = { slug: paidPayment.slug, websiteId: paidPayment.websiteId };
+        }
+      }
+
       if (entry) {
         return res.redirect(`/generated/customize.html?view=${entry.websiteId}`);
       }
@@ -1829,10 +1839,17 @@ app.get('/:path', async (req, res, next) => {
   }
   if (!path.extname(req.path)) {
     return res.sendFile(filePath + '.html', err => {
-      if (err) res.status(404).send('Not found');
+      if (err) {
+        res.status(404).send('Page not found');
+      }
     });
   }
   next();
+});
+
+// 404 handler for unmatched routes
+app.use((req, res) => {
+  res.status(404).send('Page not found');
 });
 
 app.listen(PORT, () => {
