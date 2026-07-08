@@ -1733,25 +1733,29 @@
       let qrPhotoBase64 = ''; // base64 string
       let qrCode = null;
 
-      // Geo-based pricing configuration
-      const geoPricing = {
-        'IN': { currency: 'INR', amount: 29, symbol: '₹', region: 'India' },
-        'EU': { currency: 'EUR', amount: 0.99, symbol: '€', region: 'Europe' },
-        'GB': { currency: 'GBP', amount: 0.99, symbol: '£', region: 'United Kingdom' },
-        'US': { currency: 'USD', amount: 0.99, symbol: '$', region: 'United States' },
-        'AU': { currency: 'AUD', amount: 1.49, symbol: 'A$', region: 'Australia & NZ' },
-        'NZ': { currency: 'AUD', amount: 1.49, symbol: 'A$', region: 'Australia & NZ' },
-        'default': { currency: 'USD', amount: 0.99, symbol: '$', region: 'International' }
-      };
+// Geo-based pricing configuration
+       const geoPricing = {
+         'IN': { currency: 'INR', amount: 29, symbol: '₹', region: 'India' },
+         'EU': { currency: 'EUR', amount: 0.99, symbol: '€', region: 'Europe' },
+         'GB': { currency: 'GBP', amount: 0.99, symbol: '£', region: 'United Kingdom' },
+         'US': { currency: 'USD', amount: 0.99, symbol: '$', region: 'United States' },
+         'AU': { currency: 'AUD', amount: 1.49, symbol: 'A$', region: 'Australia & NZ' },
+         'NZ': { currency: 'AUD', amount: 1.49, symbol: 'A$', region: 'Australia & NZ' },
+         'default': { currency: 'USD', amount: 0.99, symbol: '$', region: 'International' }
+       };
 
-      // Extract query parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const action = urlParams.get('action');
-      const orderIdParam = urlParams.get('orderId');
-      websiteId = urlParams.get('view') || '';
+       // Poll Status for Payment Success Redirections
+       let pollCount = 0;
+       let currentOrderId = '';
 
-      // Initialize Page
-      init();
+       // Extract query parameters
+       const urlParams = new URLSearchParams(window.location.search);
+       const action = urlParams.get('action');
+       const orderIdParam = urlParams.get('orderId');
+       websiteId = urlParams.get('view') || '';
+
+       // Initialize Page
+       init();
 
       async function init() {
         // Theme & Mode toggle (keep consistent with user state)
@@ -2315,89 +2319,83 @@
         }
       }
 
-      function initCashfreeCheckout(paymentSessionId, orderId) {
-        const mode = location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'sandbox' : 'production';
+function initCashfreeCheckout(paymentSessionId, orderId) {
+         const mode = location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'sandbox' : 'production';
 
-        // Check if Cashfree SDK is loaded
-        if (typeof Cashfree === 'undefined') {
-          console.error('Cashfree SDK not loaded');
-          alert('Payment gateway is loading. Please wait a moment and try again.');
-          payBtn.disabled = false;
-          payBtnSpinner.style.display = 'none';
-          updatePayBtnState();
-          return;
-        }
+         if (typeof Cashfree === 'undefined') {
+           console.error('Cashfree SDK not loaded');
+           alert('Payment gateway is loading. Please wait a moment and try again.');
+           payBtn.disabled = false;
+           payBtnSpinner.style.display = 'none';
+           updatePayBtnState();
+           return;
+         }
 
-        try {
-          const cashfree = Cashfree({
-            mode: mode
-          });
-
-          const checkoutOptions = {
-            paymentSessionId: paymentSessionId,
-            redirectTarget: '_self'
-          };
-
-          cashfree.checkout(checkoutOptions).then((result) => {
-            console.log('Cashfree checkout completed:', result);
-            if (result.error) {
-              console.error('Payment error:', result.error);
-              alert('Payment error: ' + result.error.message);
-            }
-            payBtn.disabled = false;
-            payBtnSpinner.style.display = 'none';
-            updatePayBtnState();
-          }).catch((err) => {
-            console.error('Cashfree checkout failed:', err);
-            alert('Unable to load payment options. Please try again.');
-            payBtn.disabled = false;
-            payBtnSpinner.style.display = 'none';
-            updatePayBtnState();
-          });
-        } catch (err) {
-          console.error('Cashfree checkout init failed:', err);
-          alert('Unable to load secure checkout. Please try again.');
-          payBtn.disabled = false;
-          payBtnSpinner.style.display = 'none';
-          updatePayBtnState();
-        }
-      }
-
-// Poll Status for Payment Success Redirections
-       let pollCount = 0;
-       let currentOrderId = '';
-       async function pollPaymentStatus(orderId) {
-         currentOrderId = orderId;
          try {
-           const res = await fetch(`${API_BASE}/api/payment/status/${orderId}`);
-           if (!res.ok) throw new Error('Order status check error');
+           const cashfree = Cashfree({
+             mode: mode
+           });
 
-           const data = await res.json();
+           const checkoutOptions = {
+             paymentSessionId: paymentSessionId,
+             redirectTarget: '_self'
+           };
 
-           if (data.status === 'PAID') {
-             showSuccess(data);
-           } else if (data.status === 'FAILED' || data.status === 'CANCELLED') {
-             showError(`Order activation failed (Status: ${data.status}). If amount was deducted, it will be refunded. Please create a new order.`);
-           } else {
-             // Still pending, continue polling (up to 30 times, 2 seconds apart = 1 minute)
-             pollCount++;
-             if (pollCount < 30) {
-               setTimeout(() => pollPaymentStatus(orderId), 2000);
-             } else {
-               errorText.innerHTML = 'Payment status verification took too long. Please refresh the page or <button id="manualRetryBtn" style="background: var(--accent-solid); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 8px;">Retry Now</button>';
-               document.getElementById('manualRetryBtn')?.addEventListener('click', () => {
-                 pollCount = 0;
-                 showStatusLoading('Retrying payment verification...');
-                 pollPaymentStatus(currentOrderId);
-               });
+           cashfree.checkout(checkoutOptions).then((result) => {
+             console.log('Cashfree checkout completed:', result);
+             if (result.error) {
+               console.error('Payment error:', result.error);
+               alert('Payment error: ' + result.error.message);
              }
-           }
-         } catch (e) {
-           console.error(e);
-           // Retry
-           setTimeout(() => pollPaymentStatus(orderId), 3000);
+             payBtn.disabled = false;
+             payBtnSpinner.style.display = 'none';
+             updatePayBtnState();
+           }).catch((err) => {
+             console.error('Cashfree checkout failed:', err);
+             alert('Unable to load payment options. Please try again.');
+             payBtn.disabled = false;
+             payBtnSpinner.style.display = 'none';
+             updatePayBtnState();
+           });
+         } catch (err) {
+           console.error('Cashfree checkout init failed:', err);
+           alert('Unable to load secure checkout. Please try again.');
+           payBtn.disabled = false;
+           payBtnSpinner.style.display = 'none';
+           updatePayBtnState();
          }
        }
+
+      async function pollPaymentStatus(orderId) {
+        currentOrderId = orderId;
+        try {
+          const res = await fetch(`${API_BASE}/api/payment/status/${orderId}`);
+          if (!res.ok) throw new Error('Order status check error');
+
+          const data = await res.json();
+
+          if (data.status === 'PAID') {
+            showSuccess(data);
+          } else if (data.status === 'FAILED' || data.status === 'CANCELLED') {
+            showError(`Order activation failed (Status: ${data.status}). If amount was deducted, it will be refunded. Please create a new order.`);
+          } else {
+            pollCount++;
+            if (pollCount < 30) {
+              setTimeout(() => pollPaymentStatus(orderId), 2000);
+            } else {
+              errorText.innerHTML = 'Payment status verification took too long. Please refresh the page or <button id="manualRetryBtn" style="background: var(--accent-solid); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 8px;">Retry Now</button>';
+              document.getElementById('manualRetryBtn')?.addEventListener('click', () => {
+                pollCount = 0;
+                showStatusLoading('Retrying payment verification...');
+                pollPaymentStatus(currentOrderId);
+              });
+            }
+          }
+        } catch (e) {
+          console.error(e);
+          setTimeout(() => pollPaymentStatus(orderId), 3000);
+        }
+      }
 
       function showSuccess(paymentData) {
         loadingScreen.style.display = 'none';
@@ -2407,21 +2405,18 @@
 
         const finalUrl = `https://thegreeter.in/${paymentData.slug}`;
 
-        // Update URL preview and buttons
         const successLinkText = document.getElementById('successLinkText');
         successLinkText.textContent = finalUrl;
 
         const viewSuccessPageBtn = document.getElementById('viewSuccessPageBtn');
         viewSuccessPageBtn.href = finalUrl;
 
-        // Render final high-quality QR
         qrType = paymentData.qrCenterType;
         qrText = paymentData.qrCenterText;
-        qrPhotoBase64 = paymentData.qrCenterPhotoUrl; // Cloudinary secure URL is stored here
+        qrPhotoBase64 = paymentData.qrCenterPhotoUrl;
 
         generateQR('successQrCanvas');
 
-        // Copy button event
         document.getElementById('copySuccessLinkBtn').addEventListener('click', () => {
           navigator.clipboard.writeText(finalUrl).then(() => {
             const btn = document.getElementById('copySuccessLinkBtn');
@@ -2431,7 +2426,6 @@
           });
         });
 
-        // Download button
         document.getElementById('downloadSuccessQrBtn').addEventListener('click', () => {
           if (qrCode) {
             qrCode.download({ name: `greeter-qr-${paymentData.slug}`, extension: 'png', width: 4000, height: 4000 });
@@ -2447,13 +2441,13 @@
         successScreen.style.display = 'none';
       }
 
-function showError(msg) {
-         loadingScreen.style.display = 'none';
-         mainInterface.style.display = 'none';
-         successScreen.style.display = 'none';
-         errorScreen.style.display = 'block';
-         errorText.innerHTML = msg;
-       }
+      function showError(msg) {
+        loadingScreen.style.display = 'none';
+        mainInterface.style.display = 'none';
+        successScreen.style.display = 'none';
+        errorScreen.style.display = 'block';
+        errorText.innerHTML = msg;
+      }
     })();
   </script>
 </body>
