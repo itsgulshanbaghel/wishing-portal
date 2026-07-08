@@ -761,8 +761,13 @@ app.post('/api/payment/webhook', async (req, res) => {
     }
 
     const { order_id, event, payment_id, data } = eventData;
-
-    if (!order_id) {
+    
+    // Cashfree v2 webhook sometimes nests order_id under data.order_id
+    const resolvedOrderId = order_id || (data && data.order_id);
+    const resolvedEvent = event || (data && data.event);
+    
+    if (!resolvedOrderId) {
+      console.error('[Webhook] No order_id found in payload:', JSON.stringify(eventData).substring(0, 200));
       return res.status(200).json({ received: true });
     }
 
@@ -772,21 +777,22 @@ app.post('/api/payment/webhook', async (req, res) => {
     }
 
     // Find the payment record
-    const payment = await Payment.findOne({ orderId: order_id }).lean();
+    const payment = await Payment.findOne({ orderId: resolvedOrderId }).lean();
     if (!payment) {
+      console.error('[Webhook] Payment record not found for order:', resolvedOrderId);
       return res.status(200).json({ received: true });
     }
 
     let newStatus = payment.status;
 
     // Handle both old and new Cashfree webhook event names
-    if (event === 'PAYMENT_SUCCESS_WEBHOOK' || event === 'ORDER_PAID' || event === 'success payment') {
+    if (resolvedEvent === 'PAYMENT_SUCCESS_WEBHOOK' || resolvedEvent === 'ORDER_PAID' || resolvedEvent === 'success payment') {
       newStatus = 'PAID';
-    } else if (event === 'PAYMENT_FAILED_WEBHOOK' || event === 'PAYMENT_CANCELLED' || event === 'PAYMENT_DECLINED' || event === 'failed payment') {
+    } else if (resolvedEvent === 'PAYMENT_FAILED_WEBHOOK' || resolvedEvent === 'PAYMENT_CANCELLED' || resolvedEvent === 'PAYMENT_DECLINED' || resolvedEvent === 'failed payment') {
       newStatus = 'FAILED';
-    } else if (event === 'ORDER_CANCELLED' || event === 'user dropped payment') {
+    } else if (resolvedEvent === 'ORDER_CANCELLED' || resolvedEvent === 'user dropped payment') {
       newStatus = 'CANCELLED';
-    } else if (event === 'ORDER_EXPIRED') {
+    } else if (resolvedEvent === 'ORDER_EXPIRED') {
       newStatus = 'EXPIRED';
     }
 
@@ -806,7 +812,7 @@ app.post('/api/payment/webhook', async (req, res) => {
       }
     }
 
-    console.log(`[Webhook] Order ${order_id} status updated to ${newStatus}`);
+    console.log(`[Webhook] Order ${resolvedOrderId} status updated to ${newStatus}`);
     res.status(200).json({ received: true, status: newStatus });
   } catch (err) {
     console.error('Webhook processing error:', err);
@@ -826,6 +832,41 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
     if (!payment) {
       return res.status(404).json({ error: 'Payment not found' });
     }
+    
+    // If payment is still PENDING, try to verify with Cashfree directly
+    if (payment.status === 'PENDING' && CF_APP_ID && CF_SECRET_KEY) {
+      try {
+        const cfRes = await fetch(`${CF_API_BASE}/orders/${orderId}`, {
+          method: 'GET',
+          headers: cfHeaders()
+        });
+        if (cfRes.ok) {
+          const cfData = await cfRes.json();
+          const cfStatus = cfData.order_status || cfData.status;
+          if (cfStatus === 'PAID' || cfStatus === 'SUCCESS') {
+            await Payment.findByIdAndUpdate(payment._id, { status: 'PAID', paidAt: new Date() });
+            const { CustomSlug } = require('./models');
+            const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
+            if (!existingSlug) {
+              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId });
+            }
+            return res.json({
+              status: 'PAID',
+              slug: payment.slug,
+              amount: payment.amount,
+              currency: payment.currency,
+              paymentLink: payment.paymentLink,
+              qrCenterType: payment.qrCenterType,
+              qrCenterText: payment.qrCenterText,
+              qrCenterPhotoUrl: payment.qrCenterPhotoUrl
+            });
+          }
+        }
+      } catch (verifyErr) {
+        console.error('[Payment Verify] Direct Cashfree check failed:', verifyErr.message);
+      }
+    }
+    
     res.json({
       status: payment.status,
       slug: payment.slug,

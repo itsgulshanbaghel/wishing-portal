@@ -21,7 +21,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
-  <script src="https://sdk.cashfree.com/js/v1/cashfree.js"></script>
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 
   <style>
     /* ----- CSS VARIABLES (matches main site & share.html) ----- */
@@ -2316,39 +2316,12 @@
       }
 
       function initCashfreeCheckout(paymentSessionId, orderId) {
-        payBtn.style.display = 'none';
-        const checkoutContainer = document.createElement('div');
-        checkoutContainer.id = 'cashfree-checkout-container';
-        checkoutContainer.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#fff;padding:16px;overflow-y:auto;';
-        document.body.appendChild(checkoutContainer);
-
-        const header = document.createElement('div');
-        header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
-        header.innerHTML = `
-          <div style="font-weight:700;font-size:16px;">Secure Payment</div>
-          <button id="cf-close-checkout" type="button" style="border:none;background:rgba(0,0,0,0.08);width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
-        `;
-        checkoutContainer.appendChild(header);
-
-        const inner = document.createElement('div');
-        inner.id = 'cashfree-dropin';
-        inner.style.cssText = 'min-height:320px;';
-        checkoutContainer.appendChild(inner);
-
-        document.getElementById('cf-close-checkout').addEventListener('click', () => {
-          checkoutContainer.remove();
-          payBtn.disabled = false;
-          payBtnSpinner.style.display = 'none';
-          updatePayBtnState();
-        });
-
         const mode = location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'sandbox' : 'production';
 
         // Check if Cashfree SDK is loaded
         if (typeof Cashfree === 'undefined') {
           console.error('Cashfree SDK not loaded');
           alert('Payment gateway is loading. Please wait a moment and try again.');
-          checkoutContainer.remove();
           payBtn.disabled = false;
           payBtnSpinner.style.display = 'none';
           updatePayBtnState();
@@ -2356,40 +2329,27 @@
         }
 
         try {
-          const cashfree = new Cashfree({
-            mode: mode,
-            paymentSessionId: paymentSessionId
+          const cashfree = Cashfree({
+            mode: mode
           });
 
-          // Add event listeners for payment events
-          cashfree.on('payment.success', (event) => {
-            console.log('Payment success:', event);
-            window.location.href = `${window.location.pathname}?action=payment-success&orderId=${orderId}`;
-          });
+          const checkoutOptions = {
+            paymentSessionId: paymentSessionId,
+            redirectTarget: '_self'
+          };
 
-          cashfree.on('payment.failure', (event) => {
-            console.error('Payment failed:', event);
-            alert('Payment failed. Please try again.');
-            checkoutContainer.remove();
+          cashfree.checkout(checkoutOptions).then((result) => {
+            console.log('Cashfree checkout completed:', result);
+            if (result.error) {
+              console.error('Payment error:', result.error);
+              alert('Payment error: ' + result.error.message);
+            }
             payBtn.disabled = false;
             payBtnSpinner.style.display = 'none';
             updatePayBtnState();
-          });
-
-          cashfree.on('payment.close', () => {
-            console.log('Payment modal closed');
-            checkoutContainer.remove();
-            payBtn.disabled = false;
-            payBtnSpinner.style.display = 'none';
-            updatePayBtnState();
-          });
-
-          cashfree.render(inner).then(() => {
-            console.log('Cashfree checkout rendered successfully');
           }).catch((err) => {
-            console.error('Cashfree render failed:', err);
+            console.error('Cashfree checkout failed:', err);
             alert('Unable to load payment options. Please try again.');
-            checkoutContainer.remove();
             payBtn.disabled = false;
             payBtnSpinner.style.display = 'none';
             updatePayBtnState();
@@ -2397,41 +2357,47 @@
         } catch (err) {
           console.error('Cashfree checkout init failed:', err);
           alert('Unable to load secure checkout. Please try again.');
-          checkoutContainer.remove();
           payBtn.disabled = false;
           payBtnSpinner.style.display = 'none';
           updatePayBtnState();
         }
       }
 
-      // Poll Status for Payment Success Redirections
-      let pollCount = 0;
-      async function pollPaymentStatus(orderId) {
-        try {
-          const res = await fetch(`${API_BASE}/api/payment/status/${orderId}`);
-          if (!res.ok) throw new Error('Order status check error');
+// Poll Status for Payment Success Redirections
+       let pollCount = 0;
+       let currentOrderId = '';
+       async function pollPaymentStatus(orderId) {
+         currentOrderId = orderId;
+         try {
+           const res = await fetch(`${API_BASE}/api/payment/status/${orderId}`);
+           if (!res.ok) throw new Error('Order status check error');
 
-          const data = await res.json();
+           const data = await res.json();
 
-          if (data.status === 'PAID') {
-            showSuccess(data);
-          } else if (data.status === 'FAILED' || data.status === 'CANCELLED') {
-            showError(`Order activation failed (Status: ${data.status}). If amount was deducted, it will be refunded. Please create a new order.`);
-          } else {
-            // Still pending, continue polling (up to 15 times, 2 seconds apart)
-            pollCount++;
-            if (pollCount < 15) {
-              setTimeout(() => pollPaymentStatus(orderId), 2000);
-            } else {
-              showError('Payment status verification took too long. Please refresh the page in a few minutes or check your email for activation.');
-            }
-          }
-        } catch (e) {
-          console.error(e);
-          // Retry
-          setTimeout(() => pollPaymentStatus(orderId), 3000);
-        }
-      }
+           if (data.status === 'PAID') {
+             showSuccess(data);
+           } else if (data.status === 'FAILED' || data.status === 'CANCELLED') {
+             showError(`Order activation failed (Status: ${data.status}). If amount was deducted, it will be refunded. Please create a new order.`);
+           } else {
+             // Still pending, continue polling (up to 30 times, 2 seconds apart = 1 minute)
+             pollCount++;
+             if (pollCount < 30) {
+               setTimeout(() => pollPaymentStatus(orderId), 2000);
+             } else {
+               errorText.innerHTML = 'Payment status verification took too long. Please refresh the page or <button id="manualRetryBtn" style="background: var(--accent-solid); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 8px;">Retry Now</button>';
+               document.getElementById('manualRetryBtn')?.addEventListener('click', () => {
+                 pollCount = 0;
+                 showStatusLoading('Retrying payment verification...');
+                 pollPaymentStatus(currentOrderId);
+               });
+             }
+           }
+         } catch (e) {
+           console.error(e);
+           // Retry
+           setTimeout(() => pollPaymentStatus(orderId), 3000);
+         }
+       }
 
       function showSuccess(paymentData) {
         loadingScreen.style.display = 'none';
@@ -2481,13 +2447,13 @@
         successScreen.style.display = 'none';
       }
 
-      function showError(msg) {
-        loadingScreen.style.display = 'none';
-        mainInterface.style.display = 'none';
-        successScreen.style.display = 'none';
-        errorScreen.style.display = 'block';
-        errorText.textContent = msg;
-      }
+function showError(msg) {
+         loadingScreen.style.display = 'none';
+         mainInterface.style.display = 'none';
+         successScreen.style.display = 'none';
+         errorScreen.style.display = 'block';
+         errorText.innerHTML = msg;
+       }
     })();
   </script>
 </body>
