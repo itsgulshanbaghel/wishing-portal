@@ -138,12 +138,6 @@ app.use(express.json({ limit: '10mb' })); // Reduced from 100mb to 10mb
 
 
 
-// Serve static files from the 'public' directory
-
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
-
-
-
 // Multer config for template uploads
 
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -1806,18 +1800,27 @@ app.use('/api', (err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
+// Catch-all route for custom URL slugs - must come BEFORE static middleware
+// This handles personalized URLs like thegreeter.in/custom-name
 app.get('/:slug', async (req, res, next) => {
-  if (req.path.startsWith('/api/')) return next();
+  const rawPath = req.params.slug;
 
-  const slug = req.params.slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  // Skip API routes, generated paths, and paths with slashes
+  if (!rawPath || rawPath.startsWith('api/') || rawPath.startsWith('generated/') || rawPath.includes('/')) return next();
+
+  // Skip static file extensions
+  if (rawPath.includes('.')) return next();
+
+  // Sanitize slug to match how it was stored
+  const slug = rawPath.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+
+  if (!slug) return next();
 
   try {
     const mongoReady = await ensureMongoConnected();
     if (mongoReady) {
-      // First check CustomSlug collection (created by webhook)
       let entry = await CustomSlug.findOne({ slug }).lean();
 
-      // If not found, check PAID Payment records as fallback
       if (!entry) {
         const paidPayment = await Payment.findOne({ slug: slug, status: 'PAID' }).lean();
         if (paidPayment) {
@@ -1826,26 +1829,37 @@ app.get('/:slug', async (req, res, next) => {
       }
 
       if (entry) {
+        console.log(`[CustomURL] Redirecting slug "${slug}" to websiteId "${entry.websiteId}"`);
         return res.redirect(`/generated/customize.html?view=${entry.websiteId}`);
+      } else {
+        console.log(`[CustomURL] Slug "${slug}" not found in DB`);
       }
     }
   } catch (dbErr) {
     console.error('[CustomURL] lookup failed:', dbErr);
   }
 
-  const filePath = path.join(__dirname, 'public', req.path);
-  if (req.path.endsWith('/')) {
-    return res.sendFile(path.join(filePath, 'index.html'), err => { if (err) next(); });
-  }
-  if (!path.extname(req.path)) {
-    return res.sendFile(filePath + '.html', err => {
-      if (err) {
-        res.status(404).send('Page not found');
-      }
-    });
-  }
   next();
 });
+
+// Debug endpoint to check slug status
+app.get('/api/debug/slug/:slug', async (req, res) => {
+  const testSlug = req.params.slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  const mongoReady = await ensureMongoConnected();
+  const results = { slug: testSlug, mongoReady };
+
+  if (mongoReady) {
+    const customSlug = await CustomSlug.findOne({ slug: testSlug }).lean();
+    const paidPayment = await Payment.findOne({ slug: testSlug, status: 'PAID' }).lean();
+    results.customSlug = customSlug;
+    results.paidPayment = paidPayment;
+  }
+
+  res.json(results);
+});
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 // 404 handler for unmatched routes
 app.use((req, res) => {
