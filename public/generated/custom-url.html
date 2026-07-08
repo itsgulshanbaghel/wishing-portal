@@ -1604,7 +1604,7 @@
           <label class="form-label">3. One-Time Activation Fee</label>
           <div class="geo-price-display">
             <div class="geo-price-label">One-Time Payment</div>
-            <div class="geo-price-amount" id="geoPriceAmount">₹29</div>
+             <div class="geo-price-amount" id="geoPriceAmount">...</div>
             <div class="geo-price-note">Secure payment processing</div>
           </div>
         </div>
@@ -1736,12 +1736,12 @@
 // Geo-based pricing configuration
        const geoPricing = {
          'IN': { currency: 'INR', amount: 29, symbol: '₹', region: 'India' },
-         'EU': { currency: 'EUR', amount: 0.99, symbol: '€', region: 'Europe' },
-         'GB': { currency: 'GBP', amount: 0.99, symbol: '£', region: 'United Kingdom' },
-         'US': { currency: 'USD', amount: 0.99, symbol: '$', region: 'United States' },
-         'AU': { currency: 'AUD', amount: 1.49, symbol: 'A$', region: 'Australia & NZ' },
-         'NZ': { currency: 'AUD', amount: 1.49, symbol: 'A$', region: 'Australia & NZ' },
-         'default': { currency: 'USD', amount: 0.99, symbol: '$', region: 'International' }
+         'EU': { currency: 'EUR', amount: 1.00, symbol: '€', region: 'Europe' },
+         'GB': { currency: 'GBP', amount: 1.00, symbol: '£', region: 'United Kingdom' },
+         'US': { currency: 'USD', amount: 1.00, symbol: '$', region: 'United States' },
+         'AU': { currency: 'AUD', amount: 1.50, symbol: 'A$', region: 'Australia & NZ' },
+         'NZ': { currency: 'AUD', amount: 1.50, symbol: 'A$', region: 'Australia & NZ' },
+         'default': { currency: 'USD', amount: 1.00, symbol: '$', region: 'International' }
        };
 
        // Poll Status for Payment Success Redirections
@@ -1885,7 +1885,7 @@
         }
 
         // Detect user's location and set pricing
-        detectUserLocation();
+        await detectUserLocation();
 
         // Display interface
         loadingScreen.style.display = 'none';
@@ -1986,13 +1986,28 @@
         payBtn.addEventListener('click', handlePaymentInitiation);
       }
 
-      function detectUserLocation() {
-        let pricing = geoPricing.default;
+      async function detectUserLocation() {
+        // First try server-side geo-IP detection for accurate location-based pricing
+        try {
+          const res = await fetch(`${API_BASE}/api/payment/detect-price`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+              selectedCurrency = data.currency;
+              selectedAmount = data.amount;
+              geoPriceAmount.textContent = `${data.symbol}${data.amount}`;
+              updatePayBtnState();
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Server-side geo detection failed, falling back to client-side:', e);
+        }
 
-        // Try timezone-based detection first
+        // Fallback: client-side timezone/locale detection
+        let pricing = geoPricing.default;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-        // Map timezone to region - more comprehensive detection
         if (timezone && (
           timezone.indexOf('Asia/Kolkata') !== -1 ||
           timezone.indexOf('Asia/Colombo') !== -1 ||
@@ -2002,7 +2017,6 @@
         )) {
           pricing = geoPricing.IN;
         } else if (timezone && timezone.indexOf('Europe/') !== -1) {
-          // Check for specific European countries first
           if (timezone.indexOf('Europe/London') !== -1) {
             pricing = geoPricing.GB;
           } else {
@@ -2014,7 +2028,6 @@
           pricing = geoPricing.AU;
         }
 
-        // Fallback: Try browser locale if timezone detection failed
         if (pricing === geoPricing.default) {
           const locale = navigator.language || navigator.userLanguage || '';
           if (locale.indexOf('IN') !== -1 || locale.indexOf('in') !== -1) {
@@ -2030,10 +2043,10 @@
           }
         }
 
-        // Update state and display
         selectedCurrency = pricing.currency;
         selectedAmount = pricing.amount;
         geoPriceAmount.textContent = `${pricing.symbol}${pricing.amount}`;
+        updatePayBtnState();
       }
 
 

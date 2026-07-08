@@ -533,20 +533,20 @@ app.get('/api/payment/detect-price', (req, res) => {
     const code = country.toUpperCase();
     let result = { currency: 'INR', amount: 29, symbol: '₹', countryName: 'India' };
 
-    if (code !== 'IN') {
-      const euroZone = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
-      if (euroZone.includes(code)) {
-        result = { currency: 'EUR', amount: 0.99, symbol: '€', countryName: 'Europe' };
-      } else if (code === 'GB') {
-        result = { currency: 'GBP', amount: 0.99, symbol: '£', countryName: 'United Kingdom' };
-      } else if (code === 'US') {
-        result = { currency: 'USD', amount: 0.99, symbol: '$', countryName: 'United States' };
-      } else if (code === 'AU' || code === 'NZ') {
-        result = { currency: 'AUD', amount: 1.49, symbol: 'A$', countryName: 'Australia & NZ' };
-      } else {
-        result = { currency: 'USD', amount: 0.99, symbol: '$', countryName: 'Rest of World' };
-      }
-    }
+     if (code !== 'IN') {
+       const euroZone = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
+       if (euroZone.includes(code)) {
+         result = { currency: 'EUR', amount: 1.00, symbol: '€', countryName: 'Europe' };
+       } else if (code === 'GB') {
+         result = { currency: 'GBP', amount: 1.00, symbol: '£', countryName: 'United Kingdom' };
+       } else if (code === 'US') {
+         result = { currency: 'USD', amount: 1.00, symbol: '$', countryName: 'United States' };
+       } else if (code === 'AU' || code === 'NZ') {
+         result = { currency: 'AUD', amount: 1.50, symbol: 'A$', countryName: 'Australia & NZ' };
+       } else {
+         result = { currency: 'USD', amount: 1.00, symbol: '$', countryName: 'Rest of World' };
+       }
+     }
 
     res.json({ success: true, ip: cleanIP, country, ...result });
   } catch (err) {
@@ -622,10 +622,10 @@ app.post('/api/payment/create-order', async (req, res) => {
     });
 
     // Create order on Cashfree
-    const orderPayload = {
-      order_id: orderId,
-      order_amount: orderAmount,
-      order_currency: currency || 'INR',
+       const orderPayload = {
+         order_id: orderId,
+         order_amount: orderAmount.toFixed(2),
+         order_currency: currency || 'INR',
       customer_details: {
         customer_id: websiteId,
         customer_name: customer.customer_name || 'Guest',
