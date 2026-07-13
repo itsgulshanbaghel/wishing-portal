@@ -18,6 +18,7 @@ const { Website, Feedback, CustomSlug, Payment } = require('./models');
 const analytics = require('./analytics');
 const health = require('./health');
 const { generateOGImage, generateOGMetaTags, saveOGImage } = require('./og-image-generator');
+const helmet = require('helmet');
 
 
 
@@ -101,6 +102,28 @@ const corsOptions = {
   credentials: true
 };
 app.use(cors(corsOptions));
+
+// Security headers with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://cdn.cashfree.com", "https://www.paypal.com", "https://unpkg.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'", "https://api.cashfree.com", "https://api-m.paypal.com", "https://api-m.sandbox.paypal.com"],
+      frameSrc: ["'self'", "https://checkout.razorpay.com", "https://www.paypal.com", "https://sandbox.cashfree.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
 
 
 
@@ -519,51 +542,202 @@ function cfHeaders() {
   };
 }
 
-// GET /api/payment/detect-price
-// Detects client geo location and returns appropriate price
-app.get('/api/payment/detect-price', (req, res) => {
+// ── Server-side geo-pricing (single source of truth, never trust client) ────────
+const PRICING_MAP = {
+  US: { currency: 'USD', amount: 1.99, symbol: '$', paypalCurrency: 'USD', paypalAmount: 1.99, countryName: 'United States' },
+  CA: { currency: 'CAD', amount: 2.49, symbol: 'CA$', paypalCurrency: 'CAD', paypalAmount: 2.49, countryName: 'Canada' },
+  GB: { currency: 'GBP', amount: 1.79, symbol: '£', paypalCurrency: 'GBP', paypalAmount: 1.79, countryName: 'United Kingdom' },
+  AU: { currency: 'AUD', amount: 2.99, symbol: 'A$', paypalCurrency: 'AUD', paypalAmount: 2.99, countryName: 'Australia' },
+  NZ: { currency: 'NZD', amount: 2.99, symbol: 'NZ$', paypalCurrency: 'NZD', paypalAmount: 2.99, countryName: 'New Zealand' },
+  SG: { currency: 'SGD', amount: 2.49, symbol: 'S$', paypalCurrency: 'SGD', paypalAmount: 2.49, countryName: 'Singapore' },
+  JP: { currency: 'JPY', amount: 250, symbol: '¥', paypalCurrency: 'JPY', paypalAmount: 250, countryName: 'Japan' },
+  KR: { currency: 'KRW', amount: 2500, symbol: '₩', paypalCurrency: 'USD', paypalAmount: 1.80, countryName: 'South Korea' },
+  HK: { currency: 'HKD', amount: 15, symbol: 'HK$', paypalCurrency: 'HKD', paypalAmount: 15, countryName: 'Hong Kong' },
+  TW: { currency: 'TWD', amount: 59, symbol: 'NT$', paypalCurrency: 'TWD', paypalAmount: 59, countryName: 'Taiwan' },
+  AE: { currency: 'AED', amount: 6.99, symbol: 'AED ', paypalCurrency: 'USD', paypalAmount: 1.90, countryName: 'UAE' },
+  SA: { currency: 'SAR', amount: 6.99, symbol: 'SAR ', paypalCurrency: 'USD', paypalAmount: 1.86, countryName: 'Saudi Arabia' },
+  QA: { currency: 'QAR', amount: 6.99, symbol: 'QAR ', paypalCurrency: 'USD', paypalAmount: 1.92, countryName: 'Qatar' },
+  KW: { currency: 'KWD', amount: 0.60, symbol: 'KWD ', paypalCurrency: 'USD', paypalAmount: 1.95, countryName: 'Kuwait' },
+  OM: { currency: 'OMR', amount: 0.60, symbol: 'OMR ', paypalCurrency: 'USD', paypalAmount: 1.56, countryName: 'Oman' },
+  BH: { currency: 'BHD', amount: 0.60, symbol: 'BHD ', paypalCurrency: 'USD', paypalAmount: 1.59, countryName: 'Bahrain' },
+  IL: { currency: 'ILS', amount: 7.90, symbol: '₪', paypalCurrency: 'ILS', paypalAmount: 7.90, countryName: 'Israel' },
+  IN: { currency: 'INR', amount: 29, symbol: '₹', paypalCurrency: 'INR', paypalAmount: 29, countryName: 'India' },
+  PK: { currency: 'PKR', amount: 199, symbol: 'PKR ', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Pakistan' },
+  BD: { currency: 'BDT', amount: 99, symbol: '৳', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Bangladesh' },
+  NP: { currency: 'NPR', amount: 99, symbol: 'NPR ', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Nepal' },
+  LK: { currency: 'LKR', amount: 299, symbol: 'LKR ', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Sri Lanka' },
+  MY: { currency: 'MYR', amount: 4.90, symbol: 'RM', paypalCurrency: 'MYR', paypalAmount: 4.90, countryName: 'Malaysia' },
+  TH: { currency: 'THB', amount: 39, symbol: '฿', paypalCurrency: 'THB', paypalAmount: 39, countryName: 'Thailand' },
+  ID: { currency: 'IDR', amount: 15000, symbol: 'Rp', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Indonesia' },
+  PH: { currency: 'PHP', amount: 59, symbol: '₱', paypalCurrency: 'PHP', paypalAmount: 59, countryName: 'Philippines' },
+  VN: { currency: 'VND', amount: 25000, symbol: '₫', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Vietnam' },
+  BR: { currency: 'BRL', amount: 6.90, symbol: 'R$', paypalCurrency: 'BRL', paypalAmount: 6.90, countryName: 'Brazil' },
+  MX: { currency: 'MXN', amount: 25, symbol: 'MX$', paypalCurrency: 'MXN', paypalAmount: 25, countryName: 'Mexico' },
+  AR: { currency: 'ARS', amount: 1999, symbol: 'ARS ', paypalCurrency: 'USD', paypalAmount: 1.99, countryName: 'Argentina' },
+  CL: { currency: 'CLP', amount: 1200, symbol: 'CLP ', paypalCurrency: 'USD', paypalAmount: 1.49, countryName: 'Chile' },
+  CO: { currency: 'COP', amount: 5900, symbol: 'COP ', paypalCurrency: 'USD', paypalAmount: 1.49, countryName: 'Colombia' },
+  ZA: { currency: 'ZAR', amount: 25, symbol: 'R', paypalCurrency: 'USD', paypalAmount: 1.49, countryName: 'South Africa' },
+  NG: { currency: 'NGN', amount: 1200, symbol: '₦', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Nigeria' },
+  EG: { currency: 'EGP', amount: 39, symbol: 'EGP ', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Egypt' }
+};
+
+const EUROZONE = ['AT','BE','CY','EE','FI','FR','DE','GR','IE','IT','LV','LT','LU','MT','NL','PT','SK','SI','ES','HR'];
+
+function getGeoPrice(req) {
   try {
     const geoip = require('geoip-lite');
     const forwarded = req.headers['x-forwarded-for'];
-    const ip = forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress || req.ip || '127.0.0.1';
+    const ip = forwarded ? forwarded.split(',')[0].trim() : (req.socket && req.socket.remoteAddress) || req.ip || '127.0.0.1';
     const cleanIP = ip.replace('::ffff:', '').replace('::1', '127.0.0.1');
     const geo = geoip.lookup(cleanIP);
-    const country = geo ? geo.country : 'IN';
+    const code = (geo ? geo.country : 'IN').toUpperCase();
 
-    const code = country.toUpperCase();
-    let result = { currency: 'INR', amount: 29, symbol: '₹', countryName: 'India' };
+    if (code === 'IN') {
+      return { currency: 'INR', amount: 29, symbol: '₹', gateway: 'cashfree', countryName: 'India', country: code };
+    }
+    
+    if (EUROZONE.includes(code)) {
+      return { currency: 'EUR', amount: 1.99, symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', paypalAmount: 1.99, countryName: 'Eurozone', country: code };
+    }
 
-     if (code !== 'IN') {
-       const euroZone = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
-       if (euroZone.includes(code)) {
-         result = { currency: 'EUR', amount: 1.00, symbol: '€', countryName: 'Europe' };
-       } else if (code === 'GB') {
-         result = { currency: 'GBP', amount: 1.00, symbol: '£', countryName: 'United Kingdom' };
-       } else if (code === 'US') {
-         result = { currency: 'USD', amount: 1.00, symbol: '$', countryName: 'United States' };
-       } else if (code === 'AU' || code === 'NZ') {
-         result = { currency: 'AUD', amount: 1.50, symbol: 'A$', countryName: 'Australia & NZ' };
-       } else {
-         result = { currency: 'USD', amount: 1.00, symbol: '$', countryName: 'Rest of World' };
-       }
-     }
+    if (PRICING_MAP[code]) {
+      const p = PRICING_MAP[code];
+      return { 
+        currency: p.currency, 
+        amount: p.amount, 
+        symbol: p.symbol, 
+        gateway: 'paypal', 
+        paypalCurrency: p.paypalCurrency, 
+        paypalAmount: p.paypalAmount, 
+        countryName: p.countryName, 
+        country: code 
+      };
+    }
 
-    res.json({ success: true, ip: cleanIP, country, ...result });
+    // Default other countries
+    return { currency: 'USD', amount: 1.49, symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', paypalAmount: 1.49, countryName: 'International', country: code };
   } catch (err) {
-    console.error('Error detecting geo price:', err);
-    res.json({ success: true, country: 'IN', currency: 'INR', amount: 29, symbol: '₹', countryName: 'India' });
+    console.error('[getGeoPrice] error:', err);
+    return { currency: 'INR', amount: 29, symbol: '₹', gateway: 'cashfree', countryName: 'India', country: 'IN' };
   }
+}
+
+// PayPal API settings
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
+const PAYPAL_ENV = process.env.PAYPAL_ENV || 'sandbox'; // sandbox or production
+const PAYPAL_API_BASE = PAYPAL_ENV === 'production' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+
+async function getPayPalAccessToken() {
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+    throw new Error('PayPal client ID or secret not configured in env variables');
+  }
+  const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:	ext{ }PAYPAL_CLIENT_SECRET`.replace(':text: ', ':') + `${PAYPAL_CLIENT_SECRET}`).toString('base64');
+  // Safer construct
+  const authHeader = Buffer.from(PAYPAL_CLIENT_ID + ':' + PAYPAL_CLIENT_SECRET).toString('base64');
+  const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${authHeader}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'grant_type=client_credentials'
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Failed to get PayPal access token: ${response.status} ${errText}`);
+  }
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
+  const token = await getPayPalAccessToken();
+  const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        amount: {
+          currency_code: currency,
+          value: amount.toFixed(2)
+        },
+        description: 'Personalized Custom URL Activation'
+      }],
+      application_context: {
+        brand_name: 'The Greeter Custom URL',
+        locale: 'en_US',
+        landing_page: 'NO_PREFERENCE',
+        user_action: 'PAY_NOW',
+        return_url: returnUrl,
+        cancel_url: cancelUrl
+      }
+    })
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Failed to create PayPal order: ${response.status} ${errText}`);
+  }
+  return await response.json();
+}
+
+async function capturePayPalOrder(paypalOrderId) {
+  const token = await getPayPalAccessToken();
+  const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${paypalOrderId}/capture`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Failed to capture PayPal order: ${response.status} ${errText}`);
+  }
+  return await response.json();
+}
+
+// GET /api/payment/detect-price – returns server-computed price for the caller's location
+app.get('/api/payment/detect-price', (req, res) => {
+  const pricing = getGeoPrice(req);
+  res.json({ success: true, ...pricing });
 });
 
 // POST /api/payment/create-order
 // Body: { websiteId, slug, amount, currency, customerDetails?, qrCenterType, qrCenterText?, qrCenterPhotoUrl? }
 app.post('/api/payment/create-order', async (req, res) => {
   try {
-    const { websiteId, slug, amount, currency, customerDetails, qrCenterType, qrCenterText, qrCenterPhotoUrl, qrCenterPhotoBase64 } = req.body;
+    const { websiteId, slug, customerDetails, qrCenterType, qrCenterText, qrCenterPhotoUrl, qrCenterPhotoBase64 } = req.body;
 
-    if (!websiteId || !slug || !amount) {
-      return res.status(400).json({ error: 'websiteId, slug and amount are required' });
+    // Input validation
+    if (!websiteId || typeof websiteId !== 'string' || websiteId.length > 100) {
+      return res.status(400).json({ error: 'Invalid websiteId' });
     }
+    if (!slug || typeof slug !== 'string') {
+      return res.status(400).json({ error: 'slug is required' });
+    }
+    if (qrCenterType && !['text', 'photo', 'none'].includes(qrCenterType)) {
+      return res.status(400).json({ error: 'Invalid qrCenterType' });
+    }
+    if (qrCenterText && typeof qrCenterText !== 'string') {
+      return res.status(400).json({ error: 'Invalid qrCenterText' });
+    }
+    if (qrCenterPhotoUrl && typeof qrCenterPhotoUrl !== 'string') {
+      return res.status(400).json({ error: 'Invalid qrCenterPhotoUrl' });
+    }
+    if (qrCenterPhotoBase64 && typeof qrCenterPhotoBase64 !== 'string') {
+      return res.status(400).json({ error: 'Invalid qrCenterPhotoBase64' });
+    }
+    if (qrCenterPhotoBase64 && qrCenterPhotoBase64.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Photo too large (max 5MB)' });
+    }
+
+    // Price determined server-side from geo-IP — never trusted from client
+    const { currency, amount, gateway, paypalCurrency, paypalAmount } = getGeoPrice(req);
 
     const sanitizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 
@@ -604,7 +778,7 @@ app.post('/api/payment/create-order', async (req, res) => {
 
     const orderId = `ORD_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     const customer = customerDetails || { customer_name: 'Guest', customer_email: 'guest@thegreeter.in', customer_phone: '9999999999' };
-    const orderAmount = Number(amount);
+    const orderAmount = amount; // already a number from getGeoPrice()
 
     // Create payment record
     const payment = await Payment.create({
@@ -612,8 +786,9 @@ app.post('/api/payment/create-order', async (req, res) => {
       websiteId,
       slug: sanitizedSlug,
       amount: orderAmount,
-      currency: currency || 'INR',
+      currency,
       status: 'PENDING',
+      gateway,
       customerDetails: customer,
       qrCenterType: qrCenterType || 'none',
       qrCenterText: qrCenterText || '',
@@ -621,11 +796,51 @@ app.post('/api/payment/create-order', async (req, res) => {
       metadata: { source: req.headers['user-agent'] || 'web' }
     });
 
+    // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
+    if (gateway === 'paypal') {
+      try {
+        const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`;
+        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html`;
+        
+        console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${paypalCurrency}`);
+        const paypalOrder = await createPayPalOrder(paypalAmount, paypalCurrency, returnUrl, cancelUrl);
+        const approveLink = paypalOrder.links.find(link => link.rel === 'approve')?.href;
+        
+        if (!approveLink) {
+          throw new Error('PayPal order created but no approval link returned');
+        }
+
+        // Update payment with paypal details and approval link
+        await Payment.findByIdAndUpdate(payment._id, { 
+          paymentLink: approveLink,
+          paypalOrderId: paypalOrder.id
+        });
+
+        return res.json({
+          success: true,
+          orderId,
+          paymentLink: approveLink,
+          paymentSessionId: null,
+          amount: paypalAmount,
+          currency: paypalCurrency,
+          slug: sanitizedSlug,
+          gateway: 'paypal'
+        });
+      } catch (ppErr) {
+        console.error('[PayPal Order Create Error]:', ppErr);
+        return res.status(502).json({
+          success: false,
+          error: 'Failed to initiate international payment. Please try again later or contact support.',
+          orderId
+        });
+      }
+    }
+
     // Create order on Cashfree
        const orderPayload = {
          order_id: orderId,
-         order_amount: orderAmount.toFixed(2),
-         order_currency: currency || 'INR',
+      order_amount: orderAmount.toFixed(2),
+      order_currency: currency,
       customer_details: {
         customer_id: websiteId,
         customer_name: customer.customer_name || 'Guest',
@@ -874,6 +1089,142 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
   } catch (err) {
     console.error('Payment status check error:', err);
     res.status(500).json({ error: 'Failed to check payment status' });
+  }
+});
+
+// POST /api/payment/paypal/capture - Capture PayPal payment after user approval
+app.post('/api/payment/paypal/capture', async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    
+    // Input validation
+    if (!orderId || typeof orderId !== 'string' || orderId.length > 100) {
+      return res.status(400).json({ error: 'Invalid orderId' });
+    }
+
+    const mongoReady = await ensureMongoConnected();
+    if (!mongoReady) {
+      return res.status(503).json({ error: 'Server temporarily unavailable. Please try again later.' });
+    }
+
+    const payment = await Payment.findOne({ orderId }).lean();
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    if (!payment.paypalOrderId) {
+      return res.status(400).json({ error: 'Not a PayPal payment' });
+    }
+
+    if (payment.status === 'PAID') {
+      return res.json({ success: true, status: 'PAID', slug: payment.slug });
+    }
+
+    // Capture the PayPal payment
+    console.log(`[PayPal] Capturing order ${payment.paypalOrderId}`);
+    const captureResult = await capturePayPalOrder(payment.paypalOrderId);
+    
+    if (captureResult.status === 'COMPLETED') {
+      // Update payment status
+      await Payment.findByIdAndUpdate(payment._id, {
+        status: 'PAID',
+        paidAt: new Date(),
+        paypalCaptureId: captureResult.id
+      });
+
+      // Reserve the custom URL
+      const { CustomSlug } = require('./models');
+      const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
+      if (!existingSlug) {
+        await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId });
+      }
+
+      console.log(`[PayPal] Order ${orderId} captured successfully`);
+      return res.json({ success: true, status: 'PAID', slug: payment.slug });
+    } else {
+      console.error('[PayPal] Capture failed:', captureResult);
+      await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' });
+      return res.status(400).json({ error: 'Payment capture failed', details: captureResult });
+    }
+  } catch (err) {
+    console.error('[PayPal Capture Error]:', err);
+    res.status(500).json({ error: 'Failed to capture payment. Please try again.' });
+  }
+});
+
+// POST /api/payment/paypal/webhook - PayPal webhook handler
+app.post('/api/payment/paypal/webhook', async (req, res) => {
+  try {
+    const webhookEvent = req.body;
+    const webhookId = webhookEvent.id;
+    
+    // Verify webhook signature (optional but recommended for production)
+    // PayPal webhooks can be verified using the webhook ID and certificates
+    
+    console.log(`[PayPal Webhook] Received event: ${webhookEvent.event_type}`);
+    
+    const mongoReady = await ensureMongoConnected();
+    if (!mongoReady) {
+      return res.status(503).json({ error: 'Server temporarily unavailable' });
+    }
+
+    // Handle different PayPal webhook events
+    if (webhookEvent.event_type === 'PAYMENT.CAPTURE.COMPLETED' || 
+        webhookEvent.event_type === 'CHECKOUT.ORDER.APPROVED') {
+      
+      const purchaseUnits = webhookEvent.resource?.purchase_units;
+      if (!purchaseUnits || purchaseUnits.length === 0) {
+        console.error('[PayPal Webhook] No purchase units in event');
+        return res.status(200).json({ received: true });
+      }
+
+      const customId = purchaseUnits[0]?.custom_id;
+      const paypalOrderId = webhookEvent.resource?.id;
+      
+      // Find payment by PayPal order ID or custom ID
+      let payment = await Payment.findOne({ paypalOrderId }).lean();
+      if (!payment && customId) {
+        payment = await Payment.findOne({ orderId: customId }).lean();
+      }
+      
+      if (!payment) {
+        console.error('[PayPal Webhook] Payment not found for PayPal order:', paypalOrderId);
+        return res.status(200).json({ received: true });
+      }
+
+      // Update payment status if not already paid
+      if (payment.status !== 'PAID') {
+        await Payment.findByIdAndUpdate(payment._id, {
+          status: 'PAID',
+          paidAt: new Date(),
+          paypalCaptureId: webhookEvent.id
+        });
+
+        // Reserve the custom URL
+        const { CustomSlug } = require('./models');
+        const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
+        if (!existingSlug) {
+          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId });
+        }
+
+        console.log(`[PayPal Webhook] Order ${payment.orderId} marked as PAID`);
+      }
+    } else if (webhookEvent.event_type === 'PAYMENT.CAPTURE.DECLINED' || 
+               webhookEvent.event_type === 'CHECKOUT.ORDER.APPROVAL.REVERSED') {
+      
+      const paypalOrderId = webhookEvent.resource?.id;
+      const payment = await Payment.findOne({ paypalOrderId }).lean();
+      
+      if (payment && payment.status !== 'FAILED') {
+        await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' });
+        console.log(`[PayPal Webhook] Order ${payment.orderId} marked as FAILED`);
+      }
+    }
+
+    res.status(200).json({ received: true });
+  } catch (err) {
+    console.error('[PayPal Webhook Error]:', err);
+    res.status(200).json({ received: true }); // Always return 200 to avoid PayPal retries
   }
 });
 
@@ -1800,6 +2151,22 @@ app.use('/api', (err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
+// Debug endpoint to check slug status (must be BEFORE /:slug catch-all)
+app.get('/api/debug/slug/:slug', async (req, res) => {
+  const testSlug = req.params.slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  const mongoReady = await ensureMongoConnected();
+  const results = { slug: testSlug, mongoReady };
+
+  if (mongoReady) {
+    const customSlug = await CustomSlug.findOne({ slug: testSlug }).lean();
+    const paidPayment = await Payment.findOne({ slug: testSlug, status: 'PAID' }).lean();
+    results.customSlug = customSlug;
+    results.paidPayment = paidPayment;
+  }
+
+  res.json(results);
+});
+
 // Catch-all route for custom URL slugs - must come BEFORE static middleware
 // This handles personalized URLs like thegreeter.in/custom-name
 app.get('/:slug', async (req, res, next) => {
@@ -1842,28 +2209,12 @@ app.get('/:slug', async (req, res, next) => {
   next();
 });
 
-// Debug endpoint to check slug status
-app.get('/api/debug/slug/:slug', async (req, res) => {
-  const testSlug = req.params.slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-  const mongoReady = await ensureMongoConnected();
-  const results = { slug: testSlug, mongoReady };
-
-  if (mongoReady) {
-    const customSlug = await CustomSlug.findOne({ slug: testSlug }).lean();
-    const paidPayment = await Payment.findOne({ slug: testSlug, status: 'PAID' }).lean();
-    results.customSlug = customSlug;
-    results.paidPayment = paidPayment;
-  }
-
-  res.json(results);
-});
-
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 // 404 handler for unmatched routes
 app.use((req, res) => {
-  res.status(404).send('Page not found');
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 app.listen(PORT, () => {
