@@ -1914,6 +1914,11 @@
 
         // Download QR button
         downloadQrBtn.addEventListener('click', () => {
+          // Check if payment has been made by checking if success screen is visible
+          if (successScreen.style.display !== 'block') {
+            alert('Please complete your payment first to download the QR code with your personalized URL.');
+            return;
+          }
           if (qrCode) {
             qrCode.download({ name: `greeter-qr-${slugInput.value || 'preview'}`, extension: 'png', width: 4000, height: 4000 });
           }
@@ -2126,7 +2131,7 @@
       }
 
       // Generate Live QR Code Preview
-      function generateQR(targetId = 'qrCodeCanvas') {
+      function generateQR(targetId = 'qrCodeCanvas', customSlug = null) {
         const targetElement = document.getElementById(targetId);
         if (!targetElement) return;
 
@@ -2135,7 +2140,7 @@
         // Clear existing canvas
         targetElement.innerHTML = '';
 
-        const slugValue = slugInput.value || 'temp-slug';
+        const slugValue = customSlug || slugInput.value || 'temp-slug';
         const finalUrl = `https://thegreeter.in/${slugValue}`;
 
         // QR Code options
@@ -2428,7 +2433,7 @@ function initCashfreeCheckout(paymentSessionId, orderId) {
         qrText = paymentData.qrCenterText;
         qrPhotoBase64 = paymentData.qrCenterPhotoUrl;
 
-        generateQR('successQrCanvas');
+        generateQR('successQrCanvas', paymentData.slug);
 
         document.getElementById('copySuccessLinkBtn').addEventListener('click', () => {
           navigator.clipboard.writeText(finalUrl).then(() => {
@@ -2439,10 +2444,102 @@ function initCashfreeCheckout(paymentSessionId, orderId) {
           });
         });
 
-        document.getElementById('downloadSuccessQrBtn').addEventListener('click', () => {
-          if (qrCode) {
-            qrCode.download({ name: `greeter-qr-${paymentData.slug}`, extension: 'png', width: 4000, height: 4000 });
+        document.getElementById('downloadSuccessQrBtn').addEventListener('click', async () => {
+          // Generate high-resolution QR code for download
+          const slugValue = paymentData.slug;
+          const finalUrl = `https://thegreeter.in/${slugValue}`;
+
+          const hdQrOptions = {
+            width: 4000,
+            height: 4000,
+            margin: 80,
+            type: 'png',
+            data: finalUrl,
+            dotsOptions: {
+              color: '#7b5df6',
+              type: 'rounded',
+              gradient: {
+                type: 'linear',
+                rotation: 45,
+                colorStops: [
+                  { offset: 0, color: '#ff0080' },
+                  { offset: 0.5, color: '#7b5df6' },
+                  { offset: 1, color: '#ff7a2f' }
+                ]
+              }
+            },
+            backgroundOptions: {
+              color: '#ffffff',
+            },
+            cornersSquareOptions: {
+              type: 'extra-rounded',
+              color: '#7b5df6'
+            },
+            cornersDotOptions: {
+              type: 'dot',
+              color: '#ff7a2f'
+            },
+            qrOptions: {
+              errorCorrectionLevel: 'H'
+            }
+          };
+
+          // Center branding logic for HD
+          if (paymentData.qrCenterType === 'text' && paymentData.qrCenterText) {
+            const textCanvas = document.createElement('canvas');
+            textCanvas.width = 1600;
+            textCanvas.height = 1600;
+            const ctx = textCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(800, 800, 780, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#7b5df6';
+            ctx.lineWidth = 50;
+            ctx.stroke();
+
+            ctx.fillStyle = '#1a1025';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const len = paymentData.qrCenterText.length;
+            let fontSize = 320;
+            if (len <= 3) fontSize = 380;
+            else if (len <= 5) fontSize = 280;
+            else fontSize = 220;
+
+            ctx.font = `bold ${fontSize}px 'Outfit', sans-serif`;
+            ctx.fillText(paymentData.qrCenterText, 800, 800);
+
+            hdQrOptions.image = textCanvas.toDataURL('image/png');
+            hdQrOptions.imageOptions = {
+              crossOrigin: 'anonymous',
+              margin: 50,
+              imageSize: 0.45,
+              hideBackgroundDots: true
+            };
+          } else if (paymentData.qrCenterType === 'photo' && paymentData.qrCenterPhotoUrl) {
+            hdQrOptions.image = paymentData.qrCenterPhotoUrl;
+            hdQrOptions.imageOptions = {
+              crossOrigin: 'anonymous',
+              margin: 80,
+              imageSize: 0.4,
+              hideBackgroundDots: true
+            };
+          } else {
+            hdQrOptions.image = '../assets/CLOGO.jpg';
+            hdQrOptions.imageOptions = {
+              crossOrigin: 'anonymous',
+              margin: 100,
+              imageSize: 0.35,
+              hideBackgroundDots: true
+            };
           }
+
+          const hdQrCode = new QRCodeStyling(hdQrOptions);
+          hdQrCode.download({ name: `greeter-qr-${paymentData.slug}`, extension: 'png' });
         });
       }
 
