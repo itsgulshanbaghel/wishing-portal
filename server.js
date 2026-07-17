@@ -1210,7 +1210,7 @@ app.post('/api/payment/paypal/webhook', async (req, res) => {
         console.log(`[PayPal Webhook] Order ${payment.orderId} marked as PAID`);
       }
     } else if (webhookEvent.event_type === 'PAYMENT.CAPTURE.DECLINED' || 
-               webhookEvent.event_type === 'CHECKOUT.ORDER.APPROVAL.REVERSED') {
+               webhookEvent.event_type === 'CHECKOUT.ORDER.DECLINED') {
       
       const paypalOrderId = webhookEvent.resource?.id;
       const payment = await Payment.findOne({ paypalOrderId }).lean();
