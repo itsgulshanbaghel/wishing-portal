@@ -670,7 +670,7 @@ async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
       }],
       application_context: {
         brand_name: 'The Greeter Custom URL',
-        locale: 'en_US',
+        locale: 'en-US',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
         return_url: returnUrl,
