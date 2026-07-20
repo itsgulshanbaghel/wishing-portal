@@ -1,10 +1,18 @@
 /* ══════════════════════════════════════════════════════════
-   Greeter Admin Dashboard — JavaScript Controller
-   ══════════════════════════════════════════════════════════ */
+    Greeter Admin Dashboard — JavaScript Controller
+    ══════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
-  const API = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : window.location.origin;
+  // Ensure we have the correct API base URL
+  const getApiBaseUrl = () => {
+    if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
+      return window.APP_CONFIG.API_BASE_URL;
+    }
+    return 'https://wishing-portal.onrender.com';
+  };
+
+  const API = getApiBaseUrl();
   const ADDITIONAL_API = (window.APP_CONFIG && window.APP_CONFIG.ADDITIONAL_API_BASE_URL) ? window.APP_CONFIG.ADDITIONAL_API_BASE_URL : null;
   let authToken = localStorage.getItem('_gt_admin_token') || '';
   let dashData = null;
