@@ -2203,7 +2203,9 @@ app.get('/:slug', async (req, res, next) => {
 
       if (entry) {
         console.log(`[CustomURL] Redirecting slug "${slug}" to websiteId "${entry.websiteId}"`);
-        return res.redirect(`/generated/customize.html?view=${entry.websiteId}`);
+        // premium=1 tells the generated page this is a paid custom URL visit —
+        // the page will suppress the nudge popup and CTA section for a cleaner experience.
+        return res.redirect(`/generated/customize.html?view=${entry.websiteId}&premium=1`);
       } else {
         console.log(`[CustomURL] Slug "${slug}" not found in DB`);
       }
