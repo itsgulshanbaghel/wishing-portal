@@ -1050,6 +1050,79 @@
       filter: brightness(1.05);
     }
 
+    /* ---------- OPTIONAL CONTACT FIELDS (Cashfree / India only) ---------- */
+    .optional-contact-section {
+      display: none;
+      margin-bottom: 14px;
+      text-align: left;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .optional-contact-section.visible {
+      display: block;
+    }
+
+    .optional-contact-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .optional-contact-label .opt-badge {
+      background: rgba(123, 93, 246, 0.1);
+      color: var(--accent-solid);
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .optional-contact-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--card-border);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 0.88rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 10px;
+    }
+
+    .optional-contact-input:focus {
+      border-color: var(--accent-solid);
+      box-shadow: 0 0 0 3px rgba(123, 93, 246, 0.12);
+    }
+
+    .optional-contact-input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    .optional-contact-note {
+      font-size: 0.74rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+      margin-top: -4px;
+      margin-bottom: 4px;
+    }
+
+    .optional-contact-note i {
+      margin-top: 2px;
+      color: var(--accent-solid);
+      flex-shrink: 0;
+    }
+
     /* Simple Pay Button Card */
     .checkout-details-card {
       margin-top: 24px;
@@ -1634,8 +1707,38 @@
         <!-- Simple Pay Button Card -->
         <div class="checkout-details-card">
           <h3 class="checkout-title">Secure Payment</h3>
-          <p class="checkout-note">Your payment is processed securely by Cashfree. No billing details needed here -
-            you'll enter them on the secure checkout page.</p>
+          <p class="checkout-note" id="checkoutNote">Your payment is processed securely. No account needed.</p>
+
+          <!-- Optional contact fields — shown only for Cashfree (Indian users) -->
+          <div class="optional-contact-section" id="optionalContactSection">
+            <div class="optional-contact-label">
+              <i class="fas fa-phone-alt"></i> Phone Number <span class="opt-badge">Optional</span>
+            </div>
+            <input
+              type="tel"
+              id="optionalPhone"
+              class="optional-contact-input"
+              placeholder="e.g. 9876543210"
+              maxlength="15"
+              autocomplete="tel"
+            />
+            <div class="optional-contact-label">
+              <i class="fas fa-envelope"></i> Email Address <span class="opt-badge">Optional</span>
+            </div>
+            <input
+              type="email"
+              id="optionalEmail"
+              class="optional-contact-input"
+              placeholder="e.g. you@gmail.com"
+              maxlength="80"
+              autocomplete="email"
+            />
+            <p class="optional-contact-note">
+              <i class="fas fa-info-circle"></i>
+              Cashfree will send your payment receipt to this contact. Completely optional — skip if you prefer.
+            </p>
+          </div>
+
           <button class="pay-btn" id="payBtn" disabled>
             <i class="fas fa-shield-alt"></i>
             <span id="payBtnText">Verify URL First</span>
@@ -1727,6 +1830,7 @@
       let isSlugAvailable = false;
       let selectedCurrency = 'INR';
       let selectedAmount = 29;
+      let selectedGateway = 'cashfree'; // 'cashfree' for India, 'paypal' for international
 
       let qrType = 'none'; // none, text, photo
       let qrText = '';
@@ -2000,7 +2104,9 @@
             if (data.success) {
               selectedCurrency = data.currency;
               selectedAmount = data.amount;
+              selectedGateway = data.gateway || 'cashfree';
               geoPriceAmount.textContent = `${data.symbol}${data.amount}`;
+              updateCheckoutUI();
               updatePayBtnState();
               return;
             }
@@ -2050,8 +2156,24 @@
 
         selectedCurrency = pricing.currency;
         selectedAmount = pricing.amount;
+        // Client-side fallback: assume India (cashfree) if INR, else paypal
+        selectedGateway = (pricing.currency === 'INR') ? 'cashfree' : 'paypal';
         geoPriceAmount.textContent = `${pricing.symbol}${pricing.amount}`;
+        updateCheckoutUI();
         updatePayBtnState();
+      }
+
+      // Show/hide optional contact fields based on gateway
+      function updateCheckoutUI() {
+        const contactSection = document.getElementById('optionalContactSection');
+        const checkoutNote = document.getElementById('checkoutNote');
+        if (selectedGateway === 'cashfree') {
+          contactSection.classList.add('visible');
+          checkoutNote.textContent = 'Processed securely via Cashfree (UPI, Cards, Net Banking). Fields below are optional.';
+        } else {
+          contactSection.classList.remove('visible');
+          checkoutNote.textContent = 'Processed securely via PayPal. Pay with any card — no PayPal account needed.';
+        }
       }
 
 
@@ -2271,11 +2393,21 @@
         payBtnSpinner.style.display = 'inline-block';
         payBtnText.textContent = 'Initiating Secure Order...';
 
+        // Collect optional customer details (only shown for Cashfree/Indian users)
+        const optPhone = (document.getElementById('optionalPhone')?.value || '').trim();
+        const optEmail = (document.getElementById('optionalEmail')?.value || '').trim();
+        const customerDetails = {
+          customer_name: 'Guest',
+          customer_phone: optPhone || '9999999999',
+          customer_email: optEmail || 'guest@thegreeter.in'
+        };
+
         const payload = {
           websiteId: websiteId,
           slug: slugInput.value,
           amount: selectedAmount,
           currency: selectedCurrency,
+          customerDetails,
           qrCenterType: qrType
         };
 
