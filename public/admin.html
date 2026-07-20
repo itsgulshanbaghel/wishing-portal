@@ -59,6 +59,7 @@
          <a href="#" class="nav-item" data-section="behavior"><i class="fas fa-mouse-pointer"></i> Behavior</a>
          <a href="#" class="nav-item" data-section="feedback"><i class="fas fa-comments"></i> Feedback</a>
          <a href="#" class="nav-item" data-section="realtime"><i class="fas fa-bolt"></i> Real-time</a>
+         <a href="#" class="nav-item" data-section="custom-url"><i class="fas fa-link"></i> Custom URL</a>
          <a href="#" class="nav-item" data-section="system-health"><i class="fas fa-heartbeat"></i> System Health</a>
        </nav>
       <div class="sidebar-footer">
@@ -95,6 +96,7 @@
             <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fas fa-users"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiWeekVisitors">--</span><span class="kpi-label">Unique Visitors (7d)</span></div></div>
             <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fas fa-chart-line"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayViews">--</span><span class="kpi-label">Today's Views</span></div></div>
             <div class="kpi-card accent-pink"><div class="kpi-icon"><i class="fas fa-rocket"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayWebsites">--</span><span class="kpi-label">Created Today</span></div></div>
+            <div class="kpi-card accent-red"><div class="kpi-icon"><i class="fas fa-user-check"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayUnique">--</span><span class="kpi-label">Unique Visitors (Today)</span></div></div>
             <div class="kpi-card accent-gold"><div class="kpi-icon"><i class="fas fa-binoculars"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiWebsiteViews">--</span><span class="kpi-label">Website Views</span></div></div>
           </div>
           <div class="chart-row">
@@ -279,6 +281,33 @@
           <div class="table-card">
             <h3><i class="fas fa-bolt"></i> Live Feed <span class="live-dot"></span></h3>
             <div class="table-scroll"><table id="realtimeTable"><thead><tr><th>Time</th><th>Type</th><th>Details</th><th>Location</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </section>
+
+        <!-- CUSTOM URL SECTION -->
+        <section id="sec-custom-url" class="section">
+          <div class="kpi-grid">
+            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-credit-card"></i></div><div class="kpi-info"><span class="kpi-value" id="cuTotalPayments">--</span><span class="kpi-label">Total Paid Users</span></div></div>
+            <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div><div class="kpi-info"><span class="kpi-value" id="cuTotalRevenue">--</span><span class="kpi-label">Total Revenue</span></div></div>
+            <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fas fa-mouse-pointer"></i></div><div class="kpi-info"><span class="kpi-value" id="cuTotalClicks">--</span><span class="kpi-label">Personalise Clicks</span></div></div>
+            <div class="kpi-card accent-orange"><div class="kpi-icon"><i class="fas fa-percentage"></i></div><div class="kpi-info"><span class="kpi-value" id="cuConversionRate">--</span><span class="kpi-label">Conversion Rate</span></div></div>
+          </div>
+          
+          <!-- Custom URL Payments Table -->
+          <div class="table-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3><i class="fas fa-credit-card"></i> Custom URL Payments</h3>
+              <button class="refresh-btn" id="refreshCustomUrlBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="table-scroll"><table id="customUrlPaymentsTable"><thead><tr><th>Date</th><th>Order ID</th><th>Website ID</th><th>Slug</th><th>Amount</th><th>Currency</th><th>Gateway</th><th>Recipient</th><th>Event Type</th></tr></thead><tbody></tbody></table></div>
+          </div>
+
+          <!-- Personalise URL Clicks Table -->
+          <div class="table-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3><i class="fas fa-mouse-pointer"></i> "Personalise Your URL" Button Clicks</h3>
+            </div>
+            <div class="table-scroll"><table id="personaliseClicksTable"><thead><tr><th>Date</th><th>Website ID</th><th>Recipient</th><th>Event Type</th><th>Location</th></tr></thead><tbody></tbody></table></div>
           </div>
         </section>
 

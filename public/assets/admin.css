@@ -265,13 +265,16 @@ tbody tr:hover td { color:var(--text); }
 .alert-status.critical { background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.25); color:var(--red); }
 
 /* Loading */
-.loading-overlay { position:absolute; inset:0; background:rgba(6,6,15,0.9); display:flex;
-  flex-direction:column; align-items:center; justify-content:center; z-index:50; border-radius:var(--radius); }
+.loading-overlay { display:none; }
 .loading-overlay.hidden { display:none; }
 .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent);
   border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:14px; }
 @keyframes spin { to{transform:rotate(360deg);} }
 .loading-overlay p { color:var(--text-dim); font-size:0.9rem; }
+
+/* Button loading state */
+.refresh-btn.loading i { animation:spin 0.8s linear infinite; }
+.refresh-btn.loading { opacity:0.7; cursor:not-allowed; }
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px) {

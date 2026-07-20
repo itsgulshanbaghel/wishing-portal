@@ -128,7 +128,8 @@
   }
 
   async function loadDashboard() {
-    loadingOverlay.classList.remove('hidden');
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) refreshBtn.classList.add('loading');
     const period = document.getElementById('periodSelector')?.value || '7';
     try {
       dashData = await apiFetch(`/api/admin/dashboard?days=${period}`);
@@ -303,7 +304,7 @@
     }
     renderAll();
     lastUpdated.textContent = 'Updated: ' + new Date().toLocaleTimeString();
-    loadingOverlay.classList.add('hidden');
+    if (refreshBtn) refreshBtn.classList.remove('loading');
   }
 
   document.getElementById('refreshBtn').addEventListener('click', loadDashboard);
@@ -327,7 +328,11 @@
       // Load system health when section is activated
       if (sec === 'system-health') {
         loadSystemHealth();
-        startHealthAutoRefresh();
+      }
+      
+      // Load custom URL analytics when section is activated
+      if (sec === 'custom-url') {
+        loadCustomUrlAnalytics();
       }
     });
   });
@@ -384,6 +389,7 @@
     setText('kpiWeekVisitors', formatNum(o.periodUniqueVisitors || 0));
     setText('kpiTodayViews', formatNum(o.todayViews || 0));
     setText('kpiTodayWebsites', formatNum(o.todayWebsitesCreated || 0));
+    setText('kpiTodayUnique', formatNum(o.todayUniqueVisitors || 0));
     setText('kpiWebsiteViews', formatNum(o.totalWebsiteViews || 0));
 
     // Update labels to reflect period
@@ -1632,8 +1638,11 @@
     }
   });
 
-  document.getElementById('refreshHealthBtn')?.addEventListener('click', () => {
-    loadSystemHealth();
+  document.getElementById('refreshHealthBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('refreshHealthBtn');
+    if (btn) btn.classList.add('loading');
+    await loadSystemHealth();
+    if (btn) btn.classList.remove('loading');
   });
 
   document.getElementById('collectHealthBtn')?.addEventListener('click', async () => {
@@ -1674,21 +1683,104 @@
 
   // Auto-refresh system health every 5 minutes when section is active
   function startHealthAutoRefresh() {
-    if (healthRefreshInterval) clearInterval(healthRefreshInterval);
-    
-    healthRefreshInterval = setInterval(() => {
-      const healthSection = document.getElementById('sec-system-health');
-      if (healthSection && healthSection.classList.contains('active')) {
-        loadSystemHealth();
-      }
-    }, 5 * 60 * 1000); // 5 minutes
+    // Auto-refresh disabled - manual refresh only
   }
 
   // Auto-refresh realtime every 30s
-  setInterval(() => {
-    const rtSection = document.getElementById('sec-realtime');
-    if (rtSection && rtSection.classList.contains('active')) loadDashboard();
-  }, 30000);
+  // Auto-refresh disabled - manual refresh only
+
+  // ── Custom URL Analytics ──
+  async function loadCustomUrlAnalytics() {
+    try {
+      // Fetch payments data
+      const paymentsData = await apiFetch('/api/admin/custom-url-payments');
+      const payments = paymentsData.payments || [];
+      
+      // Fetch clicks data
+      const clicksData = await apiFetch('/api/admin/personalise-url-clicks');
+      const clicks = clicksData.clicks || [];
+      
+      // Update KPI cards
+      document.getElementById('cuTotalPayments').textContent = payments.length;
+      
+      const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+      const currency = payments.length > 0 ? payments[0].currency : 'USD';
+      document.getElementById('cuTotalRevenue').textContent = `${currency} ${totalRevenue.toFixed(2)}`;
+      
+      document.getElementById('cuTotalClicks').textContent = clicks.length;
+      
+      const conversionRate = clicks.length > 0 ? ((payments.length / clicks.length) * 100).toFixed(1) : '0.0';
+      document.getElementById('cuConversionRate').textContent = `${conversionRate}%`;
+      
+      // Render payments table
+      const paymentsTbody = document.querySelector('#customUrlPaymentsTable tbody');
+      if (paymentsTbody) {
+        paymentsTbody.innerHTML = '';
+        payments.forEach(payment => {
+          const tr = document.createElement('tr');
+          const date = payment.createdAt ? new Date(payment.createdAt).toLocaleString() : '--';
+          const recipient = payment.websiteRecipientName || 'Unknown';
+          const eventType = payment.websiteEventType || 'Unknown';
+          
+          tr.innerHTML = `
+            <td>${date}</td>
+            <td>${payment.orderId || '--'}</td>
+            <td>${payment.websiteId || '--'}</td>
+            <td><strong>${payment.slug || '--'}</strong></td>
+            <td>${payment.amount || '--'}</td>
+            <td>${payment.currency || '--'}</td>
+            <td>${payment.gateway || '--'}</td>
+            <td>${recipient}</td>
+            <td>${eventType}</td>
+          `;
+          paymentsTbody.appendChild(tr);
+        });
+        
+        if (payments.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td colspan="9">No payments recorded yet</td>';
+          paymentsTbody.appendChild(tr);
+        }
+      }
+      
+      // Render clicks table
+      const clicksTbody = document.querySelector('#personaliseClicksTable tbody');
+      if (clicksTbody) {
+        clicksTbody.innerHTML = '';
+        clicks.forEach(click => {
+          const tr = document.createElement('tr');
+          const date = click.timestamp ? new Date(click.timestamp).toLocaleString() : '--';
+          const recipient = click.websiteRecipientName || 'Unknown';
+          const eventType = click.websiteEventType || 'Unknown';
+          const location = click.geo ? `${click.geo.city || ''}, ${click.geo.country || ''}` : 'Unknown';
+          
+          tr.innerHTML = `
+            <td>${date}</td>
+            <td>${click.websiteId || '--'}</td>
+            <td>${recipient}</td>
+            <td>${eventType}</td>
+            <td>${location}</td>
+          `;
+          clicksTbody.appendChild(tr);
+        });
+        
+        if (clicks.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td colspan="5">No clicks recorded yet</td>';
+          clicksTbody.appendChild(tr);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading custom URL analytics:', err);
+    }
+  }
+
+  document.getElementById('refreshCustomUrlBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('refreshCustomUrlBtn');
+    if (btn) btn.classList.add('loading');
+    await loadCustomUrlAnalytics();
+    if (btn) btn.classList.remove('loading');
+  });
 
   // ── Cloudinary ──
   // (Functionality moved to renderCloudinaryTable and its dedicated listener)

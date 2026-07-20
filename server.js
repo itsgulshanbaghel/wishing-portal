@@ -108,7 +108,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://cdn.cashfree.com", "https://www.paypal.com", "https://unpkg.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://cdn.cashfree.com", "https://www.paypal.com", "https://unpkg.com", "https://cdn.jsdelivr.net"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
@@ -2034,6 +2034,68 @@ app.get('/api/admin/health/status', async (req, res) => {
       error: 'Health check failed',
       timestamp: new Date()
     });
+  }
+});
+
+// Custom URL Payments Analytics
+app.get('/api/admin/custom-url-payments', adminAuth, async (req, res) => {
+  try {
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    const payments = await Payment.find({ status: 'PAID' })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
+
+    // Enrich with website data
+    const enrichedPayments = await Promise.all(payments.map(async (payment) => {
+      const website = await Website.findOne({ id: payment.websiteId }).lean();
+      return {
+        ...payment,
+        websiteRecipientName: website?.recipientName || 'Unknown',
+        websiteEventType: website?.eventType || 'Unknown',
+        websiteTemplateName: website?.templateName || 'Unknown'
+      };
+    }));
+
+    res.json({ payments: enrichedPayments });
+  } catch (err) {
+    console.error('Error fetching custom URL payments:', err);
+    res.status(500).json({ error: 'Failed to fetch payment data' });
+  }
+});
+
+// Personalise URL Clicks Analytics
+app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
+  try {
+    const connected = await ensureMongoConnected();
+    if (!connected) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    const clicks = await Event.find({ type: 'personalise_url_click' })
+      .sort({ timestamp: -1 })
+      .limit(100)
+      .lean();
+
+    // Enrich with website data
+    const enrichedClicks = await Promise.all(clicks.map(async (click) => {
+      const website = await Website.findOne({ id: click.websiteId }).lean();
+      return {
+        ...click,
+        websiteRecipientName: website?.recipientName || 'Unknown',
+        websiteEventType: website?.eventType || 'Unknown',
+        websiteTemplateName: website?.templateName || 'Unknown'
+      };
+    }));
+
+    res.json({ clicks: enrichedClicks });
+  } catch (err) {
+    console.error('Error fetching personalise URL clicks:', err);
+    res.status(500).json({ error: 'Failed to fetch click data' });
   }
 });
 

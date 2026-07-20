@@ -3108,6 +3108,17 @@
           alert(currentLang === 'hi' ? 'कृपया पहले अपना लिंक बनाएं।' : 'Please generate your link first.');
           return;
         }
+        // Track "Personalise Your URL" button click
+        fetch(`${API_BASE}/api/analytics/event`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'personalise_url_click',
+            websiteId: viewId,
+            details: { action: 'clicked_personalise_url_button' }
+          })
+        }).catch(err => console.error('Failed to track event:', err));
+        
         window.location.href = `/generated/custom-url.html?view=${encodeURIComponent(viewId)}`;
       }
 
