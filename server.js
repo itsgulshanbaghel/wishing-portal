@@ -2076,10 +2076,13 @@ app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
       return res.status(503).json({ error: 'Database unavailable' });
     }
 
+    console.log('[Admin] Fetching personalise URL clicks...');
     const clicks = await Event.find({ type: 'personalise_url_click' })
       .sort({ timestamp: -1 })
       .limit(100)
       .lean();
+    
+    console.log('[Admin] Found clicks:', clicks.length);
 
     // Enrich with website data
     const enrichedClicks = await Promise.all(clicks.map(async (click) => {
