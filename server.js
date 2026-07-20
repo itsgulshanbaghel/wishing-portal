@@ -671,7 +671,8 @@ async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
       application_context: {
         brand_name: 'The Greeter Custom URL',
         locale: 'en-US',
-        landing_page: 'NO_PREFERENCE',
+        landing_page: 'GUEST_CHECKOUT',
+        shipping_preference: 'NO_SHIPPING',
         user_action: 'PAY_NOW',
         return_url: returnUrl,
         cancel_url: cancelUrl
@@ -777,7 +778,10 @@ app.post('/api/payment/create-order', async (req, res) => {
     );
 
     const orderId = `ORD_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const customer = customerDetails || { customer_name: 'Guest', customer_email: 'guest@thegreeter.in', customer_phone: '9999999999' };
+    // We never ask users for credentials on our site.
+    // Cashfree only needs placeholder values to create the order;
+    // actual payment details are collected on Cashfree's own checkout screen.
+    const customer = { customer_name: 'Guest', customer_email: 'guest@thegreeter.in', customer_phone: '9999999999' };
     const orderAmount = amount; // already a number from getGeoPrice()
 
     // Create payment record
