@@ -1,5 +1,5 @@
 # TheGreeter.in robots.txt
-# Updated: 2026-05-26
+# Updated: 2026-07-26
 
 User-agent: *
 Allow: /
@@ -18,6 +18,14 @@ Disallow: /assets/admin.css
 Allow: /assets/Light_logo.png
 Allow: /assets/Dark_logo.png
 Allow: /assets/og-cover.png
+
+# Allow Google AdSense crawler
+User-agent: Mediapartners-Google
+Allow: /
+
+# Allow Google AdsBot
+User-agent: AdsBot-Google
+Allow: /
 
 # Sitemap
 Sitemap: https://thegreeter.in/sitemap.xml

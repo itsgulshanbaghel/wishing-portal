@@ -1329,6 +1329,18 @@
 
 
 
+            flex: 1;
+
+
+
+            justify-content: center;
+
+
+
+            min-width: fit-content;
+
+
+
         }
 
 
@@ -1417,6 +1429,18 @@
 
 
 
+            flex: 1;
+
+
+
+            justify-content: center;
+
+
+
+            min-width: fit-content;
+
+
+
         }
 
 
@@ -1501,6 +1525,18 @@
 
 
 
+            flex: 1;
+
+
+
+            justify-content: center;
+
+
+
+            min-width: fit-content;
+
+
+
         }
 
 
@@ -1514,6 +1550,94 @@
 
 
             box-shadow: 0 24px 48px -10px rgba(59, 130, 246, 0.4);
+
+
+
+            filter: brightness(1.05);
+
+
+
+        }
+
+        .btn-friendship {
+
+
+
+            background: linear-gradient(135deg, #ffb6c1 0%, #ff69b4 100%);
+
+
+
+            color: white;
+
+
+
+            border: none;
+
+
+
+            padding: 18px 40px;
+
+
+
+            border-radius: 60px;
+
+
+
+            font-weight: 700;
+
+
+
+            font-size: 1.1rem;
+
+
+
+            box-shadow: 0 16px 32px -8px rgba(255, 105, 180, 0.3);
+
+
+
+            transition: all 0.3s;
+
+
+
+            cursor: pointer;
+
+
+
+            display: inline-flex;
+
+
+
+            align-items: center;
+
+
+
+            gap: 12px;
+
+
+
+            flex: 1;
+
+
+
+            justify-content: center;
+
+
+
+            min-width: fit-content;
+
+
+
+        }
+
+        .btn-friendship:hover {
+
+
+
+            transform: translateY(-4px);
+
+
+
+            box-shadow: 0 24px 48px -10px rgba(255, 105, 180, 0.4);
 
 
 
@@ -1802,6 +1926,10 @@
 
 
             flex-wrap: wrap;
+
+
+
+            justify-content: center;
 
 
 
@@ -5409,6 +5537,18 @@
 
 
 
+            .hero-buttons {
+
+
+
+                justify-content: center;
+
+
+
+            }
+
+
+
 
 
 
@@ -5749,7 +5889,11 @@
 
 
 
-            .btn-secondary {
+            .btn-secondary,
+
+
+
+            .btn-friendship {
 
 
 
@@ -6405,7 +6549,11 @@
 
 
 
-            .btn-secondary {
+            .btn-secondary,
+
+
+
+            .btn-friendship {
 
 
 
@@ -6756,6 +6904,8 @@
 
 
 
+    <!-- GOOGLE ADSENSE -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
     <script src="/assets/tracker.js" defer></script>
 </head>
 
@@ -6893,11 +7043,12 @@
 
 
 
-                <div class="hero-buttons"><button class="btn-primary" onclick="startFlow('personal')"
+                <div class="hero-buttons"><button class="btn-primary"
                         id="btnCreatePerson"><i class="fas fa-user-heart"></i> Create Now</button><button
                         class="btn-demo"
-                        onclick="window.location.href='https://thegreeter.in/generated/customize?view=44k1zhizfy&_v=c&lang=en'"
-                        id="btnCreateEvent"><i class="fas fa-circle-play"></i> See Demo</button></div>
+                        id="btnCreateEvent"><i class="fas fa-circle-play"></i> See Demo</button><a
+                        class="btn-friendship"
+                        id="btnCreateFriendship" href="/create.html?event=festival&festivalName=Friendship%20Day"><i class="fas fa-heart"></i> Create for Friendship Day</a></div>
 
 
 
@@ -8712,6 +8863,52 @@
 
 
         });
+
+
+
+        // Hero button event listeners
+
+        const btnCreatePerson = document.getElementById('btnCreatePerson');
+
+        const btnCreateEvent = document.getElementById('btnCreateEvent');
+
+        const btnCreateFriendship = document.getElementById('btnCreateFriendship');
+
+
+
+        if (btnCreatePerson) {
+
+            btnCreatePerson.addEventListener('click', () => {
+
+                startFlow('personal');
+
+            });
+
+        }
+
+
+
+        if (btnCreateEvent) {
+
+            btnCreateEvent.addEventListener('click', () => {
+
+                window.location.href = 'https://thegreeter.in/generated/customize?view=44k1zhizfy&_v=c&lang=en';
+
+            });
+
+        }
+
+
+
+        if (btnCreateFriendship) {
+
+            btnCreateFriendship.addEventListener('click', () => {
+
+                window.location.href = 'create.html?event=festival&festivalName=Friendship%20Day';
+
+            });
+
+        }
 
 
 
