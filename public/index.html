@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 
 
@@ -1570,94 +1570,6 @@
 
         }
 
-        .btn-friendship {
-            text-decoration: none;
-
-
-
-            background: linear-gradient(135deg, #ffb6c1 0%, #ff69b4 100%);
-
-
-
-            color: white;
-
-
-
-            border: none;
-
-
-
-            padding: 18px 40px;
-
-
-
-            border-radius: 60px;
-
-
-
-            font-weight: 700;
-
-
-
-            font-size: 1.1rem;
-
-
-
-            box-shadow: 0 16px 32px -8px rgba(255, 105, 180, 0.3);
-
-
-
-            transition: all 0.3s;
-
-
-
-            cursor: pointer;
-
-
-
-            display: inline-flex;
-
-
-
-            align-items: center;
-
-
-
-            gap: 12px;
-
-
-
-            flex: 1;
-
-
-
-            justify-content: center;
-
-
-
-            min-width: fit-content;
-
-
-
-        }
-
-        .btn-friendship:hover {
-
-
-
-            transform: translateY(-4px);
-
-
-
-            box-shadow: 0 24px 48px -10px rgba(255, 105, 180, 0.4);
-
-
-
-            filter: brightness(1.05);
-
-
-
-        }
 
 
 
@@ -7060,10 +6972,7 @@
 
                 <div class="hero-buttons"><button class="btn-primary" id="btnCreatePerson"><i
                             class="fas fa-user-heart"></i> Create Now</button><button class="btn-demo"
-                        id="btnCreateEvent"><i class="fas fa-circle-play"></i> See Demo</button><a
-                        class="btn-friendship" id="btnCreateFriendship"
-                        href="/create.html?event=festival&festivalName=Friendship%20Day"><i class="fas fa-heart"></i>
-                        Create for Friendship Day</a></div>
+                        id="btnCreateEvent"><i class="fas fa-circle-play"></i> See Demo</button></div>
 
 
 
@@ -8887,8 +8796,6 @@
 
         const btnCreateEvent = document.getElementById('btnCreateEvent');
 
-        const btnCreateFriendship = document.getElementById('btnCreateFriendship');
-
 
 
         if (btnCreatePerson) {
@@ -8908,18 +8815,6 @@
             btnCreateEvent.addEventListener('click', () => {
 
                 window.location.href = 'https://thegreeter.in/generated/customize?view=44k1zhizfy&_v=c&lang=en';
-
-            });
-
-        }
-
-
-
-        if (btnCreateFriendship) {
-
-            btnCreateFriendship.addEventListener('click', () => {
-
-                window.location.href = 'create.html?event=festival&festivalName=Friendship%20Day';
 
             });
 
