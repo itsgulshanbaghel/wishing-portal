@@ -19,6 +19,7 @@ const analytics = require('./analytics');
 const health = require('./health');
 const { generateOGImage, generateOGMetaTags, saveOGImage } = require('./og-image-generator');
 const helmet = require('helmet');
+const compression = require('compression');
 
 
 
@@ -122,8 +123,19 @@ app.use(helmet({
     maxAge: 31536000,
     includeSubDomains: true,
     preload: true
+  },
+  // Additional content protection headers
+  frameguard: {
+    action: 'deny' // Prevent site from being embedded in iframes
+  },
+  noSniff: true, // Prevent MIME type sniffing
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin'
   }
 }));
+
+// Enable gzip compression for all responses
+app.use(compression());
 
 
 
