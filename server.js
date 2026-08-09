@@ -1801,20 +1801,39 @@ app.get('/api/admin/feedback-analytics', adminAuth, async (req, res) => {
 // List Cloudinary configs for direct access
 app.get('/api/admin/cloudinary-list', adminAuth, async (req, res) => {
   try {
-    const result = await cloudinary.api.resources({
-      type: 'upload',
-      resource_type: 'raw',
-      prefix: 'configs/',
-      max_results: 100,
-      context: true
-    });
-    const websites = (result.resources || []).map(r => ({
+    let allResources = [];
+    let nextCursor = null;
+    
+    do {
+      const params = {
+        type: 'upload',
+        resource_type: 'raw',
+        prefix: 'configs/',
+        max_results: 500,
+        context: true
+      };
+      
+      if (nextCursor) {
+        params.next_cursor = nextCursor;
+      }
+      
+      const result = await cloudinary.api.resources(params);
+      allResources = allResources.concat(result.resources || []);
+      nextCursor = result.next_cursor;
+      
+      console.log('[Server] Fetched', result.resources?.length || 0, 'resources, total so far:', allResources.length);
+      
+    } while (nextCursor);
+    
+    const websites = allResources.map(r => ({
       publicId: r.public_id,
       url: r.secure_url,
       createdAt: r.created_at,
       bytes: r.bytes,
       context: r.context?.custom || {}
     }));
+    
+    console.log('[Server] Cloudinary list returned total of', websites.length, 'websites');
     res.json({ websites });
   } catch (err) {
     console.error('Cloudinary list error:', err);

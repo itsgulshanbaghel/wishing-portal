@@ -988,8 +988,10 @@
     if (list) currentCloudinaryData = list;
     const tbody = document.querySelector('#cloudinaryTable tbody');
     const sort = document.getElementById('cloudinarySort');
-    const ageFilter = document.getElementById('ageFilter').value;
+    const ageFilter = document.getElementById('ageFilter')?.value || 'all';
     if (!tbody) return;
+    
+    console.log('[Admin] Rendering Cloudinary table with', currentCloudinaryData.length, 'items, age filter:', ageFilter);
     
     tbody.innerHTML = '';
     const sortType = sort.value;
@@ -1010,6 +1012,8 @@
       const minAge = parseInt(ageFilter);
       return ageInDays >= minAge;
     });
+
+    console.log('[Admin] After filtering:', filtered.length, 'items to display');
 
     if (filtered.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;opacity:0.5;">No files match the current filter criteria.</td></tr>`;
@@ -1213,6 +1217,18 @@
     try {
       await fetchPremiumWebsites();
       const res = await apiFetch('/api/admin/cloudinary-list');
+      console.log('[Admin] Cloudinary API response:', res);
+      console.log('[Admin] Websites count:', res.websites?.length || 0);
+      
+      // Reset age filter to "all" when loading fresh data
+      const ageFilter = document.getElementById('ageFilter');
+      if (ageFilter) {
+        ageFilter.value = 'all';
+      }
+      
+      // Clear selection
+      selectedWebsites.clear();
+      
       renderCloudinaryTable(res.websites || []);
       return res;
     } catch (err) {
