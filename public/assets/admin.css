@@ -476,3 +476,206 @@ tbody tr:hover td { color:var(--text); }
 .modal-body {
   padding: 20px 24px;
 }
+
+/* ── BULK DELETE PANEL ── */
+.bulk-controls-panel {
+  background: linear-gradient(135deg, rgba(123,93,246,0.08), rgba(239,68,68,0.05));
+  border: 1px solid rgba(123,93,246,0.25);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+.bulk-controls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.bulk-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.bulk-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+/* Select All */
+.bulk-checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.bulk-checkbox-wrap input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.bulk-checkbox-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+.bulk-checkbox-label i { color: var(--accent); font-size: 0.8rem; }
+.bulk-checkbox-wrap:hover .bulk-checkbox-label { color: var(--text); }
+/* Age Filter */
+.bulk-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bulk-filter-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.bulk-filter-label i { color: var(--accent); }
+.bulk-select {
+  padding: 6px 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  font-family: var(--font);
+  transition: 0.2s;
+}
+.bulk-select:hover, .bulk-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+/* Premium Toggle */
+.bulk-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.bulk-toggle-wrap input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.bulk-toggle-slider {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  transition: 0.3s;
+  flex-shrink: 0;
+}
+.bulk-toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.bulk-toggle-wrap input:checked + .bulk-toggle-slider {
+  background: rgba(34,197,94,0.3);
+  border-color: rgba(34,197,94,0.5);
+}
+.bulk-toggle-wrap input:checked + .bulk-toggle-slider::after {
+  transform: translateX(16px);
+  background: var(--green);
+}
+.bulk-toggle-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+.bulk-toggle-wrap:hover .bulk-toggle-label { color: var(--text); }
+/* Bulk Delete Button */
+.bulk-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: 0.25s;
+  box-shadow: 0 4px 16px rgba(239,68,68,0.3);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.bulk-delete-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(239,68,68,0.4);
+  filter: brightness(1.1);
+}
+.bulk-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.bulk-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+/* Row selected highlight */
+tbody tr.row-selected { background: rgba(123,93,246,0.08) !important; }
+tbody tr.row-selected td { color: var(--text) !important; }
+/* Delete button in table rows */
+.delete-btn {
+  background: rgba(239,68,68,0.1) !important;
+  border-color: rgba(239,68,68,0.25) !important;
+  color: var(--red) !important;
+}
+.delete-btn:hover {
+  background: var(--red) !important;
+  color: #fff !important;
+}
+@media(max-width: 768px) {
+  .bulk-controls-header { flex-direction: column; align-items: stretch; }
+  .bulk-controls-left { flex-direction: column; align-items: flex-start; }
+  .bulk-divider { display: none; }
+  .bulk-delete-btn { justify-content: center; width: 100%; }
+}
+

@@ -988,6 +988,7 @@
     if (list) currentCloudinaryData = list;
     const tbody = document.querySelector('#cloudinaryTable tbody');
     const sort = document.getElementById('cloudinarySort');
+    const ageFilter = document.getElementById('ageFilter').value;
     if (!tbody) return;
     
     tbody.innerHTML = '';
@@ -1001,12 +1002,21 @@
       return 0;
     });
 
-    if (sorted.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;opacity:0.5;">No files found or not loaded yet.</td></tr>`;
+    // Apply age filter
+    const filtered = sorted.filter(r => {
+      if (ageFilter === 'all') return true;
+      
+      const ageInDays = (Date.now() - new Date(r.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+      const minAge = parseInt(ageFilter);
+      return ageInDays >= minAge;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;opacity:0.5;">No files match the current filter criteria.</td></tr>`;
       return;
     }
 
-    sorted.forEach(r => {
+    filtered.forEach(r => {
       const tr = document.createElement('tr');
       const id = r.publicId.replace('configs/', '');
       const created = new Date(r.createdAt).toLocaleString();
@@ -1014,13 +1024,20 @@
       const viewUrl = window.location.origin + '/generated/customize.html?view=' + id;
       const isPremium = premiumWebsites.has(id);
       const isSelected = selectedWebsites.has(r.publicId);
+      const ageInDays = (Date.now() - new Date(r.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+      
+      // Add premium row highlighting
+      if (isPremium) {
+        tr.style.background = 'linear-gradient(90deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05))';
+        tr.style.borderLeft = '3px solid #f59e0b';
+      }
       
       tr.innerHTML = `
         <td><input type="checkbox" class="website-checkbox" data-public-id="${r.publicId}" ${isSelected ? 'checked' : ''}></td>
         <td><code style="color:var(--accent)">${id}</code></td>
-        <td>${created}</td>
+        <td>${created} <span style="opacity:0.6; font-size:0.8em;">(${ageInDays.toFixed(0)}d old)</span></td>
         <td>${size}</td>
-        <td>${isPremium ? '<span style="color:#22c55e;"><i class="fas fa-crown"></i> Premium</span>' : '<span style="opacity:0.5;">Free</span>'}</td>
+        <td>${isPremium ? '<span style="color:#f59e0b; font-weight:600;"><i class="fas fa-crown"></i> Premium</span>' : '<span style="opacity:0.5;">Free</span>'}</td>
         <td>
           <a href="${viewUrl}" target="_blank" class="action-btn"><i class="fas fa-eye"></i> View</a>
           <button class="action-btn delete-btn" data-public-id="${r.publicId}" style="margin-left: 5px;"><i class="fas fa-trash"></i> Delete</button>
@@ -1034,6 +1051,24 @@
 
   // Attach cloudinary sort listener once
   document.getElementById('cloudinarySort').addEventListener('change', () => renderCloudinaryTable());
+  
+  // Age filter change listener - auto-select filtered items
+  document.getElementById('ageFilter').addEventListener('change', () => {
+    // Clear current selection
+    selectedWebsites.clear();
+    
+    // Re-render table with new filter
+    renderCloudinaryTable();
+    
+    // Auto-select all visible items
+    const checkboxes = document.querySelectorAll('.website-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = true;
+      selectedWebsites.add(cb.dataset.publicId);
+    });
+    
+    updateSelectedCount();
+  });
 
   // Checkbox event listeners
   document.addEventListener('change', (e) => {
@@ -1081,8 +1116,15 @@
 
   function updateSelectedCount() {
     const countEl = document.getElementById('selectedCount');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    
     if (countEl) {
       countEl.textContent = selectedWebsites.size;
+    }
+    
+    // Enable/disable bulk delete button
+    if (bulkDeleteBtn) {
+      bulkDeleteBtn.disabled = selectedWebsites.size === 0;
     }
   }
 
