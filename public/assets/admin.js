@@ -1218,15 +1218,18 @@
     }
   });
 
-  // Cloudinary delete functionality
+  // Cloudinary delete functionality (single row delete only - NOT bulk)
   document.addEventListener('click', async (e) => {
     if (e.target.closest('.delete-btn')) {
       const deleteBtn = e.target.closest('.delete-btn');
+      
+      // Skip if this is the bulk delete button (it has no data-public-id)
+      if (deleteBtn.id === 'bulkDeleteBtn') return;
+      
       const publicId = deleteBtn.dataset.publicId;
       
       if (!publicId) {
-        alert('No public ID found for deletion');
-        return;
+        return; // Not a row-level delete button
       }
 
       if (!confirm(`⚠️ COMPREHENSIVE DELETION WARNING ⚠️\n\nThis will PERMANENTLY delete:\n• Website configuration from Cloudinary\n• All related images (QR codes, photos, etc.)\n• All tracking records and analytics\n• All user feedback\n• Custom URL (if configured)\n• Payment records (marked as deleted)\n\nPublic ID: ${publicId}\n\nThis action CANNOT be undone. All data will be lost forever.\n\nDo you want to proceed?`)) {

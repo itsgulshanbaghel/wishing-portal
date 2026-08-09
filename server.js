@@ -1918,7 +1918,7 @@ app.delete('/api/admin/cloudinary-delete', adminAuth, async (req, res) => {
       // For now, we'll keep payment records for audit purposes but mark them
       const paymentUpdate = await Payment.updateMany(
         { websiteId },
-        { $set: { status: 'WEBSITE_DELETED', metadata: { ...($set?.metadata || {}), deletedAt: new Date(), deletionReason: 'Website deleted by admin' } } }
+        { $set: { status: 'WEBSITE_DELETED', 'metadata.deletedAt': new Date(), 'metadata.deletionReason': 'Website deleted by admin' } }
       );
       deletionResults.mongodb.payments = paymentUpdate.modifiedCount;
 
@@ -1983,17 +1983,31 @@ app.delete('/api/admin/cloudinary-bulk-delete', adminAuth, async (req, res) => {
         if (ageFilter && ageFilter !== 'all') {
           try {
             const website = await Website.findOne({ id: websiteId });
-            if (!website) {
-              results.skipped.push({ publicId, reason: 'Website not found in database' });
-              continue;
+            let createdAt = website?.createdAt;
+
+            // Fallback: find the createdAt from the publicId in the Cloudinary list
+            // (it was passed in publicIds so it exists in Cloudinary)
+            if (!createdAt) {
+              // Try to get it from Cloudinary resource directly
+              try {
+                const cloudRes = await cloudinary.api.resource(publicId, { resource_type: 'raw' });
+                createdAt = cloudRes.created_at;
+              } catch (cloudResErr) {
+                console.warn('[Server] Could not fetch resource details for age check:', websiteId);
+              }
             }
 
-            const ageInDays = (Date.now() - new Date(website.createdAt).getTime()) / (1000 * 60 * 60 * 24);
-            const minAge = parseInt(ageFilter);
-            
-            if (ageInDays < minAge) {
-              results.skipped.push({ publicId, reason: `Website is only ${ageInDays.toFixed(1)} days old (minimum: ${minAge} days)` });
-              continue;
+            if (!createdAt) {
+              // No date available at all — allow deletion
+              console.warn('[Server] No createdAt found for', websiteId, '- skipping age filter');
+            } else {
+              const ageInDays = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24);
+              const minAge = parseInt(ageFilter);
+              
+              if (ageInDays < minAge) {
+                results.skipped.push({ publicId, reason: `Website is only ${ageInDays.toFixed(1)} days old (minimum: ${minAge} days)` });
+                continue;
+              }
             }
           } catch (ageErr) {
             console.warn('[Server] Age check failed for', websiteId, ':', ageErr);
@@ -2095,7 +2109,7 @@ async function deleteWebsiteComprehensive(publicId, websiteId) {
 
     const paymentUpdate = await Payment.updateMany(
       { websiteId },
-      { $set: { status: 'WEBSITE_DELETED', metadata: { ...($set?.metadata || {}), deletedAt: new Date(), deletionReason: 'Bulk deleted by admin' } } }
+      { $set: { status: 'WEBSITE_DELETED', 'metadata.deletedAt': new Date(), 'metadata.deletionReason': 'Bulk deleted by admin' } }
     );
     deletionResults.mongodb.payments = paymentUpdate.modifiedCount;
 
