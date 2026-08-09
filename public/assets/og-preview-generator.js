@@ -5,7 +5,7 @@
 
 class OGPreviewGenerator {
   constructor(options = {}) {
-    this.apiBaseUrl = options.apiBaseUrl || '';
+    this.apiBaseUrl = options.apiBaseUrl || 'https://wishing-portal.onrender.com';
     this.autoGenerate = options.autoGenerate !== false; // Default: true
     this.onProgress = options.onProgress || (() => {});
     this.onSuccess = options.onSuccess || (() => {});

@@ -1822,6 +1822,290 @@ app.get('/api/admin/cloudinary-list', adminAuth, async (req, res) => {
   }
 });
 
+// Delete Cloudinary config and all related assets
+app.delete('/api/admin/cloudinary-delete', adminAuth, async (req, res) => {
+  try {
+    const { publicId } = req.body;
+    
+    if (!publicId) {
+      return res.status(400).json({ error: 'Public ID is required' });
+    }
+
+    // Validate that the publicId is in the configs folder
+    if (!publicId.startsWith('configs/')) {
+      return res.status(400).json({ error: 'Invalid public ID format' });
+    }
+
+    const websiteId = publicId.replace('configs/', '');
+    console.log('[Server] Starting comprehensive deletion for website:', websiteId);
+
+    const deletionResults = {
+      cloudinary: { config: false, images: [] },
+      mongodb: { website: false, events: 0, feedback: 0, customSlug: false, payments: 0 }
+    };
+
+    // 1. Delete main config from Cloudinary
+    try {
+      const result = await cloudinary.api.delete_resources([publicId], {
+        resource_type: 'raw',
+        type: 'upload'
+      });
+      console.log('[Server] Cloudinary config delete result:', result);
+      deletionResults.cloudinary.config = true;
+    } catch (cloudErr) {
+      console.error('[Server] Cloudinary config deletion failed:', cloudErr);
+    }
+
+    // 2. Delete related Cloudinary images (QR center photos, etc.)
+    try {
+      // Search for images that might be related to this website
+      // We'll search by context if available, or by folder patterns
+      const imageSearch = await cloudinary.api.resources({
+        type: 'upload',
+        resource_type: 'image',
+        prefix: 'qr-centers/',
+        max_results: 500,
+        context: true
+      });
+
+      // Filter images that might be related to this website
+      // This is a best-effort approach since we don't have direct linking
+      const relatedImages = imageSearch.resources.filter(img => {
+        // Check if context contains the website ID
+        if (img.context && img.context.custom) {
+          return Object.values(img.context.custom).some(val => 
+            val && val.toString().includes(websiteId)
+          );
+        }
+        // Check if public_id contains the website ID
+        return img.public_id.includes(websiteId);
+      });
+
+      if (relatedImages.length > 0) {
+        const imageIds = relatedImages.map(img => img.public_id);
+        const imageDeleteResult = await cloudinary.api.delete_resources(imageIds, {
+          resource_type: 'image',
+          type: 'upload'
+        });
+        console.log('[Server] Deleted related images:', imageIds);
+        deletionResults.cloudinary.images = imageIds;
+      }
+    } catch (imageErr) {
+      console.warn('[Server] Image deletion failed (non-critical):', imageErr);
+    }
+
+    // 3. Delete all MongoDB records related to this website
+    try {
+      await ensureMongoConnected();
+
+      // Delete website record
+      const websiteDelete = await Website.deleteOne({ id: websiteId });
+      deletionResults.mongodb.website = websiteDelete.deletedCount > 0;
+
+      // Delete all tracking events
+      const eventsDelete = await Event.deleteMany({ websiteId });
+      deletionResults.mongodb.events = eventsDelete.deletedCount;
+
+      // Delete all feedback
+      const feedbackDelete = await Feedback.deleteMany({ websiteId });
+      deletionResults.mongodb.feedback = feedbackDelete.deletedCount;
+
+      // Delete custom slug if exists
+      const slugDelete = await CustomSlug.deleteOne({ websiteId });
+      deletionResults.mongodb.customSlug = slugDelete.deletedCount > 0;
+
+      // Delete payment records (keep for audit, or delete based on preference)
+      // For now, we'll keep payment records for audit purposes but mark them
+      const paymentUpdate = await Payment.updateMany(
+        { websiteId },
+        { $set: { status: 'WEBSITE_DELETED', metadata: { ...($set?.metadata || {}), deletedAt: new Date(), deletionReason: 'Website deleted by admin' } } }
+      );
+      deletionResults.mongodb.payments = paymentUpdate.modifiedCount;
+
+      console.log('[Server] MongoDB deletion results:', deletionResults.mongodb);
+    } catch (mongoErr) {
+      console.error('[Server] MongoDB deletion failed:', mongoErr);
+    }
+
+    console.log('[Server] Comprehensive deletion completed:', deletionResults);
+    res.json({ 
+      success: true, 
+      message: 'Website and all related data deleted successfully',
+      details: deletionResults
+    });
+  } catch (err) {
+    console.error('Comprehensive delete error:', err);
+    res.status(500).json({ error: 'Failed to delete website and related data' });
+  }
+});
+
+// Bulk delete websites with age filtering and premium protection
+app.delete('/api/admin/cloudinary-bulk-delete', adminAuth, async (req, res) => {
+  try {
+    const { publicIds, ageFilter, protectPremium } = req.body;
+    
+    if (!publicIds || !Array.isArray(publicIds) || publicIds.length === 0) {
+      return res.status(400).json({ error: 'Public IDs array is required' });
+    }
+
+    console.log('[Server] Starting bulk deletion for', publicIds.length, 'websites');
+    console.log('[Server] Age filter:', ageFilter, 'Protect premium:', protectPremium);
+
+    const results = {
+      totalRequested: publicIds.length,
+      skipped: [],
+      deleted: [],
+      errors: []
+    };
+
+    // Get premium websites if protection is enabled
+    let premiumWebsiteIds = new Set();
+    if (protectPremium) {
+      try {
+        await ensureMongoConnected();
+        const paidPayments = await Payment.find({ 
+          status: 'PAID',
+          websiteId: { $in: publicIds.map(id => id.replace('configs/', '')) }
+        }).select('websiteId');
+        premiumWebsiteIds = new Set(paidPayments.map(p => p.websiteId));
+        console.log('[Server] Found', premiumWebsiteIds.size, 'premium websites to protect');
+      } catch (mongoErr) {
+        console.warn('[Server] Failed to fetch premium websites:', mongoErr);
+      }
+    }
+
+    // Process each website
+    for (const publicId of publicIds) {
+      try {
+        const websiteId = publicId.replace('configs/', '');
+
+        // Check age filter
+        if (ageFilter && ageFilter !== 'all') {
+          try {
+            const website = await Website.findOne({ id: websiteId });
+            if (!website) {
+              results.skipped.push({ publicId, reason: 'Website not found in database' });
+              continue;
+            }
+
+            const ageInDays = (Date.now() - new Date(website.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+            const minAge = parseInt(ageFilter);
+            
+            if (ageInDays < minAge) {
+              results.skipped.push({ publicId, reason: `Website is only ${ageInDays.toFixed(1)} days old (minimum: ${minAge} days)` });
+              continue;
+            }
+          } catch (ageErr) {
+            console.warn('[Server] Age check failed for', websiteId, ':', ageErr);
+          }
+        }
+
+        // Check premium protection
+        if (protectPremium && premiumWebsiteIds.has(websiteId)) {
+          results.skipped.push({ publicId, reason: 'Premium website (protected)' });
+          continue;
+        }
+
+        // Perform comprehensive deletion
+        const deletionResults = await deleteWebsiteComprehensive(publicId, websiteId);
+        results.deleted.push({ publicId, details: deletionResults });
+
+      } catch (err) {
+        console.error('[Server] Failed to delete', publicId, ':', err);
+        results.errors.push({ publicId, error: err.message });
+      }
+    }
+
+    console.log('[Server] Bulk deletion completed:', results);
+    res.json({ 
+      success: true, 
+      message: `Deleted ${results.deleted.length} websites, skipped ${results.skipped.length}, errors ${results.errors.length}`,
+      results
+    });
+  } catch (err) {
+    console.error('Bulk delete error:', err);
+    res.status(500).json({ error: 'Failed to perform bulk deletion' });
+  }
+});
+
+// Helper function for comprehensive website deletion
+async function deleteWebsiteComprehensive(publicId, websiteId) {
+  const deletionResults = {
+    cloudinary: { config: false, images: [] },
+    mongodb: { website: false, events: 0, feedback: 0, customSlug: false, payments: 0 }
+  };
+
+  // Delete main config from Cloudinary
+  try {
+    await cloudinary.api.delete_resources([publicId], {
+      resource_type: 'raw',
+      type: 'upload'
+    });
+    deletionResults.cloudinary.config = true;
+  } catch (cloudErr) {
+    console.error('[Server] Cloudinary config deletion failed:', cloudErr);
+  }
+
+  // Delete related Cloudinary images
+  try {
+    const imageSearch = await cloudinary.api.resources({
+      type: 'upload',
+      resource_type: 'image',
+      prefix: 'qr-centers/',
+      max_results: 500,
+      context: true
+    });
+
+    const relatedImages = imageSearch.resources.filter(img => {
+      if (img.context && img.context.custom) {
+        return Object.values(img.context.custom).some(val => 
+          val && val.toString().includes(websiteId)
+        );
+      }
+      return img.public_id.includes(websiteId);
+    });
+
+    if (relatedImages.length > 0) {
+      const imageIds = relatedImages.map(img => img.public_id);
+      await cloudinary.api.delete_resources(imageIds, {
+        resource_type: 'image',
+        type: 'upload'
+      });
+      deletionResults.cloudinary.images = imageIds;
+    }
+  } catch (imageErr) {
+    console.warn('[Server] Image deletion failed (non-critical):', imageErr);
+  }
+
+  // Delete MongoDB records
+  try {
+    await ensureMongoConnected();
+
+    const websiteDelete = await Website.deleteOne({ id: websiteId });
+    deletionResults.mongodb.website = websiteDelete.deletedCount > 0;
+
+    const eventsDelete = await Event.deleteMany({ websiteId });
+    deletionResults.mongodb.events = eventsDelete.deletedCount;
+
+    const feedbackDelete = await Feedback.deleteMany({ websiteId });
+    deletionResults.mongodb.feedback = feedbackDelete.deletedCount;
+
+    const slugDelete = await CustomSlug.deleteOne({ websiteId });
+    deletionResults.mongodb.customSlug = slugDelete.deletedCount > 0;
+
+    const paymentUpdate = await Payment.updateMany(
+      { websiteId },
+      { $set: { status: 'WEBSITE_DELETED', metadata: { ...($set?.metadata || {}), deletedAt: new Date(), deletionReason: 'Bulk deleted by admin' } } }
+    );
+    deletionResults.mongodb.payments = paymentUpdate.modifiedCount;
+
+  } catch (mongoErr) {
+    console.error('[Server] MongoDB deletion failed:', mongoErr);
+  }
+
+  return deletionResults;
+}
+
 // Traffic Sources Analytics
 app.get('/api/admin/traffic-sources', adminAuth, async (req, res) => {
   try {

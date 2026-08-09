@@ -7,16 +7,6 @@
       "**/node_modules/**"
     ],
     "cleanUrls": true,
-    "trailingSlash": false,
-    "rewrites": [
-      {
-        "source": "/api/**",
-        "destination": "https://wishing-portal.onrender.com/api/:splat"
-      },
-      {
-        "source": "**",
-        "destination": "/generated/customize.html"
-      }
-    ]
+    "trailingSlash": false
   }
 }

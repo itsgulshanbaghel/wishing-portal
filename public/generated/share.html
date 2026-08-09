@@ -2492,7 +2492,7 @@
         if (!viewId) return;
 
         try {
-          const response = await fetch(`/api/og-meta/${viewId}`);
+          const response = await fetch(`https://wishing-portal.onrender.com/api/og-meta/${viewId}`);
           if (!response.ok) throw new Error('Failed to fetch OG meta');
           
           const data = await response.json();

@@ -214,7 +214,37 @@
                 <button class="refresh-btn small" id="loadCloudinaryBtn" style="margin:0;"><i class="fas fa-cloud-arrow-down"></i> Load</button>
               </div>
             </div>
-            <div class="table-scroll"><table id="cloudinaryTable"><thead><tr><th>Public ID</th><th>Created</th><th>Size</th><th>Actions</th></tr></thead><tbody><tr><td colspan="4" style="text-align:center;opacity:0.5;">Click "Load" to fetch</td></tr></tbody></table></div>
+            
+            <!-- Bulk Delete Controls -->
+            <div class="bulk-controls" style="display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap; padding:12px; background:rgba(123,93,246,0.1); border-radius:8px; border:1px solid rgba(123,93,246,0.3);">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="selectAllCloudinary" style="width:16px; height:16px;">
+                <label for="selectAllCloudinary" style="font-size:0.85rem; cursor:pointer;">Select All</label>
+              </div>
+              
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span style="font-size:0.85rem; color:rgba(255,255,255,0.7);">Age-based:</span>
+                <select id="ageFilter" class="table-search" style="font-size:0.75rem; padding:5px 10px; min-width:120px;">
+                  <option value="all">All Ages</option>
+                  <option value="7">Older than 7 days</option>
+                  <option value="15">Older than 15 days</option>
+                  <option value="30">Older than 30 days</option>
+                  <option value="60">Older than 60 days</option>
+                  <option value="90">Older than 90 days</option>
+                </select>
+              </div>
+              
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="protectPremium" checked style="width:16px; height:16px;">
+                <label for="protectPremium" style="font-size:0.85rem; cursor:pointer;">Protect Premium</label>
+              </div>
+              
+              <button class="action-btn delete-btn" id="bulkDeleteBtn" style="margin-left:auto; background:linear-gradient(135deg, #ef4444, #dc2626);">
+                <i class="fas fa-trash"></i> Delete Selected (<span id="selectedCount">0</span>)
+              </button>
+            </div>
+            
+            <div class="table-scroll"><table id="cloudinaryTable"><thead><tr><th><input type="checkbox" id="headerCheckbox" style="width:16px; height:16px;"></th><th>Public ID</th><th>Created</th><th>Size</th><th>Premium</th><th>Actions</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;opacity:0.5;">Click "Load" to fetch</td></tr></tbody></table></div>
           </div>
         </section>
 

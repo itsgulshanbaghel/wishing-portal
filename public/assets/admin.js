@@ -970,6 +970,19 @@
   }
 
   let currentCloudinaryData = [];
+  let selectedWebsites = new Set();
+  let premiumWebsites = new Set();
+
+  async function fetchPremiumWebsites() {
+    try {
+      const res = await apiFetch('/api/admin/custom-url-payments');
+      const paidPayments = res.payments || [];
+      premiumWebsites = new Set(paidPayments.filter(p => p.status === 'PAID').map(p => p.websiteId));
+      console.log('[Admin] Fetched', premiumWebsites.size, 'premium websites');
+    } catch (err) {
+      console.warn('[Admin] Failed to fetch premium websites:', err);
+    }
+  }
 
   function renderCloudinaryTable(list) {
     if (list) currentCloudinaryData = list;
@@ -989,7 +1002,7 @@
     });
 
     if (sorted.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;opacity:0.5;">No files found or not loaded yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;opacity:0.5;">No files found or not loaded yet.</td></tr>`;
       return;
     }
 
@@ -999,20 +1012,156 @@
       const created = new Date(r.createdAt).toLocaleString();
       const size = (r.bytes / 1024).toFixed(1) + ' KB';
       const viewUrl = window.location.origin + '/generated/customize.html?view=' + id;
+      const isPremium = premiumWebsites.has(id);
+      const isSelected = selectedWebsites.has(r.publicId);
+      
       tr.innerHTML = `
+        <td><input type="checkbox" class="website-checkbox" data-public-id="${r.publicId}" ${isSelected ? 'checked' : ''}></td>
         <td><code style="color:var(--accent)">${id}</code></td>
         <td>${created}</td>
         <td>${size}</td>
+        <td>${isPremium ? '<span style="color:#22c55e;"><i class="fas fa-crown"></i> Premium</span>' : '<span style="opacity:0.5;">Free</span>'}</td>
         <td>
           <a href="${viewUrl}" target="_blank" class="action-btn"><i class="fas fa-eye"></i> View</a>
+          <button class="action-btn delete-btn" data-public-id="${r.publicId}" style="margin-left: 5px;"><i class="fas fa-trash"></i> Delete</button>
         </td>
       `;
       tbody.appendChild(tr);
     });
+
+    updateSelectedCount();
   }
 
   // Attach cloudinary sort listener once
   document.getElementById('cloudinarySort').addEventListener('change', () => renderCloudinaryTable());
+
+  // Checkbox event listeners
+  document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('website-checkbox')) {
+      const publicId = e.target.dataset.publicId;
+      if (e.target.checked) {
+        selectedWebsites.add(publicId);
+      } else {
+        selectedWebsites.delete(publicId);
+      }
+      updateSelectedCount();
+    }
+
+    // Select all checkbox
+    if (e.target.id === 'selectAllCloudinary') {
+      const checkboxes = document.querySelectorAll('.website-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = e.target.checked;
+        const publicId = cb.dataset.publicId;
+        if (e.target.checked) {
+          selectedWebsites.add(publicId);
+        } else {
+          selectedWebsites.delete(publicId);
+        }
+      });
+      updateSelectedCount();
+    }
+
+    // Header checkbox
+    if (e.target.id === 'headerCheckbox') {
+      const checkboxes = document.querySelectorAll('.website-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = e.target.checked;
+        const publicId = cb.dataset.publicId;
+        if (e.target.checked) {
+          selectedWebsites.add(publicId);
+        } else {
+          selectedWebsites.delete(publicId);
+        }
+      });
+      updateSelectedCount();
+      document.getElementById('selectAllCloudinary').checked = e.target.checked;
+    }
+  });
+
+  function updateSelectedCount() {
+    const countEl = document.getElementById('selectedCount');
+    if (countEl) {
+      countEl.textContent = selectedWebsites.size;
+    }
+  }
+
+  // Bulk delete button handler
+  document.getElementById('bulkDeleteBtn').addEventListener('click', async () => {
+    if (selectedWebsites.size === 0) {
+      alert('Please select at least one website to delete');
+      return;
+    }
+
+    const ageFilter = document.getElementById('ageFilter').value;
+    const protectPremium = document.getElementById('protectPremium').checked;
+    const publicIds = Array.from(selectedWebsites);
+
+    let filterMessage = '';
+    if (ageFilter !== 'all') {
+      filterMessage = `\n• Age filter: Older than ${ageFilter} days`;
+    }
+    if (protectPremium) {
+      filterMessage += '\n• Premium protection: Enabled';
+    }
+
+    if (!confirm(`⚠️ BULK DELETION WARNING ⚠️\n\nYou are about to delete ${selectedWebsites.size} websites permanently.\n\nThis will delete for each website:\n• Website configuration from Cloudinary\n• All related images (QR codes, photos, etc.)\n• All tracking records and analytics\n• All user feedback\n• Custom URL (if configured)\n• Payment records (marked as deleted)${filterMessage}\n\nThis action CANNOT be undone. All data will be lost forever.\n\nDo you want to proceed?`)) {
+      return;
+    }
+
+    try {
+      const btn = document.getElementById('bulkDeleteBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+      const res = await apiFetch('/api/admin/cloudinary-bulk-delete', {
+        method: 'DELETE',
+        body: JSON.stringify({ publicIds, ageFilter, protectPremium })
+      });
+
+      if (res.success) {
+        let message = `Bulk deletion completed:\n\n`;
+        message += `✅ Deleted: ${res.results.deleted.length}\n`;
+        message += `⏭️ Skipped: ${res.results.skipped.length}\n`;
+        message += `❌ Errors: ${res.results.errors.length}\n\n`;
+
+        if (res.results.skipped.length > 0) {
+          message += `Skipped items:\n`;
+          res.results.skipped.slice(0, 5).forEach(item => {
+            message += `• ${item.publicId}: ${item.reason}\n`;
+          });
+          if (res.results.skipped.length > 5) {
+            message += `... and ${res.results.skipped.length - 5} more\n`;
+          }
+        }
+
+        if (res.results.errors.length > 0) {
+          message += `\nErrors:\n`;
+          res.results.errors.slice(0, 3).forEach(item => {
+            message += `• ${item.publicId}: ${item.error}\n`;
+          });
+          if (res.results.errors.length > 3) {
+            message += `... and ${res.results.errors.length - 3} more\n`;
+          }
+        }
+
+        alert(message);
+        
+        // Clear selection and refresh
+        selectedWebsites.clear();
+        updateSelectedCount();
+        await triggerCloudinaryLoad();
+      }
+    } catch (err) {
+      console.error('Bulk delete error:', err);
+      alert('Failed to perform bulk deletion: ' + (err.message || 'Unknown error'));
+    } finally {
+      const btn = document.getElementById('bulkDeleteBtn');
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-trash"></i> Delete Selected (<span id="selectedCount">${selectedWebsites.size}</span>)`;
+      updateSelectedCount();
+    }
+  });
 
   async function triggerCloudinaryLoad() {
     const btn = document.getElementById('loadCloudinaryBtn');
@@ -1020,6 +1169,7 @@
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
     try {
+      await fetchPremiumWebsites();
       const res = await apiFetch('/api/admin/cloudinary-list');
       renderCloudinaryTable(res.websites || []);
       return res;
@@ -1065,6 +1215,44 @@
       await triggerCloudinaryLoad();
     } catch (err) {
       alert('Failed to load Cloudinary data');
+    }
+  });
+
+  // Cloudinary delete functionality
+  document.addEventListener('click', async (e) => {
+    if (e.target.closest('.delete-btn')) {
+      const deleteBtn = e.target.closest('.delete-btn');
+      const publicId = deleteBtn.dataset.publicId;
+      
+      if (!publicId) {
+        alert('No public ID found for deletion');
+        return;
+      }
+
+      if (!confirm(`⚠️ COMPREHENSIVE DELETION WARNING ⚠️\n\nThis will PERMANENTLY delete:\n• Website configuration from Cloudinary\n• All related images (QR codes, photos, etc.)\n• All tracking records and analytics\n• All user feedback\n• Custom URL (if configured)\n• Payment records (marked as deleted)\n\nPublic ID: ${publicId}\n\nThis action CANNOT be undone. All data will be lost forever.\n\nDo you want to proceed?`)) {
+        return;
+      }
+
+      try {
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+        
+        await apiFetch('/api/admin/cloudinary-delete', {
+          method: 'DELETE',
+          body: JSON.stringify({ publicId })
+        });
+
+        alert('Website deleted successfully');
+        
+        // Refresh the Cloudinary table
+        await triggerCloudinaryLoad();
+      } catch (err) {
+        console.error('Delete error:', err);
+        alert('Failed to delete website: ' + (err.message || 'Unknown error'));
+      } finally {
+        deleteBtn.disabled = false;
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+      }
     }
   });
 
