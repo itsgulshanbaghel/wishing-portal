@@ -2136,6 +2136,7 @@
       const clicksData = await apiFetch('/api/admin/personalise-url-clicks');
       const clicks = clicksData.clicks || [];
       const totalWebsites = clicksData.totalWebsites || dashData?.overview?.totalWebsitesCreated || dashData?.websites?.length || 0;
+      const totalClicks = clicksData.totalClicks != null ? clicksData.totalClicks : clicks.length;
       const uniqueClickers = clicksData.uniqueClickers != null ? clicksData.uniqueClickers : new Set(clicks.map(c => c.websiteId || c.visitorId)).size;
       
       // Update KPI cards
@@ -2145,8 +2146,8 @@
       const currency = payments.length > 0 ? payments[0].currency : 'USD';
       document.getElementById('cuTotalRevenue').textContent = `${currency} ${totalRevenue.toFixed(2)}`;
       
-      // Personalise Clicks Card: e.g. "4 / 10" (4 clicked out of 10 total websites created)
-      document.getElementById('cuTotalClicks').textContent = `${uniqueClickers} / ${totalWebsites}`;
+      // Personalise Clicks Card: displays total clicks and unique sites ratio
+      document.getElementById('cuTotalClicks').textContent = totalClicks > 0 ? `${totalClicks} (${uniqueClickers}/${totalWebsites} sites)` : `0 / ${totalWebsites}`;
       
       const conversionRate = totalWebsites > 0 ? ((uniqueClickers / totalWebsites) * 100).toFixed(1) : '0.0';
       document.getElementById('cuConversionRate').textContent = `${conversionRate}%`;

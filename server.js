@@ -93,6 +93,7 @@ const corsOptions = {
   origin: [
     'https://thegreeter.in',
     'https://wishing-portal.onrender.com',
+    'https://wishing-portal-05as.onrender.com',
     'https://thegreeterindia.web.app',
     'https://thegreeterindia.firebaseapp.com',
     'http://localhost:3000',
@@ -2154,35 +2155,41 @@ app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
     }
 
     console.log('[Admin] Fetching personalise URL clicks...');
-    const rawClicks = await Event.find({ type: 'personalise_url_click' })
+    const rawClicks = await Event.find({
+      $or: [
+        { type: 'personalise_url_click' },
+        { 'details.action': 'clicked_personalise_url_button' }
+      ]
+    })
       .sort({ timestamp: -1 })
       .limit(1000)
       .lean();
     
-    // Deduplicate clicks by websiteId so each generated website appears only once
-    const uniqueClicksMap = new Map();
+    // Calculate unique sites clicked
+    const uniqueSiteSet = new Set();
     rawClicks.forEach(click => {
-      const wId = click.websiteId;
-      if (wId && !uniqueClicksMap.has(wId)) {
-        uniqueClicksMap.set(wId, click);
+      const wId = click.websiteId || click.details?.websiteId;
+      if (wId) {
+        uniqueSiteSet.add(wId);
       }
     });
 
-    const clicks = Array.from(uniqueClicksMap.values());
     const totalWebsites = await Website.countDocuments();
-    const uniqueClickers = clicks.length;
+    const uniqueClickers = uniqueSiteSet.size;
 
-    console.log(`[Admin] Found ${rawClicks.length} raw click events deduplicated to ${uniqueClickers} unique site clicks (Total sites: ${totalWebsites})`);
+    console.log(`[Admin] Found ${rawClicks.length} raw click events across ${uniqueClickers} unique site clickers (Total sites: ${totalWebsites})`);
 
-    // Enrich with website & payment data
-    const enrichedClicks = await Promise.all(clicks.map(async (click) => {
+    // Enrich all clicks with website & payment data
+    const enrichedClicks = await Promise.all(rawClicks.map(async (click) => {
+      const wId = click.websiteId || click.details?.websiteId || null;
       const [website, payment] = await Promise.all([
-        Website.findOne({ id: click.websiteId }).lean(),
-        Payment.findOne({ websiteId: click.websiteId, status: 'PAID' }).lean()
+        wId ? Website.findOne({ id: wId }).lean() : null,
+        wId ? Payment.findOne({ websiteId: wId, status: 'PAID' }).lean() : null
       ]);
 
       return {
         ...click,
+        websiteId: wId || click.visitorId || '--',
         websiteRecipientName: website?.recipientName || 'Unknown',
         websiteEventType: website?.eventType || 'Unknown',
         websiteTemplateName: website?.templateName || 'Unknown',

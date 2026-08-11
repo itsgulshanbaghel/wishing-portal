@@ -1070,6 +1070,30 @@ class AnalyticsStore {
   trackExit(req, data) { return this.trackEvent(req, { type: 'exit', details: data }); }
   trackSession(req, data) { return this.trackEvent(req, { type: 'session', details: data }); }
 
+  // ── Helper to Delete Cloudinary Configs & Image Assets ──
+  async _deleteCloudinaryWebsiteAssets(cloud, websiteId) {
+    if (!cloud || !websiteId) return;
+    try {
+      await Promise.allSettled([
+        // Delete raw JSON config
+        cloud.uploader.destroy(`configs/${websiteId}`, { resource_type: 'raw' }),
+        cloud.api.delete_resources_by_prefix(`configs/${websiteId}`, { resource_type: 'raw' }),
+
+        // Delete OG preview images and image assets
+        cloud.uploader.destroy(`og-images/${websiteId}`, { resource_type: 'image' }),
+        cloud.uploader.destroy(`images/${websiteId}`, { resource_type: 'image' }),
+        cloud.uploader.destroy(`photos/${websiteId}`, { resource_type: 'image' }),
+        cloud.uploader.destroy(`websites/${websiteId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`og-images/${websiteId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`images/${websiteId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`photos/${websiteId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`websites/${websiteId}`, { resource_type: 'image' })
+      ]);
+    } catch (err) {
+      console.warn(`[Analytics] Cloudinary asset deletion warning for ${websiteId}:`, err.message);
+    }
+  }
+
   // ── Delete Single Website & All Related Resources ──
   async deleteWebsite(websiteId, force = false, cloudinaryRef = null) {
     try {
@@ -1089,11 +1113,11 @@ class AnalyticsStore {
         };
       }
 
-      // 2. Delete Cloudinary Raw Config
+      // 2. Delete Cloudinary Raw Config & Image Assets
       let cloudinaryDeleted = false;
       try {
-        const destroyRes = await cloud.uploader.destroy(`configs/${websiteId}`, { resource_type: 'raw' });
-        cloudinaryDeleted = destroyRes.result === 'ok' || destroyRes.result === 'not found';
+        await this._deleteCloudinaryWebsiteAssets(cloud, websiteId);
+        cloudinaryDeleted = true;
       } catch (cErr) {
         console.warn(`[Analytics] Cloudinary destroy warning for website ${websiteId}:`, cErr.message);
       }
@@ -1188,14 +1212,12 @@ class AnalyticsStore {
 
         totalDeletedCount = websiteRes.deletedCount || idsToDelete.length;
 
-        // Destroy Cloudinary configs concurrently in batches of 25 to prevent request timeouts
+        // Destroy Cloudinary configs & image assets concurrently in batches
         const cloud = cloudinaryRef || require('cloudinary').v2;
-        const chunkSize = 25;
+        const chunkSize = 10;
         for (let i = 0; i < idsToDelete.length; i += chunkSize) {
           const chunk = idsToDelete.slice(i, i + chunkSize);
-          await Promise.allSettled(chunk.map(id =>
-            cloud.uploader.destroy(`configs/${id}`, { resource_type: 'raw' }).catch(() => {})
-          ));
+          await Promise.allSettled(chunk.map(id => this._deleteCloudinaryWebsiteAssets(cloud, id)));
         }
       }
 

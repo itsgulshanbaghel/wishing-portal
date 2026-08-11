@@ -3112,21 +3112,35 @@
           alert(currentLang === 'hi' ? 'कृपया पहले अपना लिंक बनाएं।' : 'Please generate your link first.');
           return;
         }
-        // Track "Personalise Your URL" button click using sendBeacon for reliability during redirect
-        const payload = JSON.stringify({
+        // Track "Personalise Your URL" button click using sendBeacon and fetch fallback with keepalive
+        const payloadObj = {
           type: 'personalise_url_click',
           websiteId: viewId,
-          details: { action: 'clicked_personalise_url_button' },
+          details: { action: 'clicked_personalise_url_button', websiteId: viewId },
           visitorId: localStorage.getItem('_gt_vid') || 'cv_unknown',
           sessionId: sessionStorage.getItem('_gt_sid') || 'cs_unknown',
           url: window.location.href
-        });
+        };
+        const payload = JSON.stringify(payloadObj);
         const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
           ? window.APP_CONFIG.API_BASE_URL
-          : 'https://wishing-portal.onrender.com';
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon(API_BASE + '/api/analytics/event', new Blob([payload], { type: 'application/json' }));
+          : 'https://wishing-portal-05as.onrender.com';
+
+        try {
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(API_BASE + '/api/analytics/event', new Blob([payload], { type: 'application/json' }));
+          } else if (window.fetch) {
+            fetch(API_BASE + '/api/analytics/event', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: payload,
+              keepalive: true
+            }).catch(() => {});
+          }
+        } catch (e) {
+          console.warn('Analytics event tracking error:', e);
         }
+
         window.location.href = `/generated/custom-url.html?view=${encodeURIComponent(viewId)}`;
       }
 
