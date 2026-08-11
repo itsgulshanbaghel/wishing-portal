@@ -1129,7 +1129,7 @@ class AnalyticsStore {
   // ── Bulk Delete Websites (With Age Filtering & Premium Protection) ──
   async bulkDeleteWebsites({ websiteIds = null, olderThanDays = null, protectPremium = true } = {}, cloudinaryRef = null) {
     try {
-      const { Website, CustomSlug, Payment } = require('./models');
+      const { Website, Event, Feedback, CustomSlug, Payment } = require('./models');
 
       // 1. Determine candidate website IDs
       let candidateIds = new Set();
