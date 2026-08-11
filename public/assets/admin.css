@@ -533,6 +533,107 @@ tbody tr:hover td { color:var(--text); }
   z-index: 0;
   border-radius: 0 var(--radius) 0 0;
 }
+
+/* ==========================================================================
+   MODAL DIALOG STYLES (Fixed Overlay & Responsive Centering)
+   ========================================================================== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Force flex alignment when display is block or flex */
+.modal[style*="display: block"],
+.modal[style*="display: flex"] {
+  display: flex !important;
+  animation: fadeInModal 0.25s ease-out forwards;
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+.modal-content {
+  background: var(--bg-card, #1e1e2d);
+  color: var(--text, #ffffff);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  border-radius: 16px;
+  width: 100%;
+  max-width: 550px;
+  margin: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(123, 93, 246, 0.15);
+  padding: 24px;
+  position: relative;
+  animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpModal {
+  from {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  font-size: 1.6rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--text, #ffffff);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
 .website-card.premium-card .card-header,
 .website-card.premium-card .card-body,
 .website-card.premium-card .card-footer {

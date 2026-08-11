@@ -166,10 +166,15 @@
         try {
           // Lightweight fetch for additional dashboard data
           async function additionalFetch(url, options = {}) {
-            const headers = { 'Authorization': 'Basic ' + authToken, 'Content-Type': 'application/json', ...options.headers };
-            const r = await fetch(ADDITIONAL_API + url, { ...options, headers });
-            const text = await r.text();
-            try { return JSON.parse(text); } catch (e) { console.warn('[Admin] Additional API returned non-JSON', text.slice(0,200)); return null; }
+            try {
+              const headers = { 'Authorization': 'Basic ' + authToken, 'Content-Type': 'application/json', ...options.headers };
+              const r = await fetch(ADDITIONAL_API + url, { ...options, headers });
+              if (!r.ok) return null;
+              const text = await r.text();
+              return JSON.parse(text);
+            } catch (e) {
+              return null;
+            }
           }
 
           function mergeOverview(primary, other) {
@@ -1339,6 +1344,15 @@
         cancelBtn.addEventListener('click', () => {
           if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
           pendingBulkAction = null;
+        });
+      }
+
+      if (bulkDeleteModal) {
+        bulkDeleteModal.addEventListener('click', (e) => {
+          if (e.target === bulkDeleteModal) {
+            bulkDeleteModal.style.display = 'none';
+            pendingBulkAction = null;
+          }
         });
       }
 
