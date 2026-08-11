@@ -991,19 +991,38 @@
 
   let selectedWebsiteIds = new Set();
   let pendingBulkAction = null;
-  let websitesListenersInitialized = false;
+  let currentlyFilteredWebsites = [];
+
+  function updateSelectionUI() {
+    const countSpan = document.getElementById('selectedCount');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const selectAllCb = document.getElementById('selectAllWebsites');
+
+    if (countSpan) {
+      countSpan.textContent = selectedWebsiteIds.size;
+    }
+    if (deleteSelectedBtn) {
+      const hasSelected = selectedWebsiteIds.size > 0;
+      deleteSelectedBtn.disabled = !hasSelected;
+      deleteSelectedBtn.style.opacity = hasSelected ? '1' : '0.5';
+      deleteSelectedBtn.style.cursor = hasSelected ? 'pointer' : 'not-allowed';
+    }
+    if (selectAllCb) {
+      const count = currentlyFilteredWebsites.length;
+      const selectedCount = currentlyFilteredWebsites.filter(w => selectedWebsiteIds.has(w.id)).length;
+      selectAllCb.checked = count > 0 && selectedCount >= count;
+      selectAllCb.indeterminate = selectedCount > 0 && selectedCount < count;
+    }
+  }
 
   function renderWebsitesCards() {
     const grid = document.getElementById('websiteGrid');
+    if (!grid) return;
+
     const search = document.getElementById('websiteSearch');
     const sort = document.getElementById('websiteSort');
-    const selectAllCb = document.getElementById('selectAllWebsites');
-    const countSpan = document.getElementById('selectedCount');
-    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
     const ageFilter = document.getElementById('websiteAgeFilter');
     const tierFilter = document.getElementById('websiteTierFilter');
-    const protectToggle = document.getElementById('protectPremiumToggle');
-    const bulkDeleteModal = document.getElementById('bulkDeleteModal');
 
     function getAgeCutoff() {
       const val = ageFilter?.value || 'all';
@@ -1012,381 +1031,345 @@
       return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     }
 
-    function updateSelectionUI(filteredList = []) {
-      if (countSpan) {
-        countSpan.textContent = selectedWebsiteIds.size;
+    grid.innerHTML = '';
+    const filter = (search?.value || '').toLowerCase();
+    const sortType = sort?.value || 'date_desc';
+    const cutoff = getAgeCutoff();
+    const ageVal = ageFilter?.value || 'all';
+    const tierVal = tierFilter?.value || 'all';
+
+    const list = dashData?.websites || [];
+    currentlyFilteredWebsites = list.filter(w => {
+      if (filter) {
+        const match = (w.id || '').toLowerCase().includes(filter) ||
+                      (w.eventType || '').toLowerCase().includes(filter) ||
+                      (w.recipientName || '').toLowerCase().includes(filter);
+        if (!match) return false;
       }
-      if (deleteSelectedBtn) {
-        deleteSelectedBtn.disabled = selectedWebsiteIds.size === 0;
-        deleteSelectedBtn.style.opacity = selectedWebsiteIds.size === 0 ? '0.5' : '1';
-        deleteSelectedBtn.style.cursor = selectedWebsiteIds.size === 0 ? 'not-allowed' : 'pointer';
+      if (cutoff) {
+        const createdAt = w.createdAt ? new Date(w.createdAt) : null;
+        if (!createdAt || createdAt >= cutoff) return false;
       }
-      if (selectAllCb) {
-        const count = filteredList.length;
-        const selectedCount = filteredList.filter(w => selectedWebsiteIds.has(w.id)).length;
-        selectAllCb.checked = count > 0 && selectedCount >= count;
-        selectAllCb.indeterminate = selectedCount > 0 && selectedCount < count;
+      if (tierVal === 'premium' && !w.isPremium) return false;
+      if (tierVal === 'free' && w.isPremium) return false;
+      return true;
+    });
+
+    // Apply Sort
+    currentlyFilteredWebsites.sort((a, b) => {
+      if (sortType === 'date_desc') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      if (sortType === 'date_asc') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      if (sortType === 'views_desc') return (b.views || 0) - (a.views || 0);
+      if (sortType === 'name_asc') return (a.recipientName || '').localeCompare(b.recipientName || '');
+      return 0;
+    });
+
+    updateSelectionUI();
+
+    if (currentlyFilteredWebsites.length === 0) {
+      let msg = 'No websites found matching criteria.';
+      if (tierVal === 'premium') {
+        msg = 'No premium websites found.';
+      } else if (tierVal === 'free') {
+        msg = 'No standard/free websites found.';
+      } else if (cutoff) {
+        msg = `No websites found older than ${ageVal} days${filter ? ' matching your search' : ''}.`;
+      } else {
+        msg = 'No websites found. Try syncing with Cloudinary.';
       }
+      grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><i class="fas fa-search"></i><p>${msg}</p></div>`;
+      return;
     }
 
-    function render() {
-      if (!grid) return;
-      grid.innerHTML = '';
-      const filter = (search?.value || '').toLowerCase();
-      const sortType = sort?.value || 'date_desc';
-      const cutoff = getAgeCutoff();
-      const ageVal = ageFilter?.value || 'all';
-      const tierVal = tierFilter?.value || 'all';
+    // Summary bar
+    const premiumCount = currentlyFilteredWebsites.filter(w => w.isPremium).length;
+    const summaryBar = document.createElement('div');
+    summaryBar.style.cssText = 'grid-column:1/-1; display:flex; align-items:center; gap:10px; font-size:0.82rem; color:var(--text-muted); padding:4px; flex-wrap:wrap;';
+    summaryBar.innerHTML = `
+      <i class="fas fa-globe" style="color:var(--accent);"></i>
+      <strong style="color:var(--text)">${currentlyFilteredWebsites.length}</strong> website${currentlyFilteredWebsites.length !== 1 ? 's' : ''} shown
+      ${cutoff ? `<span style="background:rgba(239,68,68,0.12); color:var(--red); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(239,68,68,0.2);"><i class="fas fa-clock"></i> Age filter active</span>` : ''}
+      ${tierVal === 'premium' ? `<span style="background:rgba(255,184,0,0.18); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,184,0,0.4);"><i class="fas fa-crown"></i> Premium Only</span>` : ''}
+      ${tierVal === 'free' ? `<span style="background:rgba(123,93,246,0.12); color:var(--accent); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(123,93,246,0.2);"><i class="fas fa-globe"></i> Standard Only</span>` : ''}
+      ${tierVal === 'all' && premiumCount > 0 ? `<span style="background:rgba(255,159,67,0.12); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.2);"><i class="fas fa-crown"></i> ${premiumCount} Premium</span>` : ''}
+      <span style="margin-left:auto; font-size:0.75rem;">${selectedWebsiteIds.size > 0 ? `<strong style="color:var(--accent)">${selectedWebsiteIds.size} selected</strong>` : ''}</span>
+    `;
+    grid.appendChild(summaryBar);
 
-      // Always read live from dashData to avoid stale closure after reload
-      const list = dashData?.websites || [];
-      let filtered = list.filter(w => {
-        if (filter) {
-          const match = (w.id || '').toLowerCase().includes(filter) ||
-                        (w.eventType || '').toLowerCase().includes(filter) ||
-                        (w.recipientName || '').toLowerCase().includes(filter);
-          if (!match) return false;
-        }
-        if (cutoff) {
-          const createdAt = w.createdAt ? new Date(w.createdAt) : null;
-          if (!createdAt || createdAt >= cutoff) return false;
-        }
-        if (tierVal === 'premium' && !w.isPremium) return false;
-        if (tierVal === 'free' && w.isPremium) return false;
-        return true;
-      });
+    currentlyFilteredWebsites.forEach(w => {
+      const card = document.createElement('div');
+      const ageInDays = w.createdAt ? Math.floor((Date.now() - new Date(w.createdAt)) / 86400000) : 0;
 
-      // Apply Sort
-      filtered.sort((a, b) => {
-        if (sortType === 'date_desc') return new Date(b.createdAt) - new Date(a.createdAt);
-        if (sortType === 'date_asc') return new Date(a.createdAt) - new Date(b.createdAt);
-        if (sortType === 'views_desc') return (b.views || 0) - (a.views || 0);
-        if (sortType === 'name_asc') return (a.recipientName || '').localeCompare(b.recipientName || '');
-        return 0;
-      });
+      card.className = 'website-card' + (w.isPremium ? ' premium-card' : '');
 
-      updateSelectionUI(filtered);
+      const created = w.createdAt ? new Date(w.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '--';
+      const loc = w.creatorGeo ? `${w.creatorGeo.city || 'Local'}, ${w.creatorGeo.country || 'Host'}` : 'Unknown Location';
+      const viewUrl = window.location.origin + '/generated/customize.html?view=' + w.id;
+      const isChecked = selectedWebsiteIds.has(w.id);
 
-      if (filtered.length === 0) {
-        const ageVal = ageFilter?.value || 'all';
-        let msg = 'No websites found matching criteria.';
-        if (tierVal === 'premium') {
-          msg = 'No premium websites found.';
-        } else if (tierVal === 'free') {
-          msg = 'No standard/free websites found.';
-        } else if (cutoff) {
-          msg = `No websites found older than ${ageVal} days${filter ? ' matching your search' : ''}.`;
-        } else {
-          msg = 'No websites found. Try syncing with Cloudinary.';
-        }
-        grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><i class="fas fa-search"></i><p>${msg}</p></div>`;
-        return;
-      }
+      const premiumBadgeHtml = w.isPremium
+        ? `<span class="badge" style="background:rgba(255,159,67,0.2); color:var(--gold); border:1px solid rgba(255,159,67,0.4); font-size:0.7rem; padding:3px 10px;" title="Paid / Custom Domain Site"><i class="fas fa-crown"></i> Premium</span>`
+        : '';
 
-      // Summary bar
-      const premiumCount = filtered.filter(w => w.isPremium).length;
-      const summaryBar = document.createElement('div');
-      summaryBar.style.cssText = 'grid-column:1/-1; display:flex; align-items:center; gap:10px; font-size:0.82rem; color:var(--text-muted); padding:4px; flex-wrap:wrap;';
-      summaryBar.innerHTML = `
-        <i class="fas fa-globe" style="color:var(--accent);"></i>
-        <strong style="color:var(--text)">${filtered.length}</strong> website${filtered.length !== 1 ? 's' : ''} shown
-        ${cutoff ? `<span style="background:rgba(239,68,68,0.12); color:var(--red); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(239,68,68,0.2);"><i class="fas fa-clock"></i> Age filter active</span>` : ''}
-        ${tierVal === 'premium' ? `<span style="background:rgba(255,184,0,0.18); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,184,0,0.4);"><i class="fas fa-crown"></i> Premium Only</span>` : ''}
-        ${tierVal === 'free' ? `<span style="background:rgba(123,93,246,0.12); color:var(--accent); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(123,93,246,0.2);"><i class="fas fa-globe"></i> Standard Only</span>` : ''}
-        ${tierVal === 'all' && premiumCount > 0 ? `<span style="background:rgba(255,159,67,0.12); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.2);"><i class="fas fa-crown"></i> ${premiumCount} Premium</span>` : ''}
-        <span style="margin-left:auto; font-size:0.75rem;">${selectedWebsiteIds.size > 0 ? `<strong style="color:var(--accent)">${selectedWebsiteIds.size} selected</strong>` : ''}</span>
+      const ageBadgeHtml = `<span class="badge" style="background:rgba(123,93,246,0.1); color:var(--text-muted); border:1px solid var(--border); font-size:0.67rem; padding:2px 7px;"><i class="fas fa-clock"></i> ${ageInDays}d</span>`;
+
+      card.innerHTML = `
+        ${w.isPremium ? '<div class="premium-card-glow"></div>' : ''}
+        <div class="card-header" style="display:flex; align-items:flex-start; gap:10px;">
+          <input type="checkbox" class="website-select-cb" data-id="${w.id}" ${isChecked ? 'checked' : ''} style="cursor:pointer; width:17px; height:17px; accent-color:var(--accent); margin-top:3px; flex-shrink:0;">
+          <div class="card-id-box" style="flex:1; min-width:0;">
+            <span class="card-id" style="max-width:100%; display:block; overflow:hidden; text-overflow:ellipsis;">${w.id}</span>
+            <h4 class="card-title" style="margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${w.recipientName || 'Untitled Site'}</h4>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
+            <span class="badge badge-purple">${w.eventType || 'unknown'}</span>
+            ${premiumBadgeHtml}
+            ${ageBadgeHtml}
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="info-row"><i class="fas fa-calendar-alt"></i> Created: ${created}</div>
+          <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${loc}</div>
+          <div class="info-row"><i class="fas fa-layer-group"></i> Template: ${w.templateName || 'default'}</div>
+        </div>
+        <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-stats">
+            <div class="stat-item">
+              <span class="stat-val">${formatNum(w.views || 0)}</span>
+              <span class="stat-label">Views</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-val">${(w.uniqueViewers || []).length}</span>
+              <span class="stat-label">Unique</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-val">${ageInDays}d</span>
+              <span class="stat-label">Age</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <a href="${viewUrl}" target="_blank" class="action-btn" style="display:flex; align-items:center; gap:5px;"><i class="fas fa-external-link-alt"></i> Open</a>
+            <button type="button" class="action-btn danger single-delete-btn" data-id="${w.id}" data-premium="${w.isPremium ? 'true' : 'false'}" title="Delete Website" style="display:flex; align-items:center; gap:5px; padding:5px 10px;"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        </div>
       `;
-      grid.appendChild(summaryBar);
 
-      filtered.forEach(w => {
-        const card = document.createElement('div');
-        const ageInDays = w.createdAt ? Math.floor((Date.now() - new Date(w.createdAt)) / 86400000) : 0;
+      // Checkbox listener
+      const cb = card.querySelector('.website-select-cb');
+      cb.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          selectedWebsiteIds.add(w.id);
+        } else {
+          selectedWebsiteIds.delete(w.id);
+        }
+        updateSelectionUI();
+      });
 
-        card.className = 'website-card' + (w.isPremium ? ' premium-card' : '');
+      // Single delete listener
+      const deleteBtn = card.querySelector('.single-delete-btn');
+      deleteBtn.addEventListener('click', async () => {
+        const siteId = w.id;
+        const isPrem = w.isPremium;
 
-        const created = w.createdAt ? new Date(w.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '--';
-        const loc = w.creatorGeo ? `${w.creatorGeo.city || 'Local'}, ${w.creatorGeo.country || 'Host'}` : 'Unknown Location';
-        const viewUrl = window.location.origin + '/generated/customize.html?view=' + w.id;
-        const isChecked = selectedWebsiteIds.has(w.id);
+        let confirmMsg = `Are you sure you want to permanently delete website "${siteId}"?\n\nThis action will delete tracking events, feedback, custom slugs, and stored Cloudinary JSON configuration.`;
+        if (isPrem) {
+          confirmMsg = `⚠️ WARNING: Website "${siteId}" is a PREMIUM / PAID website!\n\nDeleting it will destroy paid records, custom URL mappings, and all analytics.\n\nAre you ABSOLUTELY sure you want to FORCE delete this site?`;
+        }
 
-        const premiumBadgeHtml = w.isPremium
-          ? `<span class="badge" style="background:rgba(255,159,67,0.2); color:var(--gold); border:1px solid rgba(255,159,67,0.4); font-size:0.7rem; padding:3px 10px;" title="Paid / Custom Domain Site"><i class="fas fa-crown"></i> Premium</span>`
-          : '';
-
-        const ageBadgeHtml = `<span class="badge" style="background:rgba(123,93,246,0.1); color:var(--text-muted); border:1px solid var(--border); font-size:0.67rem; padding:2px 7px;"><i class="fas fa-clock"></i> ${ageInDays}d</span>`;
-
-        card.innerHTML = `
-          ${w.isPremium ? '<div class="premium-card-glow"></div>' : ''}
-          <div class="card-header" style="display:flex; align-items:flex-start; gap:10px;">
-            <input type="checkbox" class="website-select-cb" data-id="${w.id}" ${isChecked ? 'checked' : ''} style="cursor:pointer; width:17px; height:17px; accent-color:var(--accent); margin-top:3px; flex-shrink:0;">
-            <div class="card-id-box" style="flex:1; min-width:0;">
-              <span class="card-id" style="max-width:100%; display:block; overflow:hidden; text-overflow:ellipsis;">${w.id}</span>
-              <h4 class="card-title" style="margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${w.recipientName || 'Untitled Site'}</h4>
-            </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
-              <span class="badge badge-purple">${w.eventType || 'unknown'}</span>
-              ${premiumBadgeHtml}
-              ${ageBadgeHtml}
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="info-row"><i class="fas fa-calendar-alt"></i> Created: ${created}</div>
-            <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${loc}</div>
-            <div class="info-row"><i class="fas fa-layer-group"></i> Template: ${w.templateName || 'default'}</div>
-          </div>
-          <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center;">
-            <div class="card-stats">
-              <div class="stat-item">
-                <span class="stat-val">${formatNum(w.views || 0)}</span>
-                <span class="stat-label">Views</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-val">${(w.uniqueViewers || []).length}</span>
-                <span class="stat-label">Unique</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-val">${ageInDays}d</span>
-                <span class="stat-label">Age</span>
-              </div>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center;">
-              <a href="${viewUrl}" target="_blank" class="action-btn" style="display:flex; align-items:center; gap:5px;"><i class="fas fa-external-link-alt"></i> Open</a>
-              <button type="button" class="action-btn danger single-delete-btn" data-id="${w.id}" data-premium="${w.isPremium ? 'true' : 'false'}" title="Delete Website" style="display:flex; align-items:center; gap:5px; padding:5px 10px;"><i class="fas fa-trash-alt"></i></button>
-            </div>
-          </div>
-        `;
-
-        // Checkbox listener
-        const cb = card.querySelector('.website-select-cb');
-        cb.addEventListener('change', (e) => {
-          if (e.target.checked) {
-            selectedWebsiteIds.add(w.id);
-          } else {
-            selectedWebsiteIds.delete(w.id);
-          }
-          updateSelectionUI(filtered);
-        });
-
-        // Single delete listener
-        const deleteBtn = card.querySelector('.single-delete-btn');
-        deleteBtn.addEventListener('click', async () => {
-          const siteId = w.id;
-          const isPrem = w.isPremium;
-
-          let confirmMsg = `Are you sure you want to permanently delete website "${siteId}"?\n\nThis action will delete tracking events, feedback, custom slugs, and stored Cloudinary JSON configuration.`;
-          if (isPrem) {
-            confirmMsg = `⚠️ WARNING: Website "${siteId}" is a PREMIUM / PAID website!\n\nDeleting it will destroy paid records, custom URL mappings, and all analytics.\n\nAre you ABSOLUTELY sure you want to FORCE delete this site?`;
-          }
-
-          if (confirm(confirmMsg)) {
-            try {
-              deleteBtn.disabled = true;
-              deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-              const res = await apiFetch(`/api/admin/website/${siteId}${isPrem ? '?force=true' : ''}`, { method: 'DELETE' });
-              if (res && res.success) {
-                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                card.style.opacity = '0';
-                card.style.transform = 'scale(0.92) translateY(-4px)';
-                setTimeout(async () => {
-                  selectedWebsiteIds.delete(siteId);
-                  await loadDashboard();
-                }, 320);
-              } else {
-                alert(`Failed to delete: ${res?.message || res?.error || 'Unknown error'}`);
-                deleteBtn.disabled = false;
-                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-              }
-            } catch (err) {
-              alert(`Error: ${err.message}`);
+        if (confirm(confirmMsg)) {
+          try {
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            const res = await apiFetch(`/api/admin/website/${siteId}${isPrem ? '?force=true' : ''}`, { method: 'DELETE' });
+            if (res && res.success) {
+              card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+              card.style.opacity = '0';
+              card.style.transform = 'scale(0.92) translateY(-4px)';
+              setTimeout(async () => {
+                selectedWebsiteIds.delete(siteId);
+                await loadDashboard();
+              }, 320);
+            } else {
+              alert(`Failed to delete: ${res?.message || res?.error || 'Unknown error'}`);
               deleteBtn.disabled = false;
               deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
             }
+          } catch (err) {
+            alert(`Error: ${err.message}`);
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
           }
-        });
+        }
+      });
 
-        grid.appendChild(card);
+      grid.appendChild(card);
+    });
+  }
+
+  function setupWebsiteControls() {
+    const search = document.getElementById('websiteSearch');
+    const sort = document.getElementById('websiteSort');
+    const ageFilter = document.getElementById('websiteAgeFilter');
+    const tierFilter = document.getElementById('websiteTierFilter');
+    const protectToggle = document.getElementById('protectPremiumToggle');
+    const selectAllCb = document.getElementById('selectAllWebsites');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+
+    if (search) search.addEventListener('input', renderWebsitesCards);
+    if (sort) sort.addEventListener('change', renderWebsitesCards);
+    if (ageFilter) ageFilter.addEventListener('change', () => {
+      selectedWebsiteIds.clear();
+      renderWebsitesCards();
+    });
+    if (tierFilter) tierFilter.addEventListener('change', () => {
+      selectedWebsiteIds.clear();
+      renderWebsitesCards();
+    });
+    if (protectToggle) protectToggle.addEventListener('change', () => {
+      if (protectToggle.checked) {
+        const currentList = dashData?.websites || [];
+        currentList.filter(w => w.isPremium).forEach(w => selectedWebsiteIds.delete(w.id));
+      }
+      renderWebsitesCards();
+    });
+
+    if (selectAllCb) {
+      selectAllCb.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          currentlyFilteredWebsites.forEach(w => selectedWebsiteIds.add(w.id));
+        } else {
+          currentlyFilteredWebsites.forEach(w => selectedWebsiteIds.delete(w.id));
+        }
+        renderWebsitesCards();
       });
     }
 
-    render();
+    if (deleteSelectedBtn) {
+      deleteSelectedBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (selectedWebsiteIds.size === 0) return;
+        const ids = Array.from(selectedWebsiteIds);
+        const globalProtect = protectToggle?.checked ?? true;
+        const overrideCb = document.getElementById('modalOverrideProtectCb');
+        if (overrideCb) overrideCb.checked = !globalProtect;
 
-    if (!websitesListenersInitialized) {
-      websitesListenersInitialized = true;
+        function updateModalCounts() {
+          const allowPremiumDelete = overrideCb ? overrideCb.checked : !globalProtect;
+          const protectPremium = globalProtect && !allowPremiumDelete;
 
-      if (search) search.addEventListener('input', render);
-      if (sort) sort.addEventListener('change', render);
-      if (ageFilter) ageFilter.addEventListener('change', () => {
-        selectedWebsiteIds.clear(); // clear stale selections when age filter changes
-        render();
-      });
-      if (tierFilter) tierFilter.addEventListener('change', () => {
-        selectedWebsiteIds.clear(); // clear stale selections when tier filter changes
-        render();
-      });
-      if (protectToggle) protectToggle.addEventListener('change', () => {
-        if (protectToggle.checked) {
-          // Deselect any premium websites if protection is turned back ON
-          const currentList = dashData?.websites || [];
-          currentList.filter(w => w.isPremium).forEach(w => selectedWebsiteIds.delete(w.id));
+          const selectedList = (dashData?.websites || []).filter(w => selectedWebsiteIds.has(w.id));
+          const premiumCount = selectedList.filter(w => w.isPremium).length;
+          const nonPremiumCount = selectedList.length - premiumCount;
+
+          let deleteCount = selectedList.length;
+          let protectedCount = 0;
+
+          if (protectPremium) {
+            deleteCount = nonPremiumCount;
+            protectedCount = premiumCount;
+          }
+
+          const totalEl = document.getElementById('modalTotalSelectedCount');
+          if (totalEl) totalEl.textContent = selectedList.length;
+
+          const deleteEl = document.getElementById('modalDeleteCount');
+          if (deleteEl) deleteEl.textContent = deleteCount;
+
+          const protectedEl = document.getElementById('modalProtectedCount');
+          if (protectedEl) protectedEl.textContent = protectedCount;
+
+          const warnEl = document.getElementById('modalProtectedWarning');
+          const warnText = document.getElementById('modalWarningText');
+          if (warnEl) {
+            if (premiumCount > 0) {
+              warnEl.style.display = 'block';
+              if (warnText) {
+                if (protectPremium) {
+                  warnText.textContent = `${premiumCount} Premium website${premiumCount > 1 ? 's are' : ' is'} currently protected from bulk deletion.`;
+                } else {
+                  warnText.textContent = `⚠️ Warning: Premium websites WILL be deleted because premium protection is allowed for this batch.`;
+                }
+              }
+            } else {
+              warnEl.style.display = 'none';
+            }
+          }
+
+          pendingBulkAction = { websiteIds: ids, protectPremium };
         }
-        render();
-      });
 
-      if (selectAllCb) {
-        selectAllCb.addEventListener('change', (e) => {
-          // Use live data + current filters to avoid stale closure after reload
-          const currentList = dashData?.websites || [];
-          const currentFilter = (search?.value || '').toLowerCase();
-          const currentCutoff = getAgeCutoff();
-          const currentTier = tierFilter?.value || 'all';
-          const filtered = currentList.filter(w => {
-            if (currentFilter) {
-              const match = (w.id || '').toLowerCase().includes(currentFilter) ||
-                            (w.eventType || '').toLowerCase().includes(currentFilter) ||
-                            (w.recipientName || '').toLowerCase().includes(currentFilter);
-              if (!match) return false;
-            }
-            if (currentCutoff) {
-              const createdAt = w.createdAt ? new Date(w.createdAt) : null;
-              if (!createdAt || createdAt >= currentCutoff) return false;
-            }
-            if (currentTier === 'premium' && !w.isPremium) return false;
-            if (currentTier === 'free' && w.isPremium) return false;
-            return true;
+        updateModalCounts();
+
+        if (overrideCb) {
+          overrideCb.onchange = updateModalCounts;
+        }
+
+        if (bulkDeleteModal) bulkDeleteModal.style.display = 'block';
+      });
+    }
+
+    // Modal Close Handlers
+    const closeBtn = document.getElementById('closeBulkDeleteModal');
+    const cancelBtn = document.getElementById('cancelBulkDeleteBtn');
+    const confirmBtn = document.getElementById('confirmBulkDeleteBtn');
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
+        pendingBulkAction = null;
+      });
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => {
+        if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
+        pendingBulkAction = null;
+      });
+    }
+
+    if (bulkDeleteModal) {
+      bulkDeleteModal.addEventListener('click', (e) => {
+        if (e.target === bulkDeleteModal) {
+          bulkDeleteModal.style.display = 'none';
+          pendingBulkAction = null;
+        }
+      });
+    }
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', async () => {
+        if (!pendingBulkAction) return;
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+        try {
+          const res = await apiFetch('/api/admin/websites/bulk-delete', {
+            method: 'POST',
+            body: JSON.stringify(pendingBulkAction)
           });
 
-          if (e.target.checked) {
-            filtered.forEach(w => selectedWebsiteIds.add(w.id));
-          } else {
-            filtered.forEach(w => selectedWebsiteIds.delete(w.id));
-          }
-          render();
-        });
-      }
-
-      // Delete Selected Click
-      if (deleteSelectedBtn) {
-        deleteSelectedBtn.addEventListener('click', () => {
-          if (selectedWebsiteIds.size === 0) return;
-          const ids = Array.from(selectedWebsiteIds);
-          const globalProtect = protectToggle?.checked ?? true;
-          const overrideCb = document.getElementById('modalOverrideProtectCb');
-          if (overrideCb) overrideCb.checked = !globalProtect;
-
-          function updateModalCounts() {
-            const allowPremiumDelete = overrideCb ? overrideCb.checked : !globalProtect;
-            const protectPremium = globalProtect && !allowPremiumDelete;
-
-            const selectedList = (dashData?.websites || []).filter(w => selectedWebsiteIds.has(w.id));
-            const premiumCount = selectedList.filter(w => w.isPremium).length;
-            const nonPremiumCount = selectedList.length - premiumCount;
-
-            let deleteCount = selectedList.length;
-            let protectedCount = 0;
-
-            if (protectPremium) {
-              deleteCount = nonPremiumCount;
-              protectedCount = premiumCount;
-            }
-
-            const totalEl = document.getElementById('modalTotalSelectedCount');
-            if (totalEl) totalEl.textContent = selectedList.length;
-
-            const deleteEl = document.getElementById('modalDeleteCount');
-            if (deleteEl) deleteEl.textContent = deleteCount;
-
-            const protectedEl = document.getElementById('modalProtectedCount');
-            if (protectedEl) protectedEl.textContent = protectedCount;
-
-            const warnEl = document.getElementById('modalProtectedWarning');
-            const warnText = document.getElementById('modalWarningText');
-            if (warnEl) {
-              if (premiumCount > 0) {
-                warnEl.style.display = 'block';
-                if (warnText) {
-                  if (protectPremium) {
-                    warnText.textContent = `${premiumCount} Premium website${premiumCount > 1 ? 's are' : ' is'} currently protected from bulk deletion.`;
-                  } else {
-                    warnText.textContent = `⚠️ Warning: Premium websites WILL be deleted because premium protection is allowed for this batch.`;
-                  }
-                }
-              } else {
-                warnEl.style.display = 'none';
-              }
-            }
-
-            pendingBulkAction = { websiteIds: ids, protectPremium };
-          }
-
-          updateModalCounts();
-
-          if (overrideCb) {
-            overrideCb.onchange = updateModalCounts;
-          }
-
-          if (bulkDeleteModal) bulkDeleteModal.style.display = 'block';
-        });
-      }
-
-      // Modal Close Handlers
-      const closeBtn = document.getElementById('closeBulkDeleteModal');
-      const cancelBtn = document.getElementById('cancelBulkDeleteBtn');
-      const confirmBtn = document.getElementById('confirmBulkDeleteBtn');
-
-      if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-          if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
-          pendingBulkAction = null;
-        });
-      }
-
-      if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-          if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
-          pendingBulkAction = null;
-        });
-      }
-
-      if (bulkDeleteModal) {
-        bulkDeleteModal.addEventListener('click', (e) => {
-          if (e.target === bulkDeleteModal) {
-            bulkDeleteModal.style.display = 'none';
+          if (res && res.success) {
+            alert(`Bulk deletion complete!\n\n• Deleted: ${res.deletedCount} website(s)\n• Skipped Protected: ${res.protectedCount ?? res.skippedProtectedCount ?? 0} website(s)`);
+            if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
+            selectedWebsiteIds.clear();
             pendingBulkAction = null;
+            await loadDashboard();
+          } else {
+            alert(`Bulk deletion failed: ${res?.message || res?.error || 'Unknown error'}`);
           }
-        });
-      }
-
-      if (confirmBtn) {
-        confirmBtn.addEventListener('click', async () => {
-          if (!pendingBulkAction) return;
-          confirmBtn.disabled = true;
-          confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-
-          try {
-            const res = await apiFetch('/api/admin/websites/bulk-delete', {
-              method: 'POST',
-              body: JSON.stringify(pendingBulkAction)
-            });
-
-            if (res && res.success) {
-              alert(`Bulk deletion complete!\n\n• Deleted: ${res.deletedCount} website(s)\n• Skipped Protected: ${res.protectedCount ?? res.skippedProtectedCount ?? 0} website(s)`);
-              if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
-              selectedWebsiteIds.clear();
-              pendingBulkAction = null;
-              await loadDashboard();
-            } else {
-              alert(`Bulk deletion failed: ${res?.message || res?.error || 'Unknown error'}`);
-            }
-          } catch (err) {
-            alert(`Error running bulk deletion: ${err.message}`);
-          } finally {
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirm Permanent Delete';
-          }
-        });
-      }
+        } catch (err) {
+          alert(`Error running bulk deletion: ${err.message}`);
+        } finally {
+          confirmBtn.disabled = false;
+          confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirm Permanent Delete';
+        }
+      });
     }
   }
+
+  // Setup control listeners unconditionally
+  setupWebsiteControls();
 
   let currentCloudinaryData = [];
 

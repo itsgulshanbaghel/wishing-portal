@@ -10,10 +10,6 @@
     "trailingSlash": false,
     "rewrites": [
       {
-        "source": "/api/**",
-        "destination": "https://wishing-portal-05as.onrender.com/api/:splat"
-      },
-      {
         "source": "**",
         "destination": "/generated/customize.html"
       }

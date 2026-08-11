@@ -7,7 +7,7 @@
 
 const CONFIG = {
   API_BASE_URL: 'https://wishing-portal-05as.onrender.com',
-  ADDITIONAL_API_BASE_URL: 'https://thegreeter.in'
+  ADDITIONAL_API_BASE_URL: null
 };
 
 // Auto-detect if we are on Localhost (for development)
