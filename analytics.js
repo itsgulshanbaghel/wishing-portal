@@ -422,7 +422,7 @@ class AnalyticsStore {
       const websitesListFilter = days === -1 ? {} : { createdAt: timeFilter };
       const rawWebsites = await Website.find(websitesListFilter)
         .sort({ createdAt: -1 })
-        .limit(500)
+        .limit(10000)
         .lean();
 
       const { CustomSlug, Payment } = require('./models');

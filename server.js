@@ -1618,16 +1618,27 @@ app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
     }
 
     console.log('[Admin] Starting website sync from Cloudinary...');
-    const resources = await cloudinary.api.resources({
-      type: 'upload',
-      resource_type: 'raw',
-      prefix: 'configs/',
-      max_results: 500,
-      context: true
-    });
+    let allResources = [];
+    let nextCursor = null;
+    do {
+      const options = {
+        type: 'upload',
+        resource_type: 'raw',
+        prefix: 'configs/',
+        max_results: 500,
+        context: true
+      };
+      if (nextCursor) options.next_cursor = nextCursor;
+      const resources = await cloudinary.api.resources(options);
+      if (resources.resources && resources.resources.length > 0) {
+        allResources.push(...resources.resources);
+      }
+      nextCursor = resources.next_cursor;
+    } while (nextCursor);
+
     let syncedCount = 0;
 
-    for (const resource of resources.resources) {
+    for (const resource of allResources) {
       const id = resource.public_id.replace('configs/', '');
 
       try {
@@ -1801,14 +1812,25 @@ app.get('/api/admin/feedback-analytics', adminAuth, async (req, res) => {
 // List Cloudinary configs for direct access
 app.get('/api/admin/cloudinary-list', adminAuth, async (req, res) => {
   try {
-    const result = await cloudinary.api.resources({
-      type: 'upload',
-      resource_type: 'raw',
-      prefix: 'configs/',
-      max_results: 100,
-      context: true
-    });
-    const websites = (result.resources || []).map(r => ({
+    let allResources = [];
+    let nextCursor = null;
+    do {
+      const options = {
+        type: 'upload',
+        resource_type: 'raw',
+        prefix: 'configs/',
+        max_results: 500,
+        context: true
+      };
+      if (nextCursor) options.next_cursor = nextCursor;
+      const result = await cloudinary.api.resources(options);
+      if (result.resources && result.resources.length > 0) {
+        allResources.push(...result.resources);
+      }
+      nextCursor = result.next_cursor;
+    } while (nextCursor);
+
+    const websites = allResources.map(r => ({
       publicId: r.public_id,
       url: r.secure_url,
       createdAt: r.created_at,
