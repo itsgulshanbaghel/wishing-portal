@@ -114,7 +114,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://api.cashfree.com", "https://api-m.paypal.com", "https://api-m.sandbox.paypal.com"],
+      connectSrc: ["'self'", "https://wishing-portal-05as.onrender.com", "https://wishing-portal.onrender.com", "https://api.cashfree.com", "https://api-m.paypal.com", "https://api-m.sandbox.paypal.com"],
       frameSrc: ["'self'", "https://checkout.razorpay.com", "https://www.paypal.com", "https://sandbox.cashfree.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: []
@@ -165,6 +165,25 @@ app.use('/api/payment/webhook', (req, res, next) => {
   req.on('data', chunk => { rawBody += chunk; });
   req.on('end', () => {
     req.rawBody = rawBody;
+    next();
+  });
+  req.on('error', next);
+});
+
+// Capture raw body for analytics event before express.json parses it
+// This is needed for navigator.sendBeacon which sends text/plain Content-Type
+app.use('/api/analytics/event', (req, res, next) => {
+  const ct = req.headers['content-type'] || '';
+  if (ct.includes('application/json')) {
+    // Let express.json handle it
+    return next();
+  }
+  // For sendBeacon (text/plain, text/*, application/x-www-form-urlencoded), read raw
+  let raw = '';
+  req.setEncoding('utf8');
+  req.on('data', chunk => { raw += chunk; });
+  req.on('end', () => {
+    req.rawAnalyticsBody = raw;
     next();
   });
   req.on('error', next);
@@ -1545,18 +1564,27 @@ app.post('/api/analytics/session', analyticsLimiter, async (req, res) => {
   } catch (e) { res.status(204).end(); }
 });
 
-app.post('/api/analytics/event', analyticsLimiter, express.text({ type: '*/*' }), async (req, res) => {
+// Handle both application/json (from fetch) and text/plain (from navigator.sendBeacon)
+app.post('/api/analytics/event', analyticsLimiter, async (req, res) => {
+  res.status(204).end(); // Respond immediately so sendBeacon doesn't wait
+
   try {
     await ensureMongoConnected();
     let bodyData = req.body;
-    if (typeof bodyData === 'string') {
-      try { bodyData = JSON.parse(bodyData); } catch (e) {}
+
+    // If we captured a raw body (sendBeacon text/plain path), parse it instead
+    if (req.rawAnalyticsBody) {
+      try { bodyData = JSON.parse(req.rawAnalyticsBody); } catch (e) { bodyData = {}; }
     }
+
+    if (typeof bodyData === 'string') {
+      try { bodyData = JSON.parse(bodyData); } catch (e) { bodyData = {}; }
+    }
+
+    console.log('[Analytics API] Event received - type:', bodyData?.type, '| websiteId:', bodyData?.websiteId);
     await analytics.trackEvent(req, bodyData || {});
-    res.status(204).end();
   } catch (e) {
-    console.warn('[Analytics API] Error tracking event:', e);
-    res.status(204).end();
+    console.warn('[Analytics API] Error tracking event:', e.message);
   }
 });
 
