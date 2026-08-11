@@ -1154,17 +1154,6 @@
         </div>
       `;
 
-      // Checkbox listener
-      const cb = card.querySelector('.website-select-cb');
-      cb.addEventListener('change', (e) => {
-        if (e.target.checked) {
-          selectedWebsiteIds.add(w.id);
-        } else {
-          selectedWebsiteIds.delete(w.id);
-        }
-        updateSelectionUI();
-      });
-
       // Single delete listener
       const deleteBtn = card.querySelector('.single-delete-btn');
       deleteBtn.addEventListener('click', async () => {
@@ -1235,6 +1224,19 @@
 
   // Global event delegation for website controls to prevent stale closures and detached listeners
   document.addEventListener('change', (e) => {
+    // Individual website checkboxes
+    if (e.target && e.target.classList.contains('website-select-cb')) {
+      const websiteId = e.target.getAttribute('data-id');
+      if (websiteId) {
+        if (e.target.checked) {
+          selectedWebsiteIds.add(websiteId);
+        } else {
+          selectedWebsiteIds.delete(websiteId);
+        }
+        updateSelectionUI();
+      }
+    }
+
     // Select All Checkbox
     if (e.target && e.target.id === 'selectAllWebsites') {
       if (e.target.checked) {
@@ -1244,7 +1246,7 @@
       }
       renderWebsitesCards();
     }
-    
+
     // Protect Premium Toggle
     if (e.target && e.target.id === 'protectPremiumToggle') {
       if (e.target.checked) {
