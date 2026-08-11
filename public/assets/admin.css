@@ -499,23 +499,36 @@ tbody tr:hover td { color:var(--text); }
   color: #fff;
 }
 
-/* ── PREMIUM WEBSITE CARD ── */
+/* ── PREMIUM WEBSITE CARD (Golden Theme) ── */
 .website-card.premium-card {
-  border-color: rgba(255, 159, 67, 0.5) !important;
-  background: linear-gradient(135deg, rgba(255,159,67,0.04) 0%, var(--bg-card) 60%);
-  box-shadow: 0 0 0 1px rgba(255,159,67,0.2), inset 0 1px 0 rgba(255,159,67,0.1);
+  border: 1.5px solid rgba(255, 184, 0, 0.7) !important;
+  background: linear-gradient(135deg, rgba(255, 179, 0, 0.22) 0%, rgba(217, 119, 6, 0.15) 50%, rgba(25, 20, 12, 0.92) 100%) !important;
+  box-shadow: 0 8px 32px rgba(255, 170, 0, 0.22), inset 0 1px 0 rgba(255, 230, 130, 0.35) !important;
 }
 .website-card.premium-card:hover {
-  border-color: rgba(255, 159, 67, 0.8) !important;
-  box-shadow: 0 12px 40px rgba(255,159,67,0.18), 0 0 0 1px rgba(255,159,67,0.4);
+  border-color: rgba(255, 215, 0, 0.95) !important;
+  background: linear-gradient(135deg, rgba(255, 195, 0, 0.3) 0%, rgba(217, 119, 6, 0.22) 50%, rgba(35, 25, 15, 0.95) 100%) !important;
+  box-shadow: 0 14px 45px rgba(255, 170, 0, 0.35), 0 0 20px rgba(255, 195, 0, 0.25), inset 0 1px 0 rgba(255, 240, 150, 0.5) !important;
 }
+
+[data-theme="light"] .website-card.premium-card {
+  border: 1.5px solid rgba(217, 119, 6, 0.6) !important;
+  background: linear-gradient(135deg, #fffdf0 0%, #fef3c7 40%, #fde68a 100%) !important;
+  box-shadow: 0 8px 25px rgba(217, 119, 6, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+[data-theme="light"] .website-card.premium-card:hover {
+  border-color: rgba(217, 119, 6, 0.85) !important;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%) !important;
+  box-shadow: 0 12px 35px rgba(217, 119, 6, 0.3) !important;
+}
+
 .premium-card-glow {
   position: absolute;
   top: 0;
   right: 0;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle at top right, rgba(255,159,67,0.15), transparent 70%);
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle at top right, rgba(255, 215, 0, 0.35), transparent 70%);
   pointer-events: none;
   z-index: 0;
   border-radius: 0 var(--radius) 0 0;

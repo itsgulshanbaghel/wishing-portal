@@ -1172,19 +1172,30 @@ class AnalyticsStore {
         }
       }
 
-      // 3. Execute Deletion
+      // 3. Execute High-Performance Bulk Deletion
+      const idsToDelete = toDelete.map(item => item.id);
       let totalDeletedCount = 0;
-      const deletedDetails = [];
 
-      for (const item of toDelete) {
-        try {
-          const res = await this.deleteWebsite(item.id, item.force, cloudinaryRef);
-          if (res.success) {
-            totalDeletedCount++;
-            deletedDetails.push(res);
-          }
-        } catch (err) {
-          console.error(`[Analytics] Failed to delete website ${item.id} during bulk operation:`, err.message);
+      if (idsToDelete.length > 0) {
+        // Bulk delete MongoDB records across all collections simultaneously
+        const [websiteRes] = await Promise.all([
+          Website.deleteMany({ id: { $in: idsToDelete } }),
+          Event.deleteMany({ websiteId: { $in: idsToDelete } }),
+          Feedback.deleteMany({ websiteId: { $in: idsToDelete } }),
+          CustomSlug.deleteMany({ websiteId: { $in: idsToDelete } }),
+          Payment.deleteMany({ websiteId: { $in: idsToDelete } })
+        ]);
+
+        totalDeletedCount = websiteRes.deletedCount || idsToDelete.length;
+
+        // Destroy Cloudinary configs concurrently in batches of 25 to prevent request timeouts
+        const cloud = cloudinaryRef || require('cloudinary').v2;
+        const chunkSize = 25;
+        for (let i = 0; i < idsToDelete.length; i += chunkSize) {
+          const chunk = idsToDelete.slice(i, i + chunkSize);
+          await Promise.allSettled(chunk.map(id =>
+            cloud.uploader.destroy(`configs/${id}`, { resource_type: 'raw' }).catch(() => {})
+          ));
         }
       }
 
@@ -1192,8 +1203,7 @@ class AnalyticsStore {
         success: true,
         deletedCount: totalDeletedCount,
         protectedCount: protectedList.length,
-        protectedIds: protectedList,
-        details: deletedDetails
+        protectedIds: protectedList
       };
     } catch (err) {
       console.error('[Analytics] Error in bulk website deletion:', err);

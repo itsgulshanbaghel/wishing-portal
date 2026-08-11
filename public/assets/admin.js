@@ -996,10 +996,9 @@
     const countSpan = document.getElementById('selectedCount');
     const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
     const ageFilter = document.getElementById('websiteAgeFilter');
+    const tierFilter = document.getElementById('websiteTierFilter');
     const protectToggle = document.getElementById('protectPremiumToggle');
     const bulkDeleteModal = document.getElementById('bulkDeleteModal');
-
-
 
     function getAgeCutoff() {
       const val = ageFilter?.value || 'all';
@@ -1008,7 +1007,7 @@
       return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     }
 
-    function updateSelectionUI(filteredCount) {
+    function updateSelectionUI(filteredList = []) {
       if (countSpan) {
         countSpan.textContent = selectedWebsiteIds.size;
       }
@@ -1018,8 +1017,10 @@
         deleteSelectedBtn.style.cursor = selectedWebsiteIds.size === 0 ? 'not-allowed' : 'pointer';
       }
       if (selectAllCb) {
-        selectAllCb.checked = filteredCount > 0 && selectedWebsiteIds.size >= filteredCount;
-        selectAllCb.indeterminate = selectedWebsiteIds.size > 0 && selectedWebsiteIds.size < filteredCount;
+        const count = filteredList.length;
+        const selectedCount = filteredList.filter(w => selectedWebsiteIds.has(w.id)).length;
+        selectAllCb.checked = count > 0 && selectedCount >= count;
+        selectAllCb.indeterminate = selectedCount > 0 && selectedCount < count;
       }
     }
 
@@ -1030,6 +1031,7 @@
       const sortType = sort?.value || 'date_desc';
       const cutoff = getAgeCutoff();
       const ageVal = ageFilter?.value || 'all';
+      const tierVal = tierFilter?.value || 'all';
 
       // Always read live from dashData to avoid stale closure after reload
       const list = dashData?.websites || [];
@@ -1044,6 +1046,8 @@
           const createdAt = w.createdAt ? new Date(w.createdAt) : null;
           if (!createdAt || createdAt >= cutoff) return false;
         }
+        if (tierVal === 'premium' && !w.isPremium) return false;
+        if (tierVal === 'free' && w.isPremium) return false;
         return true;
       });
 
@@ -1056,13 +1060,20 @@
         return 0;
       });
 
-      updateSelectionUI(filtered.length);
+      updateSelectionUI(filtered);
 
       if (filtered.length === 0) {
         const ageVal = ageFilter?.value || 'all';
-        const msg = cutoff
-          ? `No websites found older than ${ageVal} days${filter ? ' matching your search' : ''}.`
-          : 'No websites found. Try syncing with Cloudinary.';
+        let msg = 'No websites found matching criteria.';
+        if (tierVal === 'premium') {
+          msg = 'No premium websites found.';
+        } else if (tierVal === 'free') {
+          msg = 'No standard/free websites found.';
+        } else if (cutoff) {
+          msg = `No websites found older than ${ageVal} days${filter ? ' matching your search' : ''}.`;
+        } else {
+          msg = 'No websites found. Try syncing with Cloudinary.';
+        }
         grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><i class="fas fa-search"></i><p>${msg}</p></div>`;
         return;
       }
@@ -1075,7 +1086,9 @@
         <i class="fas fa-globe" style="color:var(--accent);"></i>
         <strong style="color:var(--text)">${filtered.length}</strong> website${filtered.length !== 1 ? 's' : ''} shown
         ${cutoff ? `<span style="background:rgba(239,68,68,0.12); color:var(--red); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(239,68,68,0.2);"><i class="fas fa-clock"></i> Age filter active</span>` : ''}
-        ${premiumCount > 0 ? `<span style="background:rgba(255,159,67,0.12); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.2);"><i class="fas fa-crown"></i> ${premiumCount} Premium</span>` : ''}
+        ${tierVal === 'premium' ? `<span style="background:rgba(255,184,0,0.18); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,184,0,0.4);"><i class="fas fa-crown"></i> Premium Only</span>` : ''}
+        ${tierVal === 'free' ? `<span style="background:rgba(123,93,246,0.12); color:var(--accent); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(123,93,246,0.2);"><i class="fas fa-globe"></i> Standard Only</span>` : ''}
+        ${tierVal === 'all' && premiumCount > 0 ? `<span style="background:rgba(255,159,67,0.12); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.2);"><i class="fas fa-crown"></i> ${premiumCount} Premium</span>` : ''}
         <span style="margin-left:auto; font-size:0.75rem;">${selectedWebsiteIds.size > 0 ? `<strong style="color:var(--accent)">${selectedWebsiteIds.size} selected</strong>` : ''}</span>
       `;
       grid.appendChild(summaryBar);
@@ -1146,7 +1159,7 @@
           } else {
             selectedWebsiteIds.delete(w.id);
           }
-          updateSelectionUI(filtered.length);
+          updateSelectionUI(filtered);
         });
 
         // Single delete listener
@@ -1201,6 +1214,18 @@
         selectedWebsiteIds.clear(); // clear stale selections when age filter changes
         render();
       });
+      if (tierFilter) tierFilter.addEventListener('change', () => {
+        selectedWebsiteIds.clear(); // clear stale selections when tier filter changes
+        render();
+      });
+      if (protectToggle) protectToggle.addEventListener('change', () => {
+        if (protectToggle.checked) {
+          // Deselect any premium websites if protection is turned back ON
+          const currentList = dashData?.websites || [];
+          currentList.filter(w => w.isPremium).forEach(w => selectedWebsiteIds.delete(w.id));
+        }
+        render();
+      });
 
       if (selectAllCb) {
         selectAllCb.addEventListener('change', (e) => {
@@ -1208,6 +1233,7 @@
           const currentList = dashData?.websites || [];
           const currentFilter = (search?.value || '').toLowerCase();
           const currentCutoff = getAgeCutoff();
+          const currentTier = tierFilter?.value || 'all';
           const filtered = currentList.filter(w => {
             if (currentFilter) {
               const match = (w.id || '').toLowerCase().includes(currentFilter) ||
@@ -1219,6 +1245,8 @@
               const createdAt = w.createdAt ? new Date(w.createdAt) : null;
               if (!createdAt || createdAt >= currentCutoff) return false;
             }
+            if (currentTier === 'premium' && !w.isPremium) return false;
+            if (currentTier === 'free' && w.isPremium) return false;
             return true;
           });
 
@@ -1236,26 +1264,61 @@
         deleteSelectedBtn.addEventListener('click', () => {
           if (selectedWebsiteIds.size === 0) return;
           const ids = Array.from(selectedWebsiteIds);
-          const protectPremium = protectToggle?.checked ?? true;
+          const globalProtect = protectToggle?.checked ?? true;
+          const overrideCb = document.getElementById('modalOverrideProtectCb');
+          if (overrideCb) overrideCb.checked = !globalProtect;
 
-          const selectedList = (dashData?.websites || []).filter(w => selectedWebsiteIds.has(w.id));
-          const premiumCount = selectedList.filter(w => w.isPremium).length;
-          const nonPremiumCount = selectedList.length - premiumCount;
+          function updateModalCounts() {
+            const allowPremiumDelete = overrideCb ? overrideCb.checked : !globalProtect;
+            const protectPremium = globalProtect && !allowPremiumDelete;
 
-          let deleteCount = selectedList.length;
-          let protectedCount = 0;
+            const selectedList = (dashData?.websites || []).filter(w => selectedWebsiteIds.has(w.id));
+            const premiumCount = selectedList.filter(w => w.isPremium).length;
+            const nonPremiumCount = selectedList.length - premiumCount;
 
-          if (protectPremium) {
-            deleteCount = nonPremiumCount;
-            protectedCount = premiumCount;
+            let deleteCount = selectedList.length;
+            let protectedCount = 0;
+
+            if (protectPremium) {
+              deleteCount = nonPremiumCount;
+              protectedCount = premiumCount;
+            }
+
+            const totalEl = document.getElementById('modalTotalSelectedCount');
+            if (totalEl) totalEl.textContent = selectedList.length;
+
+            const deleteEl = document.getElementById('modalDeleteCount');
+            if (deleteEl) deleteEl.textContent = deleteCount;
+
+            const protectedEl = document.getElementById('modalProtectedCount');
+            if (protectedEl) protectedEl.textContent = protectedCount;
+
+            const warnEl = document.getElementById('modalProtectedWarning');
+            const warnText = document.getElementById('modalWarningText');
+            if (warnEl) {
+              if (premiumCount > 0) {
+                warnEl.style.display = 'block';
+                if (warnText) {
+                  if (protectPremium) {
+                    warnText.textContent = `${premiumCount} Premium website${premiumCount > 1 ? 's are' : ' is'} currently protected from bulk deletion.`;
+                  } else {
+                    warnText.textContent = `⚠️ Warning: Premium websites WILL be deleted because premium protection is allowed for this batch.`;
+                  }
+                }
+              } else {
+                warnEl.style.display = 'none';
+              }
+            }
+
+            pendingBulkAction = { websiteIds: ids, protectPremium };
           }
 
-          document.getElementById('modalDeleteCount').textContent = deleteCount;
-          document.getElementById('modalProtectedCount').textContent = protectedCount;
-          const warnEl = document.getElementById('modalProtectedWarning');
-          if (warnEl) warnEl.style.display = (protectPremium && premiumCount > 0) ? 'block' : 'none';
+          updateModalCounts();
 
-          pendingBulkAction = { websiteIds: ids, protectPremium };
+          if (overrideCb) {
+            overrideCb.onchange = updateModalCounts;
+          }
+
           if (bulkDeleteModal) bulkDeleteModal.style.display = 'block';
         });
       }

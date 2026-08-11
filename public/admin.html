@@ -201,6 +201,12 @@
                 <option value="90">Older than 90 Days</option>
               </select>
 
+              <select id="websiteTierFilter" class="table-search" style="max-width:180px;">
+                <option value="all">All Sites (Free & Premium)</option>
+                <option value="premium">👑 Premium Only</option>
+                <option value="free">Standard / Free Only</option>
+              </select>
+
               <label class="toggle-container" style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer; color:var(--text-dim); background:var(--bg-surface); padding:8px 12px; border:1px solid var(--border); border-radius:8px;">
                 <input type="checkbox" id="protectPremiumToggle" checked style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer;">
                 <span><i class="fas fa-crown" style="color:var(--gold);"></i> Protect Premium Sites</span>
@@ -462,12 +468,17 @@
         </p>
 
         <div id="deleteModalSummary" style="background:var(--bg-surface); padding:16px; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; font-size:0.85rem; display:flex; flex-direction:column; gap:8px;">
+          <div><i class="fas fa-list-check" style="color:var(--accent);"></i> Total selected: <strong id="modalTotalSelectedCount" style="color:var(--text);">0</strong></div>
           <div><i class="fas fa-trash" style="color:var(--red);"></i> Websites to delete: <strong id="modalDeleteCount" style="color:var(--red);">0</strong></div>
-          <div><i class="fas fa-shield-alt" style="color:var(--green);"></i> Protected Premium / Paid websites: <strong id="modalProtectedCount" style="color:var(--green);">0</strong></div>
+          <div id="modalProtectedRow"><i class="fas fa-shield-alt" style="color:var(--green);"></i> Protected Premium websites: <strong id="modalProtectedCount" style="color:var(--green);">0</strong></div>
         </div>
 
-        <div id="modalProtectedWarning" style="display:none; background:rgba(255,159,67,0.1); border:1px solid rgba(255,159,67,0.3); padding:12px; border-radius:8px; color:var(--gold); font-size:0.8rem; margin-bottom:16px;">
-          <i class="fas fa-info-circle"></i> Note: Premium / Paid websites are shielded from bulk deletion because "Protect Premium Sites" is enabled.
+        <div id="modalProtectedWarning" style="display:none; background:rgba(255,159,67,0.1); border:1px solid rgba(255,159,67,0.3); padding:12px; border-radius:8px; color:var(--gold); font-size:0.82rem; margin-bottom:16px;">
+          <div style="margin-bottom:8px;"><i class="fas fa-info-circle"></i> <span id="modalWarningText">Premium websites are currently protected from deletion.</span></div>
+          <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; color:var(--gold); font-size:0.82rem; margin-top:6px;">
+            <input type="checkbox" id="modalOverrideProtectCb" style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer;">
+            <span>Allow deleting premium websites in this batch</span>
+          </label>
         </div>
 
         <div style="display:flex; flex-direction:row; gap:12px; justify-content:flex-end; margin-top:20px;">
