@@ -1211,136 +1211,133 @@
     const sort = document.getElementById('websiteSort');
     const ageFilter = document.getElementById('websiteAgeFilter');
     const tierFilter = document.getElementById('websiteTierFilter');
-    const protectToggle = document.getElementById('protectPremiumToggle');
-    const selectAllCb = document.getElementById('selectAllWebsites');
-    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-    const bulkDeleteModal = document.getElementById('bulkDeleteModal');
 
     if (search) search.addEventListener('input', renderWebsitesCards);
     if (sort) sort.addEventListener('change', renderWebsitesCards);
-    if (ageFilter) ageFilter.addEventListener('change', () => {
-      selectedWebsiteIds.clear();
+    
+    if (ageFilter) {
+      ageFilter.addEventListener('change', () => {
+        selectedWebsiteIds.clear();
+        renderWebsitesCards();
+      });
+    }
+    
+    if (tierFilter) {
+      tierFilter.addEventListener('change', () => {
+        selectedWebsiteIds.clear();
+        renderWebsitesCards();
+      });
+    }
+  }
+
+  // Setup control listeners unconditionally
+  setupWebsiteControls();
+
+  // Global event delegation for website controls to prevent stale closures and detached listeners
+  document.addEventListener('change', (e) => {
+    // Select All Checkbox
+    if (e.target && e.target.id === 'selectAllWebsites') {
+      if (e.target.checked) {
+        currentlyFilteredWebsites.forEach(w => selectedWebsiteIds.add(w.id));
+      } else {
+        currentlyFilteredWebsites.forEach(w => selectedWebsiteIds.delete(w.id));
+      }
       renderWebsitesCards();
-    });
-    if (tierFilter) tierFilter.addEventListener('change', () => {
-      selectedWebsiteIds.clear();
-      renderWebsitesCards();
-    });
-    if (protectToggle) protectToggle.addEventListener('change', () => {
-      if (protectToggle.checked) {
+    }
+    
+    // Protect Premium Toggle
+    if (e.target && e.target.id === 'protectPremiumToggle') {
+      if (e.target.checked) {
         const currentList = dashData?.websites || [];
         currentList.filter(w => w.isPremium).forEach(w => selectedWebsiteIds.delete(w.id));
       }
       renderWebsitesCards();
-    });
-
-    if (selectAllCb) {
-      selectAllCb.addEventListener('change', (e) => {
-        if (e.target.checked) {
-          currentlyFilteredWebsites.forEach(w => selectedWebsiteIds.add(w.id));
-        } else {
-          currentlyFilteredWebsites.forEach(w => selectedWebsiteIds.delete(w.id));
-        }
-        renderWebsitesCards();
-      });
     }
+  });
 
-    if (deleteSelectedBtn) {
-      deleteSelectedBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (selectedWebsiteIds.size === 0) return;
-        const ids = Array.from(selectedWebsiteIds);
-        const globalProtect = protectToggle?.checked ?? true;
-        const overrideCb = document.getElementById('modalOverrideProtectCb');
-        if (overrideCb) overrideCb.checked = !globalProtect;
+  document.addEventListener('click', (e) => {
+    // Delete Selected Button
+    const deleteBtn = e.target.closest('#deleteSelectedBtn');
+    if (deleteBtn) {
+      e.preventDefault();
+      if (deleteBtn.disabled) return;
+      if (selectedWebsiteIds.size === 0) return;
+      
+      const ids = Array.from(selectedWebsiteIds);
+      const protectToggle = document.getElementById('protectPremiumToggle');
+      const globalProtect = protectToggle?.checked ?? true;
+      const overrideCb = document.getElementById('modalOverrideProtectCb');
+      if (overrideCb) overrideCb.checked = !globalProtect;
 
-        function updateModalCounts() {
-          const allowPremiumDelete = overrideCb ? overrideCb.checked : !globalProtect;
-          const protectPremium = globalProtect && !allowPremiumDelete;
+      function updateModalCounts() {
+        const allowPremiumDelete = overrideCb ? overrideCb.checked : !globalProtect;
+        const protectPremium = globalProtect && !allowPremiumDelete;
 
-          const selectedList = (dashData?.websites || []).filter(w => selectedWebsiteIds.has(w.id));
-          const premiumCount = selectedList.filter(w => w.isPremium).length;
-          const nonPremiumCount = selectedList.length - premiumCount;
+        const selectedList = (dashData?.websites || []).filter(w => selectedWebsiteIds.has(w.id));
+        const premiumCount = selectedList.filter(w => w.isPremium).length;
+        const nonPremiumCount = selectedList.length - premiumCount;
 
-          let deleteCount = selectedList.length;
-          let protectedCount = 0;
+        let deleteCount = selectedList.length;
+        let protectedCount = 0;
 
-          if (protectPremium) {
-            deleteCount = nonPremiumCount;
-            protectedCount = premiumCount;
-          }
+        if (protectPremium) {
+          deleteCount = nonPremiumCount;
+          protectedCount = premiumCount;
+        }
 
-          const totalEl = document.getElementById('modalTotalSelectedCount');
-          if (totalEl) totalEl.textContent = selectedList.length;
+        const totalEl = document.getElementById('modalTotalSelectedCount');
+        if (totalEl) totalEl.textContent = selectedList.length;
 
-          const deleteEl = document.getElementById('modalDeleteCount');
-          if (deleteEl) deleteEl.textContent = deleteCount;
+        const deleteEl = document.getElementById('modalDeleteCount');
+        if (deleteEl) deleteEl.textContent = deleteCount;
 
-          const protectedEl = document.getElementById('modalProtectedCount');
-          if (protectedEl) protectedEl.textContent = protectedCount;
+        const protectedEl = document.getElementById('modalProtectedCount');
+        if (protectedEl) protectedEl.textContent = protectedCount;
 
-          const warnEl = document.getElementById('modalProtectedWarning');
-          const warnText = document.getElementById('modalWarningText');
-          if (warnEl) {
-            if (premiumCount > 0) {
-              warnEl.style.display = 'block';
-              if (warnText) {
-                if (protectPremium) {
-                  warnText.textContent = `${premiumCount} Premium website${premiumCount > 1 ? 's are' : ' is'} currently protected from bulk deletion.`;
-                } else {
-                  warnText.textContent = `⚠️ Warning: Premium websites WILL be deleted because premium protection is allowed for this batch.`;
-                }
+        const warnEl = document.getElementById('modalProtectedWarning');
+        const warnText = document.getElementById('modalWarningText');
+        if (warnEl) {
+          if (premiumCount > 0) {
+            warnEl.style.display = 'block';
+            if (warnText) {
+              if (protectPremium) {
+                warnText.textContent = `${premiumCount} Premium website${premiumCount > 1 ? 's are' : ' is'} currently protected from bulk deletion.`;
+              } else {
+                warnText.textContent = `⚠️ Warning: Premium websites WILL be deleted because premium protection is allowed for this batch.`;
               }
-            } else {
-              warnEl.style.display = 'none';
             }
+          } else {
+            warnEl.style.display = 'none';
           }
-
-          pendingBulkAction = { websiteIds: ids, protectPremium };
         }
 
-        updateModalCounts();
+        pendingBulkAction = { websiteIds: ids, protectPremium };
+      }
 
-        if (overrideCb) {
-          overrideCb.onchange = updateModalCounts;
-        }
+      updateModalCounts();
 
-        if (bulkDeleteModal) bulkDeleteModal.style.display = 'block';
-      });
+      if (overrideCb) {
+        overrideCb.onchange = updateModalCounts;
+      }
+
+      const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+      if (bulkDeleteModal) bulkDeleteModal.style.display = 'block';
     }
 
-    // Modal Close Handlers
-    const closeBtn = document.getElementById('closeBulkDeleteModal');
-    const cancelBtn = document.getElementById('cancelBulkDeleteBtn');
-    const confirmBtn = document.getElementById('confirmBulkDeleteBtn');
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
-        pendingBulkAction = null;
-      });
+    // Modal Close logic
+    const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+    if (e.target.closest('#closeBulkDeleteModal') || e.target.closest('#cancelBulkDeleteBtn') || e.target === bulkDeleteModal) {
+      if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
+      pendingBulkAction = null;
     }
 
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', () => {
-        if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
-        pendingBulkAction = null;
-      });
-    }
-
-    if (bulkDeleteModal) {
-      bulkDeleteModal.addEventListener('click', (e) => {
-        if (e.target === bulkDeleteModal) {
-          bulkDeleteModal.style.display = 'none';
-          pendingBulkAction = null;
-        }
-      });
-    }
-
+    // Modal Confirm Button
+    const confirmBtn = e.target.closest('#confirmBulkDeleteBtn');
     if (confirmBtn) {
-      confirmBtn.addEventListener('click', async () => {
+      (async () => {
         if (!pendingBulkAction) return;
         confirmBtn.disabled = true;
+        const originalHtml = confirmBtn.innerHTML;
         confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
 
         try {
@@ -1362,14 +1359,11 @@
           alert(`Error running bulk deletion: ${err.message}`);
         } finally {
           confirmBtn.disabled = false;
-          confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirm Permanent Delete';
+          confirmBtn.innerHTML = originalHtml;
         }
-      });
+      })();
     }
-  }
-
-  // Setup control listeners unconditionally
-  setupWebsiteControls();
+  });
 
   let currentCloudinaryData = [];
 
