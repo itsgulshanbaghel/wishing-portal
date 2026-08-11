@@ -14,7 +14,7 @@ const https = require('https');
 
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
-const { Website, Feedback, CustomSlug, Payment } = require('./models');
+const { Website, Feedback, CustomSlug, Payment, Event } = require('./models');
 const analytics = require('./analytics');
 const health = require('./health');
 const { generateOGImage, generateOGMetaTags, saveOGImage } = require('./og-image-generator');
