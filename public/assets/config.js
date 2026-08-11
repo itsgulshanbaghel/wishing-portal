@@ -6,7 +6,7 @@
  */
 
 const CONFIG = {
-  API_BASE_URL: 'https://wishing-portal.onrender.com',
+  API_BASE_URL: 'https://wishing-portal-05as.onrender.com',
   ADDITIONAL_API_BASE_URL: 'https://thegreeter.in'
 };
 

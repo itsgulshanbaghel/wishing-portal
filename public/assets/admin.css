@@ -476,3 +476,62 @@ tbody tr:hover td { color:var(--text); }
 .modal-body {
   padding: 20px 24px;
 }
+
+/* ── DANGER ACTION BUTTON ── */
+.action-btn.danger {
+  background: rgba(255, 71, 87, 0.1);
+  border-color: rgba(255, 71, 87, 0.25);
+  color: var(--red);
+}
+.action-btn.danger:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+.action-btn.warning {
+  background: rgba(255, 159, 67, 0.1);
+  border-color: rgba(255, 159, 67, 0.25);
+  color: var(--gold);
+}
+.action-btn.warning:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+}
+
+/* ── PREMIUM WEBSITE CARD ── */
+.website-card.premium-card {
+  border-color: rgba(255, 159, 67, 0.5) !important;
+  background: linear-gradient(135deg, rgba(255,159,67,0.04) 0%, var(--bg-card) 60%);
+  box-shadow: 0 0 0 1px rgba(255,159,67,0.2), inset 0 1px 0 rgba(255,159,67,0.1);
+}
+.website-card.premium-card:hover {
+  border-color: rgba(255, 159, 67, 0.8) !important;
+  box-shadow: 0 12px 40px rgba(255,159,67,0.18), 0 0 0 1px rgba(255,159,67,0.4);
+}
+.premium-card-glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle at top right, rgba(255,159,67,0.15), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 0 var(--radius) 0 0;
+}
+.website-card.premium-card .card-header,
+.website-card.premium-card .card-body,
+.website-card.premium-card .card-footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── TOGGLE CONTAINER ── */
+.toggle-container {
+  user-select: none;
+}
+.toggle-container:hover {
+  border-color: var(--border-hover) !important;
+}
+

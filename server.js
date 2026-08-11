@@ -1822,6 +1822,49 @@ app.get('/api/admin/cloudinary-list', adminAuth, async (req, res) => {
   }
 });
 
+// Delete a single website and all associated assets & tracking records
+app.delete('/api/admin/website/:id', adminAuth, async (req, res) => {
+  try {
+    const websiteId = req.params.id;
+    const force = req.query.force === 'true' || req.body?.force === true;
+
+    if (!websiteId) {
+      return res.status(400).json({ error: 'Website ID is required' });
+    }
+
+    await ensureMongoConnected();
+    const result = await analytics.deleteWebsite(websiteId, force, cloudinary);
+
+    if (!result.success && result.isPremium) {
+      return res.status(403).json(result);
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('Delete website error:', err);
+    res.status(500).json({ error: 'Failed to delete website', details: err.message });
+  }
+});
+
+// Bulk delete / purge websites (with age filtering & premium domain protection)
+app.post('/api/admin/websites/bulk-delete', adminAuth, async (req, res) => {
+  try {
+    const { websiteIds, olderThanDays, protectPremium = true } = req.body || {};
+
+    await ensureMongoConnected();
+    const result = await analytics.bulkDeleteWebsites({
+      websiteIds,
+      olderThanDays,
+      protectPremium: protectPremium !== false
+    }, cloudinary);
+
+    res.json(result);
+  } catch (err) {
+    console.error('Bulk delete error:', err);
+    res.status(500).json({ error: 'Failed to perform bulk deletion', details: err.message });
+  }
+});
+
 // Traffic Sources Analytics
 app.get('/api/admin/traffic-sources', adminAuth, async (req, res) => {
   try {
@@ -2089,25 +2132,49 @@ app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
     }
 
     console.log('[Admin] Fetching personalise URL clicks...');
-    const clicks = await Event.find({ type: 'personalise_url_click' })
+    const rawClicks = await Event.find({ type: 'personalise_url_click' })
       .sort({ timestamp: -1 })
-      .limit(100)
+      .limit(1000)
       .lean();
     
-    console.log('[Admin] Found clicks:', clicks.length);
+    // Deduplicate clicks by websiteId so each generated website appears only once
+    const uniqueClicksMap = new Map();
+    rawClicks.forEach(click => {
+      const wId = click.websiteId;
+      if (wId && !uniqueClicksMap.has(wId)) {
+        uniqueClicksMap.set(wId, click);
+      }
+    });
 
-    // Enrich with website data
+    const clicks = Array.from(uniqueClicksMap.values());
+    const totalWebsites = await Website.countDocuments();
+    const uniqueClickers = clicks.length;
+
+    console.log(`[Admin] Found ${rawClicks.length} raw click events deduplicated to ${uniqueClickers} unique site clicks (Total sites: ${totalWebsites})`);
+
+    // Enrich with website & payment data
     const enrichedClicks = await Promise.all(clicks.map(async (click) => {
-      const website = await Website.findOne({ id: click.websiteId }).lean();
+      const [website, payment] = await Promise.all([
+        Website.findOne({ id: click.websiteId }).lean(),
+        Payment.findOne({ websiteId: click.websiteId, status: 'PAID' }).lean()
+      ]);
+
       return {
         ...click,
         websiteRecipientName: website?.recipientName || 'Unknown',
         websiteEventType: website?.eventType || 'Unknown',
-        websiteTemplateName: website?.templateName || 'Unknown'
+        websiteTemplateName: website?.templateName || 'Unknown',
+        isPaid: !!payment,
+        paymentAmount: payment ? `${payment.currency || 'USD'} ${payment.amount || 0}` : null
       };
     }));
 
-    res.json({ clicks: enrichedClicks });
+    res.json({
+      clicks: enrichedClicks,
+      totalClicks: rawClicks.length,
+      uniqueClickers,
+      totalWebsites
+    });
   } catch (err) {
     console.error('Error fetching personalise URL clicks:', err);
     res.status(500).json({ error: 'Failed to fetch click data' });

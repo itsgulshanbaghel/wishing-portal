@@ -11,7 +11,7 @@
     "rewrites": [
       {
         "source": "/api/**",
-        "destination": "https://wishing-portal.onrender.com/api/:splat"
+        "destination": "https://wishing-portal-05as.onrender.com/api/:splat"
       },
       {
         "source": "**",

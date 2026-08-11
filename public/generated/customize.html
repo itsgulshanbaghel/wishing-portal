@@ -5027,7 +5027,7 @@
       // Custom slug handler - resolve slug to websiteId
       async function resolveCustomSlug(slug) {
         try {
-          const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : 'https://wishing-portal.onrender.com';
+          const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : 'https://wishing-portal-05as.onrender.com';
           const url = `${API_BASE}/api/debug/slug/${slug}`;
           console.log('[CustomURL] Fetching slug from:', url);
           const response = await fetch(url);

@@ -9,7 +9,7 @@
     if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
       return window.APP_CONFIG.API_BASE_URL;
     }
-    return 'https://wishing-portal.onrender.com';
+    return 'https://wishing-portal-05as.onrender.com';
   };
 
   const API = getApiBaseUrl();
@@ -282,6 +282,27 @@
           } catch (inner) {
             console.warn('Additional feedback fetch failed:', inner);
           }
+
+          // Also attempt to fetch traffic-sources from additional site and merge
+          try {
+            const otherTS = await additionalFetch(`/api/admin/traffic-sources?days=${period}`);
+            if (otherTS && dashData.trafficSources) {
+              const ts = dashData.trafficSources;
+              ts.kpi = ts.kpi || {};
+              otherTS.kpi = otherTS.kpi || {};
+              ['totalSessions','organicSearch','directTraffic','socialMedia','referral','email','paidSearch'].forEach(k => {
+                ts.kpi[k] = (Number(ts.kpi[k] || 0) + Number(otherTS.kpi[k] || 0));
+              });
+              ts.charts = ts.charts || {};
+              otherTS.charts = otherTS.charts || {};
+              ['trafficSourceDistribution','searchEngineDistribution','topKeywords','socialPlatforms','topReferrers'].forEach(k => {
+                ts.charts[k] = mergeDistribution(ts.charts[k] || {}, otherTS.charts[k] || {});
+              });
+              ts.recentTraffic = mergeArraysByDate(ts.recentTraffic, otherTS.recentTraffic, 'timestamp');
+            }
+          } catch (innerTS) {
+            console.warn('Additional traffic sources fetch failed:', innerTS);
+          }
         } catch (errAdd) {
           console.warn('[Admin] Failed to fetch/merge additional API data from', ADDITIONAL_API, errAdd);
         }
@@ -333,6 +354,13 @@
       // Close mobile sidebar
       document.getElementById('sidebar').classList.remove('open');
       
+      // Force Chart.js to resize canvases when tab becomes visible
+      setTimeout(() => {
+        Object.values(charts).forEach(c => {
+          try { if (c && typeof c.resize === 'function') c.resize(); } catch(err){}
+        });
+      }, 50);
+
       // Load system health when section is activated
       if (sec === 'system-health') {
         loadSystemHealth();
@@ -498,7 +526,69 @@
   function renderPageViewsChart() { renderBarChart('pageViewsChart', dashData.charts?.pageViewsByPage || {}, '#7b5df6'); }
   function renderRefererChart() { renderBarChart('refererChart', dashData.charts?.refererDistribution || {}, '#06b6d4'); }
   function renderExitChart() { renderBarChart('exitChart', dashData.charts?.exitPages || {}, '#ef4444'); }
-  function renderGeoChart() { renderBarChart('geoChart', dashData.charts?.geoDistribution || {}, '#22c55e'); }
+  function renderGeoChart() {
+    const viewsData = dashData.charts?.geoDistribution || {};
+    const uniqueData = dashData.charts?.geoUniqueVisitors || {};
+
+    const countries = [...new Set([...Object.keys(viewsData), ...Object.keys(uniqueData)])].filter(c => c && c !== 'Unknown').slice(0, 15);
+    if (Object.keys(viewsData).includes('Unknown') || Object.keys(uniqueData).includes('Unknown')) {
+      countries.push('Unknown');
+    }
+
+    makeChart('geoChart', {
+      type: 'bar',
+      data: {
+        labels: countries,
+        datasets: [
+          {
+            label: 'Unique Visitors',
+            data: countries.map(c => uniqueData[c] || 0),
+            backgroundColor: '#06b6d4'
+          },
+          {
+            label: 'Repeat Views',
+            data: countries.map(c => Math.max(0, (viewsData[c] || 0) - (uniqueData[c] || 0))),
+            backgroundColor: '#7b5df6'
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: true, position: 'top' },
+          tooltip: {
+            callbacks: {
+              footer: (items) => {
+                const country = items[0]?.label;
+                const views = viewsData[country] || 0;
+                const unique = uniqueData[country] || 0;
+                return `Total Views: ${views.toLocaleString()}\nUnique Visitors: ${unique.toLocaleString()}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { stacked: true, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } },
+          y: { stacked: true, grid: { display: false } }
+        }
+      }
+    });
+
+    // Populate Geo Breakdown Table
+    const geoTable = document.querySelector('#geoTable tbody');
+    if (geoTable) {
+      geoTable.innerHTML = '';
+      countries.forEach(country => {
+        const views = viewsData[country] || 0;
+        const unique = uniqueData[country] || 0;
+        const ratio = unique > 0 ? (views / unique).toFixed(1) : '--';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><strong>${country}</strong></td><td>${formatNum(views)}</td><td>${formatNum(unique)}</td><td>${ratio}x</td>`;
+        geoTable.appendChild(tr);
+      });
+    }
+  }
 
   // Merge feature entries by normalized display to avoid duplicates
   const CLEAN_NAME_MAP = {
@@ -894,22 +984,67 @@
     });
   }
 
+  let selectedWebsiteIds = new Set();
+  let pendingBulkAction = null;
+  let websitesListenersInitialized = false;
+
   function renderWebsitesCards() {
     const grid = document.getElementById('websiteGrid');
     const search = document.getElementById('websiteSearch');
     const sort = document.getElementById('websiteSort');
-    const list = dashData.websites || [];
+    const selectAllCb = document.getElementById('selectAllWebsites');
+    const countSpan = document.getElementById('selectedCount');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const ageFilter = document.getElementById('websiteAgeFilter');
+    const protectToggle = document.getElementById('protectPremiumToggle');
+    const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+
+
+
+    function getAgeCutoff() {
+      const val = ageFilter?.value || 'all';
+      if (val === 'all') return null;
+      const days = parseInt(val, 10);
+      return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    }
+
+    function updateSelectionUI(filteredCount) {
+      if (countSpan) {
+        countSpan.textContent = selectedWebsiteIds.size;
+      }
+      if (deleteSelectedBtn) {
+        deleteSelectedBtn.disabled = selectedWebsiteIds.size === 0;
+        deleteSelectedBtn.style.opacity = selectedWebsiteIds.size === 0 ? '0.5' : '1';
+        deleteSelectedBtn.style.cursor = selectedWebsiteIds.size === 0 ? 'not-allowed' : 'pointer';
+      }
+      if (selectAllCb) {
+        selectAllCb.checked = filteredCount > 0 && selectedWebsiteIds.size >= filteredCount;
+        selectAllCb.indeterminate = selectedWebsiteIds.size > 0 && selectedWebsiteIds.size < filteredCount;
+      }
+    }
 
     function render() {
+      if (!grid) return;
       grid.innerHTML = '';
-      const filter = search.value.toLowerCase();
-      const sortType = sort.value;
+      const filter = (search?.value || '').toLowerCase();
+      const sortType = sort?.value || 'date_desc';
+      const cutoff = getAgeCutoff();
+      const ageVal = ageFilter?.value || 'all';
 
+      // Always read live from dashData to avoid stale closure after reload
+      const list = dashData?.websites || [];
       let filtered = list.filter(w => {
-        if (!filter) return true;
-        return (w.id || '').toLowerCase().includes(filter) || 
-               (w.eventType || '').toLowerCase().includes(filter) || 
-               (w.recipientName || '').toLowerCase().includes(filter);
+        if (filter) {
+          const match = (w.id || '').toLowerCase().includes(filter) ||
+                        (w.eventType || '').toLowerCase().includes(filter) ||
+                        (w.recipientName || '').toLowerCase().includes(filter);
+          if (!match) return false;
+        }
+        if (cutoff) {
+          const createdAt = w.createdAt ? new Date(w.createdAt) : null;
+          if (!createdAt || createdAt >= cutoff) return false;
+        }
+        return true;
       });
 
       // Apply Sort
@@ -921,32 +1056,67 @@
         return 0;
       });
 
+      updateSelectionUI(filtered.length);
+
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><p>No websites found.</p></div>`;
+        const ageVal = ageFilter?.value || 'all';
+        const msg = cutoff
+          ? `No websites found older than ${ageVal} days${filter ? ' matching your search' : ''}.`
+          : 'No websites found. Try syncing with Cloudinary.';
+        grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><i class="fas fa-search"></i><p>${msg}</p></div>`;
         return;
       }
 
+      // Summary bar
+      const premiumCount = filtered.filter(w => w.isPremium).length;
+      const summaryBar = document.createElement('div');
+      summaryBar.style.cssText = 'grid-column:1/-1; display:flex; align-items:center; gap:10px; font-size:0.82rem; color:var(--text-muted); padding:4px; flex-wrap:wrap;';
+      summaryBar.innerHTML = `
+        <i class="fas fa-globe" style="color:var(--accent);"></i>
+        <strong style="color:var(--text)">${filtered.length}</strong> website${filtered.length !== 1 ? 's' : ''} shown
+        ${cutoff ? `<span style="background:rgba(239,68,68,0.12); color:var(--red); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(239,68,68,0.2);"><i class="fas fa-clock"></i> Age filter active</span>` : ''}
+        ${premiumCount > 0 ? `<span style="background:rgba(255,159,67,0.12); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.2);"><i class="fas fa-crown"></i> ${premiumCount} Premium</span>` : ''}
+        <span style="margin-left:auto; font-size:0.75rem;">${selectedWebsiteIds.size > 0 ? `<strong style="color:var(--accent)">${selectedWebsiteIds.size} selected</strong>` : ''}</span>
+      `;
+      grid.appendChild(summaryBar);
+
       filtered.forEach(w => {
         const card = document.createElement('div');
-        card.className = 'website-card';
+        const ageInDays = w.createdAt ? Math.floor((Date.now() - new Date(w.createdAt)) / 86400000) : 0;
+
+        card.className = 'website-card' + (w.isPremium ? ' premium-card' : '');
+
         const created = w.createdAt ? new Date(w.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '--';
         const loc = w.creatorGeo ? `${w.creatorGeo.city || 'Local'}, ${w.creatorGeo.country || 'Host'}` : 'Unknown Location';
         const viewUrl = window.location.origin + '/generated/customize.html?view=' + w.id;
-        
+        const isChecked = selectedWebsiteIds.has(w.id);
+
+        const premiumBadgeHtml = w.isPremium
+          ? `<span class="badge" style="background:rgba(255,159,67,0.2); color:var(--gold); border:1px solid rgba(255,159,67,0.4); font-size:0.7rem; padding:3px 10px;" title="Paid / Custom Domain Site"><i class="fas fa-crown"></i> Premium</span>`
+          : '';
+
+        const ageBadgeHtml = `<span class="badge" style="background:rgba(123,93,246,0.1); color:var(--text-muted); border:1px solid var(--border); font-size:0.67rem; padding:2px 7px;"><i class="fas fa-clock"></i> ${ageInDays}d</span>`;
+
         card.innerHTML = `
-          <div class="card-header">
-            <div class="card-id-box">
-              <span class="card-id">${w.id}</span>
-              <h4 class="card-title">${w.recipientName || 'Untitled Site'}</h4>
+          ${w.isPremium ? '<div class="premium-card-glow"></div>' : ''}
+          <div class="card-header" style="display:flex; align-items:flex-start; gap:10px;">
+            <input type="checkbox" class="website-select-cb" data-id="${w.id}" ${isChecked ? 'checked' : ''} style="cursor:pointer; width:17px; height:17px; accent-color:var(--accent); margin-top:3px; flex-shrink:0;">
+            <div class="card-id-box" style="flex:1; min-width:0;">
+              <span class="card-id" style="max-width:100%; display:block; overflow:hidden; text-overflow:ellipsis;">${w.id}</span>
+              <h4 class="card-title" style="margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${w.recipientName || 'Untitled Site'}</h4>
             </div>
-            <span class="badge badge-purple">${w.eventType || 'unknown'}</span>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
+              <span class="badge badge-purple">${w.eventType || 'unknown'}</span>
+              ${premiumBadgeHtml}
+              ${ageBadgeHtml}
+            </div>
           </div>
           <div class="card-body">
             <div class="info-row"><i class="fas fa-calendar-alt"></i> Created: ${created}</div>
             <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${loc}</div>
             <div class="info-row"><i class="fas fa-layer-group"></i> Template: ${w.templateName || 'default'}</div>
           </div>
-          <div class="card-footer">
+          <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center;">
             <div class="card-stats">
               <div class="stat-item">
                 <span class="stat-val">${formatNum(w.views || 0)}</span>
@@ -956,17 +1126,189 @@
                 <span class="stat-val">${(w.uniqueViewers || []).length}</span>
                 <span class="stat-label">Unique</span>
               </div>
+              <div class="stat-item">
+                <span class="stat-val">${ageInDays}d</span>
+                <span class="stat-label">Age</span>
+              </div>
             </div>
-            <a href="${viewUrl}" target="_blank" class="action-btn"><i class="fas fa-external-link-alt"></i> Open</a>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <a href="${viewUrl}" target="_blank" class="action-btn" style="display:flex; align-items:center; gap:5px;"><i class="fas fa-external-link-alt"></i> Open</a>
+              <button type="button" class="action-btn danger single-delete-btn" data-id="${w.id}" data-premium="${w.isPremium ? 'true' : 'false'}" title="Delete Website" style="display:flex; align-items:center; gap:5px; padding:5px 10px;"><i class="fas fa-trash-alt"></i></button>
+            </div>
           </div>
         `;
+
+        // Checkbox listener
+        const cb = card.querySelector('.website-select-cb');
+        cb.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            selectedWebsiteIds.add(w.id);
+          } else {
+            selectedWebsiteIds.delete(w.id);
+          }
+          updateSelectionUI(filtered.length);
+        });
+
+        // Single delete listener
+        const deleteBtn = card.querySelector('.single-delete-btn');
+        deleteBtn.addEventListener('click', async () => {
+          const siteId = w.id;
+          const isPrem = w.isPremium;
+
+          let confirmMsg = `Are you sure you want to permanently delete website "${siteId}"?\n\nThis action will delete tracking events, feedback, custom slugs, and stored Cloudinary JSON configuration.`;
+          if (isPrem) {
+            confirmMsg = `⚠️ WARNING: Website "${siteId}" is a PREMIUM / PAID website!\n\nDeleting it will destroy paid records, custom URL mappings, and all analytics.\n\nAre you ABSOLUTELY sure you want to FORCE delete this site?`;
+          }
+
+          if (confirm(confirmMsg)) {
+            try {
+              deleteBtn.disabled = true;
+              deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+              const res = await apiFetch(`/api/admin/website/${siteId}${isPrem ? '?force=true' : ''}`, { method: 'DELETE' });
+              if (res && res.success) {
+                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.92) translateY(-4px)';
+                setTimeout(async () => {
+                  selectedWebsiteIds.delete(siteId);
+                  await loadDashboard();
+                }, 320);
+              } else {
+                alert(`Failed to delete: ${res?.message || res?.error || 'Unknown error'}`);
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+              }
+            } catch (err) {
+              alert(`Error: ${err.message}`);
+              deleteBtn.disabled = false;
+              deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            }
+          }
+        });
+
         grid.appendChild(card);
       });
     }
 
     render();
-    search.addEventListener('input', render);
-    sort.addEventListener('change', render);
+
+    if (!websitesListenersInitialized) {
+      websitesListenersInitialized = true;
+
+      if (search) search.addEventListener('input', render);
+      if (sort) sort.addEventListener('change', render);
+      if (ageFilter) ageFilter.addEventListener('change', () => {
+        selectedWebsiteIds.clear(); // clear stale selections when age filter changes
+        render();
+      });
+
+      if (selectAllCb) {
+        selectAllCb.addEventListener('change', (e) => {
+          // Use live data + current filters to avoid stale closure after reload
+          const currentList = dashData?.websites || [];
+          const currentFilter = (search?.value || '').toLowerCase();
+          const currentCutoff = getAgeCutoff();
+          const filtered = currentList.filter(w => {
+            if (currentFilter) {
+              const match = (w.id || '').toLowerCase().includes(currentFilter) ||
+                            (w.eventType || '').toLowerCase().includes(currentFilter) ||
+                            (w.recipientName || '').toLowerCase().includes(currentFilter);
+              if (!match) return false;
+            }
+            if (currentCutoff) {
+              const createdAt = w.createdAt ? new Date(w.createdAt) : null;
+              if (!createdAt || createdAt >= currentCutoff) return false;
+            }
+            return true;
+          });
+
+          if (e.target.checked) {
+            filtered.forEach(w => selectedWebsiteIds.add(w.id));
+          } else {
+            filtered.forEach(w => selectedWebsiteIds.delete(w.id));
+          }
+          render();
+        });
+      }
+
+      // Delete Selected Click
+      if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', () => {
+          if (selectedWebsiteIds.size === 0) return;
+          const ids = Array.from(selectedWebsiteIds);
+          const protectPremium = protectToggle?.checked ?? true;
+
+          const selectedList = (dashData?.websites || []).filter(w => selectedWebsiteIds.has(w.id));
+          const premiumCount = selectedList.filter(w => w.isPremium).length;
+          const nonPremiumCount = selectedList.length - premiumCount;
+
+          let deleteCount = selectedList.length;
+          let protectedCount = 0;
+
+          if (protectPremium) {
+            deleteCount = nonPremiumCount;
+            protectedCount = premiumCount;
+          }
+
+          document.getElementById('modalDeleteCount').textContent = deleteCount;
+          document.getElementById('modalProtectedCount').textContent = protectedCount;
+          const warnEl = document.getElementById('modalProtectedWarning');
+          if (warnEl) warnEl.style.display = (protectPremium && premiumCount > 0) ? 'block' : 'none';
+
+          pendingBulkAction = { websiteIds: ids, protectPremium };
+          if (bulkDeleteModal) bulkDeleteModal.style.display = 'block';
+        });
+      }
+
+      // Modal Close Handlers
+      const closeBtn = document.getElementById('closeBulkDeleteModal');
+      const cancelBtn = document.getElementById('cancelBulkDeleteBtn');
+      const confirmBtn = document.getElementById('confirmBulkDeleteBtn');
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
+          pendingBulkAction = null;
+        });
+      }
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
+          pendingBulkAction = null;
+        });
+      }
+
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+          if (!pendingBulkAction) return;
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+          try {
+            const res = await apiFetch('/api/admin/websites/bulk-delete', {
+              method: 'POST',
+              body: JSON.stringify(pendingBulkAction)
+            });
+
+            if (res && res.success) {
+              alert(`Bulk deletion complete!\n\n• Deleted: ${res.deletedCount} website(s)\n• Skipped Protected: ${res.protectedCount ?? res.skippedProtectedCount ?? 0} website(s)`);
+              if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
+              selectedWebsiteIds.clear();
+              pendingBulkAction = null;
+              await loadDashboard();
+            } else {
+              alert(`Bulk deletion failed: ${res?.message || res?.error || 'Unknown error'}`);
+            }
+          } catch (err) {
+            alert(`Error running bulk deletion: ${err.message}`);
+          } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirm Permanent Delete';
+          }
+        });
+      }
+    }
   }
 
   let currentCloudinaryData = [];
@@ -1186,12 +1528,11 @@
 
     // Render KPIs
     setText('tsTotalSessions', formatNum(kpi.totalSessions || 0));
-    setText('tsOrganicSearch', formatNum(kpi.organicSearch || 0));
+    setText('tsGoogleSearch', formatNum(kpi.googleSearch || 0));
+    setText('tsBingSearch', formatNum((kpi.bingSearch || 0) + (kpi.otherSearch || 0)));
     setText('tsDirectTraffic', formatNum(kpi.directTraffic || 0));
     setText('tsSocialMedia', formatNum(kpi.socialMedia || 0));
-    setText('tsReferral', formatNum(kpi.referral || 0));
-    setText('tsEmail', formatNum(kpi.email || 0));
-    setText('tsPaidSearch', formatNum(kpi.paidSearch || 0));
+    setText('tsSharedWebsites', formatNum(kpi.sharedWebsites || 0));
 
     // Traffic Sources Pie Chart
     const sourceData = charts.trafficSourceDistribution || {};
@@ -1288,7 +1629,14 @@
 
     // Top Referrers Bar Chart
     const referrerData = charts.topReferrers || {};
-    const sortedReferrers = Object.entries(referrerData).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const cleanReferrerData = {};
+    Object.entries(referrerData).forEach(([ref, count]) => {
+      let name = ref;
+      try { name = new URL(ref).hostname.replace(/^www\./, ''); } catch (e) {}
+      cleanReferrerData[name] = (cleanReferrerData[name] || 0) + count;
+    });
+    const sortedReferrers = Object.entries(cleanReferrerData).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
     makeChart('topReferrersChart', {
       type: 'bar',
       data: {
@@ -1340,49 +1688,73 @@
 
     // Traffic Source Table
     const sourceTable = document.querySelector('#trafficSourceTable tbody');
-    sourceTable.innerHTML = '';
-    const total = kpi.totalSessions || 1;
-    Object.entries(sourceData).sort((a, b) => b[1] - a[1]).forEach(([source, count]) => {
-      const tr = document.createElement('tr');
-      const pct = ((count / total) * 100).toFixed(1);
-      tr.innerHTML = `<td>${source}</td><td>${formatNum(count)}</td><td>${pct}%</td>`;
-      sourceTable.appendChild(tr);
-    });
+    if (sourceTable) {
+      sourceTable.innerHTML = '';
+      const total = kpi.totalSessions || 1;
+      Object.entries(sourceData).sort((a, b) => b[1] - a[1]).forEach(([source, count]) => {
+        const tr = document.createElement('tr');
+        const pct = ((count / total) * 100).toFixed(1);
+        tr.innerHTML = `<td>${source}</td><td>${formatNum(count)}</td><td>${pct}%</td>`;
+        sourceTable.appendChild(tr);
+      });
+    }
 
     // Keywords Table
     const keywordsTable = document.querySelector('#keywordsTable tbody');
-    keywordsTable.innerHTML = '';
-    const totalKeywords = Object.values(keywordsData).reduce((a, b) => a + b, 0) || 1;
-    sortedKeywords.forEach(([keyword, count]) => {
-      const tr = document.createElement('tr');
-      const pct = ((count / totalKeywords) * 100).toFixed(1);
-      tr.innerHTML = `<td>${keyword}</td><td>${formatNum(count)}</td><td>${pct}%</td>`;
-      keywordsTable.appendChild(tr);
-    });
+    if (keywordsTable) {
+      keywordsTable.innerHTML = '';
+      const totalKeywords = Object.values(keywordsData).reduce((a, b) => a + b, 0) || 1;
+      sortedKeywords.forEach(([keyword, count]) => {
+        const tr = document.createElement('tr');
+        const pct = ((count / totalKeywords) * 100).toFixed(1);
+        tr.innerHTML = `<td>${keyword}</td><td>${formatNum(count)}</td><td>${pct}%</td>`;
+        keywordsTable.appendChild(tr);
+      });
+    }
 
     // UTM Campaigns Table
     const utmTable = document.querySelector('#utmCampaignsTable tbody');
-    utmTable.innerHTML = '';
-    sortedUTM.forEach(u => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${u.campaign || '--'}</td><td>${u.source || '--'}</td><td>${u.medium || '--'}</td><td>${formatNum(u.count)}</td>`;
-      utmTable.appendChild(tr);
-    });
+    if (utmTable) {
+      utmTable.innerHTML = '';
+      sortedUTM.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${u.campaign || '--'}</td><td>${u.source || '--'}</td><td>${u.medium || '--'}</td><td>${formatNum(u.count)}</td>`;
+        utmTable.appendChild(tr);
+      });
+    }
 
     // Recent Traffic Table
     const recentTrafficTable = document.querySelector('#recentTrafficTable tbody');
-    recentTrafficTable.innerHTML = '';
-    (ts.recentTraffic || []).slice(0, 50).forEach(t => {
-      const tr = document.createElement('tr');
-      const time = t.timestamp ? new Date(t.timestamp).toLocaleString() : '--';
-      const source = t.details?.trafficSource || '--';
-      const engine = t.details?.searchEngine || '--';
-      const keywords = t.details?.searchKeywords || '--';
-      const campaign = t.details?.utmCampaign || '--';
-      const referer = (t.details?.referer || '--').substring(0, 50);
-      tr.innerHTML = `<td>${time}</td><td>${source}</td><td>${engine}</td><td>${keywords}</td><td>${campaign}</td><td>${referer}</td>`;
-      recentTrafficTable.appendChild(tr);
-    });
+    if (recentTrafficTable) {
+      recentTrafficTable.innerHTML = '';
+      (ts.recentTraffic || []).slice(0, 50).forEach(t => {
+        const tr = document.createElement('tr');
+        const time = t.timestamp ? new Date(t.timestamp).toLocaleString() : '--';
+        const source = t.details?.trafficSource || 'Direct / Typed URL';
+        const engine = t.details?.searchEngine || '--';
+        const keywords = t.details?.searchKeywords || '--';
+        const campaign = t.details?.utmCampaign || '--';
+        const refererRaw = t.details?.referer || 'Direct Entry';
+        const refererShort = refererRaw.length > 45 ? refererRaw.substring(0, 45) + '...' : refererRaw;
+        
+        let badgeClass = 'badge-blue';
+        if (source.includes('Google')) badgeClass = 'badge-green';
+        else if (source.includes('Bing') || source.includes('Search')) badgeClass = 'badge-cyan';
+        else if (source.includes('Direct')) badgeClass = 'badge-purple';
+        else if (source.includes('Shared')) badgeClass = 'badge-orange';
+        else if (source.includes('WhatsApp') || source.includes('Instagram') || source.includes('Facebook')) badgeClass = 'badge-pink';
+
+        tr.innerHTML = `
+          <td>${time}</td>
+          <td><span class="badge ${badgeClass}">${source}</span></td>
+          <td>${engine}</td>
+          <td>${keywords}</td>
+          <td>${campaign}</td>
+          <td title="${refererRaw}">${refererShort}</td>
+        `;
+        recentTrafficTable.appendChild(tr);
+      });
+    }
   }
 
   // ── System Health ──
@@ -1707,6 +2079,8 @@
       // Fetch clicks data
       const clicksData = await apiFetch('/api/admin/personalise-url-clicks');
       const clicks = clicksData.clicks || [];
+      const totalWebsites = clicksData.totalWebsites || dashData?.overview?.totalWebsitesCreated || dashData?.websites?.length || 0;
+      const uniqueClickers = clicksData.uniqueClickers != null ? clicksData.uniqueClickers : new Set(clicks.map(c => c.websiteId || c.visitorId)).size;
       
       // Update KPI cards
       document.getElementById('cuTotalPayments').textContent = payments.length;
@@ -1715,9 +2089,10 @@
       const currency = payments.length > 0 ? payments[0].currency : 'USD';
       document.getElementById('cuTotalRevenue').textContent = `${currency} ${totalRevenue.toFixed(2)}`;
       
-      document.getElementById('cuTotalClicks').textContent = clicks.length;
+      // Personalise Clicks Card: e.g. "4 / 10" (4 clicked out of 10 total websites created)
+      document.getElementById('cuTotalClicks').textContent = `${uniqueClickers} / ${totalWebsites}`;
       
-      const conversionRate = clicks.length > 0 ? ((payments.length / clicks.length) * 100).toFixed(1) : '0.0';
+      const conversionRate = totalWebsites > 0 ? ((uniqueClickers / totalWebsites) * 100).toFixed(1) : '0.0';
       document.getElementById('cuConversionRate').textContent = `${conversionRate}%`;
       
       // Render payments table
@@ -1761,6 +2136,9 @@
           const recipient = click.websiteRecipientName || 'Unknown';
           const eventType = click.websiteEventType || 'Unknown';
           const location = click.geo ? `${click.geo.city || ''}, ${click.geo.country || ''}` : 'Unknown';
+          const statusBadge = click.isPaid 
+            ? `<span class="badge badge-green"><i class="fas fa-check-circle"></i> Paid (${click.paymentAmount || ''})</span>` 
+            : `<span class="badge badge-orange"><i class="fas fa-user-clock"></i> Unpaid</span>`;
           
           tr.innerHTML = `
             <td>${date}</td>
@@ -1768,13 +2146,14 @@
             <td>${recipient}</td>
             <td>${eventType}</td>
             <td>${location}</td>
+            <td>${statusBadge}</td>
           `;
           clicksTbody.appendChild(tr);
         });
         
         if (clicks.length === 0) {
           const tr = document.createElement('tr');
-          tr.innerHTML = '<td colspan="5">No clicks recorded yet</td>';
+          tr.innerHTML = '<td colspan="6">No clicks recorded yet</td>';
           clicksTbody.appendChild(tr);
         }
       }
@@ -1788,6 +2167,65 @@
     if (btn) btn.classList.add('loading');
     await loadCustomUrlAnalytics();
     if (btn) btn.classList.remove('loading');
+  });
+
+  // ── All Feedback Responses Modal Handler ──
+  const viewAllFeedbackBtn = document.getElementById('viewAllFeedbackBtn');
+  const closeAllFeedbackModal = document.getElementById('closeAllFeedbackModal');
+
+  async function openAllFeedbackModal() {
+    if (!allFeedbackModal) return;
+    allFeedbackModal.classList.add('show');
+    const tbody = document.querySelector('#allFeedbackTable tbody');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="15" style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading feedback...</td></tr>';
+    }
+    try {
+      const data = await apiFetch('/api/admin/feedback-analytics?all=true');
+      const feedbackList = data.recentFeedback || [];
+      if (tbody) {
+        tbody.innerHTML = '';
+        feedbackList.forEach(fb => {
+          const resp = fb.responses || {};
+          const date = fb.submittedAt ? new Date(fb.submittedAt).toLocaleString() : '--';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${date}</td>
+            <td>${fb.userId || '--'}</td>
+            <td>${fb.location ? `${fb.location.city || ''}, ${fb.location.country || ''}` : '--'}</td>
+            <td>${resp.websiteType || '--'}</td>
+            <td>${resp.overallExperience || '--'}</td>
+            <td>${resp.customizationEase || '--'}</td>
+            <td>${resp.favoriteFeature || '--'}</td>
+            <td>${resp.visuallyAttractive || '--'}</td>
+            <td>${resp.receiverReaction || '--'}</td>
+            <td>${resp.loadingSpeed || '--'}</td>
+            <td>${resp.technicalIssues || '--'}</td>
+            <td>${resp.deviceCategory || '--'}</td>
+            <td>${resp.wouldRecommend || '--'}</td>
+            <td>${resp.desiredFeatures || '--'}</td>
+            <td>${resp.openSuggestions || '--'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        if (feedbackList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="15" style="text-align:center; opacity:0.6; padding:20px;">No feedback records found</td></tr>';
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching all feedback:', err);
+      if (tbody) tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; color:var(--red); padding:20px;">Failed to load feedback data</td></tr>`;
+    }
+  }
+
+  function closeAllFeedbackModalFn() {
+    if (allFeedbackModal) allFeedbackModal.classList.remove('show');
+  }
+
+  viewAllFeedbackBtn?.addEventListener('click', openAllFeedbackModal);
+  closeAllFeedbackModal?.addEventListener('click', closeAllFeedbackModalFn);
+  allFeedbackModal?.addEventListener('click', (e) => {
+    if (e.target === allFeedbackModal) closeAllFeedbackModalFn();
   });
 
   // ── Cloudinary ──

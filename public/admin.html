@@ -70,7 +70,7 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <header class="topbar">`n    <meta name="google-adsense-account" content="ca-pub-8043014881280685">
+      <header class="topbar">
         <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
         <h2 class="topbar-title" id="sectionTitle">Overview</h2>
         <div class="topbar-actions">
@@ -131,13 +131,12 @@
         <!-- TRAFFIC SOURCES SECTION -->
         <section id="sec-traffic-sources" class="section">
           <div class="kpi-grid">
-            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-eye"></i></div><div class="kpi-info"><span class="kpi-value" id="tsTotalSessions">--</span><span class="kpi-label">Total Sessions</span></div></div>
-            <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fas fa-search"></i></div><div class="kpi-info"><span class="kpi-value" id="tsOrganicSearch">--</span><span class="kpi-label">Organic Search</span></div></div>
-            <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fas fa-bullseye"></i></div><div class="kpi-info"><span class="kpi-value" id="tsDirectTraffic">--</span><span class="kpi-label">Direct Traffic</span></div></div>
-            <div class="kpi-card accent-orange"><div class="kpi-icon"><i class="fas fa-share-alt"></i></div><div class="kpi-info"><span class="kpi-value" id="tsSocialMedia">--</span><span class="kpi-label">Social Media</span></div></div>
-            <div class="kpi-card accent-pink"><div class="kpi-icon"><i class="fas fa-external-link-alt"></i></div><div class="kpi-info"><span class="kpi-value" id="tsReferral">--</span><span class="kpi-label">Referral</span></div></div>
-            <div class="kpi-card accent-gold"><div class="kpi-icon"><i class="fas fa-envelope"></i></div><div class="kpi-info"><span class="kpi-value" id="tsEmail">--</span><span class="kpi-label">Email</span></div></div>
-            <div class="kpi-card accent-red"><div class="kpi-icon"><i class="fas fa-ad"></i></div><div class="kpi-info"><span class="kpi-value" id="tsPaidSearch">--</span><span class="kpi-label">Paid Search</span></div></div>
+            <div class="kpi-card accent-blue"><div class="kpi-icon"><i class="fas fa-chart-bar"></i></div><div class="kpi-info"><span class="kpi-value" id="tsTotalSessions">--</span><span class="kpi-label">Total Sessions</span></div></div>
+            <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fab fa-google"></i></div><div class="kpi-info"><span class="kpi-value" id="tsGoogleSearch">--</span><span class="kpi-label">Google Search</span></div></div>
+            <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fab fa-microsoft"></i></div><div class="kpi-info"><span class="kpi-value" id="tsBingSearch">--</span><span class="kpi-label">Bing / Other Search</span></div></div>
+            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-compass"></i></div><div class="kpi-info"><span class="kpi-value" id="tsDirectTraffic">--</span><span class="kpi-label">Direct / Typed URL</span></div></div>
+            <div class="kpi-card accent-orange"><div class="kpi-icon"><i class="fas fa-share-alt"></i></div><div class="kpi-info"><span class="kpi-value" id="tsSocialMedia">--</span><span class="kpi-label">Social & Apps</span></div></div>
+            <div class="kpi-card accent-pink"><div class="kpi-icon"><i class="fas fa-gift"></i></div><div class="kpi-info"><span class="kpi-value" id="tsSharedWebsites">--</span><span class="kpi-label">Shared Generated Links</span></div></div>
           </div>
           <div class="chart-row">
             <div class="chart-card"><h3><i class="fas fa-chart-pie"></i> Traffic Sources</h3><canvas id="trafficSourceChart"></canvas></div>
@@ -175,19 +174,50 @@
         <!-- WEBSITES SECTION -->
         <section id="sec-websites" class="section">
           <div class="table-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
               <h3><i class="fas fa-globe"></i> Generated Websites</h3>
-              <button class="refresh-btn" id="syncWebsitesBtn"><i class="fas fa-sync"></i> Sync with Cloudinary</button>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="refresh-btn" id="syncWebsitesBtn"><i class="fas fa-sync"></i> Sync with Cloudinary</button>
+              </div>
             </div>
             
-            <div class="table-toolbar" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-              <input type="text" id="websiteSearch" placeholder="Search by name, ID or event type..." class="table-search" style="flex:1;">
-              <select id="websiteSort" class="table-search" style="max-width:200px;">
+            <!-- Enhanced Deletion & Filter Toolbar -->
+            <div class="table-toolbar" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; padding:14px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:var(--radius-sm);">
+              <input type="text" id="websiteSearch" placeholder="Search by name, ID or event type..." class="table-search" style="flex:1; min-width:200px;">
+              
+              <select id="websiteSort" class="table-search" style="max-width:160px;">
                 <option value="date_desc">Newest First</option>
                 <option value="date_asc">Oldest First</option>
                 <option value="views_desc">Most Viewed</option>
                 <option value="name_asc">Name (A-Z)</option>
               </select>
+
+              <select id="websiteAgeFilter" class="table-search" style="max-width:180px;">
+                <option value="all">All Ages</option>
+                <option value="7">Older than 7 Days</option>
+                <option value="15">Older than 15 Days</option>
+                <option value="30">Older than 30 Days</option>
+                <option value="60">Older than 60 Days</option>
+                <option value="90">Older than 90 Days</option>
+              </select>
+
+              <label class="toggle-container" style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer; color:var(--text-dim); background:var(--bg-surface); padding:8px 12px; border:1px solid var(--border); border-radius:8px;">
+                <input type="checkbox" id="protectPremiumToggle" checked style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer;">
+                <span><i class="fas fa-crown" style="color:var(--gold);"></i> Protect Premium Sites</span>
+              </label>
+            </div>
+
+            <!-- Selection Actions Bar -->
+            <div class="selection-actions-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:8px 14px; background:rgba(123,93,246,0.05); border:1px dashed var(--border); border-radius:8px;">
+              <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer;">
+                <input type="checkbox" id="selectAllWebsites" style="accent-color:var(--accent); width:16px; height:16px; cursor:pointer;">
+                <span>Select All Visible</span>
+              </label>
+              <div style="display:flex; gap:10px;">
+                <button class="action-btn danger" id="deleteSelectedBtn" disabled style="opacity:0.5; cursor:not-allowed; padding:6px 14px; display:flex; align-items:center; gap:6px;">
+                  <i class="fas fa-trash-alt"></i> Delete Selected &nbsp;<span id="selectedCount" style="background:rgba(255,71,87,0.2); border-radius:20px; padding:1px 8px; font-weight:700; min-width:20px; text-align:center;">0</span>
+                </button>
+              </div>
             </div>
 
             <div id="websiteGrid" class="website-grid">
@@ -220,10 +250,15 @@
 
         <!-- AUDIENCE SECTION -->
         <section id="sec-audience" class="section">
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-earth-americas"></i> Geographic Distribution</h3><canvas id="geoChart"></canvas></div></div>
+          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-earth-americas"></i> Geographic Distribution (Page Views & Unique Visitors)</h3><canvas id="geoChart"></canvas></div></div>
           <div class="chart-row">
             <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Device Breakdown</h3><canvas id="deviceChart2"></canvas></div>
             <div class="chart-card"><h3><i class="fas fa-laptop-code"></i> Operating Systems</h3><canvas id="osChart2"></canvas></div>
+          </div>
+          <!-- Country Breakdown Table -->
+          <div class="table-card">
+            <h3><i class="fas fa-globe"></i> Country Breakdown (Page Views vs. Unique Visitors)</h3>
+            <div class="table-scroll"><table id="geoTable"><thead><tr><th>Country</th><th>Page Views</th><th>Unique Visitors</th><th>Views / Unique Visitor</th></tr></thead><tbody></tbody></table></div>
           </div>
         </section>
 
@@ -306,9 +341,9 @@
           <!-- Personalise URL Clicks Table -->
           <div class="table-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-              <h3><i class="fas fa-mouse-pointer"></i> "Personalise Your URL" Button Clicks</h3>
+              <h3><i class="fas fa-mouse-pointer"></i> "Personalise Your URL" Button Clicks (Paid & Unpaid)</h3>
             </div>
-            <div class="table-scroll"><table id="personaliseClicksTable"><thead><tr><th>Date</th><th>Website ID</th><th>Recipient</th><th>Event Type</th><th>Location</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll"><table id="personaliseClicksTable"><thead><tr><th>Date</th><th>Website ID</th><th>Recipient</th><th>Event Type</th><th>Location</th><th>Payment Status</th></tr></thead><tbody></tbody></table></div>
           </div>
         </section>
 
@@ -412,10 +447,37 @@
         </div>
       </div>
     </div>
+  <!-- BULK DELETE CONFIRMATION MODAL -->
+  <div id="bulkDeleteModal" class="modal">
+    <div class="modal-content" style="max-width:550px;">
+      <div class="modal-header">
+        <h2 style="color:var(--red); display:flex; align-items:center; gap:10px;">
+          <i class="fas fa-exclamation-triangle"></i> Confirm Website Deletion
+        </h2>
+        <button id="closeBulkDeleteModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:14px; color:var(--text-dim); font-size:0.9rem;">
+          You are about to permanently delete websites and all their associated resources (Cloudinary JSON configs, images, views, tracking events, feedback, and custom URLs).
+        </p>
+
+        <div id="deleteModalSummary" style="background:var(--bg-surface); padding:16px; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; font-size:0.85rem; display:flex; flex-direction:column; gap:8px;">
+          <div><i class="fas fa-trash" style="color:var(--red);"></i> Websites to delete: <strong id="modalDeleteCount" style="color:var(--red);">0</strong></div>
+          <div><i class="fas fa-shield-alt" style="color:var(--green);"></i> Protected Premium / Paid websites: <strong id="modalProtectedCount" style="color:var(--green);">0</strong></div>
+        </div>
+
+        <div id="modalProtectedWarning" style="display:none; background:rgba(255,159,67,0.1); border:1px solid rgba(255,159,67,0.3); padding:12px; border-radius:8px; color:var(--gold); font-size:0.8rem; margin-bottom:16px;">
+          <i class="fas fa-info-circle"></i> Note: Premium / Paid websites are shielded from bulk deletion because "Protect Premium Sites" is enabled.
+        </div>
+
+        <div style="display:flex; flex-direction:row; gap:12px; justify-content:flex-end; margin-top:20px;">
+          <button id="cancelBulkDeleteBtn" class="refresh-btn" style="background:rgba(255,255,255,0.05); color:var(--text); border-color:var(--border);">Cancel</button>
+          <button id="confirmBulkDeleteBtn" class="action-btn danger" style="padding:10px 20px; font-size:0.9rem; font-weight:700;"><i class="fas fa-trash-alt"></i> Confirm Permanent Delete</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="assets/admin.js"></script>
-    <!-- Content Protection Script -->
-    <script src="assets/content-protection.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@
       return window.APP_CONFIG.API_BASE_URL;
     }
     // Always point to the Render backend for analytics
-    return 'https://wishing-portal.onrender.com';
+    return 'https://wishing-portal-05as.onrender.com';
   })();
 
   // ── Utilities ──

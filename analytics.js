@@ -150,50 +150,68 @@ function extractSearchKeywords(referer) {
   }
 }
 
-function categorizeTrafficSource(referer, utmParams) {
+function categorizeTrafficSource(referer, utmParams, ownHost = '', pageUrl = '') {
   // Check UTM parameters first (highest priority)
   if (utmParams && utmParams.utmMedium) {
     const medium = utmParams.utmMedium.toLowerCase();
     if (medium === 'cpc' || medium === 'ppc') return 'Paid Search';
     if (medium === 'email' || medium === 'mail') return 'Email';
     if (medium === 'social') return 'Social Media';
-    if (medium === 'referral') return 'Referral';
-    if (medium === 'organic') return 'Organic Search';
+    if (medium === 'referral') return 'External Referral';
+    if (medium === 'organic') return 'Google Search';
   }
 
-  // No referrer = Direct traffic
-  if (!referer || referer === 'Direct') return 'Direct';
+  // No referrer = Direct entry in browser address bar or bookmark
+  if (!referer || referer === 'Direct') {
+    if (pageUrl && (pageUrl.includes('/generated/') || pageUrl.includes('share.html') || pageUrl.includes('preview.html'))) {
+      return 'Shared Generated Website';
+    }
+    return 'Direct / Typed URL';
+  }
 
   try {
-    const hostname = new URL(referer).hostname.toLowerCase();
+    const urlObj = new URL(referer);
+    const hostname = urlObj.hostname.toLowerCase();
+    const pathname = urlObj.pathname.toLowerCase();
 
-    // Social media platforms
-    const socialPlatforms = [
-      'facebook', 'fb', 'twitter', 'x.com', 'instagram', 'linkedin',
-      'tiktok', 'pinterest', 'reddit', 'snapchat', 'whatsapp', 'telegram',
-      'youtube', 'vimeo', 'twitch', 'discord'
-    ];
+    // ── Search Engines ───────────────────────────────────────────────────────
+    if (hostname.includes('google.')) return 'Google Search';
+    if (hostname.includes('bing.com')) return 'Bing Search';
+    if (hostname.includes('yahoo.')) return 'Yahoo Search';
+    if (hostname.includes('duckduckgo.')) return 'DuckDuckGo Search';
+    if (['baidu', 'yandex', 'ask', 'aol', 'ecosia', 'brave', 'startpage'].some(se => hostname.includes(se))) {
+      return 'Other Search Engine';
+    }
 
-    if (socialPlatforms.some(platform => hostname.includes(platform))) {
+    // ── Social Media & Messaging Platforms ──────────────────────────────────
+    if (hostname.includes('whatsapp') || hostname.includes('wa.me')) return 'WhatsApp Share';
+    if (hostname.includes('instagram') || hostname.includes('instagr.am')) return 'Instagram';
+    if (hostname.includes('facebook') || hostname.includes('fb.me') || hostname.includes('fb.com')) return 'Facebook';
+    if (hostname.includes('twitter') || hostname.includes('x.com') || hostname.includes('t.co')) return 'Twitter (X)';
+    if (hostname.includes('telegram') || hostname.includes('t.me')) return 'Telegram';
+    if (['linkedin', 'tiktok', 'pinterest', 'reddit', 'snapchat', 'youtube', 'threads'].some(s => hostname.includes(s))) {
       return 'Social Media';
     }
 
-    // Search engines
-    const searchEngines = ['google', 'bing', 'duckduckgo', 'yahoo', 'baidu', 'yandex', 'ask', 'aol'];
-    if (searchEngines.some(se => hostname.includes(se))) {
-      return 'Organic Search';
+    // ── Own Site / Internal / Generated Surprise Link ─────────────────────────
+    const knownOwnDomains = ['thegreeter.in', 'www.thegreeter.in', 'localhost'];
+    if (ownHost) knownOwnDomains.push(ownHost.replace(/:\d+$/, '').toLowerCase());
+    if (knownOwnDomains.some(d => hostname === d || hostname.endsWith('.' + d))) {
+      if (pathname.includes('/generated/') || pathname.includes('share.html') || pathname.includes('preview.html')) {
+        return 'Shared Generated Website';
+      }
+      return 'Direct / Typed URL';
     }
 
-    // Email clients
-    const emailClients = ['mail', 'outlook', 'gmail', 'yahoo', 'hotmail', 'protonmail'];
-    if (emailClients.some(client => hostname.includes(client))) {
+    // ── Email Clients ────────────────────────────────────────────────────────
+    if (['mail.google', 'outlook', 'mail.yahoo', 'hotmail', 'protonmail', 'webmail'].some(c => hostname.includes(c))) {
       return 'Email';
     }
 
-    // Everything else is a referral
-    return 'Referral';
+    // Everything else is an External Referral
+    return 'External Referral';
   } catch (e) {
-    return 'Direct';
+    return 'Direct / Typed URL';
   }
 }
 
@@ -223,8 +241,9 @@ class AnalyticsStore {
       // Parse UTM parameters from referer URL
       const utmParams = parseUTMParameters(rawReferer);
 
-      // Categorize traffic source
-      const trafficSource = categorizeTrafficSource(rawReferer, utmParams);
+      // Categorize traffic source (pass own host for internal-nav detection)
+      const ownHost = req.headers.host || '';
+      const trafficSource = categorizeTrafficSource(rawReferer, utmParams, ownHost);
 
       // Extract search engine and keywords
       const searchEngine = extractSearchEngine(rawReferer);
@@ -401,15 +420,26 @@ class AnalyticsStore {
 
       // Websites List - respect time period filter
       const websitesListFilter = days === -1 ? {} : { createdAt: timeFilter };
-      const websites = await Website.find(websitesListFilter)
+      const rawWebsites = await Website.find(websitesListFilter)
         .sort({ createdAt: -1 })
-        .limit(500);
+        .limit(500)
+        .lean();
+
+      const { CustomSlug, Payment } = require('./models');
+      const paidWebsiteIds = new Set(await Payment.distinct('websiteId', { status: 'PAID' }));
+      const slugWebsiteIds = new Set(await CustomSlug.distinct('websiteId'));
+
+      const websites = rawWebsites.map(w => ({
+        ...w,
+        isPremium: paidWebsiteIds.has(w.id) || slugWebsiteIds.has(w.id)
+      }));
 
       // Top Websites - respect time period filter
       const topWebsitesFilter = days === -1 ? {} : { createdAt: timeFilter };
       const topWebsites = await Website.find(topWebsitesFilter)
         .sort({ views: -1 })
-        .limit(20);
+        .limit(20)
+        .lean();
 
       // Daily Stats for charts - handle All Time case
       const dailyStatsFilter = days === -1 ? {} : { timestamp: timeFilter };
@@ -531,6 +561,14 @@ class AnalyticsStore {
       const geoDistribution = await Event.aggregate([
         { $match: pageviewFilter },
         { $group: { _id: '$geo.country', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 }
+      ]);
+
+      const geoUniqueVisitorsAgg = await Event.aggregate([
+        { $match: pageviewFilter },
+        { $group: { _id: { country: '$geo.country', visitorId: '$visitorId' } } },
+        { $group: { _id: '$_id.country', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 20 }
       ]);
@@ -809,6 +847,7 @@ class AnalyticsStore {
           refererDistribution: refererDistribution.reduce((acc, item) => { acc[item._id || 'Direct'] = item.count; return acc; }, {}),
           exitPages: exitPages.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
           geoDistribution: geoDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          geoUniqueVisitors: geoUniqueVisitorsAgg.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
           featureStats: featureStats,
           featureTrend: featureTrend,
           featureByDevice: featureByDevice,
@@ -831,11 +870,8 @@ class AnalyticsStore {
     try {
       console.log('[Analytics] Starting historical traffic data migration...');
 
-      // Find all pageview events that don't have trafficSource
-      const eventsToMigrate = await Event.find({
-        type: 'pageview',
-        'details.trafficSource': { $exists: false }
-      });
+      // Find all pageview events to migrate
+      const eventsToMigrate = await Event.find({ type: 'pageview' });
 
       console.log(`[Analytics] Found ${eventsToMigrate.length} events to migrate`);
 
@@ -844,10 +880,11 @@ class AnalyticsStore {
 
       for (const event of eventsToMigrate) {
         try {
-          const rawReferer = event.details.referer || 'Direct';
+          const rawReferer = (event.details && event.details.referer) ? event.details.referer : 'Direct';
           const utmParams = parseUTMParameters(rawReferer);
-          const trafficSource = categorizeTrafficSource(rawReferer, utmParams);
-          const searchEngine = extractSearchEngine(rawReferer);
+          const pageUrl = event.page || (event.details && event.details.url) || '';
+          const trafficSource = categorizeTrafficSource(rawReferer, utmParams, '', pageUrl);
+          const searchEngine = extractSearchEngine(rawReferer) || (trafficSource.includes('Search') ? trafficSource : null);
           const searchKeywords = extractSearchKeywords(rawReferer);
 
           await Event.updateOne(
@@ -912,8 +949,8 @@ class AnalyticsStore {
 
       // Search engine distribution
       const searchEngineDistribution = await Event.aggregate([
-        { $match: { ...pageviewFilter, 'details.trafficSource': 'Organic Search' } },
-        { $group: { _id: '$details.searchEngine', count: { $sum: 1 } } },
+        { $match: { ...pageviewFilter, 'details.trafficSource': { $regex: /Search/i } } },
+        { $group: { _id: '$details.trafficSource', count: { $sum: 1 } } },
         { $sort: { count: -1 } }
       ]);
 
@@ -925,10 +962,15 @@ class AnalyticsStore {
         { $limit: 50 }
       ]);
 
-      // Social media platforms
+      // Social media & messaging platforms
       const socialPlatforms = await Event.aggregate([
-        { $match: { ...pageviewFilter, 'details.trafficSource': 'Social Media' } },
-        { $group: { _id: { $substr: ['$details.referer', 0, 100] }, count: { $sum: 1 } } },
+        {
+          $match: {
+            ...pageviewFilter,
+            'details.trafficSource': { $in: ['WhatsApp Share', 'Instagram', 'Facebook', 'Twitter (X)', 'Telegram', 'Social Media'] }
+          }
+        },
+        { $group: { _id: '$details.trafficSource', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 20 }
       ]);
@@ -952,7 +994,7 @@ class AnalyticsStore {
 
       // Top referring domains
       const topReferrers = await Event.aggregate([
-        { $match: { ...pageviewFilter, 'details.trafficSource': 'Referral' } },
+        { $match: { ...pageviewFilter, 'details.trafficSource': { $in: ['External Referral', 'Referral'] } } },
         { $group: { _id: '$details.referer', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 30 }
@@ -975,12 +1017,13 @@ class AnalyticsStore {
 
       // KPI calculations
       const totalSessions = await Event.countDocuments(pageviewFilter);
-      const organicSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Organic Search' });
-      const directTraffic = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Direct' });
-      const socialMedia = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Social Media' });
-      const referral = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Referral' });
-      const email = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Email' });
-      const paidSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Paid Search' });
+      const googleSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Google Search' });
+      const bingSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Bing Search' });
+      const otherSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': { $in: ['Other Search Engine', 'DuckDuckGo Search', 'Yahoo Search'] } });
+      const directTraffic = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': { $in: ['Direct / Typed URL', 'Direct'] } });
+      const sharedWebsites = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Shared Generated Website' });
+      const socialMedia = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': { $in: ['WhatsApp Share', 'Instagram', 'Facebook', 'Twitter (X)', 'Telegram', 'Social Media'] } });
+      const referral = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': { $in: ['External Referral', 'Referral'] } });
 
       // Recent traffic sessions with full details
       const recentTraffic = await Event.find(pageviewFilter)
@@ -991,18 +1034,20 @@ class AnalyticsStore {
         period: days,
         kpi: {
           totalSessions,
-          organicSearch,
+          googleSearch,
+          bingSearch,
+          otherSearch,
+          organicSearch: googleSearch + bingSearch + otherSearch,
           directTraffic,
+          sharedWebsites,
           socialMedia,
-          referral,
-          email,
-          paidSearch
+          referral
         },
         charts: {
-          trafficSourceDistribution: trafficSourceDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          searchEngineDistribution: searchEngineDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          trafficSourceDistribution: trafficSourceDistribution.reduce((acc, item) => { acc[item._id || 'Direct / Typed URL'] = item.count; return acc; }, {}),
+          searchEngineDistribution: searchEngineDistribution.reduce((acc, item) => { acc[item._id || 'Google Search'] = item.count; return acc; }, {}),
           topKeywords: topKeywords.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          socialPlatforms: socialPlatforms.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
+          socialPlatforms: socialPlatforms.reduce((acc, item) => { acc[item._id || 'Social'] = item.count; return acc; }, {}),
           utmCampaigns: utmCampaigns.map(item => ({
             campaign: item._id.campaign,
             source: item._id.source,
@@ -1024,6 +1069,137 @@ class AnalyticsStore {
   trackFeatureUsage(req, data) { return this.trackEvent(req, { type: 'feature', details: data }); }
   trackExit(req, data) { return this.trackEvent(req, { type: 'exit', details: data }); }
   trackSession(req, data) { return this.trackEvent(req, { type: 'session', details: data }); }
+
+  // ── Delete Single Website & All Related Resources ──
+  async deleteWebsite(websiteId, force = false, cloudinaryRef = null) {
+    try {
+      const { Website, Event, Feedback, CustomSlug, Payment } = require('./models');
+      const cloud = cloudinaryRef || require('cloudinary').v2;
+
+      // 1. Check if website is Premium / Paid
+      const paidPayment = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
+      const customSlug = await CustomSlug.findOne({ websiteId }).lean();
+      const isPremium = Boolean(paidPayment || customSlug);
+
+      if (isPremium && !force) {
+        return {
+          success: false,
+          isPremium: true,
+          message: `Website "${websiteId}" is a Premium / Paid website. Set force=true to override and delete.`
+        };
+      }
+
+      // 2. Delete Cloudinary Raw Config
+      let cloudinaryDeleted = false;
+      try {
+        const destroyRes = await cloud.uploader.destroy(`configs/${websiteId}`, { resource_type: 'raw' });
+        cloudinaryDeleted = destroyRes.result === 'ok' || destroyRes.result === 'not found';
+      } catch (cErr) {
+        console.warn(`[Analytics] Cloudinary destroy warning for website ${websiteId}:`, cErr.message);
+      }
+
+      // 3. Delete MongoDB documents across collections
+      const websiteRes = await Website.deleteOne({ id: websiteId });
+      const eventsRes = await Event.deleteMany({ websiteId });
+      const feedbackRes = await Feedback.deleteMany({ websiteId });
+      const customSlugRes = await CustomSlug.deleteMany({ websiteId });
+      const paymentRes = await Payment.deleteMany({ websiteId });
+
+      console.log(`[Analytics] Deleted website ${websiteId}: website=${websiteRes.deletedCount}, events=${eventsRes.deletedCount}, feedback=${feedbackRes.deletedCount}, slugs=${customSlugRes.deletedCount}, payments=${paymentRes.deletedCount}`);
+
+      return {
+        success: true,
+        websiteId,
+        isPremium,
+        cloudinaryDeleted,
+        deleted: {
+          website: websiteRes.deletedCount,
+          events: eventsRes.deletedCount,
+          feedback: feedbackRes.deletedCount,
+          customSlugs: customSlugRes.deletedCount,
+          payments: paymentRes.deletedCount
+        }
+      };
+    } catch (err) {
+      console.error(`[Analytics] Error deleting website ${websiteId}:`, err);
+      throw err;
+    }
+  }
+
+  // ── Bulk Delete Websites (With Age Filtering & Premium Protection) ──
+  async bulkDeleteWebsites({ websiteIds = null, olderThanDays = null, protectPremium = true } = {}, cloudinaryRef = null) {
+    try {
+      const { Website, CustomSlug, Payment } = require('./models');
+
+      // 1. Determine candidate website IDs
+      let candidateIds = new Set();
+
+      if (Array.isArray(websiteIds) && websiteIds.length > 0) {
+        websiteIds.forEach(id => {
+          if (id && typeof id === 'string') candidateIds.add(id.trim());
+        });
+      }
+
+      if (olderThanDays !== null && olderThanDays !== undefined && !isNaN(olderThanDays)) {
+        const daysNum = parseInt(olderThanDays);
+        if (daysNum >= 0) {
+          const cutoffDate = new Date();
+          cutoffDate.setDate(cutoffDate.getDate() - daysNum);
+
+          const oldSites = await Website.find({ createdAt: { $lt: cutoffDate } }, { id: 1 }).lean();
+          oldSites.forEach(s => candidateIds.add(s.id));
+        }
+      }
+
+      const allCandidates = Array.from(candidateIds);
+      if (allCandidates.length === 0) {
+        return { success: true, deletedCount: 0, protectedCount: 0, message: 'No candidate websites matched the deletion criteria.' };
+      }
+
+      // 2. Identify Premium / Paid Websites
+      const paidWebsiteIds = new Set(await Payment.distinct('websiteId', { status: 'PAID' }));
+      const slugWebsiteIds = new Set(await CustomSlug.distinct('websiteId'));
+
+      const toDelete = [];
+      const protectedList = [];
+
+      for (const id of allCandidates) {
+        const isPremium = paidWebsiteIds.has(id) || slugWebsiteIds.has(id);
+        if (isPremium && protectPremium) {
+          protectedList.push(id);
+        } else {
+          toDelete.push({ id, force: isPremium });
+        }
+      }
+
+      // 3. Execute Deletion
+      let totalDeletedCount = 0;
+      const deletedDetails = [];
+
+      for (const item of toDelete) {
+        try {
+          const res = await this.deleteWebsite(item.id, item.force, cloudinaryRef);
+          if (res.success) {
+            totalDeletedCount++;
+            deletedDetails.push(res);
+          }
+        } catch (err) {
+          console.error(`[Analytics] Failed to delete website ${item.id} during bulk operation:`, err.message);
+        }
+      }
+
+      return {
+        success: true,
+        deletedCount: totalDeletedCount,
+        protectedCount: protectedList.length,
+        protectedIds: protectedList,
+        details: deletedDetails
+      };
+    } catch (err) {
+      console.error('[Analytics] Error in bulk website deletion:', err);
+      throw err;
+    }
+  }
 }
 
 module.exports = new AnalyticsStore();
