@@ -3112,7 +3112,7 @@
           alert(currentLang === 'hi' ? 'कृपया पहले अपना लिंक बनाएं।' : 'Please generate your link first.');
           return;
         }
-        // Track "Personalise Your URL" button click using sendBeacon and fetch fallback with keepalive
+
         const payloadObj = {
           type: 'personalise_url_click',
           websiteId: viewId,
@@ -3126,22 +3126,34 @@
           ? window.APP_CONFIG.API_BASE_URL
           : 'https://wishing-portal-05as.onrender.com';
 
+        let navigated = false;
+        const navigateToCustomUrl = () => {
+          if (!navigated) {
+            navigated = true;
+            window.location.href = `/generated/custom-url.html?view=${encodeURIComponent(viewId)}`;
+          }
+        };
+
         try {
-          if (navigator.sendBeacon) {
-            navigator.sendBeacon(API_BASE + '/api/analytics/event', new Blob([payload], { type: 'application/json' }));
-          } else if (window.fetch) {
+          if (window.fetch) {
             fetch(API_BASE + '/api/analytics/event', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: payload,
               keepalive: true
-            }).catch(() => {});
+            }).then(navigateToCustomUrl).catch(navigateToCustomUrl);
+            // Fallback timeout to guarantee navigation within 200ms
+            setTimeout(navigateToCustomUrl, 200);
+          } else if (navigator.sendBeacon) {
+            navigator.sendBeacon(API_BASE + '/api/analytics/event', new Blob([payload], { type: 'text/plain' }));
+            setTimeout(navigateToCustomUrl, 150);
+          } else {
+            navigateToCustomUrl();
           }
         } catch (e) {
-          console.warn('Analytics event tracking error:', e);
+          console.warn('Analytics tracking error:', e);
+          navigateToCustomUrl();
         }
-
-        window.location.href = `/generated/custom-url.html?view=${encodeURIComponent(viewId)}`;
       }
 
       function closeCustomUrlModalFn() {

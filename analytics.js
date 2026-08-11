@@ -288,15 +288,23 @@ class AnalyticsStore {
   // ── Track Event ──
   async trackEvent(req, eventData) {
     try {
+      if (typeof eventData === 'string') {
+        try { eventData = JSON.parse(eventData); } catch (e) {}
+      }
+      if (!eventData || typeof eventData !== 'object') {
+        eventData = {};
+      }
+
       const ip = getClientIP(req);
       const geo = getGeoFromIP(ip);
       const visitorId = _hashIP(ip);
+      const websiteId = eventData.websiteId || eventData.details?.websiteId || null;
 
       const event = await Event.create({
         visitorId,
         type: eventData.type || 'event',
         page: eventData.page,
-        websiteId: eventData.websiteId,
+        websiteId: websiteId,
         details: eventData.details || {},
         geo
       });

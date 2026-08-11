@@ -1967,6 +1967,24 @@
           return;
         }
 
+        // Track Personalise URL Click Event
+        try {
+          const payload = JSON.stringify({
+            type: 'personalise_url_click',
+            websiteId: websiteId,
+            details: { action: 'opened_personalise_url_page', websiteId: websiteId },
+            visitorId: localStorage.getItem('_gt_vid') || 'cv_unknown',
+            sessionId: sessionStorage.getItem('_gt_sid') || 'cs_unknown',
+            url: window.location.href
+          });
+          fetch(`${API_BASE}/api/analytics/event`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload,
+            keepalive: true
+          }).catch(() => {});
+        } catch (e) {}
+
         // Verify that this website exists before customization
         try {
           const res = await fetch(`${API_BASE}/api/config/${websiteId}`);

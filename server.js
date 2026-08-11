@@ -1545,12 +1545,19 @@ app.post('/api/analytics/session', analyticsLimiter, async (req, res) => {
   } catch (e) { res.status(204).end(); }
 });
 
-app.post('/api/analytics/event', analyticsLimiter, async (req, res) => {
+app.post('/api/analytics/event', analyticsLimiter, express.text({ type: '*/*' }), async (req, res) => {
   try {
     await ensureMongoConnected();
-    await analytics.trackEvent(req, req.body);
+    let bodyData = req.body;
+    if (typeof bodyData === 'string') {
+      try { bodyData = JSON.parse(bodyData); } catch (e) {}
+    }
+    await analytics.trackEvent(req, bodyData || {});
     res.status(204).end();
-  } catch (e) { res.status(204).end(); }
+  } catch (e) {
+    console.warn('[Analytics API] Error tracking event:', e);
+    res.status(204).end();
+  }
 });
 
 app.post('/api/analytics/feature', analyticsLimiter, async (req, res) => {
