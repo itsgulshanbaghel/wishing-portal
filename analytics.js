@@ -327,7 +327,8 @@ class AnalyticsStore {
         eventType: websiteData.eventType,
         templateName: websiteData.templateName,
         creatorGeo: geo,
-        metadata: websiteData.metadata || {}
+        metadata: websiteData.metadata || {},
+        isPremium: !!websiteData.isPremium
       });
 
       // Track the creation as an event

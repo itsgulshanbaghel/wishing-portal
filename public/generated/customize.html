@@ -2494,7 +2494,7 @@
             <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
               ${listItems}
             </ul>
-            <p style="margin-top: 10px;">To generate and share this magical greeting, please upgrade to premium (starting at only ₹29 / $0.99).</p>
+            <p style="margin-top: 10px;">To generate and share this magical greeting, please upgrade to premium.</p>
           `;
           payBtnEl.textContent = 'Upgrade to Premium';
           if (cancelBtnEl) cancelBtnEl.textContent = 'Continue Free (Disable Premium Features)';
@@ -4488,8 +4488,9 @@
               };
               fileInput.onchange = async (e) => {
                 const files = Array.from(e.target.files);
-                const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                const isPremium = !!userDataObj.isPremium;
+                const urlParams = new URLSearchParams(window.location.search);
+                const viewId = urlParams.get('view') || urlParams.get('restore');
+                const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
 
                 // Create placeholders
                 files.forEach(() => {
@@ -4653,17 +4654,28 @@
                 deleteBtn.style.display = "none";
 
                 try {
-                  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                  const isPremium = !!userData.isPremium || localStorage.getItem('isPremium') === 'true';
+                  const urlParams = new URLSearchParams(window.location.search);
+                  const viewId = urlParams.get('view') || urlParams.get('restore');
+                  const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
+                                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                                    !!userDataObj.isPremium;
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
                   if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
                     throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल यूज़ करें।" : "Audio file exceeds 6MB. Please use a smaller file.");
                   }
 
-                  const secureUrl = await uploadAudioToCloudinary(processedFile, (pct) => {
-                    audioNameDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
-                  });
+                  // Only upload to Cloudinary for premium users
+                  let secureUrl;
+                  if (isPremium) {
+                    secureUrl = await uploadAudioToCloudinary(processedFile, (pct) => {
+                      audioNameDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
+                    });
+                  } else {
+                    // For free users, store as local blob URL
+                    secureUrl = URL.createObjectURL(processedFile);
+                  }
 
                   const ex = customData.get("magicMusic") || {};
                   ex.text = secureUrl;
@@ -4819,9 +4831,23 @@
                     recordContent.style.display = "none";
 
                     try {
-                      const secureUrl = await uploadAudioToCloudinary(file, (pct) => {
-                        timerEl.innerText = currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`;
-                      });
+                      const urlParams = new URLSearchParams(window.location.search);
+                      const viewId = urlParams.get('view') || urlParams.get('restore');
+                      const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+                      const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
+                                        localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                                        !!userDataObj.isPremium;
+
+                      // Only upload to Cloudinary for premium users
+                      let secureUrl;
+                      if (isPremium) {
+                        secureUrl = await uploadAudioToCloudinary(file, (pct) => {
+                          timerEl.innerText = currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`;
+                        });
+                      } else {
+                        // For free users, store as local blob URL
+                        secureUrl = URL.createObjectURL(file);
+                      }
 
                       const ex = customData.get("voiceNote") || {};
                       ex.text = secureUrl;
@@ -4872,17 +4898,28 @@
                 previewContainer.insertBefore(loadingDiv, previewAudio);
 
                 try {
-                  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                  const isPremium = !!userData.isPremium || localStorage.getItem('isPremium') === 'true';
+                  const urlParams = new URLSearchParams(window.location.search);
+                  const viewId = urlParams.get('view') || urlParams.get('restore');
+                  const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
+                                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                                    !!userDataObj.isPremium;
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
                   if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
                     throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल यूज़ करें।" : "Audio file exceeds 6MB. Please use a smaller file.");
                   }
 
-                  const secureUrl = await uploadAudioToCloudinary(processedFile, (pct) => {
-                    loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
-                  });
+                  // Only upload to Cloudinary for premium users
+                  let secureUrl;
+                  if (isPremium) {
+                    secureUrl = await uploadAudioToCloudinary(processedFile, (pct) => {
+                      loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
+                    });
+                  } else {
+                    // For free users, store as local blob URL
+                    secureUrl = URL.createObjectURL(processedFile);
+                  }
 
                   const ex = customData.get("voiceNote") || {};
                   ex.text = secureUrl;
@@ -5503,8 +5540,9 @@
       };
       function generateShareLink() {
         // --- Premium Gating check ---
-        const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-        const isPremium = !!userDataObj.isPremium || localStorage.getItem('isPremium') === 'true';
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewId = urlParams.get('view') || urlParams.get('restore');
+        const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
 
         if (!isPremium) {
           const premiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
@@ -6153,10 +6191,13 @@
           }
 
           // Save to server for cross-browser sharing
+          const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+          const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+          
           fetch((API_BASE || '') + '/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html, config })
+            body: JSON.stringify({ html, config, isPremium })
           })
             .then(r => {
               if (!r.ok) {
@@ -6172,6 +6213,26 @@
               if (data.id) {
                 // Save customization state before navigating
                 saveCustomizationState(data.id);
+                
+                // Store premium status per website ID
+                const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+                const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+                
+                if (isPremium) {
+                  localStorage.setItem(`premium_${data.id}`, 'true');
+                  // Update userData to reflect premium status
+                  userDataObj.isPremium = true;
+                  delete userDataObj.pendingPremiumPayment;
+                  localStorage.setItem('userData', JSON.stringify(userDataObj));
+                  // Clear the pending flag
+                  localStorage.removeItem('pendingPremiumForNextWebsite');
+                } else {
+                  // Clean up any pending payment flags if not premium
+                  delete userDataObj.pendingPremiumPayment;
+                  localStorage.setItem('userData', JSON.stringify(userDataObj));
+                  localStorage.removeItem('pendingPremiumForNextWebsite');
+                }
+                
                 const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
                 const ev = getEventData().event || '';
                 const isFest = /festival/i.test(template) || ev === 'festival';
@@ -6392,7 +6453,19 @@
 
         function applySharedView(storedHtml, storedConfig) {
           if (!storedHtml) {
-            document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; font-family:Inter,sans-serif;"><h1>❌ Invalid or expired link</h1><p style="margin-top:12px; color:#666;">The magic has faded. Please ask the sender for a new link.</p></div>';
+            document.body.innerHTML = '<div style="text-align:center; margin-top:15vh; font-family:Inter,sans-serif;"><h1 style="font-size:clamp(2rem,5vw,3rem); font-weight:700; margin-bottom:16px;">❌ Invalid or expired link</h1><p style="margin-top:12px; color:#666; font-size:clamp(1rem,2.5vw,1.15rem); max-width:560px; margin:0 auto 30px; line-height:1.7;">The magic has faded. Please ask the sender for a new link.</p><button id="createNowBtn" style="margin-top:20px; padding:16px 40px; background:linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); color:white; border:none; border-radius:50px; font-size:18px; font-weight:700; cursor:pointer; font-family:Inter,sans-serif; box-shadow:0 8px 25px rgba(123,93,246,0.4); transition:all 0.3s ease; text-transform:uppercase; letter-spacing:1px; position:relative; overflow:hidden;"><span style="position:relative; z-index:1;">✨ Create Now ✨</span></button><div class="support-section" style="padding: 40px 24px 20px; display: flex; justify-content: center;"><div class="support-card" style="background:rgba(255,255,255,0.75); backdrop-filter:blur(20px); border:1px solid rgba(0,0,0,0.05); border-radius:32px; padding:48px 40px; max-width:720px; width:100%; box-shadow:0 25px 40px -12px rgba(0,0,0,0.12); text-align:center; position:relative; overflow:hidden;"><div class="support-message" style="font-size:clamp(1rem,2.5vw,1.15rem); color:#4a3b66; line-height:1.7; max-width:560px; margin:0 auto 36px; position:relative; z-index:1;">If You Are Facing Any Issue On Our website Contact Us --</div><div class="support-buttons" style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; position:relative; z-index:1;"><a href="https://t.me/TheGreeter" target="_blank" style="display:inline-flex; align-items:center; gap:14px; padding:16px 28px; border-radius:20px; text-decoration:none; font-weight:600; transition:all 0.3s; border:1px solid transparent; min-width:220px; justify-content:center; background:rgba(0,136,204,0.1); border-color:rgba(0,136,204,0.25); color:#0088cc;"><span style="width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; color:white; background:#0088cc; flex-shrink:0;"><i class="fab fa-telegram-plane"></i></span><span style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;"><span style="font-size:0.85rem; font-weight:500; opacity:0.9;">Telegram</span><span style="font-size:1rem; font-weight:700; letter-spacing:-0.02em;">@TheGreeter</span></span></a><a href="https://instagram.com/thegreeter.in" target="_blank" style="display:inline-flex; align-items:center; gap:14px; padding:16px 28px; border-radius:20px; text-decoration:none; font-weight:600; transition:all 0.3s; border:1px solid transparent; min-width:220px; justify-content:center; background:rgba(225,48,108,0.1); border-color:rgba(225,48,108,0.25); color:#e1306c;"><span style="width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; color:white; background:radial-gradient(circle at 30% 110%, #ffdb70, #e4405f, #833ab4); flex-shrink:0;"><i class="fab fa-instagram"></i></span><span style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;"><span style="font-size:0.85rem; font-weight:500; opacity:0.9;">Instagram</span><span style="font-size:1rem; font-weight:700; letter-spacing:-0.02em;">@thegreeter.in</span></span></a><a href="mailto:greeterindia@gmail.com" target="_blank" style="display:inline-flex; align-items:center; gap:14px; padding:16px 28px; border-radius:20px; text-decoration:none; font-weight:600; transition:all 0.3s; border:1px solid transparent; min-width:220px; justify-content:center; background:rgba(123,93,246,0.1); border-color:rgba(123,93,246,0.25); color:#7b5df6;"><span style="width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; color:white; background:#7b5df6; flex-shrink:0;"><i class="fas fa-envelope"></i></span><span style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;"><span style="font-size:0.85rem; font-weight:500; opacity:0.9;">Email</span><span style="font-size:1rem; font-weight:700; letter-spacing:-0.02em;">greeterindia@gmail.com</span></span></a></div></div></div>';
+            const createNowBtn = document.getElementById('createNowBtn');
+            createNowBtn.addEventListener('click', () => {
+              window.location.href = '/';
+            });
+            createNowBtn.addEventListener('mouseenter', () => {
+              createNowBtn.style.transform = 'translateY(-3px) scale(1.05)';
+              createNowBtn.style.boxShadow = '0 12px 35px rgba(123,93,246,0.6)';
+            });
+            createNowBtn.addEventListener('mouseleave', () => {
+              createNowBtn.style.transform = 'translateY(0) scale(1)';
+              createNowBtn.style.boxShadow = '0 8px 25px rgba(123,93,246,0.4)';
+            });
             return;
           }
 

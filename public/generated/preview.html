@@ -1856,6 +1856,12 @@
         }
         localStorage.setItem("selectedTemplate", selectedTemplate);
         localStorage.setItem("userData", JSON.stringify(userData));
+        
+        // If user has pending premium payment, set a flag to be used when website is saved
+        if (userData.pendingPremiumPayment) {
+          localStorage.setItem('pendingPremiumForNextWebsite', 'true');
+        }
+        
         window.location.href = "customize.html";
       }
 

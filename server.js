@@ -251,7 +251,7 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 // Save shared config + HTML
 app.post('/api/config', async (req, res) => {
   try {
-    const { html, config } = req.body;
+    const { html, config, isPremium } = req.body;
     if (!html) return res.status(400).json({ error: 'HTML is required' });
     const id = Math.random().toString(36).substring(2, 12);
 
@@ -261,7 +261,8 @@ app.post('/api/config', async (req, res) => {
       eventType: config?.eventType || config?.category || 'unknown',
       templateName: config?.templateName || config?.template || 'unknown',
       recipientName: config?.recipientName || config?.name || config?.userName || 'Unknown',
-      features: config?.activeFeatures?.map(f => f[0]) || []
+      features: config?.activeFeatures?.map(f => f[0]) || [],
+      isPremium: !!isPremium
     };
 
     const data = JSON.stringify({ html, config, metadata });

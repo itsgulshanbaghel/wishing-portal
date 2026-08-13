@@ -1694,7 +1694,7 @@
 
               <ul class="feat-list" style="margin-top:20px;">
                 <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> Personalized wish page</li>
-                <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> Share on WhatsApp &amp; Social</li>
+                <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> Share on WhatsApp &amp; Social Media</li>
                 <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> QR code download</li>
                 <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> Personalised URL + QR Code</li>
                 <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> 100% Ad-Free</li>
@@ -3227,15 +3227,22 @@
         const btn = document.getElementById('finalPayBtn');
         const originalText = btn.innerHTML;
 
+        // Use defaults if email/phone not provided (same as custom-url.html)
+        const finalEmail = email || 'guest@thegreeter.in';
+        const finalPhone = phone || '9999999999';
+
+        // Store user data WITHOUT isPremium flag initially
+        // Premium status will be set after successful payment confirmation
         localStorage.setItem('userData', JSON.stringify(
           collectFormData({
-            isPremium: true,
+            isPremium: false,
+            pendingPremiumPayment: true,
             selectedPlan: activePlan.plan,
             planPrice: activePlan.price,
             validityDays: activePlan.days,
             planLabel: activePlan.label,
-            userEmail: email,
-            userPhone: phone
+            userEmail: finalEmail,
+            userPhone: finalPhone
           })
         ));
 
@@ -3251,8 +3258,8 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               plan: activePlan.plan,
-              email: email,
-              phone: phone
+              email: finalEmail,
+              phone: finalPhone
             })
           });
 
@@ -3266,6 +3273,11 @@
           }
 
           if (isLocalhost) {
+            // For localhost testing, set premium status directly
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            userData.isPremium = true;
+            delete userData.pendingPremiumPayment;
+            localStorage.setItem('userData', JSON.stringify(userData));
             window.location.href = 'generated/preview.html';
             return;
           }
@@ -3274,6 +3286,11 @@
 
         } catch (error) {
           console.error("Payment error:", error);
+          // Clean up pending payment flag on error
+          const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+          delete userData.pendingPremiumPayment;
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
           if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             window.location.href = 'generated/preview.html';
           } else {
@@ -3349,6 +3366,15 @@
       const urlParams = new URLSearchParams(window.location.search);
       const urlEvent = urlParams.get('event');
       const urlFestivalName = urlParams.get('festivalName');
+      const action = urlParams.get('action');
+      const orderIdParam = urlParams.get('orderId');
+      
+      // Check if we are landing from a successful payment redirection
+      if (action === 'payment-success' && orderIdParam) {
+        showPaymentVerificationLoading();
+        pollPaymentStatus(orderIdParam);
+      }
+      
       if (urlEvent === 'festival') {
         eventSelect.value = 'festival';
         festivalContainer.style.display = 'block';
@@ -3366,6 +3392,102 @@
         setTimeout(() => {
           document.getElementById('planSwitcher')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 150);
+      }
+      
+      // Payment status polling function
+      let pollCount = 0;
+      let currentOrderId = '';
+      
+      function showPaymentVerificationLoading() {
+        // Create loading overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'paymentVerificationOverlay';
+        overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; font-family:Inter,sans-serif;';
+        overlay.innerHTML = `
+          <div style="width:60px; height:60px; border:4px solid #f3f3f3; border-top:4px solid #7b5df6; border-radius:50%; animation:spin 1s linear infinite;"></div>
+          <p style="margin-top:20px; font-size:18px; font-weight:600; color:#333;">Verifying Payment...</p>
+          <p style="margin-top:8px; font-size:14px; color:#666;">Please wait while we confirm your payment</p>
+          <style>
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          </style>
+        `;
+        document.body.appendChild(overlay);
+        document.body.style.overflow = 'hidden';
+      }
+      
+      function hidePaymentVerificationLoading() {
+        const overlay = document.getElementById('paymentVerificationOverlay');
+        if (overlay) {
+          overlay.remove();
+          document.body.style.overflow = '';
+        }
+      }
+      
+      async function pollPaymentStatus(orderId) {
+        currentOrderId = orderId;
+        try {
+          const res = await fetch('/api/payment/status/' + orderId);
+          const data = await res.json();
+          
+          if (data.status === 'success' || data.status === 'completed') {
+            // Payment successful - set premium status
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            userData.isPremium = true;
+            delete userData.pendingPremiumPayment;
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Update loading message
+            const overlay = document.getElementById('paymentVerificationOverlay');
+            if (overlay) {
+              overlay.innerHTML = `
+                <div style="width:60px; height:60px; background:#10b981; border-radius:50%; display:flex; align-items:center; justify-content:center; animation:scaleIn 0.5s ease;">
+                  <i class="fas fa-check" style="color:white; font-size:30px;"></i>
+                </div>
+                <p style="margin-top:20px; font-size:18px; font-weight:600; color:#10b981;">Payment Successful!</p>
+                <p style="margin-top:8px; font-size:14px; color:#666;">Redirecting to your premium experience...</p>
+                <style>
+                  @keyframes scaleIn {
+                    0% { transform: scale(0); }
+                    50% { transform: scale(1.2); }
+                    100% { transform: scale(1); }
+                  }
+                </style>
+              `;
+            }
+            
+            // Redirect after short delay
+            setTimeout(() => {
+              hidePaymentVerificationLoading();
+              window.location.href = 'generated/preview.html';
+            }, 1500);
+          } else {
+            pollCount++;
+            if (pollCount < 30) {
+              // Update loading message with progress
+              const overlay = document.getElementById('paymentVerificationOverlay');
+              if (overlay) {
+                const messages = [
+                  'Verifying Payment...',
+                  'Confirming transaction...',
+                  'Almost there...',
+                  'Finalizing...'
+                ];
+                const msgIndex = Math.min(Math.floor(pollCount / 8), messages.length - 1);
+                overlay.querySelector('p').textContent = messages[msgIndex];
+              }
+              setTimeout(() => pollPaymentStatus(orderId), 2000);
+            } else {
+              hidePaymentVerificationLoading();
+              alert('Payment verification took too long. Please refresh or contact support.');
+            }
+          }
+        } catch (e) {
+          console.error('Payment status check error:', e);
+          setTimeout(() => pollPaymentStatus(orderId), 3000);
+        }
       }
     })();
   </script>

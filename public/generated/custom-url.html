@@ -1860,6 +1860,9 @@
        init();
 
       async function init() {
+        // Check if this specific website is premium (per-website premium status only)
+        const isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true';
+        
         // Theme & Mode toggle (keep consistent with user state)
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
@@ -2007,6 +2010,26 @@
         // Detect user's location and set pricing
         await detectUserLocation();
 
+        // If user is premium, hide payment section and update UI
+        if (isPremiumUser) {
+          const checkoutCard = document.querySelector('.checkout-details-card');
+          const geoPriceDisplay = document.querySelector('.geo-price-display');
+          const optionalContactSection = document.getElementById('optionalContactSection');
+          const checkoutTitle = document.querySelector('.checkout-title');
+          const checkoutNote = document.getElementById('checkoutNote');
+          
+          // Hide pricing and optional contact fields, but keep the card and button visible
+          if (geoPriceDisplay) geoPriceDisplay.style.display = 'none';
+          if (optionalContactSection) optionalContactSection.style.display = 'none';
+          if (checkoutTitle) checkoutTitle.style.display = 'none';
+          if (checkoutNote) checkoutNote.style.display = 'none';
+          
+          // Update pay button to show "Claim Custom URL" for free
+          payBtnText.textContent = 'Claim Custom URL (Free)';
+          payBtn.classList.add('active');
+          payBtn.disabled = false;
+        }
+
         // Display interface
         loadingScreen.style.display = 'none';
         mainInterface.style.display = 'grid';
@@ -2034,8 +2057,10 @@
 
         // Download QR button
         downloadQrBtn.addEventListener('click', () => {
-          // Check if payment has been made by checking if success screen is visible
-          if (successScreen.style.display !== 'block') {
+          // Check if this specific website is premium or payment has been made
+          const isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true';
+          
+          if (!isPremiumUser && successScreen.style.display !== 'block') {
             alert('Please complete your payment first to download the QR code with your personalized URL.');
             return;
           }
@@ -2263,9 +2288,17 @@
           return;
         }
 
+        // Check if this specific website is premium (per-website premium status only)
+        const isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true';
+
         payBtn.disabled = false;
         payBtn.classList.add('active');
-        payBtnText.textContent = `Claim URL & Pay ${symbol}${selectedAmount}`;
+        
+        if (isPremiumUser) {
+          payBtnText.textContent = 'Claim Custom URL (Free)';
+        } else {
+          payBtnText.textContent = `Claim URL & Pay ${symbol}${selectedAmount}`;
+        }
       }
 
       // Generate Live QR Code Preview
@@ -2404,6 +2437,73 @@
       async function handlePaymentInitiation() {
         if (!isSlugAvailable || !websiteId) return;
 
+        // Check if this specific website is premium (per-website premium status only)
+        const isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true';
+
+        // If premium user, claim custom URL for free without payment
+        if (isPremiumUser) {
+          payBtn.disabled = true;
+          payBtnSpinner.style.display = 'inline-block';
+          payBtnText.textContent = 'Claiming Your Custom URL...';
+
+          const payload = {
+            websiteId: websiteId,
+            slug: slugInput.value,
+            amount: 0,
+            currency: selectedCurrency,
+            isPremium: true,
+            qrCenterType: qrType
+          };
+
+          if (qrType === 'text') {
+            payload.qrCenterText = qrText;
+          } else if (qrType === 'photo' && qrPhotoBase64) {
+            payload.qrCenterPhotoBase64 = qrPhotoBase64;
+          }
+
+          try {
+            const res = await fetch(`${API_BASE}/api/payment/create-order`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+              const errorText = await res.text();
+              console.error('API Error:', res.status, errorText);
+              alert(`Server error (${res.status}): Failed to claim custom URL. Please try again.`);
+              payBtn.disabled = false;
+              payBtnSpinner.style.display = 'none';
+              return;
+            }
+
+            const data = await res.json();
+            if (data.success) {
+              // Show success screen directly for premium users
+              const paymentData = {
+                slug: slugInput.value,
+                qrCenterType: qrType,
+                qrCenterText: qrText,
+                qrCenterPhotoUrl: qrPhotoBase64
+              };
+              showSuccess(paymentData);
+            } else {
+              alert('Failed to claim custom URL: ' + (data.error || 'Please try again.'));
+              payBtn.disabled = false;
+              payBtnSpinner.style.display = 'none';
+            }
+          } catch (e) {
+            console.error('Network error:', e);
+            alert('Network connection error. Failed to claim custom URL. Please check your internet connection.');
+            payBtn.disabled = false;
+            payBtnSpinner.style.display = 'none';
+          }
+          return;
+        }
+
+        // Normal payment flow for non-premium users
         payBtn.disabled = true;
         payBtnSpinner.style.display = 'inline-block';
         payBtnText.textContent = 'Initiating Secure Order...';

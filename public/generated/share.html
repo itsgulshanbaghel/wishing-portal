@@ -2546,6 +2546,10 @@
       const isPersonalized = urlParams.get('personalized') === '1';
       const linkInput = document.getElementById('shareLinkInput');
       let fullLink = '';
+      
+      // Check if this specific website is premium (per-website premium status only)
+      const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true';
+      
       if (!viewId) {
         linkInput.value = '❌ No link found. Please generate first.';
       } else {
@@ -2554,7 +2558,9 @@
           fullLink = storedCustomUrl;
           linkInput.value = storedCustomUrl;
         } else {
-          fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}`;
+          // Add _v=c parameter for premium users to hide popups and CTAs
+          const premiumParam = isPremium ? '&_v=c' : '';
+          fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}${premiumParam}`;
           linkInput.value = fullLink;
         }
       }
@@ -3237,6 +3243,7 @@
           const data = await res.json();
 
           if (res.ok && data.success) {
+            // Custom URL slug redirects to the premium link, so no need for &_v=c parameter here
             const customUrl = `${window.location.origin}/${slug}`;
             linkInput.value = customUrl;
             linkInput.readOnly = false;
