@@ -1710,6 +1710,17 @@
           <!-- Optional contact fields — shown only for Cashfree (Indian users) -->
           <div class="optional-contact-section" id="optionalContactSection">
             <div class="optional-contact-label">
+              <i class="fas fa-envelope"></i> Email Address <span class="opt-badge">Recommended</span>
+            </div>
+            <input
+              type="email"
+              id="optionalEmail"
+              class="optional-contact-input"
+              placeholder="e.g. you@gmail.com"
+              maxlength="80"
+              autocomplete="email"
+            />
+            <div class="optional-contact-label" style="margin-top: 16px;">
               <i class="fas fa-phone-alt"></i> Phone Number <span class="opt-badge">Optional</span>
             </div>
             <input
@@ -1719,17 +1730,6 @@
               placeholder="e.g. 9876543210"
               maxlength="15"
               autocomplete="tel"
-            />
-            <div class="optional-contact-label">
-              <i class="fas fa-envelope"></i> Email Address <span class="opt-badge">Optional</span>
-            </div>
-            <input
-              type="email"
-              id="optionalEmail"
-              class="optional-contact-input"
-              placeholder="e.g. you@gmail.com"
-              maxlength="80"
-              autocomplete="email"
             />
             <p class="optional-contact-note">
               <i class="fas fa-info-circle"></i>
@@ -2401,7 +2401,6 @@
         }
       }
 
-      // Handle Cashfree Order creation & checkout redirection
       async function handlePaymentInitiation() {
         if (!isSlugAvailable || !websiteId) return;
 

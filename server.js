@@ -114,7 +114,8 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://wishing-portal-05as.onrender.com", "https://wishing-portal.onrender.com", "https://api.cashfree.com", "https://api-m.paypal.com", "https://api-m.sandbox.paypal.com"],
+      mediaSrc: ["'self'", "https:", "data:", "blob:"],
+      connectSrc: ["'self'", "https://wishing-portal-05as.onrender.com", "https://wishing-portal.onrender.com", "https://api.cashfree.com", "https://api-m.paypal.com", "https://api-m.sandbox.paypal.com", "https://api.cloudinary.com"],
       frameSrc: ["'self'", "https://checkout.razorpay.com", "https://www.paypal.com", "https://sandbox.cashfree.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: []
@@ -576,44 +577,30 @@ function cfHeaders() {
 
 // ── Server-side geo-pricing (single source of truth, never trust client) ────────
 const PRICING_MAP = {
-  US: { currency: 'USD', amount: 1.99, symbol: '$', paypalCurrency: 'USD', paypalAmount: 1.99, countryName: 'United States' },
-  CA: { currency: 'CAD', amount: 2.49, symbol: 'CA$', paypalCurrency: 'CAD', paypalAmount: 2.49, countryName: 'Canada' },
-  GB: { currency: 'GBP', amount: 1.79, symbol: '£', paypalCurrency: 'GBP', paypalAmount: 1.79, countryName: 'United Kingdom' },
-  AU: { currency: 'AUD', amount: 2.99, symbol: 'A$', paypalCurrency: 'AUD', paypalAmount: 2.99, countryName: 'Australia' },
-  NZ: { currency: 'NZD', amount: 2.99, symbol: 'NZ$', paypalCurrency: 'NZD', paypalAmount: 2.99, countryName: 'New Zealand' },
-  SG: { currency: 'SGD', amount: 2.49, symbol: 'S$', paypalCurrency: 'SGD', paypalAmount: 2.49, countryName: 'Singapore' },
-  JP: { currency: 'JPY', amount: 250, symbol: '¥', paypalCurrency: 'JPY', paypalAmount: 250, countryName: 'Japan' },
-  KR: { currency: 'KRW', amount: 2500, symbol: '₩', paypalCurrency: 'USD', paypalAmount: 1.80, countryName: 'South Korea' },
-  HK: { currency: 'HKD', amount: 15, symbol: 'HK$', paypalCurrency: 'HKD', paypalAmount: 15, countryName: 'Hong Kong' },
-  TW: { currency: 'TWD', amount: 59, symbol: 'NT$', paypalCurrency: 'TWD', paypalAmount: 59, countryName: 'Taiwan' },
-  AE: { currency: 'AED', amount: 6.99, symbol: 'AED ', paypalCurrency: 'USD', paypalAmount: 1.90, countryName: 'UAE' },
-  SA: { currency: 'SAR', amount: 6.99, symbol: 'SAR ', paypalCurrency: 'USD', paypalAmount: 1.86, countryName: 'Saudi Arabia' },
-  QA: { currency: 'QAR', amount: 6.99, symbol: 'QAR ', paypalCurrency: 'USD', paypalAmount: 1.92, countryName: 'Qatar' },
-  KW: { currency: 'KWD', amount: 0.60, symbol: 'KWD ', paypalCurrency: 'USD', paypalAmount: 1.95, countryName: 'Kuwait' },
-  OM: { currency: 'OMR', amount: 0.60, symbol: 'OMR ', paypalCurrency: 'USD', paypalAmount: 1.56, countryName: 'Oman' },
-  BH: { currency: 'BHD', amount: 0.60, symbol: 'BHD ', paypalCurrency: 'USD', paypalAmount: 1.59, countryName: 'Bahrain' },
-  IL: { currency: 'ILS', amount: 7.90, symbol: '₪', paypalCurrency: 'ILS', paypalAmount: 7.90, countryName: 'Israel' },
-  IN: { currency: 'INR', amount: 29, symbol: '₹', paypalCurrency: 'INR', paypalAmount: 29, countryName: 'India' },
-  PK: { currency: 'PKR', amount: 199, symbol: 'PKR ', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Pakistan' },
-  BD: { currency: 'BDT', amount: 99, symbol: '৳', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Bangladesh' },
-  NP: { currency: 'NPR', amount: 99, symbol: 'NPR ', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Nepal' },
-  LK: { currency: 'LKR', amount: 299, symbol: 'LKR ', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Sri Lanka' },
-  MY: { currency: 'MYR', amount: 4.90, symbol: 'RM', paypalCurrency: 'MYR', paypalAmount: 4.90, countryName: 'Malaysia' },
-  TH: { currency: 'THB', amount: 39, symbol: '฿', paypalCurrency: 'THB', paypalAmount: 39, countryName: 'Thailand' },
-  ID: { currency: 'IDR', amount: 15000, symbol: 'Rp', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Indonesia' },
-  PH: { currency: 'PHP', amount: 59, symbol: '₱', paypalCurrency: 'PHP', paypalAmount: 59, countryName: 'Philippines' },
-  VN: { currency: 'VND', amount: 25000, symbol: '₫', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Vietnam' },
-  BR: { currency: 'BRL', amount: 6.90, symbol: 'R$', paypalCurrency: 'BRL', paypalAmount: 6.90, countryName: 'Brazil' },
-  MX: { currency: 'MXN', amount: 25, symbol: 'MX$', paypalCurrency: 'MXN', paypalAmount: 25, countryName: 'Mexico' },
-  AR: { currency: 'ARS', amount: 1999, symbol: 'ARS ', paypalCurrency: 'USD', paypalAmount: 1.99, countryName: 'Argentina' },
-  CL: { currency: 'CLP', amount: 1200, symbol: 'CLP ', paypalCurrency: 'USD', paypalAmount: 1.49, countryName: 'Chile' },
-  CO: { currency: 'COP', amount: 5900, symbol: 'COP ', paypalCurrency: 'USD', paypalAmount: 1.49, countryName: 'Colombia' },
-  ZA: { currency: 'ZAR', amount: 25, symbol: 'R', paypalCurrency: 'USD', paypalAmount: 1.49, countryName: 'South Africa' },
-  NG: { currency: 'NGN', amount: 1200, symbol: '₦', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Nigeria' },
-  EG: { currency: 'EGP', amount: 39, symbol: 'EGP ', paypalCurrency: 'USD', paypalAmount: 1.00, countryName: 'Egypt' }
+  // Tier 1: High Spending Power
+  US: { currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'United States',
+        plans: { starter: { amount: 1.99, paypalAmount: 1.99 }, pro: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } } },
+  GB: { currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom',
+        plans: { starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 3.99, paypalAmount: 3.99 }, forever: { amount: 7.99, paypalAmount: 7.99 } } },
+  CA: { currency: 'CAD', symbol: 'CA$', gateway: 'paypal', paypalCurrency: 'CAD', countryName: 'Canada',
+        plans: { starter: { amount: 2.49, paypalAmount: 2.49 }, pro: { amount: 6.99, paypalAmount: 6.99 }, forever: { amount: 12.99, paypalAmount: 12.99 } } },
+  AU: { currency: 'AUD', symbol: 'A$', gateway: 'paypal', paypalCurrency: 'AUD', countryName: 'Australia',
+        plans: { starter: { amount: 2.99, paypalAmount: 2.99 }, pro: { amount: 7.99, paypalAmount: 7.99 }, forever: { amount: 14.99, paypalAmount: 14.99 } } },
+  AE: { currency: 'AED', symbol: 'AED ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'UAE',
+        plans: { starter: { amount: 5.99, paypalAmount: 1.63 }, pro: { amount: 12.99, paypalAmount: 3.53 }, forever: { amount: 29.99, paypalAmount: 8.16 } } },
+  
+  // Tier 2: Developing (High Volume)
+  IN: { currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India',
+        plans: { starter: { amount: 29, paypalAmount: 29 }, pro: { amount: 99, paypalAmount: 99 }, forever: { amount: 199, paypalAmount: 199 } } },
+  PK: { currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',
+        plans: { starter: { amount: 99, paypalAmount: 0.99 }, pro: { amount: 299, paypalAmount: 2.99 }, forever: { amount: 699, paypalAmount: 5.99 } } }
 };
 
 const EUROZONE = ['AT','BE','CY','EE','FI','FR','DE','GR','IE','IT','LV','LT','LU','MT','NL','PT','SK','SI','ES','HR'];
+const DEFAULT_PRICING = {
+  currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'International', country: 'XX',
+  plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 2.99, paypalAmount: 2.99 }, forever: { amount: 5.99, paypalAmount: 5.99 } }
+};
 
 function getGeoPrice(req) {
   try {
@@ -625,32 +612,25 @@ function getGeoPrice(req) {
     const code = (geo ? geo.country : 'IN').toUpperCase();
 
     if (code === 'IN') {
-      return { currency: 'INR', amount: 29, symbol: '₹', gateway: 'cashfree', countryName: 'India', country: code };
+      return { ...PRICING_MAP.IN, country: code };
     }
     
     if (EUROZONE.includes(code)) {
-      return { currency: 'EUR', amount: 1.99, symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', paypalAmount: 1.99, countryName: 'Eurozone', country: code };
-    }
-
-    if (PRICING_MAP[code]) {
-      const p = PRICING_MAP[code];
-      return { 
-        currency: p.currency, 
-        amount: p.amount, 
-        symbol: p.symbol, 
-        gateway: 'paypal', 
-        paypalCurrency: p.paypalCurrency, 
-        paypalAmount: p.paypalAmount, 
-        countryName: p.countryName, 
-        country: code 
+      return {
+        currency: 'EUR', symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', countryName: 'Eurozone', country: code,
+        plans: { starter: { amount: 1.99, paypalAmount: 1.99 }, pro: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
       };
     }
 
+    if (PRICING_MAP[code]) {
+      return { ...PRICING_MAP[code], country: code };
+    }
+
     // Default other countries
-    return { currency: 'USD', amount: 1.49, symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', paypalAmount: 1.49, countryName: 'International', country: code };
+    return { ...DEFAULT_PRICING, country: code };
   } catch (err) {
     console.error('[getGeoPrice] error:', err);
-    return { currency: 'INR', amount: 29, symbol: '₹', gateway: 'cashfree', countryName: 'India', country: 'IN' };
+    return { ...PRICING_MAP.IN, country: 'IN' };
   }
 }
 
@@ -744,14 +724,51 @@ app.get('/api/payment/detect-price', (req, res) => {
 // Body: { websiteId, slug, amount, currency, customerDetails?, qrCenterType, qrCenterText?, qrCenterPhotoUrl? }
 app.post('/api/payment/create-order', async (req, res) => {
   try {
-    const { websiteId, slug, customerDetails, qrCenterType, qrCenterText, qrCenterPhotoUrl, qrCenterPhotoBase64 } = req.body;
+    let { websiteId, slug, customerDetails, qrCenterType, qrCenterText, qrCenterPhotoUrl, qrCenterPhotoBase64, email, phone } = req.body;
 
-    // Input validation
-    if (!websiteId || typeof websiteId !== 'string' || websiteId.length > 100) {
-      return res.status(400).json({ error: 'Invalid websiteId' });
+    const host = req.headers.host || '';
+    const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1') || process.env.NODE_ENV === 'development';
+
+    if (!websiteId || typeof websiteId !== 'string') {
+      websiteId = 'site_' + Date.now();
     }
     if (!slug || typeof slug !== 'string') {
-      return res.status(400).json({ error: 'slug is required' });
+      slug = 'wish-' + Math.random().toString(36).substring(2, 8);
+    }
+
+    // 🚀 Localhost / Dev Testing Payment Bypass
+    if (isLocalhost) {
+      const orderId = `ORD_LOCAL_${Date.now()}`;
+      console.log(`[Localhost Bypass] Automatically approving payment order ${orderId} for testing`);
+      
+      const sanitizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          await Payment.create({
+            orderId,
+            websiteId,
+            slug: sanitizedSlug || slug,
+            amount: 0,
+            currency: 'INR',
+            status: 'PAID',
+            gateway: 'localhost',
+            customerDetails: customerDetails || { customer_name: 'Local Tester', customer_email: email || 'test@localhost', customer_phone: phone || '9999999999' }
+          });
+        }
+      } catch (e) {
+        console.error('[Localhost Bypass] DB save warning:', e.message);
+      }
+
+      const redirectUrl = `/generated/customize.html?view=${websiteId}&_v=c&lang=en`;
+      return res.json({
+        success: true,
+        orderId,
+        paymentUrl: redirectUrl,
+        paymentLink: redirectUrl,
+        slug: sanitizedSlug,
+        gateway: 'localhost_bypass'
+      });
     }
     if (qrCenterType && !['text', 'photo', 'none'].includes(qrCenterType)) {
       return res.status(400).json({ error: 'Invalid qrCenterType' });
@@ -1443,7 +1460,39 @@ app.post('/api/og-meta', async (req, res) => {
     res.status(500).json({ error: 'Failed to generate meta tags' });
   }
 });
+// Multer configuration for audio uploads in-memory
+const uploadAudio = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 20 * 1024 * 1024 // 20MB limit
+  }
+});
 
+// Upload audio to Cloudinary
+app.post('/api/upload-audio', uploadAudio.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file provided' });
+    }
+    const secureUrl = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'audio',
+          resource_type: 'video', // Audios must use 'video' resource type in Cloudinary
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result.secure_url);
+        }
+      );
+      uploadStream.end(req.file.buffer);
+    });
+    res.json({ secure_url: secureUrl });
+  } catch (err) {
+    console.error('Error uploading audio via server:', err);
+    res.status(500).json({ error: err.message || 'Failed to upload audio' });
+  }
+});
 
 
 // Upload custom template

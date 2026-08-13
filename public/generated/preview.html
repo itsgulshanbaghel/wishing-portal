@@ -291,6 +291,25 @@
       transform: translateY(-2px);
     }
 
+    .premium-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      color: #4a2c00;
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(255, 165, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .premium-badge i {
+      font-size: 0.9rem;
+    }
+
     .mobile-menu-btn {
       display: none;
       align-items: center;
@@ -1325,6 +1344,14 @@
         gap: 4px;
       }
 
+      .premium-badge {
+        padding: 6px 8px;
+        gap: 4px;
+      }
+      .premium-badge span {
+        display: none;
+      }
+
       .lang-toggle span {
         display: none;
       }
@@ -1396,6 +1423,9 @@
         <a href="../ContactUs.html" id="navPricing">Contact Us</a>
       </div>
       <div class="nav-actions">
+        <div class="premium-badge" id="premiumBadge" style="display: none;">
+          <i class="fas fa-crown"></i> <span>Premium</span>
+        </div>
         <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
         <div class="mode-toggle" id="modeToggle"><i class="fas fa-sun" id="themeIcon"></i></div>
         <button class="btn-outline" id="signinBtn"><i class="far fa-user-circle"></i> Sign in</button>
@@ -1633,6 +1663,11 @@
       let templates = [];
       let currentEvent = userData.event || 'birthday';
       window.currentSelectedPath = null;
+      
+      if (userData.isPremium) {
+        const pBadge = document.getElementById('premiumBadge');
+        if (pBadge) pBadge.style.display = 'inline-flex';
+      }
 
       async function loadAvailableTemplates(event) {
         const templatesList = [];
@@ -1958,6 +1993,15 @@
         scrollActiveEventIntoView();
         const inlineSelectEl = document.getElementById('inlineEventSelect');
         if (inlineSelectEl) inlineSelectEl.value = currentEvent;
+
+        // Show premium badge if user is premium
+        const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPremiumUser = !!userDataObj.isPremium || urlParams.get('isPremium') === 'true' || localStorage.getItem('isPremium') === 'true';
+        if (isPremiumUser) {
+          const pBadge = document.getElementById("premiumBadge");
+          if (pBadge) pBadge.style.display = "inline-flex";
+        }
       });
     })();
   </script>

@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta name="google-adsense-account" content="ca-pub-8043014881280685">
-    <meta name="robots" content="noindex, nofollow">
+  <meta name="google-adsense-account" content="ca-pub-8043014881280685">
+  <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
@@ -24,6 +24,18 @@
     href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&family=Caveat:wght@400;700&family=Roboto:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Dancing+Script:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Merriweather:wght@300;400;700&family=Pacifico&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script>
+    (function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pathParts = window.location.pathname.split('/').filter(p => p && !p.includes('.'));
+      const potentialSlug = pathParts[pathParts.length - 1];
+      const isSharedView = urlParams.get('view') || urlParams.get('slug') ||
+        (potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug));
+      if (isSharedView) {
+        document.write('<style>.container, .navbar, .resizer, .panel, .footer { display: none !important; } body { background: #f9f7ff; } body.dark { background: #0a0614; }</style>');
+      }
+    })();
+  </script>
   <script src="/assets/config.js"></script>
 
   <style>
@@ -2137,6 +2149,52 @@
       user-select: none;
       cursor: row-resize !important;
     }
+
+    /* Audio Panels & Wave Pulse styles */
+    .audio-tabs {
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .audio-tab-btn {
+      transition: all 0.2s ease-in-out;
+    }
+
+    .audio-tab-btn.active {
+      border-bottom: 2px solid var(--accent-solid) !important;
+    }
+
+    .audio-upload-box:hover {
+      background: rgba(123, 93, 246, 0.05) !important;
+    }
+
+    .btn-record-action {
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn-record-action:active {
+      transform: scale(0.98);
+    }
+
+    @keyframes wave-pulse {
+
+      0%,
+      100% {
+        transform: scaleY(0.4);
+      }
+
+      50% {
+        transform: scaleY(1.8);
+      }
+    }
+
+    .wave-bar {
+      transform-origin: center;
+    }
+
+    .countdown-time-input:focus {
+      border-color: var(--accent-solid) !important;
+      box-shadow: 0 0 0 2px rgba(123, 93, 246, 0.15);
+    }
   </style>
 </head>
 
@@ -2269,7 +2327,7 @@
   <!-- Custom Modal -->
   <div class="custom-modal" id="customModal">
     <div class="modal-card">
-      <div class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></div>
+      <div class="modal-close"><i class="fas fa-times"></i></div>
       <div class="modal-icon"><i class="fas fa-info-circle"></i></div>
       <div class="modal-message" id="modalMessage"></div>
       <div id="modalLinkContainer" style="display: none;">
@@ -2278,7 +2336,7 @@
           <button class="modal-copy-btn" id="modalCopyBtn"><i class="far fa-copy"></i></button>
         </div>
       </div>
-      <button class="modal-button" id="customModalOkBtn" onclick="closeModal()">OK</button>
+      <button class="modal-button" id="customModalOkBtn">OK</button>
     </div>
   </div>
 
@@ -2299,10 +2357,35 @@
     </div>
   </div>
 
+  <!-- Premium Upgrade Modal -->
+  <div class="custom-modal" id="upgradeModal">
+    <div class="modal-card"
+      style="max-width: 500px; padding: 35px 25px; border-radius: 32px; text-align: center; position: relative;">
+      <div class="modal-close" id="upgradeModalCloseBtn"><i class="fas fa-times"></i></div>
+      <div class="modal-icon" style="color: #ffd700; font-size: 3.5rem; margin-bottom: 20px;"><i
+          class="fas fa-crown"></i></div>
+      <h3 id="upgradeModalTitle"
+        style="font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; font-family: 'Outfit', sans-serif;">🌟 Upgrade
+        to Premium</h3>
+      <div class="modal-message" id="upgradeModalMessage"
+        style="font-size: 0.98rem; line-height: 1.6; margin-bottom: 25px; text-align: left; padding: 15px; border-radius: 16px; border: 1.5px dashed var(--accent-solid); background: rgba(123, 93, 246, 0.05); color: var(--text-primary);">
+        <!-- Features list will be injected here -->
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+        <button class="modal-button" id="upgradePayBtn"
+          style="background: linear-gradient(135deg, #7b5df6, #ff7a2f); color: white; border: none; font-weight: 700; padding: 16px 28px; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 20px rgba(123, 93, 246, 0.35); font-size: 1.05rem; font-family: 'Outfit', sans-serif; transition: 0.2s;">Upgrade
+          to Premium</button>
+        <button class="modal-button secondary" id="upgradeCancelBtn"
+          style="background: transparent; color: var(--text-secondary); border: 1.5px solid var(--card-border); font-weight: 600; padding: 12px 28px; border-radius: 50px; cursor: pointer; font-size: 0.9rem; font-family: 'Outfit', sans-serif;">Continue
+          Free (Disable Premium Features)</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Music Embed Modal -->
   <div class="custom-modal" id="musicModal">
     <div class="modal-card music-modal-card">
-      <div class="modal-close" onclick="closeMusicModal()"><i class="fas fa-times"></i></div>
+      <div class="modal-close"><i class="fas fa-times"></i></div>
       <div class="modal-icon">🎵</div>
       <h3 id="musicModalTitle">Add Music</h3>
       <p id="musicModalSub">Search YouTube or paste a Spotify / YouTube / Instagram link</p>
@@ -2333,7 +2416,7 @@
       <div id="musicResults"></div>
 
       <div class="modal-buttons">
-        <button class="modal-button secondary" onclick="closeMusicModal()">Cancel</button>
+        <button class="modal-button secondary" id="musicModalCancelBtn">Cancel</button>
       </div>
     </div>
   </div>
@@ -2366,6 +2449,95 @@
         });
       });
       modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+      // Programmatic event listeners for customModal buttons
+      const customCloseX = modal.querySelector('.modal-close');
+      if (customCloseX) {
+        customCloseX.addEventListener('click', window.closeModal);
+      }
+      const customCloseOk = document.getElementById('customModalOkBtn');
+      if (customCloseOk) {
+        customCloseOk.addEventListener('click', window.closeModal);
+      }
+
+      // ---------- PREMIUM UPGRADE MODAL ----------
+      const upgradeModal = document.getElementById('upgradeModal');
+      window.showUpgradeModal = function (activatedPremiumFeatures) {
+        const titleEl = document.getElementById('upgradeModalTitle');
+        const msgEl = document.getElementById('upgradeModalMessage');
+        const payBtnEl = document.getElementById('upgradePayBtn');
+        const cancelBtnEl = document.querySelector('#upgradeModal .modal-button.secondary');
+
+        const featureNames = {
+          magicMusic: currentLang === 'hi' ? '🎵 बैकग्राउंड म्यूजिक (Background Music)' : '🎵 Background Music',
+          voiceNote: currentLang === 'hi' ? '🎙️ वॉइस नोट (Voice Note)' : '🎙️ Voice Note',
+          countdown: currentLang === 'hi' ? '⏳ सरप्राइज काउंटडाउन (Surprise Countdown)' : '⏳ Surprise Countdown'
+        };
+
+        const listItems = activatedPremiumFeatures.map(f => `<li style="margin-bottom: 6px;">${featureNames[f] || f}</li>`).join('');
+
+        if (currentLang === 'hi') {
+          titleEl.textContent = '🌟 प्रीमियम में अपग्रेड करें';
+          msgEl.innerHTML = `
+            <p style="margin-bottom: 10px; font-weight: 600; font-size: 1.05rem;">आपने निम्नलिखित प्रीमियम फीचर्स का उपयोग किया है:</p>
+            <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+              ${listItems}
+            </ul>
+            <p style="margin-top: 10px;">इस जादुई बधाई वेबसाइट को बनाने और शेयर करने के लिए कृपया प्रीमियम में अपग्रेड करें (मात्र ₹29 / $0.99 से शुरू)।</p>
+          `;
+          payBtnEl.textContent = 'अभी अपग्रेड करें';
+          if (cancelBtnEl) cancelBtnEl.textContent = 'फ्री जारी रखें (प्रीमियम फीचर्स हटाकर)';
+        } else {
+          titleEl.textContent = '🌟 Upgrade to Premium';
+          msgEl.innerHTML = `
+            <p style="margin-bottom: 10px; font-weight: 600; font-size: 1.05rem;">You have enabled the following premium features:</p>
+            <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+              ${listItems}
+            </ul>
+            <p style="margin-top: 10px;">To generate and share this magical greeting, please upgrade to premium (starting at only ₹29 / $0.99).</p>
+          `;
+          payBtnEl.textContent = 'Upgrade to Premium';
+          if (cancelBtnEl) cancelBtnEl.textContent = 'Continue Free (Disable Premium Features)';
+        }
+
+        upgradeModal.classList.add('show');
+      };
+
+      window.closeUpgradeModal = () => {
+        upgradeModal.classList.remove('show');
+      };
+
+      window.redirectToUpgrade = () => {
+        saveCustomizationState();
+        window.location.href = '../create.html?upgrade=true';
+      };
+
+      window.disablePremiumFeaturesAndClose = () => {
+        const premiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
+        premiumFeatures.forEach(id => {
+          activeFeatureStates.set(id, false);
+          applyFeature(id, false);
+
+          const row = document.getElementById(`toggle-${id}`);
+          if (row) {
+            row.classList.remove('active');
+            const chevron = row.querySelector('.chevron');
+            if (chevron) chevron.innerText = "▼";
+            const customPanel = row.nextElementSibling;
+            if (customPanel && customPanel.classList.contains('custom-panel')) {
+              customPanel.style.display = 'none';
+            }
+          }
+        });
+        adjustIframePadding(activeFeatureStates);
+        autoSaveState();
+        closeUpgradeModal();
+      };
+
+      upgradeModal.addEventListener('click', (e) => { if (e.target === upgradeModal) closeUpgradeModal(); });
+      document.getElementById('upgradeModalCloseBtn')?.addEventListener('click', () => closeUpgradeModal());
+      document.getElementById('upgradePayBtn')?.addEventListener('click', () => redirectToUpgrade());
+      document.getElementById('upgradeCancelBtn')?.addEventListener('click', () => disablePremiumFeaturesAndClose());
 
       // ---------- INSTAGRAM MODAL ----------
       const instagramModal = document.getElementById('instagramModal');
@@ -2417,6 +2589,10 @@
         musicStatus.textContent = '';
       };
       document.querySelector('#musicModal .modal-close').addEventListener('click', window.closeMusicModal);
+      const musicCancelBtn = document.getElementById('musicModalCancelBtn');
+      if (musicCancelBtn) {
+        musicCancelBtn.addEventListener('click', window.closeMusicModal);
+      }
       musicModal.addEventListener('click', (e) => { if (e.target === musicModal) window.closeMusicModal(); });
 
       async function searchMusic(query) {
@@ -2550,13 +2726,13 @@
           catOpening: "\uD83C\uDFAD Intro", catFloral: "\uD83C\uDF38 Floral & Nature", catPlayful: "\uD83C\uDF88 Playful Interactions",
           catHeart: "\uD83D\uDC8C Heart & Messages", catFinale: "\u2728 Grand Finale",
           featLock: "\uD83D\uDD12 Lock", featCurtainReveal: "\uD83C\uDFAD Curtain Reveal", featWelcomeTyping: "\uD83D\uDCAC Welcome Message", featFireworksText: "\uD83C\uDF86 Fireworks Text",
-          featFlowerRain: "\uD83C\uDF38 Flower Rain", featCanvasStarfall: "\uD83C\uDF0C Stardust", featFlyingSwans: "🕊️ Flying Birds",
+          featFlowerRain: "\uD83C\uDF38 Flower Rain", featFlyingSwans: "🕊️ Flying Birds",
           featBalloonParty: "\uD83C\uDF88 Classic Balloons", featFloatingBalloonsNamed: "\uD83C\uDF88 Named Balloons", featFireworksClick: "\u2728 Click Fireworks",
           featBombExplosion: "\uD83D\uDCA3 Bomb", featGiftBoxOpen: "\uD83C\uDF81 Gift Box", featTextFormation: "\u270D\uFE0F Typing Card",
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
           featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
-          featImageExplosion: "\uD83D\uDCA5 Magic Photo", featAddImages: "\uD83D\uDCF7 Add Images", featAddTextBox: "\uD83D\uDCDD Add Text Box", featFinalSurprise: "\uD83C\uDF89 Final Message",
-          featAddMusicSection: "\uD83C\uDFB5 Add Music", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
+          featImageExplosion: "\uD83D\uDCA5 Magic Photo", featFinalSurprise: "\uD83C\uDF89 Final Message",
+          featAddMusicSection: "\uD83C\uDFB5 Add Music", featMagicMusic: "🎵 Background Music", featVoiceNote: "🎙️ Voice Note", featCountdown: "⏳ Surprise Countdown", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
           uploadImages: "\uD83D\uDCF7 Upload Images", alertCopy: "Link copied!", alertGenerateFirst: "Generate the link first!",
           alertPreviewNotReady: "Preview not ready", shareInsta: "\uD83D\uDCF7 Copy this link to share on Instagram:",
           shareTikTok: "\uD83C\uDFB5 Copy this link to share on TikTok:",
@@ -2621,13 +2797,13 @@
           catOpening: "🎭 शुरुआती जादू", catFloral: "🌸 फूल और प्रकृति", catPlayful: "🎈 मस्ती भरे इंटरैक्शन",
           catHeart: "💌 दिल की बातें और संदेश", catFinale: "✨ भव्य समापन",
           featLock: "🔒 लॉक", featCurtainReveal: "🎭 पर्दा", featWelcomeTyping: "💬 स्वागत संदेश", featFireworksText: "🎆 पटाखे वाला टेक्स्ट",
-          featFlowerRain: "🌸 फूलों की बारिश", featCanvasStarfall: "🌌 सितारों का आसमान", featFlyingSwans: "🕊️ उड़ते पंछी ",
+          featFlowerRain: "🌸 फूलों की बारिश", featFlyingSwans: "🕊️ उड़ते पंछी ",
           featBalloonParty: "🎈 क्लासिक गुब्बारे", featFloatingBalloonsNamed: "🎈 नाम वाले गुब्बारे", featFireworksClick: "✨ क्लिक पर पटाखे",
           featBombExplosion: "💣 बम धमाका", featGiftBoxOpen: "🎁 गिफ्ट बॉक्स", featTextFormation: "✍️ टाइपिंग कार्ड",
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
           featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
-          featImageExplosion: "💥 मैजिक फोटो", featAddImages: "📷 तस्वीरें जोड़ें", featAddTextBox: "📝 टेक्स्ट बॉक्स", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
-          featAddMusicSection: "🎧 गाना लगाए", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
+          featImageExplosion: "💥 मैजिक फोटो", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
+          featAddMusicSection: "🎧 गाना लगाए", featMagicMusic: "🎵 बैकग्राउंड म्यूजिक", featVoiceNote: "🎙️ वॉइस नोट", featCountdown: "⏳ सरप्राइज़ काउंटडाउन", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
           uploadImages: "📷 तस्वीरें अपलोड करें", alertCopy: "लिंक कॉपी हो गया!", alertGenerateFirst: "पहले लिंक जेनरेट करें!",
           alertPreviewNotReady: "प्रीव्यू तैयार नहीं है", shareInsta: "📷 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:",
           shareTikTok: "🎶 TikTok पर शेयर करने के लिए यह लिंक कॉपी करें:",
@@ -2718,6 +2894,7 @@
         localStorage.setItem('greeter_lang', lang);
         const frame = document.getElementById('frame');
         if (frame && frame.src) {
+          isFrameLoaded = false;
           const url = new URL(frame.src);
           url.searchParams.set('lang', lang);
           frame.src = url.toString();
@@ -2739,6 +2916,7 @@
         // Update preview iframe theme
         const previewFrame = document.getElementById('frame');
         if (previewFrame && previewFrame.src) {
+          isFrameLoaded = false;
           const url = new URL(previewFrame.src);
           url.searchParams.set('theme', isDark ? 'dark' : 'light');
           previewFrame.src = url.toString();
@@ -2785,7 +2963,180 @@
 
         return getEventData().name || "Loved One";
       }
-      let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null;
+      let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null, isFrameLoaded = false, isPageInitializing = true;
+
+      // ---------- CLIENT-SIDE PREMIUM & FREE MEDIA HANDLING ----------
+      async function compressImageIfNeeded(file, isPremium) {
+        if (isPremium) return file;
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.src = URL.createObjectURL(file);
+          img.onload = () => {
+            URL.revokeObjectURL(img.src);
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 1200;
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height = Math.round((height * MAX_WIDTH) / width);
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width = Math.round((width * MAX_HEIGHT) / height);
+                height = MAX_HEIGHT;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                resolve(compressedFile.size < file.size ? compressedFile : file);
+              } else {
+                resolve(file);
+              }
+            }, 'image/jpeg', 0.7);
+          };
+          img.onerror = () => resolve(file);
+        });
+      }
+
+      function bufferToWav(buffer) {
+        let numOfChan = buffer.numberOfChannels,
+          btwLength = buffer.length * numOfChan * 2 + 44,
+          btwBuffer = new ArrayBuffer(btwLength),
+          btwView = new DataView(btwBuffer),
+          btwChannels = [],
+          btwIndex,
+          btwSample,
+          btwOffset = 0,
+          btwPos = 0;
+
+        function writeString(string) {
+          for (let i = 0; i < string.length; i++) {
+            btwView.setUint8(btwPos + i, string.charCodeAt(i));
+          }
+          btwPos += string.length;
+        }
+
+        function writeInt16(value) {
+          btwView.setInt16(btwPos, value, true);
+          btwPos += 2;
+        }
+
+        function writeInt32(value) {
+          btwView.setInt32(btwPos, value, true);
+          btwPos += 4;
+        }
+
+        writeString('RIFF');
+        writeInt32(btwLength - 8);
+        writeString('WAVE');
+        writeString('fmt ');
+        writeInt32(16);
+        writeInt16(1);
+        writeInt16(numOfChan);
+        writeInt32(buffer.sampleRate);
+        writeInt32(buffer.sampleRate * numOfChan * 2);
+        writeInt16(numOfChan * 2);
+        writeInt16(16);
+        writeString('data');
+        writeInt32(btwLength - btwPos - 4);
+
+        for (let i = 0; i < buffer.numberOfChannels; i++) {
+          btwChannels.push(buffer.getChannelData(i));
+        }
+
+        while (btwPos < btwLength) {
+          for (let i = 0; i < numOfChan; i++) {
+            btwSample = Math.max(-1, Math.min(1, btwChannels[i][btwOffset]));
+            btwSample = btwSample < 0 ? btwSample * 0x8000 : btwSample * 0x7FFF;
+            writeInt16(btwSample);
+          }
+          btwOffset++;
+        }
+
+        return new Blob([btwBuffer], { type: 'audio/wav' });
+      }
+
+      async function compressAudioIfNeeded(file, isPremium) {
+        if (isPremium) return file;
+        const MAX_SIZE = 6 * 1024 * 1024;
+        if (file.size <= MAX_SIZE) return file;
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const arrayBuffer = await file.arrayBuffer();
+          const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+          const duration = audioBuffer.duration;
+          const targetSize = 5.5 * 1024 * 1024;
+          let targetSampleRate = Math.floor(targetSize / (duration * 2));
+          if (targetSampleRate > 22050) targetSampleRate = 22050;
+          if (targetSampleRate < 8000) targetSampleRate = 8000;
+          const offlineCtx = new OfflineAudioContext(1, duration * targetSampleRate, targetSampleRate);
+          const source = offlineCtx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(offlineCtx.destination);
+          source.start();
+          const renderedBuffer = await offlineCtx.startRendering();
+          const wavBlob = bufferToWav(renderedBuffer);
+          const compressedFile = new File([wavBlob], file.name.replace(/\.[^/.]+$/, "") + "_compressed.wav", {
+            type: 'audio/wav',
+            lastModified: Date.now()
+          });
+          if (compressedFile.size < file.size) return compressedFile;
+        } catch (err) {
+          console.error('Audio compression failed, uploading original', err);
+        }
+        return file;
+      }
+
+      async function uploadAudioToCloudinary(file, onProgress) {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/api/upload-audio');
+          
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable && onProgress) {
+              const percentComplete = Math.round((e.loaded / e.total) * 100);
+              onProgress(percentComplete);
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                resolve(data.secure_url);
+              } catch (err) {
+                reject(new Error('Invalid response from server'));
+              }
+            } else {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                reject(new Error(data.error || 'Audio upload failed'));
+              } catch (err) {
+                reject(new Error('Audio upload failed'));
+              }
+            }
+          };
+
+          xhr.onerror = () => {
+            reject(new Error('Network error during upload'));
+          };
+
+          const formData = new FormData();
+          formData.append('file', file);
+          xhr.send(formData);
+        });
+      }
 
       // Customization state management
       function saveCustomizationState(viewId = null) {
@@ -2870,6 +3221,46 @@
             }
           }
 
+          // Restore magicMusic UI
+          if (id === "magicMusic") {
+            const audioNameDiv = customPanel.querySelector(".audio-name-display");
+            const volumeSlider = customPanel.querySelector(".volume-slider");
+            const deleteBtn = customPanel.querySelector(".btn-delete-audio");
+            const uploadBox = customPanel.querySelector(".audio-upload-box");
+            if (data.text) {
+              if (audioNameDiv) audioNameDiv.innerText = "Audio: " + (data.audioName || "Uploaded Track");
+              if (volumeSlider && data.volume !== undefined) volumeSlider.value = data.volume;
+              if (deleteBtn) deleteBtn.style.display = "inline-block";
+              if (uploadBox) uploadBox.style.display = "none";
+            }
+          }
+
+          // Restore voiceNote UI
+          if (id === "voiceNote") {
+            const previewContainer = customPanel.querySelector(".record-preview-container");
+            const previewAudio = customPanel.querySelector(".record-preview-audio");
+            const uploadBox = customPanel.querySelector(".audio-upload-box");
+            const tabs = customPanel.querySelector(".audio-tabs");
+            const recordContent = customPanel.querySelector(".audio-tab-content");
+            const deleteBtn = customPanel.querySelector(".btn-delete-record");
+            if (data.text) {
+              if (previewAudio) previewAudio.src = data.text;
+              if (previewContainer) previewContainer.style.cssText = "display:flex; margin-top:15px; flex-direction:column; align-items:center; gap:10px;";
+              if (uploadBox) uploadBox.style.display = "none";
+              if (tabs) tabs.style.display = "none";
+              if (recordContent) recordContent.style.display = "none";
+              if (deleteBtn) deleteBtn.style.display = "inline-block";
+            }
+          }
+
+          // Restore countdown UI
+          if (id === "countdown") {
+            const timeInput = customPanel.querySelector(".countdown-time-input");
+            if (timeInput && data.text) {
+              timeInput.value = data.text;
+              timeInput.dispatchEvent(new Event("input"));
+            }
+          }
         });
       }
 
@@ -2907,40 +3298,162 @@
         refreshDebounceTimer = setTimeout(() => {
           const name = getUserName();
           const lockActive = activeFeatureStates.get('lock');
+          const curtainActive = activeFeatureStates.get('curtainReveal');
+          const countdownActive = activeFeatureStates.get('countdown');
+          const welcomeActive = activeFeatureStates.get('welcomeTyping');
 
-          if (lockActive) {
-            const data = customData.get('lock') || {};
-            applyFeature('lock', true, name, data.text || "", data.images || [], data.emoji || "");
+          const isCountdownRunning = () => {
+            if (!countdownActive) return false;
+            const data = customData.get('countdown') || {};
+            if (!data.text) return false;
+            try {
+              const parseLocalTime = (str) => {
+                const parts = str.split('T');
+                if (parts.length !== 2) return new Date(str);
+                const dateParts = parts[0].split('-');
+                const timeParts = parts[1].split(':');
+                if (dateParts.length !== 3 || timeParts.length < 2) return new Date(str);
+                return new Date(
+                  parseInt(dateParts[0], 10),
+                  parseInt(dateParts[1], 10) - 1,
+                  parseInt(dateParts[2], 10),
+                  parseInt(timeParts[0], 10),
+                  parseInt(timeParts[1], 10),
+                  0, 0
+                );
+              };
+              const targetTime = parseLocalTime(data.text).getTime();
+              return !isNaN(targetTime) && Date.now() < targetTime;
+            } catch (e) {
+              return false;
+            }
+          };
 
-            const handler = () => {
-              window.removeEventListener('lockUnlocked', handler);
-              // Respect toggle order for other features
-              for (const [id, active] of activeFeatureStates.entries()) {
-                if (id !== 'lock' && active) {
-                  const data = customData.get(id) || {};
-                  if (id === 'addMusicSection') {
-                    applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
-                  } else {
-                    applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-                  }
-                }
-              }
+          if (window._countdownFinishedHandler) {
+            window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
+          }
+          if (window._lockUnlockedHandler) {
+            window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
+          }
+          if (window._curtainOpenedHandler) {
+            window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
+          }
+          if (window._welcomeFinishedHandler) {
+            window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+          }
+
+          const runStages = () => {
+            if (isCountdownRunning()) {
+              const data = customData.get('countdown') || {};
+              applyFeature('countdown', true, name, data.text || "", data.images || [], data.emoji || "");
+              
+              applyFeature('lock', false);
+              applyFeature('curtainReveal', false);
+              applyFeature('welcomeTyping', false);
+
+              window.countdownFinished = false;
+              window.lockUnlocked = false;
+              window.curtainOpened = false;
+              window.welcomeFinished = false;
+
+              window._countdownFinishedHandler = () => {
+                window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
+                window.countdownFinished = true;
+                runStages();
+              };
+              window.addEventListener('countdownFinished', window._countdownFinishedHandler);
               adjustIframePadding(activeFeatureStates);
-            };
-            window.addEventListener('lockUnlocked', handler);
-          } else {
-            // Respect toggle order by iterating over the Map
+              return;
+            }
+
+            applyFeature('countdown', false);
+            window.countdownFinished = true;
+
+            if (lockActive && !window.lockUnlocked) {
+              const data = customData.get('lock') || {};
+              applyFeature('lock', true, name, data.text || "", data.images || [], data.emoji || "");
+              
+              applyFeature('curtainReveal', false);
+              applyFeature('welcomeTyping', false);
+
+              window.curtainOpened = false;
+              window.welcomeFinished = false;
+
+              window._lockUnlockedHandler = () => {
+                window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
+                window.lockUnlocked = true;
+                runStages();
+              };
+              window.addEventListener('lockUnlocked', window._lockUnlockedHandler);
+              adjustIframePadding(activeFeatureStates);
+              return;
+            }
+
+            applyFeature('lock', false);
+            window.lockUnlocked = true;
+
+            if (curtainActive && !window.curtainOpened) {
+              const data = customData.get('curtainReveal') || {};
+              applyFeature('curtainReveal', true, name, data.text || "", data.images || [], data.emoji || "");
+              
+              applyFeature('welcomeTyping', false);
+
+              window.welcomeFinished = false;
+
+              window._curtainOpenedHandler = () => {
+                window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
+                window.curtainOpened = true;
+                runStages();
+              };
+              window.addEventListener('curtainOpened', window._curtainOpenedHandler);
+              adjustIframePadding(activeFeatureStates);
+              return;
+            }
+
+            applyFeature('curtainReveal', false);
+            window.curtainOpened = true;
+
+            if (welcomeActive && !window.welcomeFinished) {
+              const data = customData.get('welcomeTyping') || {};
+              applyFeature('welcomeTyping', true, name, data.text || "", data.images || [], data.emoji || "");
+
+              window._welcomeFinishedHandler = () => {
+                window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+                window.welcomeFinished = true;
+                runStages();
+              };
+              window.addEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+              adjustIframePadding(activeFeatureStates);
+              return;
+            }
+
+            applyFeature('welcomeTyping', false);
+            window.welcomeFinished = true;
+
+            // Respect toggle order for other features
             for (const [id, active] of activeFeatureStates.entries()) {
-              if (active) {
+              if (active && id !== 'lock' && id !== 'curtainReveal' && id !== 'welcomeTyping' && id !== 'countdown') {
                 const data = customData.get(id) || {};
                 if (id === 'addMusicSection') {
-                  applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "");
+                  applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
                 } else {
                   applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "");
                 }
               }
             }
             adjustIframePadding(activeFeatureStates);
+          };
+
+          runStages();
+          if (window.isPageInitializing) {
+            setTimeout(() => {
+              window.isPageInitializing = false;
+              window.scrollTo(0, 0);
+              const f = document.getElementById("frame");
+              if (f && f.contentWindow) {
+                f.contentWindow.scrollTo(0, 0);
+              }
+            }, 800);
           }
         }, 30);
       }
@@ -2977,7 +3490,37 @@
           }
         }
       }
-      function scrollToElement(doc, element) { if (!element) return; setTimeout(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200); }
+      function scrollToElement(doc, element) {
+        if (window.isPageInitializing) return;
+        if (!element) return;
+        if (!window.shouldScrollToFeatureId) return;
+
+        const elementId = (element.id || "").toLowerCase();
+        const featureId = window.shouldScrollToFeatureId.toLowerCase();
+        const matches = (
+          elementId.includes(featureId) ||
+          elementId.replace(/-/g, '').includes(featureId) ||
+          featureId.includes(elementId.replace(/-/g, '')) ||
+          (featureId === 'scratchreveal' && elementId === 'magic-scratch-section') ||
+          (featureId === 'welcometyping' && elementId === 'magic-welcome-typing-root') ||
+          (featureId === 'lock' && elementId === 'lock-overlay') ||
+          (featureId === 'curtainreveal' && elementId === 'magic-curtain-reveal-root') ||
+          (featureId === 'addmusicsection' && elementId === 'magic-music-section') ||
+          (featureId === 'fireworkstext' && elementId === 'magic-fireworks-section') ||
+          (featureId === 'memorytimeline' && elementId === 'magic-timeline-section') ||
+          (featureId === 'hugskyletter' && elementId === 'magic-hug-section') ||
+          (featureId === 'floatingpolaroids' && elementId === 'magic-polaroids-section') ||
+          (featureId === 'finalsurprise' && elementId === 'magic-final-surprise-section') ||
+          (featureId === 'imageexplosion' && elementId === 'magic-image-explosion-section') ||
+          (featureId === 'voicenote' && elementId === 'magic-voice-note-section') ||
+          (featureId === 'giftboxopen' && elementId === 'magic-gift-section')
+        );
+
+        if (matches) {
+          window.shouldScrollToFeatureId = null;
+          setTimeout(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
+        }
+      }
 
       // ---------- FULL FEATURE MAP (19 effects) – loaded from server ----------
       // Expose helpers on window so dynamically loaded features can access them
@@ -3757,29 +4300,31 @@
         // Set default iframe src to share.html if not already set
         const frame = document.getElementById('frame');
         if (!frame.src) {
+          isFrameLoaded = false;
           frame.src = './share.html';
         }
       }).catch(e => console.error("Magic API error", e));
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "canvasStarfall", nameKey: "featCanvasStarfall" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "addImages", nameKey: "featAddImages" }, { id: "addTextBox", nameKey: "featAddTextBox" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
       ];
-      const noCustomizeIds = new Set(["curtainReveal", "canvasStarfall", "fireworksClick", "bombExplosion", "addImages", "addTextBox", "addMusicSection"]);
+      const noCustomizeIds = new Set(["curtainReveal", "fireworksClick", "bombExplosion", "addMusicSection"]);
 
       function applyFeature(id, enable, userName, customText = "", images = [], customEmoji = "", audio = "", spotifyEmbedUrl = "", youtubeEmbedUrl = "", instagramEmbedUrl = "") {
         const f = document.getElementById("frame");
         const doc = getIframeDocument();
         const win = f ? f.contentWindow : null;
         if (!doc || !win) return;
+        if (!isFrameLoaded) return;
         if (!FEATURE_MAP) return;
         const feature = FEATURE_MAP[id];
         if (!feature) return;
         if (!enable) { if (feature?.disable) feature.disable(doc, win); return; }
         if (feature?.enable) {
           if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
-          else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "addImages") feature.enable(doc, win, userName, customText, images);
+          else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion") feature.enable(doc, win, userName, customText, images);
           else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
-          else feature.enable(doc, win, userName, customText);
+          else feature.enable(doc, win, userName, customText, audio);
         }
         adjustIframePadding(activeFeatureStates);
       }
@@ -3798,11 +4343,11 @@
         if (!container) return;
         container.innerHTML = "";
         const actualCategories = {
-          [t.catOpening]: ["lock", "curtainReveal", "welcomeTyping", "fireworksText"],
-          [t.catFloral]: ["flowerRain", "canvasStarfall", "flyingSwans"],
-          [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "addImages", "scratchReveal"],
-          [t.catHeart]: ["textFormation", "memoryTimeline", "heartsOnScroll", "oldPaperLetter", "hugSkyLetter", "floatingPolaroids", "addTextBox"],
-          [t.catFinale]: ["finalSurprise", "addMusicSection"]
+          [t.catOpening]: ["countdown", "lock", "curtainReveal", "welcomeTyping", "fireworksText"],
+          [t.catFloral]: ["flowerRain", "flyingSwans"],
+          [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "scratchReveal"],
+          [t.catHeart]: ["textFormation", "memoryTimeline", "heartsOnScroll", "oldPaperLetter", "hugSkyLetter", "floatingPolaroids"],
+          [t.catFinale]: ["finalSurprise", "addMusicSection", "magicMusic", "voiceNote"]
         };
         for (let [catName, ids] of Object.entries(actualCategories)) {
           const section = document.createElement("div"); section.className = "feature-category";
@@ -3816,77 +4361,36 @@
             if (activeFeatureStates.get(id)) toggleRow.classList.add("active");
             const hasCustom = !noCustomizeIds.has(id);
             const labelSpan = document.createElement("span"); labelSpan.className = "toggle-label"; labelSpan.innerText = featName;
+
+            const premiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
+            if (premiumFeatures.includes(id)) {
+              const badge = document.createElement("span");
+              badge.className = "premium-badge";
+              badge.innerHTML = `<i class="fas fa-crown" style="font-size: 0.75rem;"></i>`;
+              badge.style.cssText = "color: #ffd700; margin-left: 6px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; filter: drop-shadow(0 1px 3px rgba(255, 215, 0, 0.45));";
+              labelSpan.appendChild(badge);
+            }
             const chevron = hasCustom ? document.createElement("span") : null;
             if (chevron) { chevron.className = "chevron"; chevron.innerText = "▼"; }
             const switchDiv = document.createElement("div"); switchDiv.className = "switch"; const circle = document.createElement("div"); circle.className = "circle"; switchDiv.appendChild(circle);
             toggleRow.appendChild(labelSpan);
-            if (id === "addImages" || id === "addTextBox" || id === "addMusicSection") {
+            if (id === "addMusicSection") {
               const plusIcon = document.createElement("span");
               plusIcon.className = "plus-icon";
               plusIcon.innerText = "+";
-              if (id === "addImages") {
-                plusIcon.style.cursor = "pointer";
-                plusIcon.onclick = (e) => {
-                  e.stopPropagation();
-                  const fileInput = document.createElement("input");
-                  fileInput.type = "file";
-                  fileInput.multiple = true;
-                  fileInput.accept = "image/*";
-                  fileInput.onchange = (e) => {
-                    const files = Array.from(e.target.files);
-                    const promises = files.map(f => new Promise(resolve => {
-                      const reader = new FileReader();
-                      reader.onload = () => resolve(reader.result);
-                      reader.readAsDataURL(f);
-                    }));
-                    Promise.all(promises).then(urls => {
-                      const existing = customData.get("addImages") || {};
-                      existing.images = (existing.images || []).concat(urls);
-                      customData.set("addImages", existing);
-                      autoSaveState();
-                      const nameVal = getUserName();
-                      applyFeature("addImages", true, nameVal, "", existing.images);
-                    });
-                  };
-                  fileInput.click();
-                };
-              }
-              if (id === "addTextBox") {
-                plusIcon.style.cursor = "pointer";
-                plusIcon.onclick = (e) => {
-                  e.stopPropagation();
-                  const parentRow = plusIcon.closest('.toggle-row');
-                  if (!parentRow.classList.contains('active')) {
-                    parentRow.click();
-                  }
-                  const doc = getIframeDocument();
-                  const win = frame.contentWindow;
-                  let section = doc.getElementById('resizable-text-section');
-                  if (!section) {
-                    activeFeatureStates.set("addTextBox", true);
-                    applyFeature("addTextBox", true, getUserName(), "", []);
-                    section = doc.getElementById('resizable-text-section');
-                  }
-                  if (section) {
-                    FEATURE_MAP.resizableText.addTextBox(doc, win, section);
-                  }
-                };
-              }
-              if (id === "addMusicSection") {
-                plusIcon.style.cursor = "pointer";
-                plusIcon.onclick = (e) => {
-                  e.stopPropagation();
-                  const parentRow = plusIcon.closest('.toggle-row');
-                  if (!parentRow.classList.contains('active')) {
-                    parentRow.click();
-                  }
-                  musicSearchInput.value = '';
-                  musicLinkInput.value = '';
-                  musicResults.innerHTML = '';
-                  musicStatus.textContent = '';
-                  musicModal.classList.add('show');
-                };
-              }
+              plusIcon.style.cursor = "pointer";
+              plusIcon.onclick = (e) => {
+                e.stopPropagation();
+                const parentRow = plusIcon.closest('.toggle-row');
+                if (!parentRow.classList.contains('active')) {
+                  parentRow.click();
+                }
+                musicSearchInput.value = '';
+                musicLinkInput.value = '';
+                musicResults.innerHTML = '';
+                musicStatus.textContent = '';
+                musicModal.classList.add('show');
+              };
               toggleRow.appendChild(plusIcon);
             } else if (chevron) {
               toggleRow.appendChild(chevron);
@@ -3895,7 +4399,7 @@
             const customPanel = hasCustom ? document.createElement("div") : null;
             if (customPanel) customPanel.className = "custom-panel";
             let textarea = null, emojiInput = null, previewDiv = null;
-            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "resizableImages"].includes(id))) {
+            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion"].includes(id))) {
               textarea = document.createElement("textarea"); textarea.placeholder = t.placeholderText; textarea.setAttribute('data-placeholder-key', 'text');
               if (id === "lock") textarea.placeholder = currentLang === 'en' ? "Set the Password here" : "यहाँ पासवर्ड दर्ज करें";
               let def = "";
@@ -3950,7 +4454,7 @@
                 autoSaveState();
               });
             }
-            if (hasCustom && ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "resizableImages"].includes(id)) {
+            if (hasCustom && ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids"].includes(id)) {
               const uploadDiv = document.createElement("div"); uploadDiv.className = "image-upload";
               const label = document.createElement("label"); label.innerText = t.uploadImages; label.setAttribute('data-upload-label', 'true');
               const fileInput = document.createElement("input"); fileInput.type = "file";
@@ -3982,8 +4486,11 @@
                   item.appendChild(img); item.appendChild(removeBtn); previewDiv.appendChild(item);
                 });
               };
-              fileInput.onchange = (e) => {
+              fileInput.onchange = async (e) => {
                 const files = Array.from(e.target.files);
+                const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+                const isPremium = !!userDataObj.isPremium;
+
                 // Create placeholders
                 files.forEach(() => {
                   const item = document.createElement("div"); item.className = "image-preview-item";
@@ -3991,35 +4498,41 @@
                   const removeBtn = document.createElement("span"); removeBtn.className = "remove-image"; removeBtn.innerHTML = "×";
                   item.appendChild(img); item.appendChild(removeBtn); previewDiv.appendChild(item);
                 });
-                const promises = files.map((f, idx) => {
-                  const formData = new FormData();
-                  formData.append('file', f);
-                  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-                  return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-                    method: 'POST',
-                    body: formData
-                  }).then(res => res.json()).then(data => {
-                    if (data.secure_url) {
-                      const items = previewDiv.querySelectorAll('.image-preview-item');
-                      const item = items[items.length - files.length + idx];
-                      const img = item.querySelector('img');
-                      img.src = data.secure_url;
-                      img.onload = () => item.classList.add('loaded');
-                      if (img.complete) item.classList.add('loaded');
-                      return data.secure_url;
-                    } else {
-                      console.error('Upload failed', data);
-                      throw new Error('Upload failed');
-                    }
+
+                try {
+                  const processedFiles = await Promise.all(files.map(f => compressImageIfNeeded(f, isPremium)));
+
+                  const promises = processedFiles.map((f, idx) => {
+                    const formData = new FormData();
+                    formData.append('file', f);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                    return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                      method: 'POST',
+                      body: formData
+                    }).then(res => res.json()).then(data => {
+                      if (data.secure_url) {
+                        const items = previewDiv.querySelectorAll('.image-preview-item');
+                        const item = items[items.length - files.length + idx];
+                        const img = item.querySelector('img');
+                        img.src = data.secure_url;
+                        img.onload = () => item.classList.add('loaded');
+                        if (img.complete) item.classList.add('loaded');
+                        return data.secure_url;
+                      } else {
+                        console.error('Upload failed', data);
+                        throw new Error('Upload failed');
+                      }
+                    });
                   });
-                });
-                Promise.all(promises).then(urls => {
+
+                  const urls = await Promise.all(promises);
                   const existing = customData.get(id) || {};
                   existing.images = (id === "imageExplosion") ? urls : [...(existing.images || []), ...urls];
                   if (textarea) existing.text = textarea.value;
                   if (emojiInput) existing.emoji = emojiInput.value;
                   customData.set(id, existing);
                   autoSaveState();
+
                   // Update remove buttons for new items
                   const items = previewDiv.querySelectorAll('.image-preview-item');
                   items.forEach((item, idx) => {
@@ -4043,55 +4556,681 @@
                   const nameVal = getUserName();
                   refreshFeatureIfActive(id, nameVal, existing.text, existing.images, existing.emoji);
                   fileInput.value = "";
-                }).catch(err => {
+                } catch (err) {
                   console.error('Image upload error:', err);
                   showModal(currentLang === 'hi' ? 'इमेज अपलोड फेल हो गया। कृपया Cloudinary कॉन्फिग चेक करें और दोबारा कोशिश करें।' : 'Image upload failed. Please check your Cloudinary configuration and try again.');
-                });
+                  updatePreview();
+                }
               };
               const existingImages = customData.get(id)?.images || [];
               if (existingImages.length) setTimeout(updatePreview, 0);
-              if (id === "resizableImages") {
-                const addMoreBtn = document.createElement("button");
-                addMoreBtn.innerText = "+ Add More Images";
-                addMoreBtn.className = "btn-outline";
-                addMoreBtn.style.marginTop = "10px";
-                addMoreBtn.onclick = () => fileInput.click();
-                customPanel.appendChild(addMoreBtn);
-              }
             }
-            if (id === "magicMusic" && hasAudioPanel) {
-              const audioData = customData.get("magicMusic");
+
+            if (id === "magicMusic") {
+              const mainContainer = document.createElement("div");
+              mainContainer.className = "magic-music-panel";
+              mainContainer.style.padding = "10px 0";
+
+              const uploadBox = document.createElement("div");
+              uploadBox.className = "audio-upload-box";
+              uploadBox.style.cssText = "border:2px dashed var(--accent-solid); border-radius:12px; padding:20px; text-align:center; cursor:pointer; background:rgba(123, 93, 246, 0.02); transition: background-color 0.2s;";
+              uploadBox.innerHTML = `
+                <i class="fas fa-music" style="font-size:2rem; color:var(--accent-solid); margin-bottom:10px; display:block;"></i>
+                <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary);">${currentLang === 'hi' ? 'बैकग्राउंड म्यूजिक अपलोड करें' : 'Upload Background Music'}</div>
+                <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:4px;">${currentLang === 'hi' ? 'MP3, WAV आदि' : 'MP3, WAV etc'}</div>
+              `;
+              const audioInput = document.createElement("input");
+              audioInput.type = "file";
+              audioInput.accept = "audio/*";
+              audioInput.style.display = "none";
+              uploadBox.appendChild(audioInput);
+              uploadBox.onclick = () => audioInput.click();
+              mainContainer.appendChild(uploadBox);
+
+              const infoContainer = document.createElement("div");
+              infoContainer.className = "audio-info-container";
+              infoContainer.style.cssText = "display:flex; flex-direction:column; gap:10px; margin-top:10px;";
+
               const audioNameDiv = document.createElement("div");
-              audioNameDiv.innerText = "Audio: " + (audioData.audioName || "Uploaded Audio");
-              audioNameDiv.style.fontSize = "0.8rem";
-              audioNameDiv.style.color = "var(--text-secondary)";
-              audioNameDiv.style.marginBottom = "10px";
-              customPanel.appendChild(audioNameDiv);
+              audioNameDiv.className = "audio-name-display";
+              audioNameDiv.innerText = "";
+              audioNameDiv.style.cssText = "font-size: 0.85rem; font-weight: 600; color: var(--text-primary); word-break: break-all;";
+              infoContainer.appendChild(audioNameDiv);
+
               const volumeLabel = document.createElement("label");
-              volumeLabel.innerText = "Volume:";
-              volumeLabel.style.fontSize = "0.8rem";
-              volumeLabel.style.color = "var(--text-secondary)";
-              volumeLabel.style.display = "block";
-              volumeLabel.style.marginBottom = "5px";
-              customPanel.appendChild(volumeLabel);
+              volumeLabel.innerText = currentLang === 'hi' ? "वॉल्यूम:" : "Volume:";
+              volumeLabel.style.cssText = "font-size:0.8rem; color:var(--text-secondary); display:block; margin-bottom:-5px;";
+              infoContainer.appendChild(volumeLabel);
+
               const volumeSlider = document.createElement("input");
               volumeSlider.type = "range";
+              volumeSlider.className = "volume-slider";
               volumeSlider.min = "0";
               volumeSlider.max = "1";
               volumeSlider.step = "0.1";
-              volumeSlider.value = audioData.volume || 0.5;
+              volumeSlider.value = "0.4";
               volumeSlider.style.width = "100%";
-              customPanel.appendChild(volumeSlider);
+              infoContainer.appendChild(volumeSlider);
+
+              const deleteBtn = document.createElement("button");
+              deleteBtn.className = "btn-delete-audio btn-outline";
+              deleteBtn.style.cssText = "background:#ff3366; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; display:none; align-self:flex-start; margin-top:5px;";
+              deleteBtn.innerText = currentLang === 'hi' ? "❌ डिलीट करें" : "❌ Delete Track";
+              infoContainer.appendChild(deleteBtn);
+
+              mainContainer.appendChild(infoContainer);
+              customPanel.appendChild(mainContainer);
+
               volumeSlider.oninput = () => {
                 const ex = customData.get("magicMusic") || {};
                 ex.volume = parseFloat(volumeSlider.value);
                 customData.set("magicMusic", ex);
-                // Update playing audio volume
                 const doc = getIframeDocument();
                 if (doc) {
-                  const audio = doc.getElementById('magic-music-audio');
+                  const audio = doc.getElementById('magic-bg-audio');
                   if (audio) audio.volume = ex.volume;
                 }
+                autoSaveState();
+              };
+
+              deleteBtn.onclick = () => {
+                customData.set("magicMusic", {});
+                audioNameDiv.innerText = "";
+                deleteBtn.style.display = "none";
+                uploadBox.style.display = "block";
+                audioInput.value = "";
+                const nameVal = getUserName();
+                refreshFeatureIfActive("magicMusic", nameVal, "");
+                autoSaveState();
+              };
+
+              audioInput.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                audioNameDiv.innerText = currentLang === 'hi' ? "अपलोड हो रहा है..." : "Uploading...";
+                uploadBox.style.display = "none";
+                deleteBtn.style.display = "none";
+
+                try {
+                  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                  const isPremium = !!userData.isPremium || localStorage.getItem('isPremium') === 'true';
+
+                  const processedFile = await compressAudioIfNeeded(file, isPremium);
+                  if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
+                    throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल यूज़ करें।" : "Audio file exceeds 6MB. Please use a smaller file.");
+                  }
+
+                  const secureUrl = await uploadAudioToCloudinary(processedFile, (pct) => {
+                    audioNameDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
+                  });
+
+                  const ex = customData.get("magicMusic") || {};
+                  ex.text = secureUrl;
+                  ex.audioName = file.name;
+                  ex.volume = parseFloat(volumeSlider.value);
+                  customData.set("magicMusic", ex);
+
+                  audioNameDiv.innerText = "Audio: " + file.name;
+                  deleteBtn.style.display = "inline-block";
+
+                  const nameVal = getUserName();
+                  refreshFeatureIfActive("magicMusic", nameVal, secureUrl);
+                  autoSaveState();
+                } catch (err) {
+                  console.error(err);
+                  showModal(err.message || (currentLang === 'hi' ? 'ऑडियो अपलोड विफल रहा।' : 'Audio upload failed.'));
+                  audioNameDiv.innerText = "";
+                  uploadBox.style.display = "block";
+                }
+              };
+            }
+
+            if (id === "voiceNote") {
+              const mainContainer = document.createElement("div");
+              mainContainer.className = "voice-note-panel";
+              mainContainer.style.padding = "10px 0";
+
+              const tabs = document.createElement("div");
+              tabs.className = "audio-tabs";
+              tabs.style.cssText = "display:flex; gap:10px; margin-bottom:15px; border-bottom:1px solid var(--toggle-bg); padding-bottom:10px;";
+              tabs.innerHTML = `
+                <button class="audio-tab-btn active" data-tab="record" style="flex:1; padding:8px; border:none; background:none; font-weight:600; color:var(--accent-solid); cursor:pointer; border-bottom:2px solid var(--accent-solid); font-family:inherit;">🎙️ Record</button>
+                <button class="audio-tab-btn" data-tab="upload" style="flex:1; padding:8px; border:none; background:none; font-weight:600; color:var(--text-secondary); cursor:pointer; font-family:inherit;">📂 Upload</button>
+              `;
+              mainContainer.appendChild(tabs);
+
+              const recordContent = document.createElement("div");
+              recordContent.className = "audio-tab-content";
+              recordContent.id = "tab-record";
+              recordContent.style.cssText = "display:block; text-align:center; padding:15px 0;";
+              recordContent.innerHTML = `
+                <div class="record-timer" style="font-size:1.5rem; font-weight:700; color:var(--text-primary); margin-bottom:10px; font-family:'Outfit', sans-serif;">00:00</div>
+                <div class="record-wave" style="display:none; justify-content:center; gap:4px; height:20px; margin-bottom:15px; align-items:center;">
+                  <span class="wave-bar" style="width:3px; height:100%; background:#ff7a2f; border-radius:3px; animation: wave-pulse 1s infinite ease-in-out;"></span>
+                  <span class="wave-bar" style="width:3px; height:60%; background:#ff7a2f; border-radius:3px; animation: wave-pulse 0.8s infinite ease-in-out; animation-delay:0.2s;"></span>
+                  <span class="wave-bar" style="width:3px; height:80%; background:#ff7a2f; border-radius:3px; animation: wave-pulse 1.2s infinite ease-in-out; animation-delay:0.4s;"></span>
+                  <span class="wave-bar" style="width:3px; height:40%; background:#ff7a2f; border-radius:3px; animation: wave-pulse 0.9s infinite ease-in-out; animation-delay:0.1s;"></span>
+                </div>
+                <button class="btn-record-action btn-outline" style="background:var(--accent-solid); color:white; border:none; border-radius:50px; padding:12px 25px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(123, 93, 246, 0.3); font-family:inherit;">
+                  <i class="fas fa-microphone"></i> Start Recording
+                </button>
+              `;
+              mainContainer.appendChild(recordContent);
+
+              const uploadContent = document.createElement("div");
+              uploadContent.className = "audio-tab-content";
+              uploadContent.id = "tab-upload";
+              uploadContent.style.cssText = "display:none; padding:10px 0;";
+
+              const uploadBox = document.createElement("div");
+              uploadBox.className = "audio-upload-box";
+              uploadBox.style.cssText = "border:2px dashed var(--accent-solid); border-radius:12px; padding:20px; text-align:center; cursor:pointer; background:rgba(123, 93, 246, 0.02); transition: background-color 0.2s;";
+              uploadBox.innerHTML = `
+                <i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:var(--accent-solid); margin-bottom:10px; display:block;"></i>
+                <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary);">${currentLang === 'hi' ? 'ऑडियो फाइल चुनें' : 'Choose Audio File'}</div>
+                <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:4px;">MP3, WAV, M4A up to 6MB</div>
+              `;
+              const voiceFileInput = document.createElement("input");
+              voiceFileInput.type = "file";
+              voiceFileInput.accept = "audio/*";
+              voiceFileInput.style.display = "none";
+              uploadBox.appendChild(voiceFileInput);
+              uploadBox.onclick = () => voiceFileInput.click();
+              uploadContent.appendChild(uploadBox);
+              mainContainer.appendChild(uploadContent);
+
+              const previewContainer = document.createElement("div");
+              previewContainer.className = "record-preview-container";
+              previewContainer.style.cssText = "display:none; margin-top:15px; flex-direction:column; align-items:center; gap:10px;";
+              previewContainer.innerHTML = `
+                <audio class="record-preview-audio" controls style="width:100%; max-width:280px;"></audio>
+                <button class="btn-delete-record btn-outline" style="background:#ff3366; color:white; border:none; border-radius:8px; padding:8px 16px; font-size:0.85rem; cursor:pointer; font-family:inherit;">❌ Delete Record</button>
+              `;
+              mainContainer.appendChild(previewContainer);
+
+              customPanel.appendChild(mainContainer);
+
+              const tabBtns = tabs.querySelectorAll(".audio-tab-btn");
+              tabBtns.forEach(btn => {
+                btn.onclick = () => {
+                  tabBtns.forEach(b => {
+                    b.classList.remove("active");
+                    b.style.color = "var(--text-secondary)";
+                    b.style.borderBottom = "none";
+                  });
+                  btn.classList.add("active");
+                  btn.style.color = "var(--accent-solid)";
+                  btn.style.borderBottom = "2px solid var(--accent-solid)";
+
+                  const targetTab = btn.getAttribute("data-tab");
+                  if (targetTab === "record") {
+                    recordContent.style.display = "block";
+                    uploadContent.style.display = "none";
+                  } else {
+                    recordContent.style.display = "none";
+                    uploadContent.style.display = "block";
+                  }
+                };
+              });
+
+              let mediaRecorder = null;
+              let audioChunks = [];
+              let recordTimerInterval = null;
+              let recordStartTime = 0;
+              const timerEl = recordContent.querySelector(".record-timer");
+              const waveEl = recordContent.querySelector(".record-wave");
+              const recordBtn = recordContent.querySelector(".btn-record-action");
+              const previewAudio = previewContainer.querySelector(".record-preview-audio");
+              const deleteBtn = previewContainer.querySelector(".btn-delete-record");
+
+              const updateRecordTimer = () => {
+                const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+                const m = Math.floor(elapsed / 60);
+                const s = elapsed % 60;
+                timerEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+              };
+
+              recordBtn.onclick = async () => {
+                if (mediaRecorder && mediaRecorder.state === "recording") {
+                  mediaRecorder.stop();
+                  clearInterval(recordTimerInterval);
+                  waveEl.style.display = "none";
+                  recordBtn.innerHTML = `<i class="fas fa-microphone"></i> Start Recording`;
+                  recordBtn.style.background = "var(--accent-solid)";
+                  return;
+                }
+
+                try {
+                  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                  audioChunks = [];
+                  mediaRecorder = new MediaRecorder(stream);
+
+                  mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                  };
+
+                  mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const file = new File([audioBlob], "voice_note.wav", { type: "audio/wav" });
+
+                    timerEl.innerText = currentLang === 'hi' ? "अपलोड हो रहा है..." : "Uploading Voice Note...";
+                    tabs.style.display = "none";
+                    recordContent.style.display = "none";
+
+                    try {
+                      const secureUrl = await uploadAudioToCloudinary(file, (pct) => {
+                        timerEl.innerText = currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`;
+                      });
+
+                      const ex = customData.get("voiceNote") || {};
+                      ex.text = secureUrl;
+                      ex.audioName = "Voice Note";
+                      customData.set("voiceNote", ex);
+
+                      previewAudio.src = secureUrl;
+                      previewContainer.style.cssText = "display:flex; margin-top:15px; flex-direction:column; align-items:center; gap:10px;";
+
+                      const nameVal = getUserName();
+                      refreshFeatureIfActive("voiceNote", nameVal, secureUrl);
+                      autoSaveState();
+                    } catch (err) {
+                      console.error(err);
+                      showModal(err.message || (currentLang === 'hi' ? 'वॉइस नोट अपलोड विफल रहा।' : 'Voice Note upload failed.'));
+                      tabs.style.display = "flex";
+                      recordContent.style.display = "block";
+                      timerEl.innerText = "00:00";
+                    }
+                  };
+
+                  mediaRecorder.start();
+                  recordStartTime = Date.now();
+                  timerEl.innerText = "00:00";
+                  recordTimerInterval = setInterval(updateRecordTimer, 1000);
+                  waveEl.style.cssText = "display:flex; justify-content:center; gap:4px; height:20px; margin-bottom:15px; align-items:center;";
+                  recordBtn.innerHTML = `<i class="fas fa-stop"></i> Stop Recording`;
+                  recordBtn.style.background = "#ff3366";
+                } catch (err) {
+                  console.error(err);
+                  showModal(currentLang === 'hi' ? 'माइक्रोफोन अनुमति नहीं मिली।' : 'Microphone permission denied.');
+                }
+              };
+
+              voiceFileInput.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                tabs.style.display = "none";
+                uploadContent.style.display = "none";
+                previewContainer.style.cssText = "display:flex; margin-top:15px; flex-direction:column; align-items:center; gap:10px;";
+                previewAudio.style.display = "none";
+                deleteBtn.style.display = "none";
+
+                const loadingDiv = document.createElement("div");
+                loadingDiv.className = "voice-upload-loading";
+                loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? 'प्रोसेस और अपलोड हो रहा है...' : 'Processing & uploading...'}`;
+                previewContainer.insertBefore(loadingDiv, previewAudio);
+
+                try {
+                  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                  const isPremium = !!userData.isPremium || localStorage.getItem('isPremium') === 'true';
+
+                  const processedFile = await compressAudioIfNeeded(file, isPremium);
+                  if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
+                    throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल यूज़ करें।" : "Audio file exceeds 6MB. Please use a smaller file.");
+                  }
+
+                  const secureUrl = await uploadAudioToCloudinary(processedFile, (pct) => {
+                    loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
+                  });
+
+                  const ex = customData.get("voiceNote") || {};
+                  ex.text = secureUrl;
+                  ex.audioName = file.name;
+                  customData.set("voiceNote", ex);
+
+                  loadingDiv.remove();
+                  previewAudio.src = secureUrl;
+                  previewAudio.style.display = "block";
+                  deleteBtn.style.display = "inline-block";
+
+                  const nameVal = getUserName();
+                  refreshFeatureIfActive("voiceNote", nameVal, secureUrl);
+                  autoSaveState();
+                } catch (err) {
+                  console.error(err);
+                  showModal(err.message || (currentLang === 'hi' ? 'अपलोड विफल रहा।' : 'Upload failed.'));
+                  loadingDiv.remove();
+                  previewContainer.style.display = "none";
+                  tabs.style.display = "flex";
+                  uploadContent.style.display = "block";
+                }
+              };
+
+              deleteBtn.onclick = () => {
+                customData.set("voiceNote", {});
+                previewAudio.src = "";
+                previewContainer.style.display = "none";
+                tabs.style.display = "flex";
+                recordContent.style.display = "block";
+                uploadContent.style.display = "none";
+                timerEl.innerText = "00:00";
+                tabBtns[0].click();
+
+                const nameVal = getUserName();
+                refreshFeatureIfActive("voiceNote", nameVal, "");
+                autoSaveState();
+              };
+            }
+
+            if (id === "countdown") {
+              const mainContainer = document.createElement("div");
+              mainContainer.className = "countdown-panel";
+              mainContainer.style.padding = "10px 0";
+
+              const label = document.createElement("label");
+              label.innerText = currentLang === 'hi' ? "📅 तारीख और समय चुनें:" : "📅 Select Date & Time:";
+              label.style.cssText = "display:block; font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:8px;";
+              mainContainer.appendChild(label);
+
+              // Beautiful Trigger Button
+              const triggerBtn = document.createElement("button");
+              triggerBtn.className = "datetime-trigger-btn";
+              triggerBtn.style.cssText = "width:100%; padding:12px 15px; border:1px solid var(--toggle-bg); background:var(--bg-secondary); color:var(--text-primary); border-radius:10px; font-size:0.95rem; font-family:inherit; outline:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition: border-color 0.2s, box-shadow 0.2s;";
+              triggerBtn.innerHTML = `
+                <span class="datetime-display-val">${currentLang === 'hi' ? 'तारीख और समय चुनें...' : 'Select date & time...'}</span>
+                <i class="fas fa-calendar-alt" style="color:var(--accent-solid); font-size:1.1rem;"></i>
+              `;
+              mainContainer.appendChild(triggerBtn);
+
+              // Hidden input to maintain compatibility with auto-save/restore
+              const timeInput = document.createElement("input");
+              timeInput.type = "datetime-local";
+              timeInput.className = "countdown-time-input";
+              timeInput.max = "2099-12-31T23:59";
+              timeInput.style.display = "none";
+              mainContainer.appendChild(timeInput);
+
+              const livePreview = document.createElement("div");
+              livePreview.className = "countdown-live-preview";
+              livePreview.style.cssText = "margin-top:15px; padding:12px; background:rgba(123, 93, 246, 0.05); border-radius:8px; border:1px solid rgba(123, 93, 246, 0.1); text-align:center; display:none;";
+              livePreview.innerHTML = `
+                <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-solid); font-weight:600; margin-bottom:4px;">Live Preview</div>
+                <div class="countdown-preview-timer" style="font-family:'Outfit', sans-serif; font-size:1.1rem; font-weight:700; color:var(--text-primary);">00d 00h 00m 00s</div>
+              `;
+              mainContainer.appendChild(livePreview);
+
+              customPanel.appendChild(mainContainer);
+
+              let previewInterval = null;
+
+              const parseLocalTime = (str) => {
+                const parts = str.split('T');
+                if (parts.length !== 2) return new Date(str);
+                const dateParts = parts[0].split('-');
+                const timeParts = parts[1].split(':');
+                if (dateParts.length !== 3 || timeParts.length < 2) return new Date(str);
+                return new Date(
+                  parseInt(dateParts[0], 10),
+                  parseInt(dateParts[1], 10) - 1,
+                  parseInt(dateParts[2], 10),
+                  parseInt(timeParts[0], 10),
+                  parseInt(timeParts[1], 10),
+                  0, 0
+                );
+              };
+
+              const formatDisplayTime = (val) => {
+                if (!val) return currentLang === 'hi' ? 'तारीख और समय चुनें...' : 'Select date & time...';
+                const d = parseLocalTime(val);
+                if (isNaN(d.getTime())) return val;
+                const options = { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                return d.toLocaleString(currentLang === 'hi' ? 'hi-IN' : 'en-US', options);
+              };
+
+              const updateLivePreview = () => {
+                const targetVal = timeInput.value;
+                
+                const displaySpan = triggerBtn.querySelector(".datetime-display-val");
+                if (displaySpan) {
+                  displaySpan.innerText = formatDisplayTime(targetVal);
+                }
+
+                if (!targetVal) {
+                  livePreview.style.display = "none";
+                  clearInterval(previewInterval);
+                  return;
+                }
+
+                const targetTime = parseLocalTime(targetVal).getTime();
+                const now = Date.now();
+                const diff = targetTime - now;
+
+                if (isNaN(targetTime) || diff <= 0) {
+                  livePreview.style.display = "block";
+                  livePreview.querySelector(".countdown-preview-timer").innerText = currentLang === 'hi' ? "समय समाप्त! (अनलॉक हो चुका है)" : "Time reached! (Unlocked)";
+                  clearInterval(previewInterval);
+                  return;
+                }
+
+                livePreview.style.display = "block";
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                livePreview.querySelector(".countdown-preview-timer").innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+              };
+
+              const openModal = () => {
+                const existing = document.getElementById("magic-datetime-modal");
+                if (existing) existing.remove();
+
+                const modalOverlay = document.createElement("div");
+                modalOverlay.id = "magic-datetime-modal";
+                modalOverlay.style.cssText = "position:fixed; inset:0; background:rgba(10, 6, 20, 0.6); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; z-index:999999; opacity:0; transition:opacity 0.3s ease;";
+
+                const modalContent = document.createElement("div");
+                modalContent.style.cssText = "background:var(--bg-secondary); border:1px solid var(--card-border); color:var(--text-primary); border-radius:24px; padding:25px; max-width:420px; width:92%; box-shadow:var(--shadow-lg); transform:scale(0.9); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display:flex; flex-direction:column; gap:20px;";
+                
+                const header = document.createElement("div");
+                header.style.cssText = "display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--toggle-bg); padding-bottom:12px;";
+                header.innerHTML = `
+                  <h3 style="margin:0; font-family:'Outfit', sans-serif; font-size:1.2rem; font-weight:700;">${currentLang === 'hi' ? '⏰ काउंटडाउन सेट करें' : '⏰ Set Countdown Target'}</h3>
+                  <span class="close-modal" style="cursor:pointer; font-size:1.5rem; color:var(--text-secondary); line-height:1;">&times;</span>
+                `;
+                modalContent.appendChild(header);
+
+                const presetTitle = document.createElement("div");
+                presetTitle.innerText = currentLang === 'hi' ? '⚡ त्वरित चुनाव (Presets)' : '⚡ Quick Presets';
+                presetTitle.style.cssText = "font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--accent-solid); margin-bottom:-5px;";
+                modalContent.appendChild(presetTitle);
+
+                const presetsGrid = document.createElement("div");
+                presetsGrid.style.cssText = "display:grid; grid-template-columns:1fr 1fr; gap:10px;";
+                
+                const getPresetTime = (hoursFromNow) => {
+                  const d = new Date();
+                  d.setHours(d.getHours() + hoursFromNow);
+                  d.setMinutes(d.getMinutes(), 0, 0);
+                  const pad = (n) => n.toString().padStart(2, '0');
+                  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                };
+
+                const getMidnightTime = (daysOffset) => {
+                  const d = new Date();
+                  d.setDate(d.getDate() + daysOffset);
+                  d.setHours(24, 0, 0, 0);
+                  const pad = (n) => n.toString().padStart(2, '0');
+                  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T00:00`;
+                };
+
+                const presets = [
+                  { label: currentLang === 'hi' ? 'आज रात 12:00 बजे' : 'Midnight Tonight', value: getMidnightTime(0) },
+                  { label: currentLang === 'hi' ? 'कल रात 12:00 बजे' : 'Midnight Tomorrow', value: getMidnightTime(1) },
+                  { label: currentLang === 'hi' ? '1 घंटे में' : 'In 1 Hour', value: getPresetTime(1) },
+                  { label: currentLang === 'hi' ? '12 घंटे में' : 'In 12 Hours', value: getPresetTime(12) }
+                ];
+
+                presets.forEach(p => {
+                  const btn = document.createElement("button");
+                  btn.className = "preset-btn";
+                  btn.style.cssText = "border:1px solid var(--toggle-bg); background:var(--bg-primary); color:var(--text-primary); padding:10px; border-radius:12px; font-size:0.85rem; font-family:inherit; cursor:pointer; font-weight:600; text-align:center; transition:all 0.2s;";
+                  btn.innerText = p.label;
+                  btn.onmouseover = () => {
+                    btn.style.background = "var(--accent-solid)";
+                    btn.style.color = "#fff";
+                    btn.style.borderColor = "var(--accent-solid)";
+                  };
+                  btn.onmouseout = () => {
+                    btn.style.background = "var(--bg-primary)";
+                    btn.style.color = "var(--text-primary)";
+                    btn.style.borderColor = "var(--toggle-bg)";
+                  };
+                  btn.onclick = () => {
+                    modalInput.value = p.value;
+                    modalInput.dispatchEvent(new Event('input'));
+                  };
+                  presetsGrid.appendChild(btn);
+                });
+                modalContent.appendChild(presetsGrid);
+
+                const customTitle = document.createElement("div");
+                customTitle.innerText = currentLang === 'hi' ? '📅 कस्टम तारीख और समय' : '📅 Custom Date & Time';
+                customTitle.style.cssText = "font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--accent-solid); margin-bottom:-5px;";
+                modalContent.appendChild(customTitle);
+
+                const modalInput = document.createElement("input");
+                modalInput.type = "datetime-local";
+                modalInput.max = "2099-12-31T23:59";
+                modalInput.style.cssText = "width:100%; padding:12px 15px; border:1.5px solid var(--toggle-bg); background:var(--bg-primary); color:var(--text-primary); border-radius:12px; font-size:0.95rem; font-family:inherit; outline:none; cursor:pointer; box-sizing:border-box; transition:border-color 0.2s;";
+                modalInput.value = timeInput.value;
+                modalContent.appendChild(modalInput);
+
+                const modalLivePreview = document.createElement("div");
+                modalLivePreview.style.cssText = "padding:12px; background:rgba(123, 93, 246, 0.06); border-radius:14px; border:1px solid rgba(123, 93, 246, 0.12); text-align:center;";
+                modalLivePreview.innerHTML = `
+                  <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-solid); font-weight:700; margin-bottom:4px;">${currentLang === 'hi' ? 'लाइव प्रीव्यू' : 'Live Preview'}</div>
+                  <div class="modal-preview-timer" style="font-family:'Outfit', sans-serif; font-size:1.2rem; font-weight:800; color:var(--text-primary);">00d 00h 00m 00s</div>
+                `;
+                modalContent.appendChild(modalLivePreview);
+
+                const actionDiv = document.createElement("div");
+                actionDiv.style.cssText = "display:flex; gap:10px; margin-top:5px;";
+
+                const cancelBtn = document.createElement("button");
+                cancelBtn.innerText = currentLang === 'hi' ? 'रद्द करें' : 'Cancel';
+                cancelBtn.style.cssText = "flex:1; padding:12px; border:1px solid var(--toggle-bg); background:var(--bg-primary); color:var(--text-primary); border-radius:12px; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:inherit;";
+                
+                const saveBtn = document.createElement("button");
+                saveBtn.innerText = currentLang === 'hi' ? 'काउंटडाउन सेट करें' : 'Apply Countdown';
+                saveBtn.style.cssText = "flex:1.5; padding:12px; border:none; background:var(--accent-solid); color:white; border-radius:12px; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:inherit; box-shadow:0 4px 15px rgba(123, 93, 246, 0.3);";
+
+                actionDiv.appendChild(cancelBtn);
+                actionDiv.appendChild(saveBtn);
+                modalContent.appendChild(actionDiv);
+
+                modalOverlay.appendChild(modalContent);
+                document.body.appendChild(modalOverlay);
+
+                requestAnimationFrame(() => {
+                  modalOverlay.style.opacity = "1";
+                  modalContent.style.transform = "scale(1)";
+                });
+
+                const closeModal = () => {
+                  modalOverlay.style.opacity = "0";
+                  modalContent.style.transform = "scale(0.9)";
+                  setTimeout(() => modalOverlay.remove(), 300);
+                  clearInterval(modalInterval);
+                };
+
+                header.querySelector(".close-modal").onclick = closeModal;
+                cancelBtn.onclick = closeModal;
+                modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
+
+                saveBtn.onclick = () => {
+                  timeInput.value = modalInput.value;
+                  timeInput.dispatchEvent(new Event('input'));
+                  closeModal();
+                };
+
+                let modalInterval = null;
+                const updateModalPreview = () => {
+                  const targetVal = modalInput.value;
+                  const timerEl = modalLivePreview.querySelector(".modal-preview-timer");
+                  if (!targetVal) {
+                    timerEl.innerText = "00d 00h 00m 00s";
+                    return;
+                  }
+
+                  const targetTime = parseLocalTime(targetVal).getTime();
+                  const diff = targetTime - Date.now();
+
+                  if (isNaN(targetTime) || diff <= 0) {
+                    timerEl.innerText = currentLang === 'hi' ? "समय समाप्त! (अनलॉक हो चुका है)" : "Time reached! (Unlocked)";
+                    return;
+                  }
+
+                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                  timerEl.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                };
+
+                 modalInput.oninput = () => {
+                  let val = modalInput.value;
+                  if (val) {
+                    const parts = val.split('T');
+                    const dateParts = parts[0].split('-');
+                    if (dateParts[0].length > 4) {
+                      dateParts[0] = dateParts[0].slice(0, 4);
+                      modalInput.value = dateParts.join('-') + 'T' + parts[1];
+                    }
+                    const year = parseInt(dateParts[0], 10);
+                    if (year > 2099) {
+                      dateParts[0] = "2099";
+                      modalInput.value = dateParts.join('-') + 'T' + (parts[1] || '00:00');
+                    }
+                  }
+                  updateModalPreview();
+                  clearInterval(modalInterval);
+                  modalInterval = setInterval(updateModalPreview, 1000);
+                };
+
+                updateModalPreview();
+                modalInterval = setInterval(updateModalPreview, 1000);
+              };
+
+              triggerBtn.onclick = openModal;
+
+               timeInput.oninput = () => {
+                let val = timeInput.value;
+                if (val) {
+                  const parts = val.split('T');
+                  const dateParts = parts[0].split('-');
+                  if (dateParts[0].length > 4) {
+                    dateParts[0] = dateParts[0].slice(0, 4);
+                    timeInput.value = dateParts.join('-') + 'T' + parts[1];
+                  }
+                  const year = parseInt(dateParts[0], 10);
+                  if (year > 2099) {
+                    dateParts[0] = "2099";
+                    timeInput.value = dateParts.join('-') + 'T' + (parts[1] || '00:00');
+                  }
+                }
+                const ex = customData.get("countdown") || {};
+                ex.text = timeInput.value;
+                customData.set("countdown", ex);
+ 
+                clearInterval(previewInterval);
+                updateLivePreview();
+                previewInterval = setInterval(updateLivePreview, 1000);
+ 
+                const nameVal = getUserName();
+                refreshFeatureIfActive("countdown", nameVal, timeInput.value);
                 autoSaveState();
               };
             }
@@ -4106,6 +5245,10 @@
                 customPanel.style.display = panelVisible ? "block" : "none";
                 chevron.innerText = panelVisible ? "▲" : "▼";
                 openPanelId = panelVisible ? customPanel : null;
+                if (panelVisible) {
+                  window.shouldScrollToFeatureId = id;
+                  debouncedRefreshAll();
+                }
               };
             }
             toggleRow.onclick = (e) => {
@@ -4128,14 +5271,16 @@
                 toggleRow.classList.add("active");
                 if (chevron) chevron.innerText = "▼";
                 activeFeatureStates.set(id, true);
+                window.shouldScrollToFeatureId = id;
                 const nameVal = getUserName();
-                const customText = textarea ? textarea.value : "";
-                const images = customData.get(id)?.images || [];
-                const emojiVal = emojiInput ? emojiInput.value : "";
-                const audio = customData.get(id)?.audio || "";
-                const spotifyEmbedUrl = customData.get(id)?.spotifyEmbedUrl || "";
-                const youtubeEmbedUrl = customData.get(id)?.youtubeEmbedUrl || "";
-                const instagramEmbedUrl = customData.get(id)?.instagramEmbedUrl || "";
+                const existingData = customData.get(id) || {};
+                const customText = textarea ? textarea.value : (existingData.text || "");
+                const images = existingData.images || [];
+                const emojiVal = emojiInput ? emojiInput.value : (existingData.emoji || "");
+                const audio = existingData.audio || "";
+                const spotifyEmbedUrl = existingData.spotifyEmbedUrl || "";
+                const youtubeEmbedUrl = existingData.youtubeEmbedUrl || "";
+                const instagramEmbedUrl = existingData.instagramEmbedUrl || "";
                 const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl };
                 customData.set(id, storeData);
                 if (id === 'addMusicSection') {
@@ -4193,6 +5338,18 @@
       // IFRAME LOAD
       const frame = document.getElementById("frame");
       function loadSelectedTemplate() {
+        isFrameLoaded = false;
+        const urlParams = new URLSearchParams(window.location.search);
+        const pathParts = window.location.pathname.split('/').filter(p => p && !p.includes('.'));
+        const potentialSlug = pathParts[pathParts.length - 1];
+        const isSharedView = urlParams.get('view') || urlParams.get('slug') ||
+          (potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug));
+
+        if (isSharedView) {
+          // Do not load default template if we are in shared view mode
+          return;
+        }
+
         let tp = localStorage.getItem("selectedTemplate");
         if (!tp || tp === "null") tp = "../templates/birthday1.html";
         const separator = tp.includes('?') ? '&' : '?';
@@ -4200,6 +5357,7 @@
         frame.src = `${tp}${separator}v=${Date.now()}&mode=edit&lang=${currentLang}`;
       }
       frame.onload = () => {
+        isFrameLoaded = true;
         iframeDoc = getIframeDocument();
         iframeWin = frame.contentWindow;
         // Inject light theme CSS to show original template colors
@@ -4275,7 +5433,9 @@
         // Apply state after a short delay to ensure UI is ready
         setTimeout(() => {
           applyCustomizationToUI();
-          refreshAll();
+          if (isFrameLoaded) {
+            refreshAll();
+          }
         }, 100);
       }
 
@@ -4283,71 +5443,6 @@
       window.addEventListener('message', (event) => {
         if (event.data.type === 'uploadError') {
           showModal(event.data.message);
-        } else if (event.data.type === 'droppedImages') {
-          const urls = event.data.images;
-          const existing = customData.get("addImages") || {};
-          existing.images = (existing.images || []).concat(urls);
-          customData.set("addImages", existing);
-          autoSaveState();
-          // Activate addImages feature if not active
-          if (!activeFeatureStates.get("addImages")) {
-            const rows = document.querySelectorAll('.toggle-row');
-            rows.forEach(row => {
-              const label = row.querySelector('.toggle-label');
-              if (label && (label.innerText === translations[currentLang].featAddImages || label.innerText === '📷 Add Images')) {
-                row.classList.add('active');
-                activeFeatureStates.set("addImages", true);
-              }
-            });
-          }
-          const nameVal = getUserName();
-          applyFeature("addImages", true, nameVal, "", existing.images);
-          // Update the image preview in the custom panel
-          const previewDivs = document.querySelectorAll('#categoriesContainer .image-preview');
-          previewDivs.forEach(previewDiv => {
-            const parentPanel = previewDiv.closest('.custom-panel');
-            if (parentPanel && parentPanel.previousElementSibling.querySelector('.toggle-label').innerText === translations[currentLang].featAddImages) {
-              previewDiv.innerHTML = "";
-              existing.images.forEach((imgSrc, idx) => {
-                const item = document.createElement("div");
-                item.className = "image-preview-item";
-                const img = document.createElement("img");
-                img.src = imgSrc;
-                const removeBtn = document.createElement("span");
-                removeBtn.className = "remove-image";
-                removeBtn.innerHTML = "×";
-                removeBtn.onclick = (e) => {
-                  e.stopPropagation();
-                  existing.images = existing.images.filter((_, i) => i !== idx);
-                  customData.set("addImages", existing);
-                  // Update preview again
-                  previewDiv.innerHTML = "";
-                  existing.images.forEach((src, i) => {
-                    const itm = document.createElement("div");
-                    itm.className = "image-preview-item";
-                    const im = document.createElement("img");
-                    im.src = src;
-                    const remBtn = document.createElement("span");
-                    remBtn.className = "remove-image";
-                    remBtn.innerHTML = "×";
-                    remBtn.onclick = (e) => {
-                      e.stopPropagation();
-                      existing.images = existing.images.filter((_, j) => j !== i);
-                      customData.set("addImages", existing);
-                      refreshFeatureIfActive("addImages", nameVal, "", existing.images);
-                    };
-                    itm.appendChild(im);
-                    itm.appendChild(remBtn);
-                    previewDiv.appendChild(itm);
-                  });
-                  refreshFeatureIfActive("addImages", nameVal, "", existing.images);
-                };
-                item.appendChild(img);
-                item.appendChild(removeBtn);
-                previewDiv.appendChild(item);
-              });
-            }
-          });
         }
       });
 
@@ -4407,6 +5502,25 @@
         overlayShare.classList.remove('show');
       };
       function generateShareLink() {
+        // --- Premium Gating check ---
+        const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+        const isPremium = !!userDataObj.isPremium || localStorage.getItem('isPremium') === 'true';
+
+        if (!isPremium) {
+          const premiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
+          const usedPremium = [];
+          for (const [id, active] of activeFeatureStates.entries()) {
+            if (active && premiumFeatures.includes(id)) {
+              usedPremium.push(id);
+            }
+          }
+          if (usedPremium.length > 0) {
+            showUpgradeModal(usedPremium);
+            return;
+          }
+        }
+        // --- End of Premium Gating check ---
+
         const doc = getIframeDocument();
         if (doc) {
           doc.body.contentEditable = false;
@@ -4458,11 +5572,22 @@
 
         const audio = document.getElementById('generateShareAudio');
         if (audio && btn) {
-          audio.currentTime = 0;
-          audio.play().catch(e => console.log(e));
-          audio.onended = () => {
+          let proceedCalled = false;
+          const doProceed = () => {
+            if (proceedCalled) return;
+            proceedCalled = true;
             proceedGenerate();
           };
+
+          audio.currentTime = 0;
+          audio.play().catch(e => {
+            console.error("Audio playback failed:", e);
+            doProceed();
+          });
+
+          audio.onended = doProceed;
+          // Fallback timeout in case the audio stalls or onended never fires
+          setTimeout(doProceed, 2000);
         } else {
           proceedGenerate();
         }
@@ -4747,6 +5872,7 @@
 
     window.escapeHtml = function(str) { return (str||"").replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); };
     window.getUserName = () => userName;
+    window.scrollToElement = function() {};
     window.insertSectionBeforeFinal = function(doc, sectionElement) {
       if (!doc) return;
       const container = doc.getElementById('sections-container') || doc.body;
@@ -4765,7 +5891,7 @@
             feature.enable(document, window, emoji);
           } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
             feature.enable(document, window, name, text, images);
-          } else if (id === "magicMusic") {
+          } else if (id === "magicMusic" || id === "voiceNote") {
             feature.enable(document, window, name, text, audio);
           } else if (id === "addMusicSection") {
             feature.enable(document, window, name, text, spotifyEmbedUrl || "", youtubeEmbedUrl || "", instagramEmbedUrl || "");
@@ -4782,41 +5908,150 @@
       }
       const lockActive = activeFeatureStates.get('lock');
       const curtainActive = activeFeatureStates.get('curtainReveal');
+      const countdownActive = activeFeatureStates.get('countdown');
+      const welcomeActive = activeFeatureStates.get('welcomeTyping');
       
-      // Show content only after protective features are applied
       const showContent = () => {
         document.documentElement.style.visibility = "visible";
         document.body.style.visibility = "visible";
         document.body.style.overflow = "";
       };
-      
-        if (lockActive) {
+
+      const isCountdownRunning = () => {
+        if (!countdownActive) return false;
+        const data = customData.get('countdown') || {};
+        if (!data.text) return false;
+        try {
+          const parseLocalTime = (str) => {
+            const parts = str.split('T');
+            if (parts.length !== 2) return new Date(str);
+            const dateParts = parts[0].split('-');
+            const timeParts = parts[1].split(':');
+            if (dateParts.length !== 3 || timeParts.length < 2) return new Date(str);
+            return new Date(
+              parseInt(dateParts[0], 10),
+              parseInt(dateParts[1], 10) - 1,
+              parseInt(dateParts[2], 10),
+              parseInt(timeParts[0], 10),
+              parseInt(timeParts[1], 10),
+              0, 0
+            );
+          };
+          const targetTime = parseLocalTime(data.text).getTime();
+          return !isNaN(targetTime) && Date.now() < targetTime;
+        } catch (e) {
+          return false;
+        }
+      };
+
+      if (window._countdownFinishedHandler) {
+        window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
+      }
+      if (window._lockUnlockedHandler) {
+        window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
+      }
+      if (window._curtainOpenedHandler) {
+        window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
+      }
+      if (window._welcomeFinishedHandler) {
+        window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+      }
+
+      const runStages = () => {
+        if (isCountdownRunning()) {
+          const data = customData.get('countdown') || {};
+          window.applyFeature('countdown', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          
+          window.applyFeature('lock', false);
+          window.applyFeature('curtainReveal', false);
+          window.applyFeature('welcomeTyping', false);
+
+          window.countdownFinished = false;
+          window.lockUnlocked = false;
+          window.curtainOpened = false;
+          window.welcomeFinished = false;
+
+          showContent();
+
+          window._countdownFinishedHandler = () => {
+            window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
+            window.countdownFinished = true;
+            runStages();
+          };
+          window.addEventListener('countdownFinished', window._countdownFinishedHandler);
+          return;
+        }
+
+        window.applyFeature('countdown', false);
+        window.countdownFinished = true;
+
+        if (lockActive && !window.lockUnlocked) {
           const data = customData.get('lock') || {};
           window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-          // Reveal document so lock overlay is visible; other content remains beneath overlay
+          
+          window.applyFeature('curtainReveal', false);
+          window.applyFeature('welcomeTyping', false);
+
+          window.curtainOpened = false;
+          window.welcomeFinished = false;
+
           showContent();
-          const handler = () => {
-            window.removeEventListener('lockUnlocked', handler);
-            // Apply other features after unlock
-              for (const [id, active] of activeFeatureStates.entries()) {
-                if (id !== 'lock' && active) {
-                  const data = customData.get(id) || {};
-                  const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
-                  if (id === 'addMusicSection') {
-                    args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
-                  }
-                  window.applyFeature(...args);
-                }
-              }
+
+          window._lockUnlockedHandler = () => {
+            window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
+            window.lockUnlocked = true;
+            runStages();
           };
-          window.addEventListener('lockUnlocked', handler);
-        } else if (curtainActive) {
-        // Apply curtain reveal first, then show content
-        const data = customData.get('curtainReveal') || {};
-        window.applyFeature('curtainReveal', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-        // Apply other features
+          window.addEventListener('lockUnlocked', window._lockUnlockedHandler);
+          return;
+        }
+
+        window.applyFeature('lock', false);
+        window.lockUnlocked = true;
+
+        if (curtainActive && !window.curtainOpened) {
+          const data = customData.get('curtainReveal') || {};
+          window.applyFeature('curtainReveal', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          
+          window.applyFeature('welcomeTyping', false);
+
+          window.welcomeFinished = false;
+
+          showContent();
+
+          window._curtainOpenedHandler = () => {
+            window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
+            window.curtainOpened = true;
+            runStages();
+          };
+          window.addEventListener('curtainOpened', window._curtainOpenedHandler);
+          return;
+        }
+
+        window.applyFeature('curtainReveal', false);
+        window.curtainOpened = true;
+
+        if (welcomeActive && !window.welcomeFinished) {
+          const data = customData.get('welcomeTyping') || {};
+          window.applyFeature('welcomeTyping', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          
+          showContent();
+
+          window._welcomeFinishedHandler = () => {
+            window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+            window.welcomeFinished = true;
+            runStages();
+          };
+          window.addEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+          return;
+        }
+
+        window.applyFeature('welcomeTyping', false);
+        window.welcomeFinished = true;
+
+        // Apply all other features
         for (const [id, active] of activeFeatureStates.entries()) {
-          if (id !== 'curtainReveal' && active) {
+          if (active && id !== 'lock' && id !== 'curtainReveal' && id !== 'welcomeTyping' && id !== 'countdown') {
             const data = customData.get(id) || {};
             const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
             if (id === 'addMusicSection') {
@@ -4825,23 +6060,10 @@
             window.applyFeature(...args);
           }
         }
-        // Show content after curtain is in place
-        setTimeout(showContent, 100);
-      } else {
-        // No protective features, show content immediately
-        // Respect toggle order by iterating over the Map
-        for (const [id, active] of activeFeatureStates.entries()) {
-          if (active) {
-            const data = customData.get(id) || {};
-            const args = [id, true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || ""];
-             if (id === 'addMusicSection') {
-               args.push(data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
-             }
-            window.applyFeature(...args);
-          }
-        }
         showContent();
-      }
+      };
+
+      runStages();
     };
     function initMagic() {
       if (magicRaw) {
@@ -5252,8 +6474,8 @@
     })();
   </script>
   <script src="/assets/tracker.js" defer></script>
-    <!-- Content Protection Script -->
-    <script src="assets/content-protection.js"></script>
+  <!-- Content Protection Script -->
+  <script src="assets/content-protection.js"></script>
 </body>
 
 </html>

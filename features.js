@@ -28,7 +28,7 @@
             // Create floating particles
             for (let i = 0; i < 20; i++) {
                 const particle = d.createElement('div');
-                particle.style.cssText = `position:absolute; left:${Math.random()*100}%; top:${Math.random()*100}%; width:4px; height:4px; background:#fff; border-radius:50%; opacity:0.6; animation:floatParticle ${2+Math.random()*2}s infinite ease-in-out;`;
+                particle.style.cssText = `position:absolute; left:${Math.random() * 100}%; top:${Math.random() * 100}%; width:4px; height:4px; background:#fff; border-radius:50%; opacity:0.6; animation:floatParticle ${2 + Math.random() * 2}s infinite ease-in-out;`;
                 particlesContainer.appendChild(particle);
             }
             if (!d.getElementById('lock-styles')) {
@@ -118,6 +118,11 @@
                 if (l) l.style.transform = "translateX(-100%)";
                 if (r) r.style.transform = "translateX(100%)";
                 btn.remove();
+                try {
+                    if (w && typeof w.scrollTo === 'function') {
+                        w.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                } catch (err) {}
                 window.dispatchEvent(new CustomEvent('curtainOpened'));
                 setTimeout(() => cd?.remove(), 4000);
             };
@@ -209,7 +214,7 @@
                 overlay.appendChild(container);
                 d.body.appendChild(overlay);
                 const msgPara = container.querySelector("#magic-typing-welcome-msg");
-                setTimeout(() => { container.style.transform = "scale(1.2)"; container.style.opacity = "1";                 const audio = d.createElement('audio'); audio.id = 'magic-welcome-audio'; audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1'; audio.loop = true; audio.volume = 0.5; audio.preload = 'auto'; d.body.appendChild(audio); audio.addEventListener('canplay', () => { audio.play().catch(e => console.log('Audio play failed', e)); let idx = 0; const iv = setInterval(() => { if (idx < msgText.length) { msgPara.innerHTML += msgText[idx]; idx++; } else { clearInterval(iv); const audio = d.getElementById('magic-welcome-audio'); if (audio) { audio.pause(); audio.remove(); } setTimeout(() => { overlay.style.opacity = "0"; setTimeout(() => { overlay?.remove(); d.body.classList.remove('magic-noscroll'); }, 1500); }, 3500); } }, 75); }); }, 100);
+                setTimeout(() => { container.style.transform = "scale(1.2)"; container.style.opacity = "1"; const audio = d.createElement('audio'); audio.id = 'magic-welcome-audio'; audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1'; audio.loop = true; audio.volume = 0.5; audio.preload = 'auto'; d.body.appendChild(audio); audio.addEventListener('canplay', () => { audio.play().catch(e => console.log('Audio play failed', e)); let idx = 0; const iv = setInterval(() => { if (idx < msgText.length) { msgPara.innerHTML += msgText[idx]; idx++; } else { clearInterval(iv); const audio = d.getElementById('magic-welcome-audio'); if (audio) { audio.pause(); audio.remove(); } setTimeout(() => { overlay.style.opacity = "0"; setTimeout(() => { overlay?.remove(); d.body.classList.remove('magic-noscroll'); window.dispatchEvent(new CustomEvent('welcomeTypingFinished')); }, 1500); }, 3500); } }, 75); }); }, 100);
                 return { intervals: [iv] };
             };
             const curtain = d.getElementById("magic-curtain-reveal-root");
@@ -278,13 +283,13 @@
             const generateTargets = () => {
                 if (canvasWidth < 50 || canvasHeight < 50) return;
                 const off = d.createElement("canvas"); off.width = canvasWidth; off.height = canvasHeight;
-                const octx = off.getContext("2d"); 
-                
+                const octx = off.getContext("2d");
+
                 let fontSize = Math.min(65, canvasHeight / 2.2);
                 octx.font = `bold ${fontSize}px 'Poppins', sans-serif`;
                 let totalWidth = octx.measureText(msg).width;
-                if (totalWidth > canvasWidth * 0.95) { 
-                    fontSize = fontSize * (canvasWidth * 0.95 / totalWidth); 
+                if (totalWidth > canvasWidth * 0.95) {
+                    fontSize = fontSize * (canvasWidth * 0.95 / totalWidth);
                     octx.font = `bold ${fontSize}px 'Poppins', sans-serif`;
                     totalWidth = octx.measureText(msg).width;
                 }
@@ -307,9 +312,9 @@
                 parts.forEach(p => {
                     const w = octx.measureText(p.content).width;
                     if (p.type === 'text') {
-                        octx.fillStyle = "#000"; octx.fillRect(0,0,canvasWidth,canvasHeight);
+                        octx.fillStyle = "#000"; octx.fillRect(0, 0, canvasWidth, canvasHeight);
                         octx.fillStyle = "#fff"; octx.fillText(p.content, currentX, centerY);
-                        const data = octx.getImageData(0,0,canvasWidth,canvasHeight).data;
+                        const data = octx.getImageData(0, 0, canvasWidth, canvasHeight).data;
                         const step = 2.2; // Optimized for both readability and performance
                         for (let y = 0; y < canvasHeight; y += step) {
                             for (let x = 0; x < canvasWidth; x += step) {
@@ -349,23 +354,23 @@
 
             const textEmojiPool = ["\u2728", "\u2B50", "\uD83C\uDF1F", "\uD83D\uDcab", "\u2721\uFE0F"];
             class Particle {
-                constructor(x, y, char = null, size = null) { 
-                    this.x = x; this.y = y; 
-                    this.vx = (Math.random() - 0.5) * 8; 
-                    this.vy = (Math.random() - 0.5) * 10 - 6; 
-                    this.target = null; this.locked = false; 
+                constructor(x, y, char = null, size = null) {
+                    this.x = x; this.y = y;
+                    this.vx = (Math.random() - 0.5) * 8;
+                    this.vy = (Math.random() - 0.5) * 10 - 6;
+                    this.target = null; this.locked = false;
                     this.char = char || (Math.random() < 0.1 ? textEmojiPool[Math.floor(Math.random() * textEmojiPool.length)] : null);
-                    this.color = this.char ? "#fff" : `hsl(${Math.random() * 360}, 100%, 75%)`; 
-                    this.size = size || (this.char ? 6 + Math.random() * 4 : 2 + Math.random() * 2.5); 
+                    this.color = this.char ? "#fff" : `hsl(${Math.random() * 360}, 100%, 75%)`;
+                    this.size = size || (this.char ? 6 + Math.random() * 4 : 2 + Math.random() * 2.5);
                     this.alpha = 1;
                 }
                 update() {
-                    if (!formed) { 
-                        this.x += this.vx; this.y += this.vy; this.vx *= 0.95; this.vy *= 0.95; this.vy += 0.08; 
+                    if (!formed) {
+                        this.x += this.vx; this.y += this.vy; this.vx *= 0.95; this.vy *= 0.95; this.vy += 0.08;
                         this.alpha = Math.max(0, this.alpha - 0.005);
                     } else if (this.target && !this.locked) {
                         this.alpha = 1;
-                        const dx = this.target.x - this.x, dy = this.target.y - this.y; 
+                        const dx = this.target.x - this.x, dy = this.target.y - this.y;
                         const dist = Math.sqrt(dx * dx + dy * dy);
                         if (dist < 1) { this.x = this.target.x; this.y = this.target.y; this.locked = true; }
                         else { const move = dist * 0.18; this.x += (dx / dist) * move; this.y += (dy / dist) * move; }
@@ -383,14 +388,14 @@
 
 
             function explode(x, y) { for (let i = 0; i < 150; i++) particles.push(new Particle(x, y)); }
-            function formText() { 
-                if (!targets.text) generateTargets(); 
-                particles = []; 
-                targets.text.forEach(t => { 
-                    const p = new Particle(Math.random() * canvasWidth, canvasHeight + 50); 
-                    p.target = t; 
-                    particles.push(p); 
-                }); 
+            function formText() {
+                if (!targets.text) generateTargets();
+                particles = [];
+                targets.text.forEach(t => {
+                    const p = new Particle(Math.random() * canvasWidth, canvasHeight + 50);
+                    p.target = t;
+                    particles.push(p);
+                });
                 targets.emojis.forEach(t => {
                     const p = new Particle(Math.random() * canvasWidth, canvasHeight + 50);
                     p.target = t;
@@ -398,27 +403,27 @@
                     p.size = t.size;
                     particles.push(p);
                 });
-                formed = true; 
+                formed = true;
             }
-            function draw() { 
-                ctx.fillStyle = "rgba(0,0,0,0.25)"; 
-                ctx.fillRect(0, 0, canvasWidth, canvasHeight); 
-                
+            function draw() {
+                ctx.fillStyle = "rgba(0,0,0,0.25)";
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
                 // Set text properties once for all particles
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                
-                for (let p of particles) { 
+
+                for (let p of particles) {
                     ctx.globalAlpha = p.alpha;
                     if (p.char) {
                         ctx.font = `${p.size}px sans-serif`;
                         ctx.fillStyle = "#fff";
                         ctx.fillText(p.char, p.x, p.y);
                     } else {
-                        ctx.fillStyle = p.color; 
-                        ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
                     }
-                } 
+                }
                 ctx.globalAlpha = 1;
             }
             function animate() { for (let p of particles) p.update(); draw(); animationFrame = requestAnimationFrame(animate); }
@@ -483,31 +488,7 @@
         disable(d) { d?.getElementById("magic-flower-rain")?.remove(); }
     },
 
-    canvasStarfall: {
-        enable(d, w) {
-            if (d.getElementById("magic-star-canvas")) return;
-            const can = d.createElement("canvas"); can.id = "magic-star-canvas"; can.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1; opacity:0.5;";
-            d.body.appendChild(can);
-            const ctx = can.getContext("2d"); let stars = [];
-            const resize = () => { can.width = w.innerWidth; can.height = w.innerHeight; stars = []; for (let i = 0; i < 200; i++) stars.push({ x: Math.random() * can.width, y: Math.random() * can.height, r: Math.random() * 2.5 }); };
-            const animate = () => {
-                if (!can.isConnected || !d.getElementById("magic-star-canvas")) {
-                    w.removeEventListener("resize", resize);
-                    return;
-                }
-                ctx.clearRect(0, 0, can.width, can.height);
-                stars.forEach(s => { ctx.fillStyle = `rgba(255,255,200,${0.5 + Math.sin(Date.now() * 0.002 + s.x) * 0.3})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill(); });
-                requestAnimationFrame(animate);
-            };
-            resize();
-            w.addEventListener("resize", resize);
-            animate();
-            return { cleanup: () => w.removeEventListener("resize", resize) };
-        },
-        disable(d) {
-            d?.getElementById("magic-star-canvas")?.remove();
-        }
-    },
+
 
     flyingSwans: {
         enable(d, w, ce) {
@@ -732,7 +713,7 @@
             };
             const contentItems = hasImages ? images : [customText || getDef()];
             contentItems.forEach((item, idx) => {
-                const cardDiv = d.createElement("div"); 
+                const cardDiv = d.createElement("div");
                 cardDiv.className = "magic-scratch-card";
                 cardDiv.style.cssText = "width: 250px; height: 250px; background: #1a1025; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; transition: width 0.3s, height 0.3s;";
                 const canvas = d.createElement("canvas"); canvas.width = 500; canvas.height = 500; canvas.style.cssText = "width:100%; height:100%; cursor: pointer; display: block; position:absolute; top:0; left:0; z-index:2;";
@@ -776,8 +757,8 @@
     memoryTimeline: {
         enable(d, w, userName, customText, images) {
             if (d.getElementById("magic-timeline-section")) return;
-            const section = d.createElement("section"); 
-            section.id = "magic-timeline-section"; 
+            const section = d.createElement("section");
+            section.id = "magic-timeline-section";
             section.className = "magic-timeline-section";
             section.style.cssText = "padding: 2.5rem 0; background: rgba(0,0,0,0.03); border-radius: 48px; margin: 2rem 1.5rem; overflow: visible; position: relative;";
             const title = d.createElement("h2"); title.innerText = "\uD83D\uDCDC " + (window.currentLang === 'hi' ? "\u092f\u093e\u0926\u094b\u0902 \u0915\u0940 \u091f\u093e\u0907\u092e\u0932\u093e\u0907\u0928" : "Memory Timeline"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "2.2rem"; title.style.textAlign = "center"; title.style.color = "#c0a080";
@@ -832,7 +813,7 @@
             };
             const milestones = customText ? customText.split(',') : getDef().split(',');
             milestones.forEach((m, i) => {
-                const card = d.createElement("div"); 
+                const card = d.createElement("div");
                 card.className = "magic-timeline-card";
                 card.style.cssText = "min-width: 260px; flex-shrink: 0; background: linear-gradient(145deg,#fffbf0,#ffe0c0); border-radius: 32px; padding: 25px; text-align: center; scroll-snap-align: center; color: #5a2e1e; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s;";
                 card.innerHTML = `<strong style="font-size:1.3rem; display:block; margin-bottom:8px;">\u2728 ${m} \u2728</strong><span style="font-size:0.95rem; opacity:0.8;">\u2764\uFE0F ${escapeHtml(userName)}</span>`;
@@ -913,7 +894,7 @@
                 }
             }
             const modal = d.createElement("div"); modal.id = "magic-letter-modal"; modal.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:2147484100; display:flex; align-items:center; justify-content:center; visibility:hidden; opacity:0; transition:0.4s; padding:20px;";
-            const card = d.createElement("div"); 
+            const card = d.createElement("div");
             card.className = "magic-letter-card";
             card.style.cssText = "background: #fdf5e6; background-image: radial-gradient(#eadcb8 1px, transparent 0); background-size: 20px 20px; border-radius:15px; padding:45px; max-width:500px; width:100%; text-align:center; font-family:'Great Vibes',cursive; font-size:1.8rem; box-shadow:0 30px 60px rgba(0,0,0,0.6); border:8px double #d2b48c; color: #5d4037; position:relative; transform:translateY(30px); transition:transform 0.5s;";
             const lang = window.currentLang || 'en';
@@ -953,11 +934,11 @@
             const section = d.createElement("section"); section.id = "magic-hug-section"; section.style.cssText = "padding: 2.5rem 1rem; text-align: center; background: linear-gradient(145deg, rgba(255,182,193,0.15), rgba(255,105,180,0.08)); border-radius: 48px; margin: 2rem 1.5rem;";
             const title = d.createElement("h2"); title.innerText = "\uD83E\uDD17 " + (typeof trans.hugTitle === 'function' ? trans.hugTitle(evData.event) : "Hug + Sky Letter"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "2.2rem"; title.style.color = "#ff69b4";
             section.appendChild(title); const container = d.createElement("div"); container.style.cssText = "position: relative; min-height: 320px; margin: 25px 0; background: rgba(255,255,255,0.05); border-radius:30px;";
-            const av1 = d.createElement("div"); 
+            const av1 = d.createElement("div");
             av1.className = "magic-hug-avatar";
             av1.innerText = "\uD83D\uDE0A"; av1.style.cssText = "position: absolute; left: 15%; bottom: 15%; font-size: 80px; transition: transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));";
-            container.appendChild(av1); 
-            const av2 = d.createElement("div"); 
+            container.appendChild(av1);
+            const av2 = d.createElement("div");
             av2.className = "magic-hug-avatar";
             av2.innerText = "\uD83C\uDF82"; av2.style.cssText = "position: absolute; right: 15%; bottom: 15%; font-size: 80px; transition: transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));";
             container.appendChild(av2); section.appendChild(container);
@@ -1079,12 +1060,708 @@
     },
 
     magicMusic: {
-        enable(d) {
-            if (d.getElementById("magic-bg-audio")) return;
-            const a = d.createElement("audio"); a.id = "magic-bg-audio"; a.src = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
-            a.loop = true; a.volume = 0.3; a.autoplay = true; d.body.appendChild(a); a.play().catch(e => { }); return {};
+        enable(d, w, userName, customText, audio) {
+            if (d.getElementById("magic-bg-audio")) return {};
+            const srcUrl = audio || customText || "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+            const a = d.createElement("audio");
+            a.id = "magic-bg-audio";
+            a.src = srcUrl;
+            a.loop = true;
+            a.volume = 0.4;
+            // Background music should NOT autoplay immediately if blocked by countdown, lock, curtains or welcome typing
+            a.autoplay = false;
+            d.body.appendChild(a);
+
+            // Checks if any of the overlays are still active/blocking
+            const isBlocked = () => {
+                const hasCountdown = !!d.getElementById("magic-countdown-overlay");
+                const hasLock = !!d.getElementById("lock-overlay") || (w.lockUnlocked === false);
+                const hasCurtain = !!d.getElementById("magic-curtain-reveal-root");
+                const hasWelcome = !!d.getElementById("magic-welcome-typing-root");
+                return hasCountdown || hasLock || hasCurtain || hasWelcome;
+            };
+
+            // Inject CSS keyframes for animated music bars and premium effects
+            if (!d.getElementById("magic-music-style")) {
+                const style = d.createElement("style");
+                style.id = "magic-music-style";
+                style.innerHTML = `
+                    @keyframes magic-bar-bounce-0 { 0%, 100% { height: 25%; } 50% { height: 95%; } }
+                    @keyframes magic-bar-bounce-1 { 0%, 100% { height: 35%; } 50% { height: 100%; } }
+                    @keyframes magic-bar-bounce-2 { 0%, 100% { height: 15%; } 50% { height: 75%; } }
+                    @keyframes magic-bar-bounce-3 { 0%, 100% { height: 40%; } 50% { height: 90%; } }
+                    @keyframes magic-bar-bounce-4 { 0%, 100% { height: 20%; } 50% { height: 80%; } }
+                    .magic-music-bar-active-0 { animation: magic-bar-bounce-0 0.7s ease-in-out infinite; }
+                    .magic-music-bar-active-1 { animation: magic-bar-bounce-1 0.6s ease-in-out infinite; }
+                    .magic-music-bar-active-2 { animation: magic-bar-bounce-2 0.8s ease-in-out infinite; }
+                    .magic-music-bar-active-3 { animation: magic-bar-bounce-3 0.5s ease-in-out infinite; }
+                    .magic-music-bar-active-4 { animation: magic-bar-bounce-4 0.7s ease-in-out infinite; }
+                    
+                    @keyframes magic-widget-pulse {
+                        0% { box-shadow: 0 8px 24px rgba(123, 93, 246, 0.15), 0 0 0 0px rgba(123, 93, 246, 0.2); }
+                        70% { box-shadow: 0 8px 24px rgba(123, 93, 246, 0.25), 0 0 0 8px rgba(123, 93, 246, 0); }
+                        100% { box-shadow: 0 8px 24px rgba(123, 93, 246, 0.15), 0 0 0 0px rgba(123, 93, 246, 0); }
+                    }
+                    .magic-music-pulse-active { animation: magic-widget-pulse 2s infinite; }
+
+                    @keyframes magic-status-blink {
+                        0%, 100% { opacity: 1; transform: scale(1); }
+                        50% { opacity: 0.35; transform: scale(0.85); }
+                    }
+                    @keyframes magic-play-pulse {
+                        0% { box-shadow: 0 4px 12px rgba(255, 122, 47, 0.35), 0 0 0 0px rgba(255, 122, 47, 0.4); }
+                        70% { box-shadow: 0 4px 12px rgba(255, 122, 47, 0.35), 0 0 0 10px rgba(255, 122, 47, 0); }
+                        100% { box-shadow: 0 4px 12px rgba(255, 122, 47, 0.35), 0 0 0 0px rgba(255, 122, 47, 0); }
+                    }
+                    .magic-play-pulse-active { animation: magic-play-pulse 2s infinite !important; }
+                `;
+                d.head.appendChild(style);
+            }
+
+            // Create floating music widget
+            const widget = d.createElement("div");
+            widget.id = "magic-music-widget";
+            widget.style.cssText = "position: fixed; top: 20px; right: 20px; z-index: 10000; background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1.5px solid rgba(255, 255, 255, 0.7); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s, box-shadow 0.3s;";
+
+            // Glassmorphic sliding tooltip
+            const tooltip = d.createElement("div");
+            tooltip.style.cssText = "position: fixed; top: 28px; right: 74px; z-index: 10000; background: rgba(123, 93, 246, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; padding: 6px 12px; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 0.68rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; transform: translateX(10px); box-shadow: 0 4px 12px rgba(123, 93, 246, 0.2); border: 1px solid rgba(255, 255, 255, 0.15); white-space: nowrap;";
+            tooltip.innerText = w.currentLang === 'hi' ? 'संगीत बंद/चालू करें' : 'Tap to mute music';
+            d.body.appendChild(tooltip);
+
+            const wave = d.createElement("div");
+            wave.style.cssText = "display: flex; align-items: flex-end; gap: 2.5px; width: 20px; height: 16px;";
+            
+            const bars = [];
+            for (let i = 0; i < 5; i++) {
+                const bar = d.createElement("div");
+                bar.style.cssText = "width: 2.5px; height: 30%; background: linear-gradient(to top, #ff7a2f, #7b5df6); border-radius: 1.5px; transition: height 0.2s;";
+                wave.appendChild(bar);
+                bars.push(bar);
+            }
+            widget.appendChild(wave);
+
+            // Muted Speaker Icon to replace the background music icon
+            const muteIcon = d.createElement("i");
+            muteIcon.className = "fas fa-volume-mute";
+            muteIcon.style.cssText = "color: #7b5df6; font-size: 1.1rem; display: none;";
+            widget.appendChild(muteIcon);
+
+            d.body.appendChild(widget);
+
+            const startBars = () => {
+                bars.forEach((bar, idx) => {
+                    bar.classList.add(`magic-music-bar-active-${idx}`);
+                });
+                widget.classList.add("magic-music-pulse-active");
+                wave.style.display = 'flex';
+                muteIcon.style.display = 'none';
+            };
+
+            const stopBars = () => {
+                bars.forEach((bar, idx) => {
+                    bar.classList.remove(`magic-music-bar-active-${idx}`);
+                    bar.style.height = "30%";
+                });
+                widget.classList.remove("magic-music-pulse-active");
+                wave.style.display = 'none';
+                muteIcon.style.display = 'block';
+            };
+
+            // Set initial visual state to muted/paused
+            stopBars();
+
+            // Listeners to toggle animation state based on actual media playback
+            a.addEventListener('play', startBars);
+            a.addEventListener('playing', startBars);
+            a.addEventListener('pause', stopBars);
+            a.addEventListener('ended', stopBars);
+
+            a.addEventListener('volumechange', () => {
+                if (a.muted || a.volume === 0) {
+                    stopBars();
+                } else if (!a.paused) {
+                    startBars();
+                }
+            });
+
+            widget.onclick = () => {
+                if (isBlocked()) return;
+                if (a.paused) {
+                    a.play().catch(() => {});
+                } else {
+                    a.pause();
+                }
+            };
+
+            widget.onmouseenter = () => {
+                widget.style.transform = "scale(1.08)";
+                widget.style.boxShadow = "0 10px 28px rgba(123, 93, 246, 0.15)";
+                tooltip.style.opacity = "1";
+                tooltip.style.transform = "translateX(0)";
+            };
+            widget.onmouseleave = () => {
+                widget.style.transform = "scale(1)";
+                widget.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.08)";
+                tooltip.style.opacity = "0";
+                tooltip.style.transform = "translateX(10px)";
+            };
+
+            // Auto play logic after conditions are met
+            const checkAndPlay = () => {
+                if (!isBlocked()) {
+                    a.play().then(() => {
+                        // Cleanup doc listeners once started successfully
+                        d.removeEventListener('click', playAudio);
+                        d.removeEventListener('keydown', playAudio);
+                        try {
+                            window.parent.document.removeEventListener('click', playAudio);
+                            window.parent.document.removeEventListener('keydown', playAudio);
+                        } catch (err) {}
+                    }).catch(e => { });
+                }
+            };
+
+            // Listen to DOM mutations to automatically trigger once overlays are removed
+            const observer = new MutationObserver(() => {
+                if (!isBlocked()) {
+                    checkAndPlay();
+                    observer.disconnect();
+                }
+            });
+            observer.observe(d.body, { childList: true, subtree: true });
+
+            // Listen to specific custom events dispatched when features finish
+            window.addEventListener('lockUnlocked', checkAndPlay);
+            window.addEventListener('curtainOpened', checkAndPlay);
+            window.addEventListener('welcomeTypingFinished', checkAndPlay);
+            window.addEventListener('countdownFinished', checkAndPlay);
+
+            const playAudio = () => {
+                if (isBlocked()) return;
+                checkAndPlay();
+            };
+            d.addEventListener('click', playAudio);
+            d.addEventListener('keydown', playAudio);
+            try {
+                window.parent.document.addEventListener('click', playAudio);
+                window.parent.document.addEventListener('keydown', playAudio);
+            } catch (err) {}
+
+            // Handle interrupting audio (pause bg audio for that moment)
+            let wasPlayingBeforeInterrupt = false;
+            const onOtherAudioPlay = (e) => {
+                if (e.target === a) return;
+                if (!a.paused) {
+                    a.pause();
+                    wasPlayingBeforeInterrupt = true;
+                }
+            };
+            const onOtherAudioPauseOrEnd = (e) => {
+                if (e.target === a) return;
+                const audios = Array.from(d.querySelectorAll('audio'));
+                const anyOtherPlaying = audios.some(other => other !== a && !other.paused);
+                if (!anyOtherPlaying && wasPlayingBeforeInterrupt) {
+                    if (!isBlocked()) {
+                        a.play().catch(() => {});
+                    }
+                    wasPlayingBeforeInterrupt = false;
+                }
+            };
+
+            d.addEventListener('play', onOtherAudioPlay, true);
+            d.addEventListener('pause', onOtherAudioPauseOrEnd, true);
+            d.addEventListener('ended', onOtherAudioPauseOrEnd, true);
+            try {
+                window.parent.document.addEventListener('play', onOtherAudioPlay, true);
+                window.parent.document.addEventListener('pause', onOtherAudioPauseOrEnd, true);
+                window.parent.document.addEventListener('ended', onOtherAudioPauseOrEnd, true);
+            } catch (err) {}
+
+            // Try to play initially (will only succeed if not blocked and browser allows)
+            checkAndPlay();
+
+            return {
+                cleanup: () => {
+                    a.remove();
+                    widget.remove();
+                    tooltip.remove();
+                    observer.disconnect();
+                    window.removeEventListener('lockUnlocked', checkAndPlay);
+                    window.removeEventListener('curtainOpened', checkAndPlay);
+                    window.removeEventListener('welcomeTypingFinished', checkAndPlay);
+                    window.removeEventListener('countdownFinished', checkAndPlay);
+                    d.removeEventListener('click', playAudio);
+                    d.removeEventListener('keydown', playAudio);
+                    d.removeEventListener('play', onOtherAudioPlay, true);
+                    d.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
+                    d.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
+                    try {
+                        window.parent.document.removeEventListener('click', playAudio);
+                        window.parent.document.removeEventListener('keydown', playAudio);
+                        window.parent.document.removeEventListener('play', onOtherAudioPlay, true);
+                        window.parent.document.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
+                        window.parent.document.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
+                    } catch (err) {}
+                }
+            };
         },
-        disable(d) { d?.getElementById("magic-bg-audio")?.remove(); }
+        disable(d) {
+            d?.getElementById("magic-bg-audio")?.remove();
+            d?.getElementById("magic-music-widget")?.remove();
+        }
+    },
+
+    voiceNote: {
+        enable(d, w, userName, customText, audio) {
+            const srcUrl = audio || customText || "https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1";
+            if (!srcUrl) return {};
+            if (d.getElementById("magic-voice-note-section")) return {};
+
+            // Ensure FontAwesome is loaded in the iframe
+            if (!d.getElementById("fa-css-link")) {
+                const fa = d.createElement("link");
+                fa.id = "fa-css-link";
+                fa.rel = "stylesheet";
+                fa.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css";
+                d.head.appendChild(fa);
+            }
+
+            const section = d.createElement("section");
+            section.id = "magic-voice-note-section";
+            section.style.cssText = "padding: 2.2rem 1.8rem; text-align: center; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 32px; margin: 2.5rem 1.5rem; border: 1px solid rgba(255, 255, 255, 0.6); display: flex; flex-direction: column; align-items: center; gap: 18px; box-shadow: 0 20px 50px rgba(123, 93, 246, 0.1), 0 10px 20px rgba(0,0,0,0.03); transition: all 0.4s ease;";
+
+
+            const title = d.createElement("h2");
+            title.style.cssText = "font-family: 'Great Vibes', cursive; font-size: 2.3rem; color: #ff7a2f; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;";
+            title.innerHTML = '<i class="fas fa-microphone-alt" style="font-size: 1.8rem; background: linear-gradient(135deg, #ff7a2f, #7b5df6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i> ' + (w.currentLang === 'hi' ? 'आपके लिए एक वॉइस नोट' : 'Voice Note For You');
+            section.appendChild(title);
+
+            // Container supporting waveform + advanced audio controls
+            const playerContainer = d.createElement("div");
+            playerContainer.style.cssText = "display: flex; flex-direction: column; gap: 14px; background: rgba(255, 255, 255, 0.9); padding: 16px 22px; border-radius: 30px; border: 1.5px solid rgba(255, 255, 255, 0.8); box-shadow: 0 10px 30px rgba(123, 93, 246, 0.05); width: min(100%, 390px); box-sizing: border-box;";
+
+            // Row 1: Play, Waveform, Elapsed Time
+            const mainRow = d.createElement("div");
+            mainRow.style.cssText = "display: flex; align-items: center; gap: 12px; width: 100%;";
+
+            const playBtn = d.createElement("button");
+            playBtn.style.cssText = "background: linear-gradient(135deg, #ff7a2f, #ff9e67); color: white; border: none; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s; box-shadow: 0 4px 12px rgba(255, 122, 47, 0.3); flex-shrink: 0; outline: none; position: relative;";
+            playBtn.innerHTML = '<i class="fas fa-play" style="margin-left: 2px;"></i>';
+            
+            playBtn.onmouseenter = () => { playBtn.style.transform = 'scale(1.06)'; };
+            playBtn.onmouseleave = () => { playBtn.style.transform = 'scale(1)'; };
+            mainRow.appendChild(playBtn);
+
+            // Interactive Waveform Visualizer (35 premium bars)
+            const waveformContainer = d.createElement("div");
+            waveformContainer.style.cssText = "flex: 1; display: flex; align-items: center; gap: 3.5px; height: 38px; cursor: pointer; position: relative; padding: 0 4px;";
+            
+            const barHeights = [15, 25, 35, 20, 45, 55, 30, 60, 75, 50, 85, 95, 60, 80, 70, 50, 45, 65, 80, 90, 75, 60, 45, 35, 50, 40, 60, 30, 45, 25, 35, 20, 25, 15, 10];
+            const bars = [];
+            barHeights.forEach((h) => {
+                const bar = d.createElement("div");
+                bar.style.cssText = `flex: 1; height: ${h}%; background: rgba(0, 0, 0, 0.08); border-radius: 2px; transition: background 0.2s, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: center;`;
+                waveformContainer.appendChild(bar);
+                bars.push(bar);
+            });
+            mainRow.appendChild(waveformContainer);
+
+            const timeLabel = d.createElement("span");
+            timeLabel.style.cssText = "font-size: 0.8rem; color: #555; font-family: 'Poppins', sans-serif; min-width: 38px; text-align: right; font-weight: 500; user-select: none;";
+            timeLabel.innerText = "0:00";
+            mainRow.appendChild(timeLabel);
+
+            playerContainer.appendChild(mainRow);
+
+            // Row 2: Speed Control & Volume (Mute) - Download removed per user request
+            const controlRow = d.createElement("div");
+            controlRow.style.cssText = "display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(0, 0, 0, 0.05); padding-top: 8px; width: 100%; margin-top: 2px;";
+
+            const leftControls = d.createElement("div");
+            leftControls.style.cssText = "display: flex; align-items: center; gap: 12px;";
+
+            // Playback Rate (Speed Toggle)
+            const speedBtn = d.createElement("button");
+            speedBtn.style.cssText = "background: rgba(0, 0, 0, 0.04); color: #555; border: none; padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-family: 'Poppins', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.2s; outline: none;";
+            speedBtn.innerText = "1.0x";
+            const speeds = [1, 1.25, 1.5, 2];
+            let speedIdx = 0;
+            
+            speedBtn.onclick = () => {
+                speedIdx = (speedIdx + 1) % speeds.length;
+                const newSpeed = speeds[speedIdx];
+                audioObj.defaultPlaybackRate = newSpeed;
+                audioObj.playbackRate = newSpeed;
+                speedBtn.innerText = newSpeed.toFixed(1) + "x";
+                if (newSpeed !== 1) {
+                    speedBtn.style.background = "rgba(255, 122, 47, 0.12)";
+                    speedBtn.style.color = "#ff7a2f";
+                } else {
+                    speedBtn.style.background = "rgba(0, 0, 0, 0.04)";
+                    speedBtn.style.color = "#555";
+                }
+            };
+            leftControls.appendChild(speedBtn);
+
+            // Speaker Mute/Unmute
+            const muteBtn = d.createElement("button");
+            muteBtn.style.cssText = "background: none; border: none; color: #777; cursor: pointer; font-size: 0.85rem; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; outline: none;";
+            muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            let isMuted = false;
+            
+            muteBtn.onclick = () => {
+                isMuted = !isMuted;
+                audioObj.muted = isMuted;
+                if (isMuted) {
+                    muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    muteBtn.style.color = "#ff3366";
+                } else {
+                    muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    muteBtn.style.color = "#777";
+                }
+            };
+            leftControls.appendChild(muteBtn);
+            controlRow.appendChild(leftControls);
+            playerContainer.appendChild(controlRow);
+
+            section.appendChild(playerContainer);
+
+            const audioObj = d.createElement("audio");
+            audioObj.src = srcUrl;
+            audioObj.preload = "metadata";
+            section.appendChild(audioObj);
+
+            let isPlaying = false;
+            let animId = null;
+
+            const formatTime = (secs) => {
+                if (isNaN(secs)) return "0:00";
+                const m = Math.floor(secs / 60);
+                const s = Math.floor(secs % 60);
+                return `${m}:${s.toString().padStart(2, '0')}`;
+            };
+
+            // Dynamic sine-wave breathing animation loop for playing waveform bars
+            const updateWaveAnimation = () => {
+                if (!isPlaying) return;
+
+                const percent = audioObj.duration ? (audioObj.currentTime / audioObj.duration) * 100 : 0;
+                const activeBarCount = Math.floor((percent / 100) * bars.length);
+                const timeFactor = Date.now() / 150;
+
+                bars.forEach((bar, idx) => {
+                    if (idx < activeBarCount) {
+                        bar.style.background = "linear-gradient(to bottom, #ff7a2f, #7b5df6)";
+                        const scale = 1.12 + Math.sin(timeFactor + idx * 0.4) * 0.28;
+                        bar.style.transform = `scaleY(${scale})`;
+                    } else {
+                        bar.style.background = "rgba(0, 0, 0, 0.08)";
+                        bar.style.transform = "scaleY(1)";
+                    }
+                });
+
+                animId = requestAnimationFrame(updateWaveAnimation);
+            };
+
+            // Magnetic Ripple Hover Effect
+            waveformContainer.onmousemove = (e) => {
+                const rect = waveformContainer.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const percentX = mouseX / rect.width;
+                const hoverIdx = Math.floor(percentX * bars.length);
+
+                bars.forEach((bar, idx) => {
+                    const distance = Math.abs(idx - hoverIdx);
+                    const percent = audioObj.duration ? (audioObj.currentTime / audioObj.duration) * 100 : 0;
+                    const isActive = idx < Math.floor((percent / 100) * bars.length);
+                    
+                    if (distance <= 4) {
+                        const factor = 1 + (4 - distance) * 0.14;
+                        const baseScale = isActive ? 1.15 : 1.0;
+                        bar.style.transform = `scaleY(${baseScale * factor})`;
+                        if (!isActive) {
+                            bar.style.background = "rgba(123, 93, 246, 0.25)";
+                        }
+                    } else {
+                        if (!isPlaying) {
+                            const baseScale = isActive ? 1.15 : 1.0;
+                            bar.style.transform = `scaleY(${baseScale})`;
+                            if (!isActive) {
+                                bar.style.background = "rgba(0, 0, 0, 0.08)";
+                            }
+                        }
+                    }
+                });
+            };
+
+            waveformContainer.onmouseleave = () => {
+                if (!isPlaying) {
+                    const percent = audioObj.duration ? (audioObj.currentTime / audioObj.duration) * 100 : 0;
+                    const activeBarCount = Math.floor((percent / 100) * bars.length);
+                    bars.forEach((bar, idx) => {
+                        if (idx < activeBarCount) {
+                            bar.style.background = "linear-gradient(to bottom, #ff7a2f, #7b5df6)";
+                            bar.style.transform = "scaleY(1.15)";
+                        } else {
+                            bar.style.background = "rgba(0, 0, 0, 0.08)";
+                            bar.style.transform = "scaleY(1)";
+                        }
+                    });
+                }
+            };
+
+            const applyPlaybackSpeed = () => {
+                if (audioObj && speeds && speeds[speedIdx] !== undefined) {
+                    if (audioObj.playbackRate !== speeds[speedIdx]) {
+                        audioObj.playbackRate = speeds[speedIdx];
+                    }
+                }
+            };
+
+            audioObj.addEventListener('play', applyPlaybackSpeed);
+            audioObj.addEventListener('playing', applyPlaybackSpeed);
+            audioObj.addEventListener('seeked', applyPlaybackSpeed);
+            audioObj.addEventListener('canplay', applyPlaybackSpeed);
+            audioObj.addEventListener('ratechange', applyPlaybackSpeed);
+
+            audioObj.addEventListener('loadedmetadata', () => {
+                applyPlaybackSpeed();
+                timeLabel.innerText = formatTime(audioObj.duration);
+            });
+
+            audioObj.addEventListener('timeupdate', () => {
+                applyPlaybackSpeed();
+                // If not playing (e.g. paused/seeking), manually update static states
+                if (!isPlaying) {
+                    const percent = audioObj.duration ? (audioObj.currentTime / audioObj.duration) * 100 : 0;
+                    const activeBarCount = Math.floor((percent / 100) * bars.length);
+                    bars.forEach((bar, idx) => {
+                        if (idx < activeBarCount) {
+                            bar.style.background = "linear-gradient(to bottom, #ff7a2f, #7b5df6)";
+                            bar.style.transform = "scaleY(1.15)";
+                        } else {
+                            bar.style.background = "rgba(0, 0, 0, 0.08)";
+                            bar.style.transform = "scaleY(1)";
+                        }
+                    });
+                }
+                timeLabel.innerText = formatTime(audioObj.currentTime);
+            });
+
+            audioObj.addEventListener('ended', () => {
+                isPlaying = false;
+                if (animId) cancelAnimationFrame(animId);
+                playBtn.innerHTML = '<i class="fas fa-play" style="margin-left: 2px;"></i>';
+                playBtn.classList.remove("magic-play-pulse-active");
+                bars.forEach(bar => {
+                    bar.style.background = "rgba(0, 0, 0, 0.08)";
+                    bar.style.transform = "scaleY(1)";
+                });
+                timeLabel.innerText = formatTime(audioObj.duration);
+            });
+
+            playBtn.onclick = () => {
+                if (isPlaying) {
+                    audioObj.pause();
+                    isPlaying = false;
+                    if (animId) cancelAnimationFrame(animId);
+                    playBtn.innerHTML = '<i class="fas fa-play" style="margin-left: 2px;"></i>';
+                    playBtn.classList.remove("magic-play-pulse-active");
+                } else {
+                    audioObj.play().catch(e => console.log(e));
+                    isPlaying = true;
+                    updateWaveAnimation();
+                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    playBtn.classList.add("magic-play-pulse-active");
+                }
+            };
+
+            waveformContainer.onclick = (e) => {
+                const rect = waveformContainer.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                if (audioObj.duration) audioObj.currentTime = pos * audioObj.duration;
+            };
+
+            if (typeof insertSectionBeforeFinal === 'function') {
+                insertSectionBeforeFinal(d, section);
+            } else {
+                const container = d.getElementById('sections-container') || d.body;
+                container.appendChild(section);
+            }
+            scrollToElement(d, section);
+            return { cleanup: () => { section.remove(); } };
+        },
+        disable(d) {
+            d?.getElementById("magic-voice-note-section")?.remove();
+        }
+    },
+
+    countdown: {
+        enable(d, w, userName, customText) {
+            if (!customText) return {};
+            const parseLocalTime = (str) => {
+                const parts = str.split('T');
+                if (parts.length !== 2) return new Date(str);
+                const dateParts = parts[0].split('-');
+                const timeParts = parts[1].split(':');
+                if (dateParts.length !== 3 || timeParts.length < 2) return new Date(str);
+                return new Date(
+                    parseInt(dateParts[0], 10),
+                    parseInt(dateParts[1], 10) - 1,
+                    parseInt(dateParts[2], 10),
+                    parseInt(timeParts[0], 10),
+                    parseInt(timeParts[1], 10),
+                    0, 0
+                );
+            };
+            const targetTime = parseLocalTime(customText).getTime();
+            if (isNaN(targetTime)) return {};
+
+            const now = Date.now();
+            if (now >= targetTime) return {}; // Already passed
+
+            const existing = d.getElementById("magic-countdown-overlay");
+            if (existing) {
+                if (existing._timerInterval) {
+                    clearInterval(existing._timerInterval);
+                }
+                existing.remove();
+            }
+
+            const overlay = d.createElement("div");
+            overlay.id = "magic-countdown-overlay";
+            overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(45deg, #090214, #2a0b4e, #090214); background-size:200% 200%; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit', sans-serif; color:white; backdrop-filter:blur(15px); transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); animation: bgShift 10s ease infinite;";
+
+            // Add styles for rich animations
+            const style = d.createElement('style');
+            style.innerHTML = `
+              @keyframes bgShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+              @keyframes pulseGlow { 0% { box-shadow: 0 0 15px rgba(255,215,0,0.1); transform: translateY(0); } 50% { box-shadow: 0 10px 30px rgba(255,215,0,0.3); transform: translateY(-5px); border-color: rgba(255,215,0,0.6); } 100% { box-shadow: 0 0 15px rgba(255,215,0,0.1); transform: translateY(0); } }
+              @keyframes numberPop { 0% { transform: scale(1); text-shadow: 0 0 10px rgba(255,215,0,0.3); } 50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(255,255,255,0.8); color: #fff; } 100% { transform: scale(1); text-shadow: 0 0 10px rgba(255,215,0,0.3); } }
+              @keyframes floatIcon { 0% { transform: translateY(0) rotate(-5deg); filter: drop-shadow(0 0 15px rgba(255,215,0,0.4)); } 50% { transform: translateY(-15px) rotate(5deg); filter: drop-shadow(0 0 30px rgba(255,215,0,0.8)); } 100% { transform: translateY(0) rotate(-5deg); filter: drop-shadow(0 0 15px rgba(255,215,0,0.4)); } }
+              .countdown-unit {
+                  background: rgba(255, 255, 255, 0.04);
+                  border: 1px solid rgba(255, 215, 0, 0.2);
+                  border-radius: 20px;
+                  padding: 20px 15px;
+                  min-width: 90px;
+                  text-align: center;
+                  backdrop-filter: blur(12px);
+                  animation: pulseGlow 3s infinite ease-in-out;
+                  box-shadow: inset 0 0 20px rgba(255,215,0,0.05);
+                  transition: transform 0.3s;
+              }
+              .countdown-unit:hover { transform: scale(1.05) translateY(-5px); border-color: #ffd700; }
+              .countdown-unit:nth-child(2) { animation-delay: 0.5s; }
+              .countdown-unit:nth-child(3) { animation-delay: 1s; }
+              .countdown-unit:nth-child(4) { animation-delay: 1.5s; }
+              .num-val { display: inline-block; }
+              .num-val.changed { animation: numberPop 0.5s ease-out; }
+            `;
+            overlay.appendChild(style);
+
+            const unlockAudio = d.createElement('audio');
+            unlockAudio.src = 'https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1';
+            unlockAudio.volume = 0.5;
+            overlay.appendChild(unlockAudio);
+
+            const decor = d.createElement("div");
+            decor.innerHTML = "&#x23F3;";
+            decor.style.cssText = "font-size: 4rem; margin-bottom: 15px; animation: floatIcon 4s ease-in-out infinite;";
+            overlay.appendChild(decor);
+
+            const title = d.createElement('div');
+            title.style.cssText = "font-size: clamp(2rem, 6vw, 3rem); font-family: 'Great Vibes', cursive; margin-bottom: 35px; text-align: center; background: linear-gradient(to right, #ffd700, #ff8c00, #ffd700); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 5px 15px rgba(255,140,0,0.3)); animation: bgShift 4s linear infinite;";
+            title.innerText = window.currentLang === 'hi' ? 'सरप्राइज खुलने में...' : 'Surprise Unlocks In...';
+            overlay.appendChild(title);
+
+            const timerContainer = d.createElement('div');
+            timerContainer.style.cssText = "display:flex; gap:18px; margin-bottom:45px; flex-wrap:wrap; justify-content:center; perspective: 1000px;";
+            overlay.appendChild(timerContainer);
+
+            const createTimeUnit = (label) => {
+                const unitBox = d.createElement('div');
+                unitBox.className = "countdown-unit";
+                const num = d.createElement('div');
+                num.className = "num-val";
+                num.style.cssText = "font-size:3rem; font-weight:800; color:#ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-variant-numeric: tabular-nums;";
+                num.innerText = "00";
+                const lbl = d.createElement('div');
+                lbl.style.cssText = "font-size:0.85rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.7); margin-top:8px; font-weight: 600;";
+                lbl.innerText = label;
+                unitBox.appendChild(num);
+                unitBox.appendChild(lbl);
+                timerContainer.appendChild(unitBox);
+                return num;
+            };
+
+            const daysNum = createTimeUnit(window.currentLang === 'hi' ? "दिन" : "Days");
+            const hoursNum = createTimeUnit(window.currentLang === 'hi' ? "घंटे" : "Hours");
+            const minutesNum = createTimeUnit(window.currentLang === 'hi' ? "मिनट" : "Minutes");
+            const secondsNum = createTimeUnit(window.currentLang === 'hi' ? "सेकंड" : "Seconds");
+
+            const subtitle = d.createElement('div');
+            subtitle.style.cssText = "font-size:1.2rem; color:rgba(255,255,255,0.85); text-align:center; max-width:80%; line-height:1.6; font-weight: 300; background: rgba(0,0,0,0.2); padding: 10px 25px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05);";
+            subtitle.innerHTML = window.currentLang === 'hi' ? 'कुछ बहुत ही खास के लिए तैयार हो जाइए! &#x1F31F;' : 'Get ready for something truly special! &#x1F31F;';
+            overlay.appendChild(subtitle);
+
+            d.body.appendChild(overlay);
+
+            const updateValue = (el, val) => {
+                const strVal = val.toString().padStart(2, '0');
+                if (el.innerText !== strVal) {
+                    el.innerText = strVal;
+                    // Trigger animation
+                    el.classList.remove("changed");
+                    void el.offsetWidth; // trigger reflow
+                    el.classList.add("changed");
+                }
+            };
+
+            const updateTimer = () => {
+                const now = Date.now();
+                const diff = targetTime - now;
+                if (diff <= 0) {
+                    clearInterval(intervalId);
+
+                    // Final unlocking effect
+                    timerContainer.style.transform = "scale(1.2) translateY(-20px)";
+                    timerContainer.style.opacity = "0";
+                    timerContainer.style.transition = "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+                    decor.style.transform = "scale(1.5)";
+                    decor.style.opacity = "0";
+                    decor.style.transition = "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+
+                    setTimeout(() => {
+                        unlockAudio.play().catch(e => console.log('Countdown unlock audio failed:', e));
+                        overlay.style.opacity = '0';
+                        setTimeout(() => {
+                            overlay.remove();
+                            window.dispatchEvent(new CustomEvent('countdownFinished'));
+                        }, 800);
+                    }, 400);
+                    return;
+                }
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                updateValue(daysNum, days);
+                updateValue(hoursNum, hours);
+                updateValue(minutesNum, minutes);
+                updateValue(secondsNum, seconds);
+            };
+
+            updateTimer();
+            const intervalId = setInterval(updateTimer, 1000);
+            overlay._timerInterval = intervalId;
+            return { cleanup: () => { clearInterval(intervalId); overlay.remove(); } };
+        },
+        disable(d) {
+            d?.getElementById("magic-countdown-overlay")?.remove();
+        }
     },
 
     addMusicSection: {
@@ -1190,6 +1867,7 @@
                 }
                 const p = section.querySelector("p");
                 if (p) p.innerText = customText || "";
+                scrollToElement(d, section);
                 return;
             }
 
@@ -1283,29 +1961,29 @@
                         method: 'POST',
                         body: formData
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.secure_url) {
-                            img.src = data.secure_url;
-                            img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
-                            img.style.opacity = "1";
-                            uploadBtn.style.display = 'none';
-                            removeBtn.style.display = isEditMode ? 'block' : 'none';
-                            imageContainer.style.background = 'transparent';
-                            
-                            w.parent.postMessage({ type: 'updateImageExplosion', image: data.secure_url }, '*');
-                        } else {
-                            throw new Error(data.error?.message || 'Upload failed');
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Direct Cloudinary upload failed:', err);
-                        alert(window.currentLang === 'hi' ? 'छवि अपलोड विफल रही। कृपया पुनः प्रयास करें।' : 'Image upload failed. Please try again.');
-                    })
-                    .finally(() => {
-                        uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
-                        uploadBtn.disabled = false;
-                    });
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.secure_url) {
+                                img.src = data.secure_url;
+                                img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
+                                img.style.opacity = "1";
+                                uploadBtn.style.display = 'none';
+                                removeBtn.style.display = isEditMode ? 'block' : 'none';
+                                imageContainer.style.background = 'transparent';
+
+                                w.parent.postMessage({ type: 'updateImageExplosion', image: data.secure_url }, '*');
+                            } else {
+                                throw new Error(data.error?.message || 'Upload failed');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Direct Cloudinary upload failed:', err);
+                            alert(window.currentLang === 'hi' ? 'छवि अपलोड विफल रही। कृपया पुनः प्रयास करें।' : 'Image upload failed. Please try again.');
+                        })
+                        .finally(() => {
+                            uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+                            uploadBtn.disabled = false;
+                        });
                 }
             };
             section.appendChild(imageContainer);
