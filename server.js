@@ -600,7 +600,7 @@ const PRICING_MAP = {
 const EUROZONE = ['AT','BE','CY','EE','FI','FR','DE','GR','IE','IT','LV','LT','LU','MT','NL','PT','SK','SI','ES','HR'];
 const DEFAULT_PRICING = {
   currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'International', country: 'XX',
-  plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 2.99, paypalAmount: 2.99 }, forever: { amount: 5.99, paypalAmount: 5.99 } }
+  plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 2.99, paypalAmount: 2.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
 };
 
 function getGeoPrice(req) {
@@ -610,7 +610,7 @@ function getGeoPrice(req) {
     const ip = forwarded ? forwarded.split(',')[0].trim() : (req.socket && req.socket.remoteAddress) || req.ip || '127.0.0.1';
     const cleanIP = ip.replace('::ffff:', '').replace('::1', '127.0.0.1');
     const geo = geoip.lookup(cleanIP);
-    const code = (geo ? geo.country : 'IN').toUpperCase();
+    const code = (geo ? geo.country : 'XX').toUpperCase();
 
     if (code === 'IN') {
       return { ...PRICING_MAP.IN, country: code };
@@ -627,11 +627,12 @@ function getGeoPrice(req) {
       return { ...PRICING_MAP[code], country: code };
     }
 
-    // Default other countries
+    // Default other countries (including VPN/undetected locations)
     return { ...DEFAULT_PRICING, country: code };
   } catch (err) {
     console.error('[getGeoPrice] error:', err);
-    return { ...PRICING_MAP.IN, country: 'IN' };
+    // Default to international pricing on error (not INR)
+    return { ...DEFAULT_PRICING, country: 'XX' };
   }
 }
 

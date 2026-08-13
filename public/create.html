@@ -1248,7 +1248,7 @@
     }
 
     .pill-price {
-      font-size: 1rem;
+      font-size: 1.3rem;
       font-weight: 900;
       color: var(--text-primary);
     }
@@ -1262,6 +1262,32 @@
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+    }
+
+    .pill-offer {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, #ff7a2f 0%, #ff5e62 100%);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 6px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(255, 122, 47, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 2px 8px rgba(255, 122, 47, 0.3);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 4px 12px rgba(255, 122, 47, 0.5);
+        transform: scale(1.02);
+      }
     }
 
     /* Feature rows */
@@ -1688,7 +1714,7 @@
               <div class="cmp-icon">🆓</div>
               <div class="cmp-title">Free Website</div>
               <div class="cmp-price-row">
-                <span class="cmp-price-big">₹0</span>
+                <span class="cmp-price-big">$0</span>
               </div>
               <span class="validity-chip free"><i class="fas fa-hourglass-half"></i> Expires in 24 Hours</span>
 
@@ -1711,27 +1737,28 @@
             <div class="premium-badge">👑 Recommended</div>
             <div>
               <div class="cmp-icon">✨</div>
-              <div class="cmp-title">VIP Premium</div>
+              <div class="cmp-title">Premium Website</div>
 
               <!-- 3-tier pill switcher -->
               <div class="plan-switcher" id="planSwitcher">
                 <button class="plan-pill" data-price="29" data-days="100" data-label="100+ Days" data-plan="starter">
                   <span class="pill-period">100+ Days</span>
-                  <span class="pill-price">₹29</span>
+                  <span class="pill-price"></span>
+                  <span class="pill-offer">Limited Offer</span>
                 </button>
                 <button class="plan-pill sel" data-price="99" data-days="365" data-label="1 Year" data-plan="pro">
                   <span class="pill-hot">Popular</span>
                   <span class="pill-period">1 Year</span>
-                  <span class="pill-price">₹99</span>
+                  <span class="pill-price"></span>
                 </button>
                 <button class="plan-pill" data-price="199" data-days="99999" data-label="Lifetime" data-plan="forever">
                   <span class="pill-period">Forever ♾️</span>
-                  <span class="pill-price">₹199</span>
+                  <span class="pill-price"></span>
                 </button>
               </div>
 
               <div class="cmp-price-row">
-                <span class="cmp-price-big" id="priceBig">₹99</span>
+                <span class="cmp-price-big" id="priceBig">$2.99</span>
                 <span class="cmp-price-period" id="pricePeriod">for 1 Year</span>
               </div>
               <div
@@ -1788,7 +1815,7 @@
         <button class="btn-unified" id="unifiedProceedBtn">
           <i class="fas fa-crown" id="unifiedBtnIcon"></i>
           <span id="unifiedBtnLabel">Continue with Premium</span>
-          <span class="btn-price-badge" id="unifiedBtnPrice">₹99</span>
+          <span class="btn-price-badge" id="unifiedBtnPrice">$2.99</span>
         </button>
 
         <!-- INLINE CHECKOUT EXPAND -->
@@ -1811,7 +1838,7 @@
           </div>
 
           <button class="pay-btn" id="finalPayBtn">
-            <i class="fas fa-shield-alt"></i> <span id="finalPayBtnText">Pay ₹99 Securely</span>
+            <i class="fas fa-shield-alt"></i> <span id="finalPayBtnText">Pay $2.99 Securely</span>
           </button>
         </div>
 
@@ -3092,7 +3119,214 @@
       const step1Card = document.getElementById('step1Card');
       const step2Card = document.getElementById('step2Card');
 
-      let activePlan = { plan: 'pro', price: 99, days: 365, label: '1 Year' };
+      let activePlan = { plan: 'pro', price: 2.99, days: 365, label: '1 Year' };
+      let selectedCurrency = 'USD';
+      let selectedAmount = 2.99;
+      let selectedGateway = 'paypal';
+
+      // Geo-based pricing configuration (matches server-side PRICING_MAP)
+      const geoPricing = {
+        'IN': { currency: 'INR', amount: 99, symbol: '₹', region: 'India' },
+        'US': { currency: 'USD', amount: 4.99, symbol: '$', region: 'United States' },
+        'GB': { currency: 'GBP', amount: 3.99, symbol: '£', region: 'United Kingdom' },
+        'CA': { currency: 'CAD', amount: 6.99, symbol: 'CA$', region: 'Canada' },
+        'AU': { currency: 'AUD', amount: 7.99, symbol: 'A$', region: 'Australia' },
+        'AE': { currency: 'AED', amount: 12.99, symbol: 'AED ', region: 'UAE' },
+        'PK': { currency: 'PKR', amount: 299, symbol: 'PKR ', region: 'Pakistan' },
+        'default': { currency: 'USD', amount: 2.99, symbol: '$', region: 'International' }
+      };
+
+      // Eurozone countries (server-side handling)
+      const EUROZONE = ['AT','BE','CY','EE','FI','FR','DE','GR','IE','IT','LV','LT','LU','MT','NL','PT','SK','SI','ES','HR'];
+
+      // Detect user's location and set pricing
+      async function detectUserLocation() {
+        try {
+          const res = await fetch('/api/payment/detect-price');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+              selectedCurrency = data.currency;
+              selectedAmount = data.amount;
+              selectedGateway = data.gateway || 'cashfree';
+              console.log('Server geo-detection:', { selectedCurrency, selectedAmount, selectedGateway });
+              updatePricingUI();
+              updateUnifiedBtn();
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Server geo-detection failed, using client-side fallback');
+        }
+
+        // Client-side fallback
+        try {
+          const geoRes = await fetch('https://ipapi.co/json/');
+          if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            const countryCode = geoData.country_code;
+            
+            let pricing;
+            if (countryCode === 'IN') {
+              pricing = geoPricing['IN'];
+            } else if (EUROZONE.includes(countryCode)) {
+              // Eurozone pricing (matches server-side)
+              pricing = { currency: 'EUR', amount: 4.99, symbol: '€', region: 'Eurozone' };
+            } else if (geoPricing[countryCode]) {
+              pricing = geoPricing[countryCode];
+            } else {
+              // Default to international pricing for VPN/undetected locations
+              pricing = geoPricing['default'];
+            }
+            
+            selectedCurrency = pricing.currency;
+            selectedAmount = pricing.amount;
+            selectedGateway = (pricing.currency === 'INR') ? 'cashfree' : 'paypal';
+            console.log('Client geo-detection:', { selectedCurrency, selectedAmount, selectedGateway, countryCode });
+            updatePricingUI();
+            updateUnifiedBtn();
+          } else {
+            // If API call fails, use default international pricing
+            console.warn('ipapi.co returned non-OK status, using default USD pricing');
+            selectedCurrency = 'USD';
+            selectedAmount = 2.99;
+            selectedGateway = 'paypal';
+            updatePricingUI();
+            updateUnifiedBtn();
+          }
+        } catch (e) {
+          console.warn('Client geo-detection failed, using default USD pricing');
+          selectedCurrency = 'USD';
+          selectedAmount = 2.99;
+          selectedGateway = 'paypal';
+          updatePricingUI();
+          updateUnifiedBtn();
+        }
+      }
+
+      function updatePricingUI() {
+        console.log('updatePricingUI called:', { selectedCurrency, selectedAmount, selectedGateway });
+        
+        // Get the correct symbol for current currency
+        let symbol;
+        if (selectedCurrency === 'INR') {
+          symbol = '₹';
+        } else if (selectedCurrency === 'EUR') {
+          symbol = '€';
+        } else if (selectedCurrency === 'GBP') {
+          symbol = '£';
+        } else if (selectedCurrency === 'CAD') {
+          symbol = 'CA$';
+        } else if (selectedCurrency === 'AUD') {
+          symbol = 'A$';
+        } else if (selectedCurrency === 'AED') {
+          symbol = 'AED ';
+        } else if (selectedCurrency === 'PKR') {
+          symbol = 'PKR ';
+        } else {
+          symbol = '$';
+        }
+        
+        // Calculate prices based on currency
+        let starterPrice, proPrice, foreverPrice, starterOriginalPrice;
+        
+        if (selectedCurrency === 'INR') {
+          starterPrice = 29;
+          starterOriginalPrice = 49;
+          proPrice = 99;
+          foreverPrice = 199;
+        } else if (selectedCurrency === 'USD') {
+          starterPrice = 0.99;
+          starterOriginalPrice = 1.99;
+          proPrice = 2.99;
+          foreverPrice = 9.99;
+        } else if (selectedCurrency === 'GBP') {
+          starterPrice = 1.49;
+          starterOriginalPrice = 1.49;
+          proPrice = 3.99;
+          foreverPrice = 7.99;
+        } else if (selectedCurrency === 'CAD') {
+          starterPrice = 2.49;
+          starterOriginalPrice = 2.49;
+          proPrice = 6.99;
+          foreverPrice = 12.99;
+        } else if (selectedCurrency === 'AUD') {
+          starterPrice = 2.99;
+          starterOriginalPrice = 2.99;
+          proPrice = 7.99;
+          foreverPrice = 14.99;
+        } else if (selectedCurrency === 'AED') {
+          starterPrice = 5.99;
+          starterOriginalPrice = 5.99;
+          proPrice = 12.99;
+          foreverPrice = 29.99;
+        } else if (selectedCurrency === 'PKR') {
+          starterPrice = 99;
+          starterOriginalPrice = 99;
+          proPrice = 299;
+          foreverPrice = 699;
+        } else if (selectedCurrency === 'EUR') {
+          starterPrice = 1.99;
+          starterOriginalPrice = 1.99;
+          proPrice = 4.99;
+          foreverPrice = 9.99;
+        } else {
+          // Default international USD
+          starterPrice = 0.99;
+          starterOriginalPrice = 0.99;
+          proPrice = 2.99;
+          foreverPrice = 9.99;
+        }
+        
+        console.log('Calculated prices:', { starterPrice, proPrice, foreverPrice, starterOriginalPrice, symbol });
+        
+        // Update plan pills with calculated prices
+        const planPills = document.querySelectorAll('.plan-pill');
+        planPills.forEach(pill => {
+          const plan = pill.dataset.plan;
+          let adjustedPrice, originalPrice;
+          
+          if (plan === 'starter') {
+            adjustedPrice = starterPrice;
+            originalPrice = starterOriginalPrice;
+            // Only show discount if original price is different from adjusted price
+            if (originalPrice !== adjustedPrice) {
+              pill.querySelector('.pill-price').innerHTML = `<span style="text-decoration: line-through; color: #999; font-size: 0.85em; margin-right: 4px;">${symbol}${originalPrice}</span>${symbol}${adjustedPrice}`;
+              pill.querySelector('.pill-offer').style.display = 'inline-block';
+            } else {
+              pill.querySelector('.pill-price').textContent = `${symbol}${adjustedPrice}`;
+              pill.querySelector('.pill-offer').style.display = 'none';
+            }
+          } else if (plan === 'pro') {
+            adjustedPrice = proPrice;
+            pill.querySelector('.pill-price').textContent = `${symbol}${adjustedPrice}`;
+          } else if (plan === 'forever') {
+            adjustedPrice = foreverPrice;
+            pill.querySelector('.pill-price').textContent = `${symbol}${adjustedPrice}`;
+          }
+        });
+
+        // Update active plan price
+        activePlan.price = proPrice;
+        
+        // Update UI elements
+        document.getElementById('priceBig').textContent = `${symbol}${activePlan.price}`;
+        document.getElementById('unifiedBtnPrice').textContent = `${symbol}${activePlan.price}`;
+        document.getElementById('finalPayBtnText').textContent = `Pay ${symbol}${activePlan.price} Securely`;
+        
+        // Update unified button to ensure currency is correct
+        updateUnifiedBtn();
+      }
+
+      // Initialize geo-detection
+      detectUserLocation();
+      
+      // Update UI immediately with default values before geo-detection completes
+      // Use setTimeout to ensure DOM is fully ready
+      setTimeout(() => {
+        updatePricingUI();
+        updateUnifiedBtn();
+      }, 100);
 
       function collectFormData(extra = {}) {
         return {
@@ -3142,13 +3376,66 @@
           e.stopPropagation(); // prevent double-trigger with card click
           planSwitcher.querySelectorAll('.plan-pill').forEach(p => p.classList.remove('sel'));
           pill.classList.add('sel');
+          
+          // Calculate price based on current currency and plan
+          let calculatedPrice;
+          if (selectedCurrency === 'INR') {
+            if (pill.dataset.plan === 'starter') calculatedPrice = 29;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 99;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 199;
+          } else if (selectedCurrency === 'USD') {
+            if (pill.dataset.plan === 'starter') calculatedPrice = 0.99;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 2.99;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 9.99;
+          } else if (selectedCurrency === 'GBP') {
+            if (pill.dataset.plan === 'starter') calculatedPrice = 1.49;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 3.99;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 7.99;
+          } else if (selectedCurrency === 'CAD') {
+            if (pill.dataset.plan === 'starter') calculatedPrice = 2.49;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 6.99;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 12.99;
+          } else if (selectedCurrency === 'AUD') {
+            if (pill.dataset.plan === 'starter') calculatedPrice = 2.99;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 7.99;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 14.99;
+          } else if (selectedCurrency === 'AED') {
+            if (pill.dataset.plan === 'starter') calculatedPrice = 5.99;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 12.99;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 29.99;
+          } else if (selectedCurrency === 'PKR') {
+            if (pill.dataset.plan === 'starter') calculatedPrice = 99;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 299;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 699;
+          } else if (selectedCurrency === 'EUR') {
+            if (pill.dataset.plan === 'starter') calculatedPrice = 1.99;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 4.99;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 9.99;
+          } else {
+            // Default international USD
+            if (pill.dataset.plan === 'starter') calculatedPrice = 0.99;
+            else if (pill.dataset.plan === 'pro') calculatedPrice = 2.99;
+            else if (pill.dataset.plan === 'forever') calculatedPrice = 9.99;
+          }
+          
           activePlan = {
             plan: pill.dataset.plan,
-            price: +pill.dataset.price,
+            price: calculatedPrice,
             days: +pill.dataset.days,
             label: pill.dataset.label
           };
-          document.getElementById('priceBig').textContent = `₹${activePlan.price}`;
+          
+          // Get current symbol
+          let currentSymbol = '$';
+          if (selectedCurrency === 'INR') currentSymbol = '₹';
+          else if (selectedCurrency === 'EUR') currentSymbol = '€';
+          else if (selectedCurrency === 'GBP') currentSymbol = '£';
+          else if (selectedCurrency === 'CAD') currentSymbol = 'CA$';
+          else if (selectedCurrency === 'AUD') currentSymbol = 'A$';
+          else if (selectedCurrency === 'AED') currentSymbol = 'AED ';
+          else if (selectedCurrency === 'PKR') currentSymbol = 'PKR ';
+          
+          document.getElementById('priceBig').textContent = `${currentSymbol}${activePlan.price}`;
           document.getElementById('pricePeriod').textContent = `for ${activePlan.label}`;
           document.getElementById('validityChip').innerHTML = `<i class="fas fa-shield-alt"></i> Active ${activePlan.label} · Ad-Free`;
           // Selecting a pill auto-picks premium and updates unified button
@@ -3165,6 +3452,16 @@
       const unifiedIcon = document.getElementById('unifiedBtnIcon');
 
       function updateUnifiedBtn() {
+        // Get current symbol
+        let currentSymbol = '$';
+        if (selectedCurrency === 'INR') currentSymbol = '₹';
+        else if (selectedCurrency === 'EUR') currentSymbol = '€';
+        else if (selectedCurrency === 'GBP') currentSymbol = '£';
+        else if (selectedCurrency === 'CAD') currentSymbol = 'CA$';
+        else if (selectedCurrency === 'AUD') currentSymbol = 'A$';
+        else if (selectedCurrency === 'AED') currentSymbol = 'AED ';
+        else if (selectedCurrency === 'PKR') currentSymbol = 'PKR ';
+        
         if (selectedMode === 'free') {
           unifiedBtn.style.display = 'flex';
           document.getElementById('inlineCheckout').style.display = 'none';
@@ -3176,9 +3473,9 @@
           unifiedBtn.className = 'btn-unified';
           unifiedIcon.className = 'fas fa-crown';
           unifiedLabel.textContent = 'Continue with Premium';
-          document.getElementById('unifiedBtnPrice').textContent = `₹${activePlan.price}`;
+          document.getElementById('unifiedBtnPrice').textContent = `${currentSymbol}${activePlan.price}`;
           document.getElementById('unifiedBtnPrice').style.display = 'inline-block';
-          document.getElementById('finalPayBtnText').textContent = `Pay ₹${activePlan.price} Securely`;
+          document.getElementById('finalPayBtnText').textContent = `Pay ${currentSymbol}${activePlan.price} Securely`;
           // If checkout was already open, keep it open but update the price
         }
       }
@@ -3258,6 +3555,8 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               plan: activePlan.plan,
+              amount: activePlan.price,
+              currency: selectedCurrency,
               email: finalEmail,
               phone: finalPhone
             })
