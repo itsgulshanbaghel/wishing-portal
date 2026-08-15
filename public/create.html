@@ -3566,7 +3566,10 @@
           };
           console.log('[Payment] Request body:', requestBody);
 
-          const response = await fetch('/api/payment/create-order', {
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          console.log('[Payment] API Base URL:', apiBaseUrl);
+
+          const response = await fetch(`${apiBaseUrl}/api/payment/create-order`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)

@@ -38,7 +38,9 @@
       async function pollPaymentStatus(orderId) {
         try {
           console.log('[Payment Redirect] Polling payment status for:', orderId);
-          const res = await fetch(`/api/payment/status/${orderId}`);
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          console.log('[Payment Redirect] API Base URL:', apiBaseUrl);
+          const res = await fetch(`${apiBaseUrl}/api/payment/status/${orderId}`);
           console.log('[Payment Redirect] Status response:', res.status);
           
           if (res.ok) {

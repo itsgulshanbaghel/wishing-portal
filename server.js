@@ -789,7 +789,14 @@ app.post('/api/payment/create-order', async (req, res) => {
     }
 
     // Price determined server-side from geo-IP — never trusted from client
-    const { currency, amount, gateway, paypalCurrency, paypalAmount } = getGeoPrice(req);
+    const geoPricing = getGeoPrice(req);
+    const { currency, gateway, paypalCurrency, plans } = geoPricing;
+    
+    // Extract amount based on plan type (default to pro if not specified)
+    const planType = req.body.plan || 'pro';
+    const planData = plans[planType] || plans.pro;
+    const amount = planData.amount;
+    const paypalAmount = planData.paypalAmount || amount;
 
     const sanitizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 
