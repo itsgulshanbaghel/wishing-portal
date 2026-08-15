@@ -30,7 +30,7 @@
       const pathParts = window.location.pathname.split('/').filter(p => p && !p.includes('.'));
       const potentialSlug = pathParts[pathParts.length - 1];
       const isSharedView = urlParams.get('view') || urlParams.get('slug') ||
-        (potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug));
+        (!window.location.pathname.startsWith('/generated/') && potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug));
       if (isSharedView) {
         document.write('<style>.container, .navbar, .resizer, .panel, .footer { display: none !important; } body { background: #f9f7ff; } body.dark { background: #0a0614; }</style>');
       }
@@ -5380,7 +5380,7 @@
         const pathParts = window.location.pathname.split('/').filter(p => p && !p.includes('.'));
         const potentialSlug = pathParts[pathParts.length - 1];
         const isSharedView = urlParams.get('view') || urlParams.get('slug') ||
-          (potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug));
+          (!window.location.pathname.startsWith('/generated/') && potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug));
 
         if (isSharedView) {
           // Do not load default template if we are in shared view mode
@@ -6375,8 +6375,8 @@
 
           console.log('[CustomURL] Checking pathname for slug:', { pathname, potentialSlug });
 
-          // Skip known paths
-          if (potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug)) {
+          // Skip known paths and generated paths
+          if (!pathname.startsWith('/generated/') && potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug)) {
             console.log('[CustomURL] Resolving slug from pathname:', potentialSlug);
             viewId = await resolveCustomSlug(potentialSlug);
             console.log('[CustomURL] Resolved to viewId:', viewId);
@@ -6548,7 +6548,7 @@
   </script>
   <script src="/assets/tracker.js" defer></script>
   <!-- Content Protection Script -->
-  <script src="assets/content-protection.js"></script>
+  <script src="/assets/content-protection.js"></script>
 </body>
 
 </html>

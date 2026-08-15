@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 
-const protectionScript = '    <!-- Content Protection Script -->\n    <script src="assets/content-protection.js"></script>';
+const protectionScript = '    <!-- Content Protection Script -->\n    <script src="/assets/content-protection.js"></script>';
 
 function addProtectionScript(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');

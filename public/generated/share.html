@@ -2548,34 +2548,37 @@
       let fullLink = '';
       
       // Server-side premium verification
-      let isPremium = false;
-      if (viewId) {
-        try {
-          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
-          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
-          if (premiumRes.ok) {
-            const premiumData = await premiumRes.json();
-            isPremium = premiumData.isPremium;
+      async function initShareLink() {
+        let isPremium = false;
+        if (viewId) {
+          try {
+            const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+            const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+            if (premiumRes.ok) {
+              const premiumData = await premiumRes.json();
+              isPremium = premiumData.isPremium;
+            }
+          } catch (err) {
+            console.error('Premium check failed:', err);
           }
-        } catch (err) {
-          console.error('Premium check failed:', err);
         }
-      }
-      
-      if (!viewId) {
-        linkInput.value = '❌ No link found. Please generate first.';
-      } else {
-        const storedCustomUrl = localStorage.getItem(`customUrl_${viewId}`);
-        if (storedCustomUrl) {
-          fullLink = storedCustomUrl;
-          linkInput.value = storedCustomUrl;
+        
+        if (!viewId) {
+          linkInput.value = '❌ No link found. Please generate first.';
         } else {
-          // Add _v=c parameter for premium users to hide popups and CTAs
-          const premiumParam = isPremium ? '&_v=c' : '';
-          fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}${premiumParam}`;
-          linkInput.value = fullLink;
+          const storedCustomUrl = localStorage.getItem(`customUrl_${viewId}`);
+          if (storedCustomUrl) {
+            fullLink = storedCustomUrl;
+            linkInput.value = storedCustomUrl;
+          } else {
+            // Add _v=c parameter for premium users to hide popups and CTAs
+            const premiumParam = isPremium ? '&_v=c' : '';
+            fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}${premiumParam}`;
+            linkInput.value = fullLink;
+          }
         }
       }
+      initShareLink();
 
       function getFestivalShareText(lang) {
         const name = senderName || (lang === 'en' ? 'Someone' : 'कोई');
@@ -3302,7 +3305,7 @@
     })();
   </script>
     <!-- Content Protection Script -->
-    <script src="assets/content-protection.js"></script>
+    <script src="/assets/content-protection.js"></script>
 </body>
 
 </html>

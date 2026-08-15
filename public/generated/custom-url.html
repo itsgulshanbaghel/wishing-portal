@@ -1829,6 +1829,7 @@
       let selectedCurrency = 'INR';
       let selectedAmount = 29;
       let selectedGateway = 'cashfree'; // 'cashfree' for India, 'paypal' for international
+      let isPremiumUser = false;
 
       let qrType = 'none'; // none, text, photo
       let qrText = '';
@@ -1861,7 +1862,6 @@
 
       async function init() {
         // Server-side premium verification
-        let isPremiumUser = false;
         try {
           const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
           const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
@@ -2033,9 +2033,17 @@
           if (optionalContactSection) optionalContactSection.style.display = 'none';
           if (checkoutTitle) checkoutTitle.style.display = 'none';
           if (checkoutNote) checkoutNote.style.display = 'none';
+
+          // Show a green FREE badge in place of price
+          if (geoPriceAmount) {
+            geoPriceAmount.textContent = 'FREE';
+            geoPriceAmount.style.color = '#22c55e';
+            geoPriceAmount.style.fontSize = '2rem';
+            geoPriceAmount.style.fontWeight = '700';
+          }
           
           // Update pay button to show "Claim Custom URL" for free
-          payBtnText.textContent = 'Claim Custom URL (Free)';
+          payBtnText.textContent = 'Claim Custom URL (Free) 🎉';
           payBtn.classList.add('active');
           payBtn.disabled = false;
         }
@@ -2066,20 +2074,7 @@
         });
 
         // Download QR button
-        downloadQrBtn.addEventListener('click', async () => {
-          // Server-side premium verification
-          let isPremiumUser = false;
-          try {
-            const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
-            const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
-            if (premiumRes.ok) {
-              const premiumData = await premiumRes.json();
-              isPremiumUser = premiumData.isPremium;
-            }
-          } catch (err) {
-            console.error('Premium check failed:', err);
-          }
-          
+        downloadQrBtn.addEventListener('click', () => {
           if (!isPremiumUser && successScreen.style.display !== 'block') {
             alert('Please complete your payment first to download the QR code with your personalized URL.');
             return;
@@ -2164,9 +2159,10 @@
             const data = await res.json();
             if (data.success) {
               selectedCurrency = data.currency;
-              selectedAmount = data.amount;
+              // The detect-price endpoint returns a plans object; use starter plan amount
+              selectedAmount = (data.plans && data.plans.starter && data.plans.starter.amount) || data.amount || 29;
               selectedGateway = data.gateway || 'cashfree';
-              geoPriceAmount.textContent = `${data.symbol}${data.amount}`;
+              geoPriceAmount.textContent = isPremiumUser ? 'FREE' : `${data.symbol}${selectedAmount}`;
               updateCheckoutUI();
               updatePayBtnState();
               return;
@@ -2219,7 +2215,7 @@
         selectedAmount = pricing.amount;
         // Client-side fallback: assume India (cashfree) if INR, else paypal
         selectedGateway = (pricing.currency === 'INR') ? 'cashfree' : 'paypal';
-        geoPriceAmount.textContent = `${pricing.symbol}${pricing.amount}`;
+        geoPriceAmount.textContent = isPremiumUser ? 'FREE' : `${pricing.symbol}${pricing.amount}`;
         updateCheckoutUI();
         updatePayBtnState();
       }
@@ -2306,19 +2302,6 @@
           payBtn.classList.remove('active');
           payBtnText.textContent = 'Enter Available URL';
           return;
-        }
-
-        // Server-side premium verification
-        let isPremiumUser = false;
-        try {
-          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
-          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
-          if (premiumRes.ok) {
-            const premiumData = await premiumRes.json();
-            isPremiumUser = premiumData.isPremium;
-          }
-        } catch (err) {
-          console.error('Premium check failed:', err);
         }
 
         payBtn.disabled = false;
@@ -2466,19 +2449,6 @@
 
       async function handlePaymentInitiation() {
         if (!isSlugAvailable || !websiteId) return;
-
-        // Server-side premium verification
-        let isPremiumUser = false;
-        try {
-          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
-          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
-          if (premiumRes.ok) {
-            const premiumData = await premiumRes.json();
-            isPremiumUser = premiumData.isPremium;
-          }
-        } catch (err) {
-          console.error('Premium check failed:', err);
-        }
 
         // If premium user, claim custom URL for free without payment
         if (isPremiumUser) {
@@ -2848,7 +2818,7 @@ function initCashfreeCheckout(paymentSessionId, orderId) {
     })();
   </script>
     <!-- Content Protection Script -->
-    <script src="assets/content-protection.js"></script>
+    <script src="/assets/content-protection.js"></script>
 </body>
 
 </html>
