@@ -1281,10 +1281,13 @@
     }
 
     @keyframes pulse {
-      0%, 100% {
+
+      0%,
+      100% {
         box-shadow: 0 2px 8px rgba(255, 122, 47, 0.3);
         transform: scale(1);
       }
+
       50% {
         box-shadow: 0 4px 12px rgba(255, 122, 47, 0.5);
         transform: scale(1.02);
@@ -1721,7 +1724,8 @@
 
               <ul class="feat-list" style="margin-top:20px;">
                 <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> Personalized wish page</li>
-                <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> Share on WhatsApp &amp; Social Media</li>
+                <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> Share on WhatsApp &amp; Social Media
+                </li>
                 <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> QR code download</li>
                 <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> Personalised URL + QR Code</li>
                 <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> 100% Ad-Free</li>
@@ -3138,7 +3142,7 @@
       };
 
       // Eurozone countries (server-side handling)
-      const EUROZONE = ['AT','BE','CY','EE','FI','FR','DE','GR','IE','IT','LV','LT','LU','MT','NL','PT','SK','SI','ES','HR'];
+      const EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
 
       // Helper function to load scripts dynamically
       function loadScript(src) {
@@ -3178,7 +3182,7 @@
           if (geoRes.ok) {
             const geoData = await geoRes.json();
             const countryCode = geoData.country_code;
-            
+
             let pricing;
             if (countryCode === 'IN') {
               pricing = geoPricing['IN'];
@@ -3191,7 +3195,7 @@
               // Default to international pricing for VPN/undetected locations
               pricing = geoPricing['default'];
             }
-            
+
             selectedCurrency = pricing.currency;
             selectedAmount = pricing.amount;
             selectedGateway = (pricing.currency === 'INR') ? 'cashfree' : 'paypal';
@@ -3219,7 +3223,7 @@
 
       function updatePricingUI() {
         console.log('updatePricingUI called:', { selectedCurrency, selectedAmount, selectedGateway });
-        
+
         // Get the correct symbol for current currency
         let symbol;
         if (selectedCurrency === 'INR') {
@@ -3239,10 +3243,10 @@
         } else {
           symbol = '$';
         }
-        
+
         // Calculate prices based on currency
         let starterPrice, proPrice, foreverPrice, starterOriginalPrice;
-        
+
         if (selectedCurrency === 'INR') {
           starterPrice = 29;
           starterOriginalPrice = 49;
@@ -3290,15 +3294,15 @@
           proPrice = 2.99;
           foreverPrice = 9.99;
         }
-        
+
         console.log('Calculated prices:', { starterPrice, proPrice, foreverPrice, starterOriginalPrice, symbol });
-        
+
         // Update plan pills with calculated prices
         const planPills = document.querySelectorAll('.plan-pill');
         planPills.forEach(pill => {
           const plan = pill.dataset.plan;
           let adjustedPrice, originalPrice;
-          
+
           if (plan === 'starter') {
             adjustedPrice = starterPrice;
             originalPrice = starterOriginalPrice;
@@ -3321,19 +3325,19 @@
 
         // Update active plan price
         activePlan.price = proPrice;
-        
+
         // Update UI elements
         document.getElementById('priceBig').textContent = `${symbol}${activePlan.price}`;
         document.getElementById('unifiedBtnPrice').textContent = `${symbol}${activePlan.price}`;
         document.getElementById('finalPayBtnText').textContent = `Pay ${symbol}${activePlan.price} Securely`;
-        
+
         // Update unified button to ensure currency is correct
         updateUnifiedBtn();
       }
 
       // Initialize geo-detection
       detectUserLocation();
-      
+
       // Update UI immediately with default values before geo-detection completes
       // Use setTimeout to ensure DOM is fully ready
       setTimeout(() => {
@@ -3389,7 +3393,7 @@
           e.stopPropagation(); // prevent double-trigger with card click
           planSwitcher.querySelectorAll('.plan-pill').forEach(p => p.classList.remove('sel'));
           pill.classList.add('sel');
-          
+
           // Calculate price based on current currency and plan
           let calculatedPrice;
           if (selectedCurrency === 'INR') {
@@ -3430,14 +3434,14 @@
             else if (pill.dataset.plan === 'pro') calculatedPrice = 2.99;
             else if (pill.dataset.plan === 'forever') calculatedPrice = 9.99;
           }
-          
+
           activePlan = {
             plan: pill.dataset.plan,
             price: calculatedPrice,
             days: +pill.dataset.days,
             label: pill.dataset.label
           };
-          
+
           // Get current symbol
           let currentSymbol = '$';
           if (selectedCurrency === 'INR') currentSymbol = '₹';
@@ -3447,7 +3451,7 @@
           else if (selectedCurrency === 'AUD') currentSymbol = 'A$';
           else if (selectedCurrency === 'AED') currentSymbol = 'AED ';
           else if (selectedCurrency === 'PKR') currentSymbol = 'PKR ';
-          
+
           document.getElementById('priceBig').textContent = `${currentSymbol}${activePlan.price}`;
           document.getElementById('pricePeriod').textContent = `for ${activePlan.label}`;
           document.getElementById('validityChip').innerHTML = `<i class="fas fa-shield-alt"></i> Active ${activePlan.label} · Ad-Free`;
@@ -3474,7 +3478,7 @@
         else if (selectedCurrency === 'AUD') currentSymbol = 'A$';
         else if (selectedCurrency === 'AED') currentSymbol = 'AED ';
         else if (selectedCurrency === 'PKR') currentSymbol = 'PKR ';
-        
+
         if (selectedMode === 'free') {
           unifiedBtn.style.display = 'flex';
           document.getElementById('inlineCheckout').style.display = 'none';
@@ -3541,10 +3545,13 @@
         const finalEmail = email || 'guest@thegreeter.in';
         const finalPhone = phone || '9999999999';
 
-        // Store user data WITHOUT isPremium flag initially
-        // Premium status will be set after successful payment confirmation
+        // Generate a Website ID (Greeter ID) for this project
+        const websiteId = Math.random().toString(36).substring(2, 12);
+
+        // Store user data with websiteId
         localStorage.setItem('userData', JSON.stringify(
           collectFormData({
+            websiteId: websiteId,
             isPremium: false,
             pendingPremiumPayment: true,
             selectedPlan: activePlan.plan,
@@ -3561,7 +3568,7 @@
           console.log('[Payment] Starting payment flow');
           console.log('[Payment] Plan:', activePlan.plan, 'Price:', activePlan.price, 'Currency:', selectedCurrency, 'Gateway:', selectedGateway);
           console.log('[Payment] Email:', finalEmail, 'Phone:', finalPhone);
-          
+
           btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
           btn.disabled = true;
 
@@ -3571,16 +3578,19 @@
           // For localhost testing, skip payment and go directly to preview
           // Note: Premium features will be verified server-side, so this is for testing only
           if (isLocalhost) {
-            console.log('[Payment] Localhost detected, skipping payment flow');
+            console.log('[Payment] Localhost detected, skipping payment flow for websiteId:', websiteId);
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             delete userData.pendingPremiumPayment;
+            userData.isPremium = true;
+            userData.websiteId = websiteId;
             localStorage.setItem('userData', JSON.stringify(userData));
-            console.log('[Payment] Redirecting to preview.html');
-            window.location.href = 'generated/preview.html';
+            console.log('[Payment] Redirecting to preview.html?view=' + websiteId);
+            window.location.href = `generated/preview.html?view=${websiteId}`;
             return;
           }
 
           const requestBody = {
+            websiteId: websiteId,
             plan: activePlan.plan,
             amount: activePlan.price,
             currency: selectedCurrency,
@@ -3599,18 +3609,18 @@
           });
 
           console.log('[Payment] Response status:', response.status);
-          
+
           if (response.ok) {
             const data = await response.json();
             console.log('[Payment] Response data:', data);
             console.log('[Payment] Server gateway:', data.gateway, 'Client gateway:', selectedGateway);
-            
+
             // Use server's gateway decision - trust server over client detection
             if (data.gateway === 'cashfree' && data.paymentSessionId) {
               console.log('[Payment] Using Cashfree SDK (server decision)');
               console.log('[Payment] Payment session ID:', data.paymentSessionId);
               console.log('[Payment] Order ID:', data.orderId);
-              
+
               try {
                 // Load Cashfree SDK dynamically
                 if (typeof Cashfree === 'undefined') {
@@ -3618,33 +3628,33 @@
                   await loadScript('https://sdk.cashfree.com/js/v3/cashfree.js');
                   console.log('[Payment] Cashfree SDK loaded');
                 }
-                
+
                 // Determine mode based on hostname
-                const isProduction = window.location.hostname !== 'localhost' && 
-                                     window.location.hostname !== '127.0.0.1' &&
-                                     !window.location.hostname.includes('.onrender.com');
-                
+                const isProduction = window.location.hostname !== 'localhost' &&
+                  window.location.hostname !== '127.0.0.1' &&
+                  !window.location.hostname.includes('.onrender.com');
+
                 console.log('[Payment] Cashfree mode:', isProduction ? 'production' : 'sandbox');
                 console.log('[Payment] Cashfree SDK available:', typeof Cashfree !== 'undefined');
-                
+
                 if (typeof Cashfree === 'undefined') {
                   console.error('[Payment] Cashfree SDK still not loaded after dynamic load');
                   throw new Error('Payment gateway not loaded. Please refresh and try again.');
                 }
-                
+
                 const cashfree = new Cashfree({
                   mode: isProduction ? 'production' : 'sandbox',
                 });
-                
+
                 const checkoutOptions = {
                   paymentSessionId: data.paymentSessionId,
                   redirectTarget: '_self',
                   redirectUrl: `${window.location.origin}/generated/preview.html?action=payment-success&orderId=${data.orderId}`,
                 };
-                
+
                 console.log('[Payment] Checkout options:', checkoutOptions);
-                
-                cashfree.checkout(checkoutOptions).then(function(result) {
+
+                cashfree.checkout(checkoutOptions).then(function (result) {
                   console.log('[Payment] Cashfree checkout result:', result);
                   if (result.error) {
                     console.error('[Payment] Cashfree checkout error:', result.error);
@@ -3654,7 +3664,7 @@
                     // Payment completed, will be redirected
                     console.log('[Payment] Payment redirect initiated');
                   }
-                }).catch(function(error) {
+                }).catch(function (error) {
                   console.error('[Payment] Cashfree checkout error:', error);
                   console.error('[Payment] Error details:', JSON.stringify(error));
                   throw new Error('Payment checkout failed');
@@ -3666,7 +3676,7 @@
                 throw new Error('Failed to initialize payment gateway');
               }
             }
-            
+
             // PayPal or other gateway - redirect to payment link
             const targetUrl = data.paymentUrl || data.paymentLink;
             if (targetUrl) {
@@ -3685,12 +3695,12 @@
           console.error('[Payment] Payment flow error:', error);
           console.error('[Payment] Error message:', error.message);
           console.error('[Payment] Error stack:', error.stack);
-          
+
           // Clean up pending payment flag on error
           const userData = JSON.parse(localStorage.getItem('userData') || '{}');
           delete userData.pendingPremiumPayment;
           localStorage.setItem('userData', JSON.stringify(userData));
-          
+
           if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             console.log('[Payment] Localhost redirect to preview');
             window.location.href = 'generated/preview.html';
@@ -3770,13 +3780,13 @@
       const urlFestivalName = urlParams.get('festivalName');
       const action = urlParams.get('action');
       const orderIdParam = urlParams.get('orderId');
-      
+
       // Check if we are landing from a successful payment redirection
       if (action === 'payment-success' && orderIdParam) {
         showPaymentVerificationLoading();
         pollPaymentStatus(orderIdParam);
       }
-      
+
       if (urlEvent === 'festival') {
         eventSelect.value = 'festival';
         festivalContainer.style.display = 'block';
@@ -3795,11 +3805,11 @@
           document.getElementById('planSwitcher')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 150);
       }
-      
+
       // Payment status polling function
       let pollCount = 0;
       let currentOrderId = '';
-      
+
       function showPaymentVerificationLoading() {
         // Create loading overlay
         const overlay = document.createElement('div');
@@ -3819,7 +3829,7 @@
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
       }
-      
+
       function hidePaymentVerificationLoading() {
         const overlay = document.getElementById('paymentVerificationOverlay');
         if (overlay) {
@@ -3827,20 +3837,23 @@
           document.body.style.overflow = '';
         }
       }
-      
+
       async function pollPaymentStatus(orderId) {
         currentOrderId = orderId;
         try {
           const res = await fetch('/api/payment/status/' + orderId);
           const data = await res.json();
-          
-          if (data.status === 'success' || data.status === 'completed') {
-            // Payment successful - clear pending payment flag
-            // Premium status will be verified server-side
+
+          if (data.status === 'PAID' || data.status === 'success' || data.status === 'completed') {
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             delete userData.pendingPremiumPayment;
+            userData.isPremium = true;
+            if (data.websiteId) userData.websiteId = data.websiteId;
             localStorage.setItem('userData', JSON.stringify(userData));
-            
+
+            const targetWebsiteId = data.websiteId || userData.websiteId;
+            const redirectUrl = targetWebsiteId ? `generated/preview.html?view=${targetWebsiteId}` : 'generated/preview.html';
+
             // Update loading message
             const overlay = document.getElementById('paymentVerificationOverlay');
             if (overlay) {
@@ -3859,11 +3872,11 @@
                 </style>
               `;
             }
-            
+
             // Redirect after short delay
             setTimeout(() => {
               hidePaymentVerificationLoading();
-              window.location.href = 'generated/preview.html';
+              window.location.href = redirectUrl;
             }, 1500);
           } else {
             pollCount++;

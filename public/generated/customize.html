@@ -3102,7 +3102,7 @@
         return new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', '/api/upload-audio');
-          
+
           xhr.upload.onprogress = (e) => {
             if (e.lengthComputable && onProgress) {
               const percentComplete = Math.round((e.loaded / e.total) * 100);
@@ -3346,7 +3346,7 @@
             if (isCountdownRunning()) {
               const data = customData.get('countdown') || {};
               applyFeature('countdown', true, name, data.text || "", data.images || [], data.emoji || "");
-              
+
               applyFeature('lock', false);
               applyFeature('curtainReveal', false);
               applyFeature('welcomeTyping', false);
@@ -3372,7 +3372,7 @@
             if (lockActive && !window.lockUnlocked) {
               const data = customData.get('lock') || {};
               applyFeature('lock', true, name, data.text || "", data.images || [], data.emoji || "");
-              
+
               applyFeature('curtainReveal', false);
               applyFeature('welcomeTyping', false);
 
@@ -3395,7 +3395,7 @@
             if (curtainActive && !window.curtainOpened) {
               const data = customData.get('curtainReveal') || {};
               applyFeature('curtainReveal', true, name, data.text || "", data.images || [], data.emoji || "");
-              
+
               applyFeature('welcomeTyping', false);
 
               window.welcomeFinished = false;
@@ -4657,9 +4657,9 @@
                   const urlParams = new URLSearchParams(window.location.search);
                   const viewId = urlParams.get('view') || urlParams.get('restore');
                   const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
-                                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                                    !!userDataObj.isPremium;
+                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' ||
+                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                    !!userDataObj.isPremium;
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
                   if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
@@ -4834,9 +4834,9 @@
                       const urlParams = new URLSearchParams(window.location.search);
                       const viewId = urlParams.get('view') || urlParams.get('restore');
                       const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                      const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
-                                        localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                                        !!userDataObj.isPremium;
+                      const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' ||
+                        localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                        !!userDataObj.isPremium;
 
                       // Only upload to Cloudinary for premium users
                       let secureUrl;
@@ -4901,9 +4901,9 @@
                   const urlParams = new URLSearchParams(window.location.search);
                   const viewId = urlParams.get('view') || urlParams.get('restore');
                   const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
-                                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                                    !!userDataObj.isPremium;
+                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' ||
+                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                    !!userDataObj.isPremium;
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
                   if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
@@ -5027,7 +5027,7 @@
 
               const updateLivePreview = () => {
                 const targetVal = timeInput.value;
-                
+
                 const displaySpan = triggerBtn.querySelector(".datetime-display-val");
                 if (displaySpan) {
                   displaySpan.innerText = formatDisplayTime(targetVal);
@@ -5069,7 +5069,7 @@
 
                 const modalContent = document.createElement("div");
                 modalContent.style.cssText = "background:var(--bg-secondary); border:1px solid var(--card-border); color:var(--text-primary); border-radius:24px; padding:25px; max-width:420px; width:92%; box-shadow:var(--shadow-lg); transform:scale(0.9); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display:flex; flex-direction:column; gap:20px;";
-                
+
                 const header = document.createElement("div");
                 header.style.cssText = "display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--toggle-bg); padding-bottom:12px;";
                 header.innerHTML = `
@@ -5085,13 +5085,13 @@
 
                 const presetsGrid = document.createElement("div");
                 presetsGrid.style.cssText = "display:grid; grid-template-columns:1fr 1fr; gap:10px;";
-                
+
                 const getPresetTime = (hoursFromNow) => {
                   const d = new Date();
                   d.setHours(d.getHours() + hoursFromNow);
                   d.setMinutes(d.getMinutes(), 0, 0);
                   const pad = (n) => n.toString().padStart(2, '0');
-                  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
                 };
 
                 const getMidnightTime = (daysOffset) => {
@@ -5099,7 +5099,7 @@
                   d.setDate(d.getDate() + daysOffset);
                   d.setHours(24, 0, 0, 0);
                   const pad = (n) => n.toString().padStart(2, '0');
-                  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T00:00`;
+                  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
                 };
 
                 const presets = [
@@ -5158,7 +5158,7 @@
                 const cancelBtn = document.createElement("button");
                 cancelBtn.innerText = currentLang === 'hi' ? 'रद्द करें' : 'Cancel';
                 cancelBtn.style.cssText = "flex:1; padding:12px; border:1px solid var(--toggle-bg); background:var(--bg-primary); color:var(--text-primary); border-radius:12px; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:inherit;";
-                
+
                 const saveBtn = document.createElement("button");
                 saveBtn.innerText = currentLang === 'hi' ? 'काउंटडाउन सेट करें' : 'Apply Countdown';
                 saveBtn.style.cssText = "flex:1.5; padding:12px; border:none; background:var(--accent-solid); color:white; border-radius:12px; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:inherit; box-shadow:0 4px 15px rgba(123, 93, 246, 0.3);";
@@ -5217,7 +5217,7 @@
                   timerEl.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
                 };
 
-                 modalInput.oninput = () => {
+                modalInput.oninput = () => {
                   let val = modalInput.value;
                   if (val) {
                     const parts = val.split('T');
@@ -5243,7 +5243,7 @@
 
               triggerBtn.onclick = openModal;
 
-               timeInput.oninput = () => {
+              timeInput.oninput = () => {
                 let val = timeInput.value;
                 if (val) {
                   const parts = val.split('T');
@@ -5261,11 +5261,11 @@
                 const ex = customData.get("countdown") || {};
                 ex.text = timeInput.value;
                 customData.set("countdown", ex);
- 
+
                 clearInterval(previewInterval);
                 updateLivePreview();
                 previewInterval = setInterval(updateLivePreview, 1000);
- 
+
                 const nameVal = getUserName();
                 refreshFeatureIfActive("countdown", nameVal, timeInput.value);
                 autoSaveState();
@@ -6193,11 +6193,13 @@
           // Save to server for cross-browser sharing
           const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
           const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
-          
+
+          const currentViewId = urlParams.get('view') || urlParams.get('restore') || userDataObj.websiteId;
+
           fetch((API_BASE || '') + '/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html, config, isPremium })
+            body: JSON.stringify({ html, config, isPremium, websiteId: currentViewId })
           })
             .then(r => {
               if (!r.ok) {
@@ -6213,11 +6215,11 @@
               if (data.id) {
                 // Save customization state before navigating
                 saveCustomizationState(data.id);
-                
+
                 // Store premium status per website ID
                 const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
                 const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
-                
+
                 if (isPremium) {
                   localStorage.setItem(`premium_${data.id}`, 'true');
                   // Update userData to reflect premium status
@@ -6232,7 +6234,7 @@
                   localStorage.setItem('userData', JSON.stringify(userDataObj));
                   localStorage.removeItem('pendingPremiumForNextWebsite');
                 }
-                
+
                 const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
                 const ev = getEventData().event || '';
                 const isFest = /festival/i.test(template) || ev === 'festival';

@@ -263,9 +263,9 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 // Save shared config + HTML
 app.post('/api/config', async (req, res) => {
   try {
-    const { html, config, isPremium } = req.body;
+    const { html, config, isPremium, websiteId } = req.body;
     if (!html) return res.status(400).json({ error: 'HTML is required' });
-    const id = Math.random().toString(36).substring(2, 12);
+    const id = websiteId || req.body.id || Math.random().toString(36).substring(2, 12);
 
     // Extract metadata for analytics
     const metadata = {
@@ -882,8 +882,9 @@ app.post('/api/payment/create-order', async (req, res) => {
     // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
     if (gateway === 'paypal') {
       try {
-        const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId=${orderId}`;
-        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html`;
+        const targetPage = req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html';
+        const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}?action=payment-success&orderId=${orderId}`;
+        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}`;
         
         console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${paypalCurrency}`);
         const paypalOrder = await createPayPalOrder(paypalAmount, paypalCurrency, returnUrl, cancelUrl);
@@ -931,7 +932,7 @@ app.post('/api/payment/create-order', async (req, res) => {
         customer_phone: customer.customer_phone || '9999999999'
       },
       order_meta: {
-        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/preview.html?action=payment-success&orderId={order_id}`,
+        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html'}?action=payment-success&orderId={order_id}`,
         notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal.onrender.com'}/api/payment/webhook`,
         payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
       }
@@ -1190,7 +1191,16 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
       status: 'PAID' 
     }).lean();
 
-    const isPremium = !!paidPayment;
+    let isPremium = !!paidPayment;
+
+    if (!isPremium) {
+      try {
+        const site = await Website.findOne({ id: websiteId }).lean();
+        if (site && site.isPremium) {
+          isPremium = true;
+        }
+      } catch(e) {}
+    }
     
     res.json({ 
       isPremium,

@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta name="google-adsense-account" content="ca-pub-8043014881280685">
-    <meta name="robots" content="noindex, nofollow">
+  <meta name="google-adsense-account" content="ca-pub-8043014881280685">
+  <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
@@ -33,7 +33,7 @@
 
     if (action === 'payment-success' && orderId) {
       console.log('[Payment Redirect] Starting payment status polling for order:', orderId);
-      
+
       // Poll payment status and update premium access
       async function pollPaymentStatus(orderId) {
         try {
@@ -42,11 +42,11 @@
           console.log('[Payment Redirect] API Base URL:', apiBaseUrl);
           const res = await fetch(`${apiBaseUrl}/api/payment/status/${orderId}`);
           console.log('[Payment Redirect] Status response:', res.status);
-          
+
           if (res.ok) {
             const data = await res.json();
             console.log('[Payment Redirect] Status data:', data);
-            
+
             if (data.status === 'PAID') {
               console.log('[Payment Redirect] Payment successful, updating premium access');
               // Update localStorage with premium access
@@ -54,12 +54,15 @@
               console.log('[Payment Redirect] Current userData:', userData);
               userData.isPremium = true;
               userData.pendingPremiumPayment = false;
+              if (data.websiteId) userData.websiteId = data.websiteId;
               localStorage.setItem('userData', JSON.stringify(userData));
               console.log('[Payment Redirect] Updated userData:', userData);
-              
-              // Remove payment params from URL
-              window.history.replaceState({}, document.title, window.location.pathname);
-              
+
+              // Remove payment params and add view parameter
+              const targetWebsiteId = data.websiteId || userData.websiteId;
+              const newUrl = targetWebsiteId ? `${window.location.pathname}?view=${targetWebsiteId}` : window.location.pathname;
+              window.history.replaceState({}, document.title, newUrl);
+
               // Reload page to apply premium features
               console.log('[Payment Redirect] Reloading page to apply premium features');
               window.location.reload();
@@ -83,7 +86,7 @@
           setTimeout(() => pollPaymentStatus(orderId), 3000);
         }
       }
-      
+
       pollPaymentStatus(orderId);
     } else {
       console.log('[Payment Redirect] No payment success params found, normal page load');
@@ -1415,6 +1418,7 @@
         padding: 6px 8px;
         gap: 4px;
       }
+
       .premium-badge span {
         display: none;
       }
@@ -1730,7 +1734,7 @@
       let templates = [];
       let currentEvent = userData.event || 'birthday';
       window.currentSelectedPath = null;
-      
+
       // Premium badge is now handled by server-side verification in the window load event
 
       async function loadAvailableTemplates(event) {
@@ -1920,13 +1924,14 @@
         }
         localStorage.setItem("selectedTemplate", selectedTemplate);
         localStorage.setItem("userData", JSON.stringify(userData));
-        
+
         // If user has pending premium payment, set a flag to be used when website is saved
         if (userData.pendingPremiumPayment) {
           localStorage.setItem('pendingPremiumForNextWebsite', 'true');
         }
-        
-        window.location.href = "customize.html";
+
+        const viewId = new URLSearchParams(window.location.search).get('view') || userData.websiteId || '';
+        window.location.href = viewId ? `customize.html?view=${viewId}` : "customize.html";
       }
 
       document.getElementById('customizeBtn').onclick = proceedToCustomize;
@@ -2066,9 +2071,9 @@
 
         // Show premium badge if user is premium - server-side verification
         const urlParams = new URLSearchParams(window.location.search);
-        const viewId = urlParams.get('view');
+        const viewId = urlParams.get('view') || userData?.websiteId;
         let isPremiumUser = false;
-        
+
         if (viewId) {
           try {
             const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
@@ -2081,7 +2086,7 @@
             console.error('Premium check failed:', err);
           }
         }
-        
+
         if (isPremiumUser) {
           const pBadge = document.getElementById("premiumBadge");
           if (pBadge) pBadge.style.display = "inline-flex";
@@ -2090,8 +2095,8 @@
     })();
   </script>
   <script src="/assets/tracker.js" defer></script>
-    <!-- Content Protection Script -->
-    <script src="/assets/content-protection.js"></script>
+  <!-- Content Protection Script -->
+  <script src="/assets/content-protection.js"></script>
 </body>
 
 </html>
