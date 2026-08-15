@@ -29,7 +29,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const pathParts = window.location.pathname.split('/').filter(p => p && !p.includes('.'));
       const potentialSlug = pathParts[pathParts.length - 1];
-      const isExplicitSharedView = (urlParams.get('_v') === 'c' || urlParams.get('slug') || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' ||
+      const isExplicitSharedView = (urlParams.get('_v') === 'c' || urlParams.get('slug') || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || urlParams.get('view') ||
         (!window.location.pathname.startsWith('/generated/') && potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug)));
       if (isExplicitSharedView) {
         document.write('<style>.container, .navbar, .resizer, .panel, .footer { display: none !important; } body { background: #f9f7ff; } body.dark { background: #0a0614; }</style>');
@@ -5861,6 +5861,16 @@
     const customData = new Map(config.customData || []);
     const userName = config.userName || 'Loved One';
 
+    // Ensure FEATURE_MAP is available before proceeding
+    if (!window.FEATURE_MAP && magicRaw) {
+      try {
+        const decoded = atob(magicRaw);
+        window.FEATURE_MAP = new Function('return ' + decoded)();
+      } catch(e) {
+        console.error("Failed to decode magicRaw:", e);
+      }
+    }
+
     // Lock DOM modifications to preserve user edits from the snapshot
     let isLocked = true;
     const lockMethod = (obj, prop, original) => {
@@ -6397,7 +6407,7 @@
         if (!viewId) return;
 
         // Check if this is an explicit shared view (recipient viewing published site)
-        const isExplicitSharedView = urlParams.get('_v') === 'c' || customSlug || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || !window.location.pathname.startsWith('/generated/');
+        const isExplicitSharedView = urlParams.get('_v') === 'c' || customSlug || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || urlParams.get('view') || !window.location.pathname.startsWith('/generated/');
         if (!isExplicitSharedView) {
           // User is in Customizer Editor Mode (customizing/editing project).
           // Do not hide customizer UI or treat as shared view!

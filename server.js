@@ -202,6 +202,39 @@ app.use('/api/analytics/event', (req, res, next) => {
   req.on('error', next);
 });
 
+// Upload audio to Cloudinary - must be before express.json to handle multipart/form-data
+const uploadAudio = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 20 * 1024 * 1024 // 20MB limit
+  }
+});
+
+app.post('/api/upload-audio', uploadAudio.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file provided' });
+    }
+    const secureUrl = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'audio',
+          resource_type: 'video', // Audios must use 'video' resource type in Cloudinary
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result.secure_url);
+        }
+      );
+      uploadStream.end(req.file.buffer);
+    });
+    res.json({ secure_url: secureUrl });
+  } catch (err) {
+    console.error('Error uploading audio via server:', err);
+    res.status(500).json({ error: err.message || 'Failed to upload audio' });
+  }
+});
+
 app.use(express.json({ limit: '10mb' })); // Reduced from 100mb to 10mb
 
 
@@ -1583,39 +1616,6 @@ app.post('/api/og-meta', async (req, res) => {
   } catch (error) {
     console.error('Error generating meta tags:', error);
     res.status(500).json({ error: 'Failed to generate meta tags' });
-  }
-});
-// Multer configuration for audio uploads in-memory
-const uploadAudio = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 20 * 1024 * 1024 // 20MB limit
-  }
-});
-
-// Upload audio to Cloudinary
-app.post('/api/upload-audio', uploadAudio.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No audio file provided' });
-    }
-    const secureUrl = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'audio',
-          resource_type: 'video', // Audios must use 'video' resource type in Cloudinary
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result.secure_url);
-        }
-      );
-      uploadStream.end(req.file.buffer);
-    });
-    res.json({ secure_url: secureUrl });
-  } catch (err) {
-    console.error('Error uploading audio via server:', err);
-    res.status(500).json({ error: err.message || 'Failed to upload audio' });
   }
 });
 
