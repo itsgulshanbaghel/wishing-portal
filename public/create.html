@@ -14,8 +14,7 @@
   <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
 
   <script src="assets/config.js"></script>
-  <!-- Cashfree Nextgen JavaScript SDK -->
-  <script src="https://cdn.cashfree.com/js/v3/cashfree.js"></script>
+  <!-- Cashfree Nextgen JavaScript SDK - loaded dynamically when needed -->
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
@@ -3141,6 +3140,17 @@
       // Eurozone countries (server-side handling)
       const EUROZONE = ['AT','BE','CY','EE','FI','FR','DE','GR','IE','IT','LV','LT','LU','MT','NL','PT','SK','SI','ES','HR'];
 
+      // Helper function to load scripts dynamically
+      function loadScript(src) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = src;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
       // Detect user's location and set pricing
       async function detectUserLocation() {
         try {
@@ -3602,6 +3612,13 @@
               console.log('[Payment] Order ID:', data.orderId);
               
               try {
+                // Load Cashfree SDK dynamically
+                if (typeof Cashfree === 'undefined') {
+                  console.log('[Payment] Loading Cashfree SDK dynamically...');
+                  await loadScript('https://sdk.cashfree.com/js/v3/cashfree.js');
+                  console.log('[Payment] Cashfree SDK loaded');
+                }
+                
                 // Determine mode based on hostname
                 const isProduction = window.location.hostname !== 'localhost' && 
                                      window.location.hostname !== '127.0.0.1' &&
@@ -3611,7 +3628,7 @@
                 console.log('[Payment] Cashfree SDK available:', typeof Cashfree !== 'undefined');
                 
                 if (typeof Cashfree === 'undefined') {
-                  console.error('[Payment] Cashfree SDK not loaded');
+                  console.error('[Payment] Cashfree SDK still not loaded after dynamic load');
                   throw new Error('Payment gateway not loaded. Please refresh and try again.');
                 }
                 

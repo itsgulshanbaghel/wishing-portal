@@ -6242,8 +6242,8 @@
           }
 
           // Save to server for cross-browser sharing
-          const urlParams = new URLSearchParams(window.location.search);
-          const viewId = urlParams.get('view') || urlParams.get('restore');
+          const saveUrlParams = new URLSearchParams(window.location.search);
+          const viewId = saveUrlParams.get('view') || saveUrlParams.get('restore');
           
           // Server-side premium verification
           let isPremium = false;
