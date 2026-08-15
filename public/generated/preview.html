@@ -29,40 +29,62 @@
     const action = urlParams.get('action');
     const orderId = urlParams.get('orderId');
 
+    console.log('[Payment Redirect] Page loaded with params:', { action, orderId });
+
     if (action === 'payment-success' && orderId) {
+      console.log('[Payment Redirect] Starting payment status polling for order:', orderId);
+      
       // Poll payment status and update premium access
       async function pollPaymentStatus(orderId) {
         try {
+          console.log('[Payment Redirect] Polling payment status for:', orderId);
           const res = await fetch(`/api/payment/status/${orderId}`);
+          console.log('[Payment Redirect] Status response:', res.status);
+          
           if (res.ok) {
             const data = await res.json();
+            console.log('[Payment Redirect] Status data:', data);
+            
             if (data.status === 'PAID') {
+              console.log('[Payment Redirect] Payment successful, updating premium access');
               // Update localStorage with premium access
               const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+              console.log('[Payment Redirect] Current userData:', userData);
               userData.isPremium = true;
               userData.pendingPremiumPayment = false;
               localStorage.setItem('userData', JSON.stringify(userData));
+              console.log('[Payment Redirect] Updated userData:', userData);
               
               // Remove payment params from URL
               window.history.replaceState({}, document.title, window.location.pathname);
               
               // Reload page to apply premium features
+              console.log('[Payment Redirect] Reloading page to apply premium features');
               window.location.reload();
             } else if (data.status === 'FAILED' || data.status === 'CANCELLED') {
+              console.error('[Payment Redirect] Payment failed with status:', data.status);
               alert('Payment failed. Please try again.');
               window.location.href = '/create.html';
             } else {
+              console.log('[Payment Redirect] Payment still pending, polling again in 2s');
               // Still pending, poll again
               setTimeout(() => pollPaymentStatus(orderId), 2000);
             }
+          } else {
+            console.error('[Payment Redirect] Status check failed with status:', res.status);
+            const errorText = await res.text();
+            console.error('[Payment Redirect] Error response:', errorText);
           }
         } catch (e) {
-          console.error('Payment status check error:', e);
+          console.error('[Payment Redirect] Payment status check error:', e);
+          console.error('[Payment Redirect] Error stack:', e.stack);
           setTimeout(() => pollPaymentStatus(orderId), 3000);
         }
       }
       
       pollPaymentStatus(orderId);
+    } else {
+      console.log('[Payment Redirect] No payment success params found, normal page load');
     }
   </script>
 

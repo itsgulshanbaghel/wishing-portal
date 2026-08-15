@@ -3547,33 +3547,51 @@
 
         // 💰 Production & Localhost Dev Payment Flow
         try {
+          console.log('[Payment] Starting payment flow');
+          console.log('[Payment] Plan:', activePlan.plan, 'Price:', activePlan.price, 'Currency:', selectedCurrency, 'Gateway:', selectedGateway);
+          console.log('[Payment] Email:', finalEmail, 'Phone:', finalPhone);
+          
           btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
           btn.disabled = true;
 
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          console.log('[Payment] Is localhost:', isLocalhost);
+
+          const requestBody = {
+            plan: activePlan.plan,
+            amount: activePlan.price,
+            currency: selectedCurrency,
+            email: finalEmail,
+            phone: finalPhone
+          };
+          console.log('[Payment] Request body:', requestBody);
 
           const response = await fetch('/api/payment/create-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              plan: activePlan.plan,
-              amount: activePlan.price,
-              currency: selectedCurrency,
-              email: finalEmail,
-              phone: finalPhone
-            })
+            body: JSON.stringify(requestBody)
           });
 
+          console.log('[Payment] Response status:', response.status);
+          
           if (response.ok) {
             const data = await response.json();
+            console.log('[Payment] Response data:', data);
             
             // Use Cashfree SDK for Indian users (cashfree gateway)
             if (data.paymentSessionId && selectedGateway === 'cashfree') {
+              console.log('[Payment] Using Cashfree SDK');
+              console.log('[Payment] Payment session ID:', data.paymentSessionId);
+              console.log('[Payment] Order ID:', data.orderId);
+              
               try {
                 // Determine mode based on hostname
                 const isProduction = window.location.hostname !== 'localhost' && 
                                      window.location.hostname !== '127.0.0.1' &&
                                      !window.location.hostname.includes('.onrender.com');
+                
+                console.log('[Payment] Cashfree mode:', isProduction ? 'production' : 'sandbox');
+                console.log('[Payment] Cashfree SDK available:', typeof Cashfree !== 'undefined');
                 
                 const cashfree = new Cashfree({
                   mode: isProduction ? 'production' : 'sandbox',
@@ -3585,21 +3603,27 @@
                   redirectUrl: `${window.location.origin}/generated/preview.html?action=payment-success&orderId=${data.orderId}`,
                 };
                 
+                console.log('[Payment] Checkout options:', checkoutOptions);
+                
                 cashfree.checkout(checkoutOptions).then(function(result) {
+                  console.log('[Payment] Cashfree checkout result:', result);
                   if (result.error) {
+                    console.error('[Payment] Cashfree checkout error:', result.error);
                     throw new Error(result.error.message);
                   }
                   if (result.redirect) {
                     // Payment completed, will be redirected
-                    console.log('Payment redirect initiated');
+                    console.log('[Payment] Payment redirect initiated');
                   }
                 }).catch(function(error) {
-                  console.error('Cashfree checkout error:', error);
+                  console.error('[Payment] Cashfree checkout error:', error);
+                  console.error('[Payment] Error details:', JSON.stringify(error));
                   throw new Error('Payment checkout failed');
                 });
                 return;
               } catch (sdkError) {
-                console.error('Cashfree SDK error:', sdkError);
+                console.error('[Payment] Cashfree SDK error:', sdkError);
+                console.error('[Payment] SDK error stack:', sdkError.stack);
                 throw new Error('Failed to initialize payment gateway');
               }
             }
@@ -3607,9 +3631,13 @@
             // Fallback to redirect for PayPal or if SDK fails
             const targetUrl = data.paymentUrl || data.paymentLink;
             if (targetUrl) {
+              console.log('[Payment] Redirecting to:', targetUrl);
               window.location.href = targetUrl;
               return;
             }
+          } else {
+            const errorData = await response.json();
+            console.error('[Payment] Server error response:', errorData);
           }
 
           if (isLocalhost) {
@@ -3625,16 +3653,21 @@
           throw new Error('Payment initiation failed');
 
         } catch (error) {
-          console.error("Payment error:", error);
+          console.error('[Payment] Payment flow error:', error);
+          console.error('[Payment] Error message:', error.message);
+          console.error('[Payment] Error stack:', error.stack);
+          
           // Clean up pending payment flag on error
           const userData = JSON.parse(localStorage.getItem('userData') || '{}');
           delete userData.pendingPremiumPayment;
           localStorage.setItem('userData', JSON.stringify(userData));
           
           if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('[Payment] Localhost redirect to preview');
             window.location.href = 'generated/preview.html';
           } else {
-            alert("Could not connect to the secure payment gateway. Please try again.");
+            console.log('[Payment] Showing error alert to user');
+            alert("Could not connect to the secure payment gateway. Please try again. Check browser console for details.");
             btn.innerHTML = originalText;
             btn.disabled = false;
           }

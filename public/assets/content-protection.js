@@ -2,28 +2,30 @@
 (function() {
     'use strict';
 
+    // TEMPORARILY DISABLED FOR PAYMENT DEBUGGING
     // Disable right-click context menu
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        return false;
-    });
+    // document.addEventListener('contextmenu', function(e) {
+    //     e.preventDefault();
+    //     return false;
+    // });
 
+    // TEMPORARILY DISABLED FOR PAYMENT DEBUGGING
     // Disable keyboard shortcuts for DevTools
-    document.addEventListener('keydown', function(e) {
-        // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
-        if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-            // Ctrl+U (view source)
-            (e.ctrlKey && e.key === 'u') ||
-            // Ctrl+S (save)
-            (e.ctrlKey && e.key === 's') ||
-            // Ctrl+P (print)
-            (e.ctrlKey && e.key === 'p')) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }, true);
+    // document.addEventListener('keydown', function(e) {
+    //     // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+    //     if (e.key === 'F12' || 
+    //         (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+    //         // Ctrl+U (view source)
+    //         (e.ctrlKey && e.key === 'u') ||
+    //         // Ctrl+S (save)
+    //         (e.ctrlKey && e.key === 's') ||
+    //         // Ctrl+P (print)
+    //         (e.ctrlKey && e.key === 'p')) {
+    //         e.preventDefault();
+    //         e.stopPropagation();
+    //         return false;
+    //     }
+    // }, true);
 
     // Disable text selection
     document.addEventListener('selectstart', function(e) {
@@ -59,29 +61,30 @@
         }
     });
 
+    // TEMPORARILY DISABLED FOR PAYMENT DEBUGGING
     // Detect DevTools opening
-    const devtools = {
-        open: false,
-        threshold: 160
-    };
+    // const devtools = {
+    //     open: false,
+    //     threshold: 160
+    // };
 
-    const checkDevTools = function() {
-        const widthThreshold = window.outerWidth - window.innerWidth > devtools.threshold;
-        const heightThreshold = window.outerHeight - window.innerHeight > devtools.threshold;
-        
-        if (widthThreshold || heightThreshold) {
-            if (!devtools.open) {
-                devtools.open = true;
-                console.clear();
-                console.log('%c⚠️ Developer Tools Detected', 'color: red; font-size: 20px; font-weight: bold;');
-                console.log('%cThis website\'s source code is protected by copyright.', 'color: red; font-size: 14px;');
-            }
-        } else {
-            devtools.open = false;
-        }
-    };
+    // const checkDevTools = function() {
+    //     const widthThreshold = window.outerWidth - window.innerWidth > devtools.threshold;
+    //     const heightThreshold = window.outerHeight - window.innerHeight > devtools.threshold;
+    //     
+    //     if (widthThreshold || heightThreshold) {
+    //         if (!devtools.open) {
+    //             devtools.open = true;
+    //             console.clear();
+    //             console.log('%c⚠️ Developer Tools Detected', 'color: red; font-size: 20px; font-weight: bold;');
+    //             console.log('%cThis website\'s source code is protected by copyright.', 'color: red; font-size: 14px;');
+    //         }
+    //     } else {
+    //         devtools.open = false;
+    //     }
+    // };
 
-    setInterval(checkDevTools, 500);
+    // setInterval(checkDevTools, 500);
 
     // Disable inspect element on images
     document.querySelectorAll('img').forEach(function(img) {
