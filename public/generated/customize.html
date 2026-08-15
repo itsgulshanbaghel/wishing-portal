@@ -3098,10 +3098,24 @@
         return file;
       }
 
+      function fileToDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (err) => reject(err);
+          reader.readAsDataURL(file);
+        });
+      }
+
       async function uploadAudioToCloudinary(file, onProgress) {
         return new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          xhr.open('POST', '/api/upload-audio');
+          const apiBase = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+            ? window.APP_CONFIG.API_BASE_URL
+            : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')
+                ? ''
+                : 'https://wishing-portal-05as.onrender.com');
+          xhr.open('POST', `${apiBase}/api/upload-audio`);
 
           xhr.upload.onprogress = (e) => {
             if (e.lengthComputable && onProgress) {
@@ -3114,16 +3128,21 @@
             if (xhr.status >= 200 && xhr.status < 300) {
               try {
                 const data = JSON.parse(xhr.responseText);
-                resolve(data.secure_url);
+                if (data && data.secure_url) {
+                  resolve(data.secure_url);
+                } else {
+                  reject(new Error((data && data.error) || 'Invalid response format from server'));
+                }
               } catch (err) {
+                console.error("Audio upload response parse error:", xhr.responseText);
                 reject(new Error('Invalid response from server'));
               }
             } else {
               try {
                 const data = JSON.parse(xhr.responseText);
-                reject(new Error(data.error || 'Audio upload failed'));
+                reject(new Error(data.error || `Audio upload failed with status ${xhr.status}`));
               } catch (err) {
-                reject(new Error('Audio upload failed'));
+                reject(new Error(`Audio upload failed (${xhr.status})`));
               }
             }
           };
@@ -4673,8 +4692,8 @@
                       audioNameDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
                     });
                   } else {
-                    // For free users, store as local blob URL
-                    secureUrl = URL.createObjectURL(processedFile);
+                    // For free users trying out features, convert & store as base64 Data URL in local storage
+                    secureUrl = await fileToDataURL(processedFile);
                   }
 
                   const ex = customData.get("magicMusic") || {};
@@ -4845,8 +4864,8 @@
                           timerEl.innerText = currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`;
                         });
                       } else {
-                        // For free users, store as local blob URL
-                        secureUrl = URL.createObjectURL(file);
+                        // For free users trying out features, convert & store as base64 Data URL in local storage
+                        secureUrl = await fileToDataURL(file);
                       }
 
                       const ex = customData.get("voiceNote") || {};
@@ -4917,8 +4936,8 @@
                       loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
                     });
                   } else {
-                    // For free users, store as local blob URL
-                    secureUrl = URL.createObjectURL(processedFile);
+                    // For free users trying out features, convert & store as base64 Data URL in local storage
+                    secureUrl = await fileToDataURL(processedFile);
                   }
 
                   const ex = customData.get("voiceNote") || {};
@@ -5311,7 +5330,15 @@
                 window.shouldScrollToFeatureId = id;
                 const nameVal = getUserName();
                 const existingData = customData.get(id) || {};
-                const customText = textarea ? textarea.value : (existingData.text || "");
+                let customText = textarea ? textarea.value : (existingData.text || "");
+                if (id === "countdown" && !customText) {
+                  const d = new Date();
+                  d.setDate(d.getDate() + 1);
+                  d.setHours(0, 0, 0, 0);
+                  const pad = (n) => n.toString().padStart(2, '0');
+                  customText = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
+                  existingData.text = customText;
+                }
                 const images = existingData.images || [];
                 const emojiVal = emojiInput ? emojiInput.value : (existingData.emoji || "");
                 const audio = existingData.audio || "";
@@ -6114,6 +6141,7 @@
       runStages();
     };
     function initMagic() {
+      isLocked = false;
       if (magicRaw) {
         try {
           const decoded = atob(magicRaw);
