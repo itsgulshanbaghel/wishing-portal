@@ -979,7 +979,8 @@ app.post('/api/payment/create-order', async (req, res) => {
         paymentSessionId: cfData.payment_session_id,
         amount: orderAmount,
         currency: currency || 'INR',
-        slug: sanitizedSlug
+        slug: sanitizedSlug,
+        gateway: 'cashfree'
       });
       return;
     }
@@ -999,7 +1000,8 @@ app.post('/api/payment/create-order', async (req, res) => {
       paymentSessionId: cfData.payment_session_id || null,
       amount: orderAmount,
       currency: currency || 'INR',
-      slug: sanitizedSlug
+      slug: sanitizedSlug,
+      gateway: 'cashfree'
     });
   } catch (err) {
     console.error('Error creating payment order:', err);

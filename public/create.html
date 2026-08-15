@@ -3144,7 +3144,8 @@
       // Detect user's location and set pricing
       async function detectUserLocation() {
         try {
-          const res = await fetch('/api/payment/detect-price');
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          const res = await fetch(`${apiBaseUrl}/api/payment/detect-price`);
           if (res.ok) {
             const data = await res.json();
             if (data.success) {
