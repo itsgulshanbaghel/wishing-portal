@@ -15,4 +15,9 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
   CONFIG.API_BASE_URL = window.location.origin;
 }
 
+// If accessing from Render URL itself, use same origin
+if (window.location.hostname.includes('onrender.com')) {
+  CONFIG.API_BASE_URL = window.location.origin;
+}
+
 window.APP_CONFIG = CONFIG;
