@@ -23,6 +23,49 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+  <script>
+    // Check for payment success on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    const orderId = urlParams.get('orderId');
+
+    if (action === 'payment-success' && orderId) {
+      // Poll payment status and update premium access
+      async function pollPaymentStatus(orderId) {
+        try {
+          const res = await fetch(`/api/payment/status/${orderId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'PAID') {
+              // Update localStorage with premium access
+              const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+              userData.isPremium = true;
+              userData.pendingPremiumPayment = false;
+              localStorage.setItem('userData', JSON.stringify(userData));
+              
+              // Remove payment params from URL
+              window.history.replaceState({}, document.title, window.location.pathname);
+              
+              // Reload page to apply premium features
+              window.location.reload();
+            } else if (data.status === 'FAILED' || data.status === 'CANCELLED') {
+              alert('Payment failed. Please try again.');
+              window.location.href = '/create.html';
+            } else {
+              // Still pending, poll again
+              setTimeout(() => pollPaymentStatus(orderId), 2000);
+            }
+          }
+        } catch (e) {
+          console.error('Payment status check error:', e);
+          setTimeout(() => pollPaymentStatus(orderId), 3000);
+        }
+      }
+      
+      pollPaymentStatus(orderId);
+    }
+  </script>
+
   <style>
     /* ---------- CSS VARIABLES (LIGHT/DARK MODE) ---------- */
     :root {

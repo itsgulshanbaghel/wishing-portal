@@ -14,6 +14,8 @@
   <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
 
   <script src="assets/config.js"></script>
+  <!-- Cashfree Nextgen JavaScript SDK -->
+  <script src="https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sdk.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
@@ -3564,6 +3566,45 @@
 
           if (response.ok) {
             const data = await response.json();
+            
+            // Use Cashfree SDK for Indian users (cashfree gateway)
+            if (data.paymentSessionId && selectedGateway === 'cashfree') {
+              try {
+                // Determine mode based on hostname
+                const isProduction = window.location.hostname !== 'localhost' && 
+                                     window.location.hostname !== '127.0.0.1' &&
+                                     !window.location.hostname.includes('.onrender.com');
+                
+                const cashfree = new Cashfree({
+                  mode: isProduction ? 'production' : 'sandbox',
+                });
+                
+                const checkoutOptions = {
+                  paymentSessionId: data.paymentSessionId,
+                  redirectTarget: '_self',
+                  redirectUrl: `${window.location.origin}/generated/preview.html?action=payment-success&orderId=${data.orderId}`,
+                };
+                
+                cashfree.checkout(checkoutOptions).then(function(result) {
+                  if (result.error) {
+                    throw new Error(result.error.message);
+                  }
+                  if (result.redirect) {
+                    // Payment completed, will be redirected
+                    console.log('Payment redirect initiated');
+                  }
+                }).catch(function(error) {
+                  console.error('Cashfree checkout error:', error);
+                  throw new Error('Payment checkout failed');
+                });
+                return;
+              } catch (sdkError) {
+                console.error('Cashfree SDK error:', sdkError);
+                throw new Error('Failed to initialize payment gateway');
+              }
+            }
+            
+            // Fallback to redirect for PayPal or if SDK fails
             const targetUrl = data.paymentUrl || data.paymentLink;
             if (targetUrl) {
               window.location.href = targetUrl;
