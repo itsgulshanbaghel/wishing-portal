@@ -612,11 +612,15 @@ function getGeoPrice(req) {
     const geo = geoip.lookup(cleanIP);
     const code = (geo ? geo.country : 'XX').toUpperCase();
 
+    console.log('[getGeoPrice] IP:', cleanIP, 'Country:', code, 'Geo:', geo);
+
     if (code === 'IN') {
+      console.log('[getGeoPrice] Using India pricing (Cashfree)');
       return { ...PRICING_MAP.IN, country: code };
     }
     
     if (EUROZONE.includes(code)) {
+      console.log('[getGeoPrice] Using Eurozone pricing (PayPal)');
       return {
         currency: 'EUR', symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', countryName: 'Eurozone', country: code,
         plans: { starter: { amount: 1.99, paypalAmount: 1.99 }, pro: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
@@ -624,14 +628,17 @@ function getGeoPrice(req) {
     }
 
     if (PRICING_MAP[code]) {
+      console.log('[getGeoPrice] Using country-specific pricing for:', code);
       return { ...PRICING_MAP[code], country: code };
     }
 
     // Default other countries (including VPN/undetected locations)
+    console.log('[getGeoPrice] Using default international pricing (PayPal)');
     return { ...DEFAULT_PRICING, country: code };
   } catch (err) {
     console.error('[getGeoPrice] error:', err);
     // Default to international pricing on error (not INR)
+    console.log('[getGeoPrice] Error - using default international pricing (PayPal)');
     return { ...DEFAULT_PRICING, country: 'XX' };
   }
 }

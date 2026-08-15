@@ -3592,10 +3592,11 @@
           if (response.ok) {
             const data = await response.json();
             console.log('[Payment] Response data:', data);
+            console.log('[Payment] Server gateway:', data.gateway, 'Client gateway:', selectedGateway);
             
-            // Use Cashfree SDK for Indian users (cashfree gateway)
-            if (data.paymentSessionId && selectedGateway === 'cashfree') {
-              console.log('[Payment] Using Cashfree SDK');
+            // Use server's gateway decision - trust server over client detection
+            if (data.gateway === 'cashfree' && data.paymentSessionId) {
+              console.log('[Payment] Using Cashfree SDK (server decision)');
               console.log('[Payment] Payment session ID:', data.paymentSessionId);
               console.log('[Payment] Order ID:', data.orderId);
               
@@ -3607,6 +3608,11 @@
                 
                 console.log('[Payment] Cashfree mode:', isProduction ? 'production' : 'sandbox');
                 console.log('[Payment] Cashfree SDK available:', typeof Cashfree !== 'undefined');
+                
+                if (typeof Cashfree === 'undefined') {
+                  console.error('[Payment] Cashfree SDK not loaded');
+                  throw new Error('Payment gateway not loaded. Please refresh and try again.');
+                }
                 
                 const cashfree = new Cashfree({
                   mode: isProduction ? 'production' : 'sandbox',
@@ -3643,10 +3649,10 @@
               }
             }
             
-            // Fallback to redirect for PayPal or if SDK fails
+            // PayPal or other gateway - redirect to payment link
             const targetUrl = data.paymentUrl || data.paymentLink;
             if (targetUrl) {
-              console.log('[Payment] Redirecting to:', targetUrl);
+              console.log('[Payment] Redirecting to payment gateway:', targetUrl);
               window.location.href = targetUrl;
               return;
             }
