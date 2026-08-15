@@ -1862,18 +1862,18 @@
 
       async function init() {
         // Server-side premium verification
+        isPremiumUser = (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
+                         localStorage.getItem('isPremium') === 'true' ||
+                         (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}').isPremium === true; } catch(e) { return false; } })();
         try {
           const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
           const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
           if (premiumRes.ok) {
             const premiumData = await premiumRes.json();
-            isPremiumUser = premiumData.isPremium;
+            if (premiumData.isPremium) isPremiumUser = true;
           }
         } catch (err) {
           console.error('Premium check failed:', err);
-        }
-        if (!isPremiumUser) {
-          isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true' || (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}').isPremium === true; } catch(e) { return false; } })();
         }
         
         // Theme & Mode toggle (keep consistent with user state)

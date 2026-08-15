@@ -1931,7 +1931,7 @@
         }
 
         const viewId = new URLSearchParams(window.location.search).get('view') || userData.websiteId || '';
-        window.location.href = viewId ? `customize.html?view=${viewId}` : "customize.html";
+        window.location.href = viewId ? `customize.html?restore=${viewId}` : "customize.html";
       }
 
       document.getElementById('customizeBtn').onclick = proceedToCustomize;
@@ -2069,10 +2069,10 @@
         const inlineSelectEl = document.getElementById('inlineEventSelect');
         if (inlineSelectEl) inlineSelectEl.value = currentEvent;
 
-        // Show premium badge if user is premium - server-side verification
+        // Show premium badge if user is premium - local + server-side verification
         const urlParams = new URLSearchParams(window.location.search);
         const viewId = urlParams.get('view') || userData?.websiteId;
-        let isPremiumUser = false;
+        let isPremiumUser = (userData && userData.isPremium === true) || (viewId && localStorage.getItem('premium_' + viewId) === 'true') || localStorage.getItem('isPremium') === 'true';
 
         if (viewId) {
           try {
@@ -2080,7 +2080,7 @@
             const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
             if (premiumRes.ok) {
               const premiumData = await premiumRes.json();
-              isPremiumUser = premiumData.isPremium;
+              if (premiumData.isPremium) isPremiumUser = true;
             }
           } catch (err) {
             console.error('Premium check failed:', err);

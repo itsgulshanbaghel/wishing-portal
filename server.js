@@ -807,16 +807,6 @@ app.post('/api/payment/create-order', async (req, res) => {
       return res.status(400).json({ error: 'Photo too large (max 5MB)' });
     }
 
-    // Price determined server-side from geo-IP — never trusted from client
-    const geoPricing = getGeoPrice(req);
-    const { currency, gateway, paypalCurrency, plans } = geoPricing;
-    
-    // Extract amount based on plan type (default to pro if not specified)
-    const planType = req.body.plan || 'pro';
-    const planData = plans[planType] || plans.pro;
-    const amount = planData.amount;
-    const paypalAmount = planData.paypalAmount || amount;
-
     const sanitizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 
     if (sanitizedSlug.length < 3 || sanitizedSlug.length > 30) {
@@ -828,11 +818,79 @@ app.post('/api/payment/create-order', async (req, res) => {
       return res.status(503).json({ error: 'Server temporarily unavailable. Please try again later.' });
     }
 
-    // Check if slug already taken by a PAID payment
+    // Check if slug already taken by a PAID payment for a DIFFERENT websiteId
     const existingPaid = await Payment.findOne({ slug: sanitizedSlug, status: 'PAID' }).lean();
-    if (existingPaid) {
+    if (existingPaid && existingPaid.websiteId !== websiteId) {
       return res.status(409).json({ error: 'This personalized URL is already taken. Try another.' });
     }
+
+    // 👑 Premium Free Custom URL Claim Bypass
+    // If request indicates premium user or $0 amount or user already paid for this websiteId
+    let isAlreadyPaid = false;
+    if (websiteId) {
+      const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
+      if (paidCheck) isAlreadyPaid = true;
+    }
+
+    const isFreePremiumClaim = req.body.isPremium === true || req.body.amount === 0 || isAlreadyPaid;
+
+    if (isFreePremiumClaim) {
+      console.log(`[Premium Free Claim] Granting free custom URL "${sanitizedSlug}" for websiteId: ${websiteId}`);
+      let finalPhotoUrl = qrCenterPhotoUrl || '';
+      if (qrCenterPhotoBase64) {
+        try {
+          const uploadResult = await cloudinary.uploader.upload(qrCenterPhotoBase64, {
+            folder: 'qr-centers',
+            resource_type: 'image'
+          });
+          finalPhotoUrl = uploadResult.secure_url;
+        } catch (uploadErr) {
+          console.error('Error uploading QR center photo to Cloudinary:', uploadErr);
+        }
+      }
+
+      const freeOrderId = `ORD_PREM_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      await Payment.create({
+        orderId: freeOrderId,
+        websiteId,
+        slug: sanitizedSlug,
+        amount: 0,
+        currency: req.body.currency || 'INR',
+        status: 'PAID',
+        gateway: 'free_premium_claim',
+        customerDetails: customerDetails || { customer_name: 'Premium User', customer_email: email || 'guest@thegreeter.in', customer_phone: phone || '9999999999' },
+        qrCenterType: qrCenterType || 'none',
+        qrCenterText: qrCenterText || '',
+        qrCenterPhotoUrl: finalPhotoUrl || '',
+        paidAt: new Date()
+      });
+
+      const existingSlugRec = await CustomSlug.findOne({ slug: sanitizedSlug }).lean();
+      if (!existingSlugRec) {
+        await CustomSlug.create({ slug: sanitizedSlug, websiteId });
+      }
+
+      return res.json({
+        success: true,
+        status: 'PAID',
+        orderId: freeOrderId,
+        slug: sanitizedSlug,
+        websiteId,
+        qrCenterType: qrCenterType || 'none',
+        qrCenterText: qrCenterText || '',
+        qrCenterPhotoUrl: finalPhotoUrl || ''
+      });
+    }
+
+    // Price determined server-side from geo-IP — never trusted from client
+    const geoPricing = getGeoPrice(req);
+    const { currency, gateway, paypalCurrency, plans } = geoPricing;
+    
+    // Extract amount based on plan type (default to pro if not specified)
+    const planType = req.body.plan || 'pro';
+    const planData = plans[planType] || plans.pro;
+    const amount = planData.amount;
+    const paypalAmount = planData.paypalAmount || amount;
 
     // Upload QR center photo to Cloudinary if provided as base64
     let finalPhotoUrl = qrCenterPhotoUrl || '';

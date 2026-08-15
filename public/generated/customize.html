@@ -29,9 +29,9 @@
       const urlParams = new URLSearchParams(window.location.search);
       const pathParts = window.location.pathname.split('/').filter(p => p && !p.includes('.'));
       const potentialSlug = pathParts[pathParts.length - 1];
-      const isSharedView = urlParams.get('view') || urlParams.get('slug') ||
-        (!window.location.pathname.startsWith('/generated/') && potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug));
-      if (isSharedView) {
+      const isExplicitSharedView = (urlParams.get('_v') === 'c' || urlParams.get('slug') || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' ||
+        (!window.location.pathname.startsWith('/generated/') && potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug)));
+      if (isExplicitSharedView) {
         document.write('<style>.container, .navbar, .resizer, .panel, .footer { display: none !important; } body { background: #f9f7ff; } body.dark { background: #0a0614; }</style>');
       }
     })();
@@ -6396,7 +6396,15 @@
         console.log('[CustomURL] Final viewId:', viewId);
         if (!viewId) return;
 
-        // Hide UI immediately
+        // Check if this is an explicit shared view (recipient viewing published site)
+        const isExplicitSharedView = urlParams.get('_v') === 'c' || customSlug || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || !window.location.pathname.startsWith('/generated/');
+        if (!isExplicitSharedView) {
+          // User is in Customizer Editor Mode (customizing/editing project).
+          // Do not hide customizer UI or treat as shared view!
+          return;
+        }
+
+        // Hide UI immediately for explicit shared view
         const container = document.querySelector('.container');
         const navbar = document.querySelector('.navbar');
         const desktopResizer = document.querySelector('.resizer');

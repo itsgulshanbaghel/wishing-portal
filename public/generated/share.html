@@ -2549,20 +2549,19 @@
       
       // Server-side premium verification
       async function initShareLink() {
-        let isPremium = false;
+        let isPremium = (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') ||
+                         localStorage.getItem('isPremium') === 'true' ||
+                         (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}').isPremium === true; } catch(e) { return false; } })();
         if (viewId) {
           try {
             const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
             const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
             if (premiumRes.ok) {
               const premiumData = await premiumRes.json();
-              isPremium = premiumData.isPremium;
+              if (premiumData.isPremium) isPremium = true;
             }
           } catch (err) {
             console.error('Premium check failed:', err);
-          }
-          if (!isPremium) {
-            isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}').isPremium === true; } catch(e) { return false; } })();
           }
         }
         
@@ -2575,10 +2574,15 @@
             linkInput.value = storedCustomUrl;
           } else {
             // Add _v=c parameter for premium users to hide popups and CTAs
+            const lang = localStorage.getItem('greeter_lang') || 'en';
             const premiumParam = isPremium ? '&_v=c' : '';
-            fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}${premiumParam}`;
+            fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}${premiumParam}&lang=${lang}`;
             linkInput.value = fullLink;
           }
+        }
+
+        if (typeof generateQRCode === 'function') {
+          generateQRCode();
         }
       }
       initShareLink();
