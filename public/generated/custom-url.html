@@ -1870,7 +1870,11 @@
           const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
           if (premiumRes.ok) {
             const premiumData = await premiumRes.json();
-            if (premiumData.isPremium) isPremiumUser = true;
+            if (premiumData.isPremium) {
+              isPremiumUser = true;
+              localStorage.setItem('isPremium', 'true');
+              if (websiteId) localStorage.setItem(`premium_${websiteId}`, 'true');
+            }
           }
         } catch (err) {
           console.error('Premium check failed:', err);

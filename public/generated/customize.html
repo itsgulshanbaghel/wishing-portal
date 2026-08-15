@@ -6230,9 +6230,8 @@
 
           // Save to server for cross-browser sharing
           const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-          const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
-
           const currentViewId = urlParams.get('view') || urlParams.get('restore') || userDataObj.websiteId;
+          const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || (currentViewId && localStorage.getItem(`premium_${currentViewId}`) === 'true') || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
 
           fetch((API_BASE || '') + '/api/config', {
             method: 'POST',
@@ -6256,10 +6255,11 @@
 
                 // Store premium status per website ID
                 const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+                const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || (currentViewId && localStorage.getItem(`premium_${currentViewId}`) === 'true') || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
 
                 if (isPremium) {
                   localStorage.setItem(`premium_${data.id}`, 'true');
+                  localStorage.setItem('isPremium', 'true');
                   // Update userData to reflect premium status
                   userDataObj.isPremium = true;
                   delete userDataObj.pendingPremiumPayment;

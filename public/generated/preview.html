@@ -56,10 +56,14 @@
               userData.pendingPremiumPayment = false;
               if (data.websiteId) userData.websiteId = data.websiteId;
               localStorage.setItem('userData', JSON.stringify(userData));
+              localStorage.setItem('isPremium', 'true');
+              const targetWebsiteId = data.websiteId || userData.websiteId;
+              if (targetWebsiteId) {
+                localStorage.setItem(`premium_${targetWebsiteId}`, 'true');
+              }
               console.log('[Payment Redirect] Updated userData:', userData);
 
               // Remove payment params and add view parameter
-              const targetWebsiteId = data.websiteId || userData.websiteId;
               const newUrl = targetWebsiteId ? `${window.location.pathname}?view=${targetWebsiteId}` : window.location.pathname;
               window.history.replaceState({}, document.title, newUrl);
 
