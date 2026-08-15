@@ -4490,7 +4490,19 @@
                 const files = Array.from(e.target.files);
                 const urlParams = new URLSearchParams(window.location.search);
                 const viewId = urlParams.get('view') || urlParams.get('restore');
-                const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+                
+                // Server-side premium verification
+                let isPremium = false;
+                try {
+                  const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+                  const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+                  if (premiumRes.ok) {
+                    const premiumData = await premiumRes.json();
+                    isPremium = premiumData.isPremium;
+                  }
+                } catch (err) {
+                  console.error('Premium check failed:', err);
+                }
 
                 // Create placeholders
                 files.forEach(() => {
@@ -4656,10 +4668,19 @@
                 try {
                   const urlParams = new URLSearchParams(window.location.search);
                   const viewId = urlParams.get('view') || urlParams.get('restore');
-                  const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
-                                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                                    !!userDataObj.isPremium;
+                  
+                  // Server-side premium verification
+                  let isPremium = false;
+                  try {
+                    const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+                    const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+                    if (premiumRes.ok) {
+                      const premiumData = await premiumRes.json();
+                      isPremium = premiumData.isPremium;
+                    }
+                  } catch (err) {
+                    console.error('Premium check failed:', err);
+                  }
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
                   if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
@@ -4833,10 +4854,19 @@
                     try {
                       const urlParams = new URLSearchParams(window.location.search);
                       const viewId = urlParams.get('view') || urlParams.get('restore');
-                      const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                      const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
-                                        localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                                        !!userDataObj.isPremium;
+                      
+                      // Server-side premium verification
+                      let isPremium = false;
+                      try {
+                        const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+                        const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+                        if (premiumRes.ok) {
+                          const premiumData = await premiumRes.json();
+                          isPremium = premiumData.isPremium;
+                        }
+                      } catch (err) {
+                        console.error('Premium check failed:', err);
+                      }
 
                       // Only upload to Cloudinary for premium users
                       let secureUrl;
@@ -4900,10 +4930,19 @@
                 try {
                   const urlParams = new URLSearchParams(window.location.search);
                   const viewId = urlParams.get('view') || urlParams.get('restore');
-                  const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
-                                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                                    !!userDataObj.isPremium;
+                  
+                  // Server-side premium verification
+                  let isPremium = false;
+                  try {
+                    const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+                    const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+                    if (premiumRes.ok) {
+                      const premiumData = await premiumRes.json();
+                      isPremium = premiumData.isPremium;
+                    }
+                  } catch (err) {
+                    console.error('Premium check failed:', err);
+                  }
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
                   if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
@@ -5538,11 +5577,23 @@
         if (navigator.share) { navigator.share({ title: 'Greeter Magic', text: shareText, url: linkInput.value }).catch(() => { }); }
         overlayShare.classList.remove('show');
       };
-      function generateShareLink() {
+      async function generateShareLink() {
         // --- Premium Gating check ---
         const urlParams = new URLSearchParams(window.location.search);
         const viewId = urlParams.get('view') || urlParams.get('restore');
-        const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+        
+        // Server-side premium verification
+        let isPremium = false;
+        try {
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+          if (premiumRes.ok) {
+            const premiumData = await premiumRes.json();
+            isPremium = premiumData.isPremium;
+          }
+        } catch (err) {
+          console.error('Premium check failed:', err);
+        }
 
         if (!isPremium) {
           const premiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
@@ -6191,8 +6242,21 @@
           }
 
           // Save to server for cross-browser sharing
-          const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-          const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+          const urlParams = new URLSearchParams(window.location.search);
+          const viewId = urlParams.get('view') || urlParams.get('restore');
+          
+          // Server-side premium verification
+          let isPremium = false;
+          try {
+            const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+            const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+            if (premiumRes.ok) {
+              const premiumData = await premiumRes.json();
+              isPremium = premiumData.isPremium;
+            }
+          } catch (err) {
+            console.error('Premium check failed:', err);
+          }
           
           fetch((API_BASE || '') + '/api/config', {
             method: 'POST',
@@ -6214,13 +6278,11 @@
                 // Save customization state before navigating
                 saveCustomizationState(data.id);
                 
-                // Store premium status per website ID
-                const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
-                
+                // Use the server-verified premium status from earlier
                 if (isPremium) {
                   localStorage.setItem(`premium_${data.id}`, 'true');
                   // Update userData to reflect premium status
+                  const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
                   userDataObj.isPremium = true;
                   delete userDataObj.pendingPremiumPayment;
                   localStorage.setItem('userData', JSON.stringify(userDataObj));

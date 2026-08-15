@@ -912,7 +912,7 @@ app.post('/api/payment/create-order', async (req, res) => {
         customer_phone: customer.customer_phone || '9999999999'
       },
       order_meta: {
-        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/custom-url.html?action=payment-success&orderId={order_id}`,
+        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/preview.html?action=payment-success&orderId={order_id}`,
         notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal.onrender.com'}/api/payment/webhook`,
         payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
       }
@@ -1125,11 +1125,9 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
             }
             return res.json({
               status: 'PAID',
+              orderId: payment.orderId,
               slug: payment.slug,
-              amount: payment.amount,
-              currency: payment.currency,
-              paymentLink: payment.paymentLink,
-              qrCenterType: payment.qrCenterType,
+              websiteId: payment.websiteId,
               qrCenterText: payment.qrCenterText,
               qrCenterPhotoUrl: payment.qrCenterPhotoUrl
             });
@@ -1153,6 +1151,35 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
   } catch (err) {
     console.error('Payment status check error:', err);
     res.status(500).json({ error: 'Failed to check payment status' });
+  }
+});
+
+// GET /api/premium/check/:websiteId - Server-side premium verification
+app.get('/api/premium/check/:websiteId', async (req, res) => {
+  try {
+    const { websiteId } = req.params;
+    const mongoReady = await ensureMongoConnected();
+    if (!mongoReady) {
+      return res.status(503).json({ error: 'Server temporarily unavailable.' });
+    }
+
+    // Check if there's a PAID payment for this websiteId
+    const paidPayment = await Payment.findOne({ 
+      websiteId, 
+      status: 'PAID' 
+    }).lean();
+
+    const isPremium = !!paidPayment;
+    
+    res.json({ 
+      isPremium,
+      websiteId,
+      paymentId: paidPayment?.orderId || null,
+      slug: paidPayment?.slug || null
+    });
+  } catch (err) {
+    console.error('Premium check error:', err);
+    res.status(500).json({ error: 'Failed to check premium status' });
   }
 });
 

@@ -2547,8 +2547,20 @@
       const linkInput = document.getElementById('shareLinkInput');
       let fullLink = '';
       
-      // Check if this specific website is premium (per-website premium status only)
-      const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true';
+      // Server-side premium verification
+      let isPremium = false;
+      if (viewId) {
+        try {
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+          if (premiumRes.ok) {
+            const premiumData = await premiumRes.json();
+            isPremium = premiumData.isPremium;
+          }
+        } catch (err) {
+          console.error('Premium check failed:', err);
+        }
+      }
       
       if (!viewId) {
         linkInput.value = '❌ No link found. Please generate first.';

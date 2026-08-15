@@ -15,7 +15,7 @@
 
   <script src="assets/config.js"></script>
   <!-- Cashfree Nextgen JavaScript SDK -->
-  <script src="https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sdk.js"></script>
+  <script src="https://cdn.cashfree.com/js/v3/cashfree.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
@@ -3557,6 +3557,18 @@
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
           console.log('[Payment] Is localhost:', isLocalhost);
 
+          // For localhost testing, skip payment and go directly to preview
+          // Note: Premium features will be verified server-side, so this is for testing only
+          if (isLocalhost) {
+            console.log('[Payment] Localhost detected, skipping payment flow');
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            delete userData.pendingPremiumPayment;
+            localStorage.setItem('userData', JSON.stringify(userData));
+            console.log('[Payment] Redirecting to preview.html');
+            window.location.href = 'generated/preview.html';
+            return;
+          }
+
           const requestBody = {
             plan: activePlan.plan,
             amount: activePlan.price,
@@ -3641,16 +3653,6 @@
           } else {
             const errorData = await response.json();
             console.error('[Payment] Server error response:', errorData);
-          }
-
-          if (isLocalhost) {
-            // For localhost testing, set premium status directly
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            userData.isPremium = true;
-            delete userData.pendingPremiumPayment;
-            localStorage.setItem('userData', JSON.stringify(userData));
-            window.location.href = 'generated/preview.html';
-            return;
           }
 
           throw new Error('Payment initiation failed');
@@ -3809,9 +3811,9 @@
           const data = await res.json();
           
           if (data.status === 'success' || data.status === 'completed') {
-            // Payment successful - set premium status
+            // Payment successful - clear pending payment flag
+            // Premium status will be verified server-side
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            userData.isPremium = true;
             delete userData.pendingPremiumPayment;
             localStorage.setItem('userData', JSON.stringify(userData));
             

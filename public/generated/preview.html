@@ -1731,10 +1731,7 @@
       let currentEvent = userData.event || 'birthday';
       window.currentSelectedPath = null;
       
-      if (userData.isPremium) {
-        const pBadge = document.getElementById('premiumBadge');
-        if (pBadge) pBadge.style.display = 'inline-flex';
-      }
+      // Premium badge is now handled by server-side verification in the window load event
 
       async function loadAvailableTemplates(event) {
         const templatesList = [];
@@ -2062,15 +2059,29 @@
         }
       });
       (async () => await loadTemplatesForEvent(currentEvent))();
-      window.addEventListener('load', () => {
+      window.addEventListener('load', async () => {
         scrollActiveEventIntoView();
         const inlineSelectEl = document.getElementById('inlineEventSelect');
         if (inlineSelectEl) inlineSelectEl.value = currentEvent;
 
-        // Show premium badge if user is premium
-        const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+        // Show premium badge if user is premium - server-side verification
         const urlParams = new URLSearchParams(window.location.search);
-        const isPremiumUser = !!userDataObj.isPremium || urlParams.get('isPremium') === 'true' || localStorage.getItem('isPremium') === 'true';
+        const viewId = urlParams.get('view');
+        let isPremiumUser = false;
+        
+        if (viewId) {
+          try {
+            const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+            const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
+            if (premiumRes.ok) {
+              const premiumData = await premiumRes.json();
+              isPremiumUser = premiumData.isPremium;
+            }
+          } catch (err) {
+            console.error('Premium check failed:', err);
+          }
+        }
+        
         if (isPremiumUser) {
           const pBadge = document.getElementById("premiumBadge");
           if (pBadge) pBadge.style.display = "inline-flex";

@@ -1860,8 +1860,18 @@
        init();
 
       async function init() {
-        // Check if this specific website is premium (per-website premium status only)
-        const isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true';
+        // Server-side premium verification
+        let isPremiumUser = false;
+        try {
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
+          if (premiumRes.ok) {
+            const premiumData = await premiumRes.json();
+            isPremiumUser = premiumData.isPremium;
+          }
+        } catch (err) {
+          console.error('Premium check failed:', err);
+        }
         
         // Theme & Mode toggle (keep consistent with user state)
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -2056,9 +2066,19 @@
         });
 
         // Download QR button
-        downloadQrBtn.addEventListener('click', () => {
-          // Check if this specific website is premium or payment has been made
-          const isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true';
+        downloadQrBtn.addEventListener('click', async () => {
+          // Server-side premium verification
+          let isPremiumUser = false;
+          try {
+            const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+            const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
+            if (premiumRes.ok) {
+              const premiumData = await premiumRes.json();
+              isPremiumUser = premiumData.isPremium;
+            }
+          } catch (err) {
+            console.error('Premium check failed:', err);
+          }
           
           if (!isPremiumUser && successScreen.style.display !== 'block') {
             alert('Please complete your payment first to download the QR code with your personalized URL.');
@@ -2288,8 +2308,18 @@
           return;
         }
 
-        // Check if this specific website is premium (per-website premium status only)
-        const isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true';
+        // Server-side premium verification
+        let isPremiumUser = false;
+        try {
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
+          if (premiumRes.ok) {
+            const premiumData = await premiumRes.json();
+            isPremiumUser = premiumData.isPremium;
+          }
+        } catch (err) {
+          console.error('Premium check failed:', err);
+        }
 
         payBtn.disabled = false;
         payBtn.classList.add('active');
@@ -2437,8 +2467,18 @@
       async function handlePaymentInitiation() {
         if (!isSlugAvailable || !websiteId) return;
 
-        // Check if this specific website is premium (per-website premium status only)
-        const isPremiumUser = localStorage.getItem(`premium_${websiteId}`) === 'true';
+        // Server-side premium verification
+        let isPremiumUser = false;
+        try {
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
+          if (premiumRes.ok) {
+            const premiumData = await premiumRes.json();
+            isPremiumUser = premiumData.isPremium;
+          }
+        } catch (err) {
+          console.error('Premium check failed:', err);
+        }
 
         // If premium user, claim custom URL for free without payment
         if (isPremiumUser) {
