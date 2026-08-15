@@ -5005,6 +5005,20 @@
               timeInput.className = "countdown-time-input";
               timeInput.max = "2099-12-31T23:59";
               timeInput.style.display = "none";
+
+              const initCountdownData = customData.get("countdown") || {};
+              if (initCountdownData && initCountdownData.text) {
+                timeInput.value = initCountdownData.text;
+              } else {
+                const d = new Date();
+                d.setDate(d.getDate() + 1);
+                d.setHours(0, 0, 0, 0);
+                const pad = (n) => n.toString().padStart(2, '0');
+                const defaultTime = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
+                timeInput.value = defaultTime;
+                initCountdownData.text = defaultTime;
+                customData.set("countdown", initCountdownData);
+              }
               mainContainer.appendChild(timeInput);
 
               const livePreview = document.createElement("div");

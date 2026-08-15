@@ -108,7 +108,7 @@ const paymentSchema = new mongoose.Schema({
     qrCenterText: { type: String },
     qrCenterPhotoUrl: { type: String },
     paymentLink: { type: String },
-    gateway: { type: String, enum: ['cashfree', 'paypal'], default: 'cashfree', index: true },
+    gateway: { type: String, enum: ['cashfree', 'paypal', 'free_premium_claim', 'localhost'], default: 'cashfree', index: true },
     paypalOrderId: { type: String },
     paypalCaptureId: { type: String },
     createdAt: { type: Date, default: Date.now, index: true },
