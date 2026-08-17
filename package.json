@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "deploy": "firebase deploy --only hosting",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy": "wrangler pages deploy public",
+    "deploy:firebase": "firebase deploy --only hosting",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preview": "wrangler pages dev public"
   },
   "keywords": [],
   "author": "",
@@ -32,5 +34,8 @@
     "puppeteer": "^24.41.0",
     "sharp": "^0.35.3",
     "systeminformation": "^5.21.22"
+  },
+  "devDependencies": {
+    "wrangler": "^4.123.0"
   }
 }

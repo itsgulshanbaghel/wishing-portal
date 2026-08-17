@@ -1,0 +1,3 @@
+# Cloudflare Pages Redirects Configuration
+# Static file serving - Cloudflare Pages handles this automatically
+# Custom URL routing is handled by public/_functions/[[path]].js which proxies to Render backend
