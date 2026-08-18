@@ -202,10 +202,14 @@
                 <option value="90">Older than 90 Days</option>
               </select>
 
-              <select id="websiteTierFilter" class="table-search" style="max-width:180px;">
+              <select id="websiteTierFilter" class="table-search" style="max-width:210px;">
                 <option value="all">All Sites (Free & Premium)</option>
-                <option value="premium">👑 Premium Only</option>
+                <option value="premium">👑 Any Premium Site</option>
                 <option value="free">Standard / Free Only</option>
+                <option value="starter">⚡ 100+ Days Plan</option>
+                <option value="pro">💎 1 Year Plan</option>
+                <option value="forever">👑 Forever / Lifetime</option>
+                <option value="custom_url">🔗 Custom URL Only</option>
               </select>
 
               <label class="toggle-container" style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer; color:var(--text-dim); background:var(--bg-surface); padding:8px 12px; border:1px solid var(--border); border-radius:8px;">
@@ -215,11 +219,16 @@
             </div>
 
             <!-- Selection Actions Bar -->
-            <div class="selection-actions-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:8px 14px; background:rgba(123,93,246,0.05); border:1px dashed var(--border); border-radius:8px;">
-              <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer;">
-                <input type="checkbox" id="selectAllWebsites" style="accent-color:var(--accent); width:16px; height:16px; cursor:pointer;">
-                <span>Select All Visible</span>
-              </label>
+            <div class="selection-actions-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:8px 14px; background:rgba(123,93,246,0.05); border:1px dashed var(--border); border-radius:8px; flex-wrap:wrap; gap:10px;">
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer;">
+                  <input type="checkbox" id="selectAllWebsites" style="accent-color:var(--accent); width:16px; height:16px; cursor:pointer;">
+                  <span>Select All Visible</span>
+                </label>
+                <button type="button" class="refresh-btn small" id="selectPremiumBtn" style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-crown" style="color:var(--gold)"></i> Select Premium</button>
+                <button type="button" class="refresh-btn small" id="selectFreeBtn" style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-globe"></i> Select Free</button>
+                <button type="button" class="refresh-btn small" id="deselectAllBtn" style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-times"></i> Clear Selection</button>
+              </div>
               <div style="display:flex; gap:10px;">
                 <button class="action-btn danger" id="deleteSelectedBtn" disabled style="opacity:0.5; cursor:not-allowed; padding:6px 14px; display:flex; align-items:center; gap:6px;">
                   <i class="fas fa-trash-alt"></i> Delete Selected &nbsp;<span id="selectedCount" style="background:rgba(255,71,87,0.2); border-radius:20px; padding:1px 8px; font-weight:700; min-width:20px; text-align:center;">0</span>

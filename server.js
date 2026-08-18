@@ -774,6 +774,23 @@ app.get('/api/payment/detect-price', (req, res) => {
   res.json({ success: true, ...pricing });
 });
 
+function getPlanMeta(pType, isFreeClaim = false) {
+  const norm = (pType || '').toString().toLowerCase().trim();
+  if (norm === 'starter' || norm === '100_days' || norm === '100days' || norm.includes('100')) {
+    return { plan: 'starter', planName: '100+ Days', planDays: 100 };
+  }
+  if (norm === 'pro' || norm === '1_year' || norm === '1year' || norm.includes('year')) {
+    return { plan: 'pro', planName: '1 Year', planDays: 365 };
+  }
+  if (norm === 'forever' || norm === 'lifetime' || norm.includes('forev') || norm.includes('life')) {
+    return { plan: 'forever', planName: 'Forever', planDays: 99999 };
+  }
+  if (norm === 'custom_url' || norm === 'custom') {
+    return { plan: 'custom_url', planName: 'Custom URL', planDays: 365 };
+  }
+  return { plan: norm || 'pro', planName: '1 Year', planDays: 365 };
+}
+
 // POST /api/payment/create-order
 // Body: { websiteId, slug, amount, currency, customerDetails?, qrCenterType, qrCenterText?, qrCenterPhotoUrl? }
 app.post('/api/payment/create-order', async (req, res) => {
@@ -883,6 +900,7 @@ app.post('/api/payment/create-order', async (req, res) => {
       }
 
       const freeOrderId = `ORD_PREM_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const freePlanMeta = getPlanMeta(req.body.plan, true);
       await Payment.create({
         orderId: freeOrderId,
         websiteId,
@@ -891,6 +909,9 @@ app.post('/api/payment/create-order', async (req, res) => {
         currency: req.body.currency || 'INR',
         status: 'PAID',
         gateway: 'free_premium_claim',
+        plan: freePlanMeta.plan,
+        planName: freePlanMeta.planName,
+        planDays: freePlanMeta.planDays,
         customerDetails: customerDetails || { customer_name: 'Premium User', customer_email: email || 'guest@thegreeter.in', customer_phone: phone || '9999999999' },
         qrCenterType: qrCenterType || 'none',
         qrCenterText: qrCenterText || '',
@@ -954,6 +975,8 @@ app.post('/api/payment/create-order', async (req, res) => {
       : (customerDetails || { customer_name: 'Guest', customer_email: 'guest@thegreeter.in', customer_phone: '9999999999' });
     const orderAmount = amount; // already a number from getGeoPrice()
 
+    const planMeta = getPlanMeta(req.body.plan, false);
+
     // Create payment record
     const payment = await Payment.create({
       orderId,
@@ -963,6 +986,9 @@ app.post('/api/payment/create-order', async (req, res) => {
       currency,
       status: 'PENDING',
       gateway,
+      plan: planMeta.plan,
+      planName: planMeta.planName,
+      planDays: planMeta.planDays,
       customerDetails: customer,
       qrCenterType: qrCenterType || 'none',
       qrCenterText: qrCenterText || '',

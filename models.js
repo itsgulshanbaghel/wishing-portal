@@ -100,6 +100,9 @@ const paymentSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
     currency: { type: String, default: 'INR' },
     status: { type: String, enum: ['PENDING', 'PAID', 'FAILED', 'CANCELLED', 'EXPIRED'], default: 'PENDING', index: true },
+    plan: { type: String, index: true }, // starter, pro, forever, custom_url
+    planName: { type: String }, // "100+ Days", "1 Year", "Forever", "Custom URL"
+    planDays: { type: Number }, // 100, 365, 99999
     cfOrderToken: { type: String },
     cfPaymentId: { type: String },
     cfSignature: { type: String },

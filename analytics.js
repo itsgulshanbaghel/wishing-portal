@@ -435,13 +435,73 @@ class AnalyticsStore {
         .lean();
 
       const { CustomSlug, Payment } = require('./models');
-      const paidWebsiteIds = new Set(await Payment.distinct('websiteId', { status: 'PAID' }));
-      const slugWebsiteIds = new Set(await CustomSlug.distinct('websiteId'));
+      const paidPayments = await Payment.find({ status: 'PAID' }).sort({ paidAt: -1, createdAt: -1 }).lean();
+      const customSlugs = await CustomSlug.find({}).lean();
 
-      const websites = rawWebsites.map(w => ({
-        ...w,
-        isPremium: paidWebsiteIds.has(w.id) || slugWebsiteIds.has(w.id)
-      }));
+      const paidMap = new Map();
+      paidPayments.forEach(p => {
+        if (p.websiteId && !paidMap.has(p.websiteId)) {
+          paidMap.set(p.websiteId, p);
+        }
+      });
+
+      const slugMap = new Map();
+      customSlugs.forEach(s => {
+        if (s.websiteId && !slugMap.has(s.websiteId)) {
+          slugMap.set(s.websiteId, s.slug);
+        }
+      });
+
+      const websites = rawWebsites.map(w => {
+        const payment = paidMap.get(w.id);
+        const slug = slugMap.get(w.id);
+        const isPremium = !!payment || !!slug;
+
+        let plan = payment?.plan || null;
+        let planName = payment?.planName || null;
+        let planDays = payment?.planDays || null;
+        let amount = payment?.amount ?? null;
+        let currency = payment?.currency || 'INR';
+
+        if (isPremium && !planName) {
+          if (payment) {
+            const amt = payment.amount;
+            if (amt === 29 || amt === 1.99) {
+              plan = 'starter';
+              planName = '100+ Days';
+              planDays = 100;
+            } else if (amt === 99 || amt === 3.99 || amt === 4.99) {
+              plan = 'pro';
+              planName = '1 Year';
+              planDays = 365;
+            } else if (amt === 199 || amt === 9.99) {
+              plan = 'forever';
+              planName = 'Forever';
+              planDays = 99999;
+            } else {
+              plan = 'custom_url';
+              planName = 'Custom URL';
+              planDays = 365;
+            }
+          } else if (slug) {
+            plan = 'custom_url';
+            planName = 'Custom URL';
+            planDays = 365;
+          }
+        }
+
+        return {
+          ...w,
+          isPremium,
+          plan: isPremium ? (plan || 'pro') : 'free',
+          planName: isPremium ? (planName || 'Paid Plan') : 'Free',
+          planDays: isPremium ? (planDays || 365) : 0,
+          paidAmount: amount,
+          currency,
+          customSlug: slug || payment?.slug || null,
+          paidAt: payment?.paidAt || payment?.createdAt || null
+        };
+      });
 
       // Top Websites - respect time period filter
       const topWebsitesFilter = days === -1 ? {} : { createdAt: timeFilter };
