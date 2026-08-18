@@ -452,7 +452,7 @@ app.post('/api/generate', async (req, res) => {
           },
 
           body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
+            model: "meta-llama/llama-prompt-guard-2-86m",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
             max_tokens: 1000
