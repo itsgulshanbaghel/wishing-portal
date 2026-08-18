@@ -439,44 +439,42 @@ app.post('/api/generate', async (req, res) => {
 
       try {
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const groqModels = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "llama3-8b-8192"];
+        let modelSuccess = false;
 
-          method: 'POST',
+        for (const targetModel of groqModels) {
+          try {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: targetModel,
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.7,
+                max_tokens: 1000
+              })
+            });
 
-          headers: {
+            if (!response.ok) {
+              const err = await response.json().catch(() => ({}));
+              console.error(`Groq API Error (${targetModel}):`, err);
+              continue;
+            }
 
-            'Authorization': `Bearer ${apiKey}`,
+            const data = await response.json();
+            console.log(`Groq API Success (${targetModel}):`, data);
 
-            'Content-Type': 'application/json'
-
-          },
-
-          body: JSON.stringify({
-            model: "meta-llama/llama-prompt-guard-2-86m",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7,
-            max_tokens: 1000
-          })
-        });
-
-        if (!response.ok) {
-
-          const err = await response.json().catch(() => ({}));
-
-          console.error('Groq API Error:', err);
-
-          throw new Error(err.error?.message || err.message || `HTTP ${response.status}`);
-
+            if (data.choices?.[0]?.message?.content) {
+              return res.json(data);
+            }
+          } catch (mErr) {
+            console.warn(`Model ${targetModel} failed:`, mErr.message);
+          }
         }
-
-        const data = await response.json();
-
-        console.log('Groq API Success:', data);
-
-        if (data.choices?.[0]?.message?.content) {
-          return res.json(data);
-        }
-        throw new Error("Unexpected API response");
+        throw new Error("All Groq models failed for key");
 
       } catch (error) {
 
