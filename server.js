@@ -440,11 +440,10 @@ app.post('/api/generate', async (req, res) => {
       try {
 
         const groqModels = [
-          "meta-llama/llama-prompt-guard-2-86m",
-          "meta-llama/llama-prompt-guard-2-22m",
-          "llama-3.1-8b-instant",
-          "llama-3.3-70b-versatile",
-          "llama3-8b-8192"
+          "openai/gpt-oss-120b",
+          "openai/gpt-oss-20b",
+          "qwen/qwen3.6-27b",
+          "groq/compound-mini"
         ];
         let modelSuccess = false;
 
