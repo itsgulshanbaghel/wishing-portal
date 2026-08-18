@@ -439,7 +439,13 @@ app.post('/api/generate', async (req, res) => {
 
       try {
 
-        const groqModels = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "llama3-8b-8192"];
+        const groqModels = [
+          "meta-llama/llama-prompt-guard-2-86m",
+          "meta-llama/llama-prompt-guard-2-22m",
+          "llama-3.1-8b-instant",
+          "llama-3.3-70b-versatile",
+          "llama3-8b-8192"
+        ];
         let modelSuccess = false;
 
         for (const targetModel of groqModels) {
