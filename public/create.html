@@ -1092,10 +1092,111 @@
       margin-bottom: 20px;
     }
 
-    @media (max-width: 720px) {
+    @media (max-width: 768px) {
       .compare-grid {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        margin-bottom: 24px;
       }
+      #premiumCard {
+        order: 1;
+      }
+      #inlineCheckout {
+        order: 2;
+        margin-top: 0;
+      }
+      #freeCard {
+        order: 3;
+      }
+      .cmp-card {
+        padding: 24px 18px 20px;
+        border-radius: 24px;
+      }
+      .plan-switcher {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 6px;
+        margin: 14px 0 16px;
+      }
+      .plan-pill {
+        padding: 10px 6px;
+        border-radius: 14px;
+      }
+      .btn-free-card-mobile, .btn-prem-card-mobile {
+        display: flex !important;
+      }
+      #unifiedProceedBtn {
+        display: none !important;
+      }
+      .mobile-reassurance-block {
+        display: block !important;
+        text-align: center;
+        margin-top: 14px;
+        font-family: 'Outfit', sans-serif;
+      }
+      .desktop-reassurance-block {
+        display: none !important;
+      }
+    }
+
+    .mobile-reassurance-block {
+      display: none;
+    }
+
+    .desktop-reassurance-block {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .btn-free-card-mobile {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 18px;
+      padding: 15px 20px;
+      border-radius: 40px;
+      border: 2px solid #6b7280;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 0.98rem;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-free-card-mobile:hover, .btn-free-card-mobile:active {
+      background: #6b7280;
+      color: #ffffff;
+    }
+
+    .btn-prem-card-mobile {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 20px;
+      padding: 16px 24px;
+      border-radius: 50px;
+      border: none;
+      background: linear-gradient(135deg, #7b5df6 0%, #e83a59 50%, #ff7a2f 100%);
+      color: #ffffff;
+      font-size: 1.05rem;
+      font-weight: 900;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(123, 93, 246, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-prem-card-mobile:active {
+      transform: scale(0.98);
     }
 
     /* Column cards */
@@ -1193,16 +1294,23 @@
       border: 1px solid rgba(16, 185, 129, .25);
     }
 
-    /* 3-tier plan pill switcher */
+    /* 4-tier plan pill switcher */
     .plan-switcher {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 7px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
       margin: 16px 0 18px;
       background: var(--bg-primary);
       padding: 5px;
       border-radius: 16px;
       border: 1px solid var(--card-border);
+    }
+
+    @media (max-width: 480px) {
+      .plan-switcher {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
     }
 
     .plan-pill {
@@ -1313,8 +1421,9 @@
     }
 
     .feat-item.no {
-      color: var(--text-secondary);
-      opacity: .65;
+      color: var(--text-primary);
+      opacity: 0.85;
+      font-weight: 500;
     }
 
     .feat-item.star {
@@ -1327,8 +1436,9 @@
     }
 
     .feat-item .fi-no {
-      color: #9ca3af;
+      color: #6b7280;
       font-size: 1.02rem;
+      opacity: 0.9;
     }
 
     .feat-item.star .fi-yes {
@@ -1713,138 +1823,227 @@
         <div class="compare-grid">
 
           <!-- FREE COL -->
-          <div class="cmp-card free-card" id="freeCard">
+          <div class="cmp-card free-card" id="freeCard" style="position:relative; display:flex; flex-direction:column; justify-content:space-between;">
             <div>
-              <div class="cmp-icon">🆓</div>
-              <div class="cmp-title">Free Website</div>
-              <div class="cmp-price-row">
-                <span class="cmp-price-big">$0</span>
+              <div style="background: rgba(123, 93, 246, 0.12); color: #7b5df6; font-size: 0.72rem; font-weight: 800; padding: 3px 12px; border-radius: 12px; display: inline-block; margin-bottom: 10px; letter-spacing: 0.5px;">FREE</div>
+              <div class="cmp-title" style="font-size: 1.5rem; font-weight: 900; color: var(--text-primary);">Free Website</div>
+              <div class="cmp-price-row" style="margin-top: 4px; margin-bottom: 8px;">
+                <span class="cmp-price-big" style="font-size: 2.6rem; font-weight: 900; color: var(--text-primary);">$0</span>
               </div>
-              <span class="validity-chip free"><i class="fas fa-hourglass-half"></i> Expires in 24 Hours</span>
+              <span class="validity-chip free" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-weight: 700; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-hourglass-half"></i> Expires in 24 Hours
+              </span>
 
-              <ul class="feat-list" style="margin-top:20px;">
-                <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> Personalized wish page</li>
-                <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> Share on WhatsApp &amp; Social Media
-                </li>
-                <li class="feat-item"><i class="fas fa-check-circle fi-yes"></i> QR code download</li>
-                <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> Personalised URL + QR Code</li>
-                <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> 100% Ad-Free</li>
-                <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> Background Music / Voice Note</li>
-                <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> HD Photo Quality</li>
-                <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> Midnight Surprise Countdown</li>
-                <li class="feat-item no"><i class="fas fa-times-circle fi-no"></i> Long-Term Validity</li>
+              <ul class="feat-list" style="margin-top: 20px;">
+                <li class="feat-item"><i class="fas fa-check-circle fi-yes" style="color: #10b981;"></i> Personalized wish page</li>
+                <li class="feat-item"><i class="fas fa-check-circle fi-yes" style="color: #10b981;"></i> Share on WhatsApp &amp; Social Media</li>
+                <li class="feat-item"><i class="fas fa-check-circle fi-yes" style="color: #10b981;"></i> QR code download</li>
+                <li class="feat-item no"><i class="fas fa-times-circle fi-no" style="color: #6b7280;"></i> Custom URL + Personalised QR Code</li>
+                <li class="feat-item no"><i class="fas fa-times-circle fi-no" style="color: #6b7280;"></i> 100% Ad-Free</li>
+                <li class="feat-item no"><i class="fas fa-times-circle fi-no" style="color: #6b7280;"></i> Background Music / Voice Note</li>
+                <li class="feat-item no"><i class="fas fa-times-circle fi-no" style="color: #6b7280;"></i> HD Photo Quality</li>
+                <li class="feat-item no"><i class="fas fa-times-circle fi-no" style="color: #6b7280;"></i> Midnight Surprise Countdown</li>
+                <li class="feat-item no"><i class="fas fa-times-circle fi-no" style="color: #6b7280;"></i> Virtual Cake Celebration</li>
+                <li class="feat-item no"><i class="fas fa-times-circle fi-no" style="color: #6b7280;"></i> Long-Term Validity</li>
+                <li class="feat-item no"><i class="fas fa-times-circle fi-no" style="color: #6b7280;"></i> Priority Customer Support</li>
               </ul>
             </div>
+
+            <!-- Warning Box at bottom of Free card -->
+            <div style="background: rgba(254, 243, 199, 0.75); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 16px; padding: 12px 14px; margin-top: 16px; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: #92400e; font-weight: 600;">
+              <i class="fas fa-clock" style="font-size: 1.3rem; color: #d97706; flex-shrink: 0;"></i>
+              <span>After 24 hours, your surprise may be gone forever. 😟</span>
+            </div>
+
+            <!-- Dedicated Free Plan Button inside Free card (Visible on Mobile) -->
+            <button class="btn-free-card-mobile" id="freeCardProceedBtn">
+              <span>Continue with Free (24h)</span>
+              <i class="fas fa-arrow-right"></i>
+            </button>
           </div>
 
           <!-- PREMIUM COL -->
-          <div class="cmp-card premium selected-prem" id="premiumCard">
-            <div class="premium-badge">👑 Recommended</div>
-            <div>
-              <div class="cmp-icon">✨</div>
-              <div class="cmp-title">Premium Website</div>
+          <div class="cmp-card premium selected-prem" id="premiumCard" style="position:relative;">
+            <div class="premium-badge" style="left: 50%; transform: translateX(-50%); right: auto; top: -14px; background: linear-gradient(135deg, #7b5df6 0%, #e83a59 100%); color: #fff; font-size: 0.72rem; font-weight: 900; padding: 4px 16px; border-radius: 20px; letter-spacing: .5px; box-shadow: 0 4px 14px rgba(123, 93, 246, 0.4); white-space: nowrap;">👑 MOST POPULAR</div>
 
-              <!-- 3-tier pill switcher -->
+            <div>
+              <div class="cmp-title" style="font-size: 1.5rem; font-weight: 900; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                <span style="color: #f59e0b;">✨</span> Premium Website
+              </div>
+              <div id="cmpSubtitle" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 14px;">
+                Keep the moment alive for 100+ days
+              </div>
+
+              <!-- 4-tier pill switcher -->
               <div class="plan-switcher" id="planSwitcher">
-                <button class="plan-pill" data-price="29" data-days="100" data-label="100+ Days" data-plan="starter">
+                <button class="plan-pill" data-price="29" data-days="30" data-label="30+ Days" data-plan="starter">
+                  <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Starter</span>
+                  <span class="pill-period">30+ Days</span>
+                  <span class="pill-price"></span>
+                </button>
+
+                <button class="plan-pill sel" data-price="49" data-days="100" data-label="100+ Days" data-plan="pro">
+                  <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
+                  <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro</span>
                   <span class="pill-period">100+ Days</span>
                   <span class="pill-price"></span>
-                  <span class="pill-offer">Limited Offer</span>
                 </button>
-                <button class="plan-pill sel" data-price="99" data-days="365" data-label="1 Year" data-plan="pro">
-                  <span class="pill-hot">Popular</span>
+
+                <button class="plan-pill" data-price="99" data-days="365" data-label="1 Year" data-plan="pro_plus">
+                  <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #10b981, #059669); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">BEST VALUE</span>
+                  <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro+</span>
                   <span class="pill-period">1 Year</span>
                   <span class="pill-price"></span>
                 </button>
+
                 <button class="plan-pill" data-price="199" data-days="99999" data-label="Lifetime" data-plan="forever">
-                  <span class="pill-period">Forever ♾️</span>
+                  <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Infinity</span>
+                  <span class="pill-period">Lifetime</span>
                   <span class="pill-price"></span>
                 </button>
               </div>
 
-              <div class="cmp-price-row">
-                <span class="cmp-price-big" id="priceBig">$2.99</span>
-                <span class="cmp-price-period" id="pricePeriod">for 1 Year</span>
+              <!-- Selected Plan Price Row -->
+              <div class="cmp-price-row" style="margin-top: 16px; margin-bottom: 2px; align-items: baseline; gap: 8px;">
+                <span class="cmp-price-big" id="priceBig" style="font-size: 2.5rem; font-weight: 900; color: #7b5df6; line-height: 1;">$1.99</span>
+                <span class="cmp-price-period" id="pricePeriod" style="font-size: 1rem; font-weight: 800; color: var(--text-primary);">for 100+ Days</span>
               </div>
-              <div
-                style="font-size: 0.75rem; color: var(--text-secondary); margin-top: -4px; margin-bottom: 12px; font-weight: 500;">
-                (One-time payment)</div>
-              <span class="validity-chip prem" id="validityChip"><i class="fas fa-shield-alt"></i> Active 1 Year ·
-                Ad-Free</span>
+              <div style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
+                One-time payment • No subscription
+              </div>
 
-              <ul class="feat-list" style="margin-top:20px;">
-                <li class="feat-item star" style="align-items: flex-start;">
-                  <i class="fas fa-check-circle fi-yes" style="margin-top: 2px;"></i>
+              <span class="validity-chip prem" id="validityChip" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; border-radius: 20px; padding: 5px 14px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-check-circle" style="color: #10b981;"></i> 100% Ad-Free Experience
+              </span>
+
+              <!-- Premium Features List -->
+              <ul class="feat-list" id="planFeatList" style="margin-top: 20px;">
+                <li class="feat-item star">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> 🚫 100% Ad-Free
+                  <i class="fas fa-info-circle info-icon" data-tooltip="No annoying third-party ads or promotional pop-ups"></i>
+                </li>
+
+                <li class="feat-item star">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> 🎵 Background Music / Voice Note
+                  <i class="fas fa-info-circle info-icon" data-tooltip="Add a special song or record a personal voice message"></i>
+                </li>
+
+                <li class="feat-item star">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> 📸 HD Photo Quality
+                  <i class="fas fa-info-circle info-icon" data-tooltip="Display your photos in crisp, uncompressed high resolution"></i>
+                </li>
+
+                <li class="feat-item star">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> ⏰ Midnight Surprise Countdown
+                  <i class="fas fa-info-circle info-icon" data-tooltip="Keep the surprise hidden behind a countdown timer until the exact moment"></i>
+                </li>
+
+                <li class="feat-item star">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> 📅 Long-Term Validity
+                  <i class="fas fa-info-circle info-icon" data-tooltip="Keep your special link alive so you can revisit it anytime"></i>
+                </li>
+
+                <li class="feat-item star" id="featPrioritySupport">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> ⚡ Priority Customer Support
+                  <i class="fas fa-info-circle info-icon" data-tooltip="Fast-track email & instant support for any assistance"></i>
+                </li>
+
+                <li class="feat-item star" id="featCustomUrl" style="align-items: flex-start;">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6; margin-top: 2px;"></i>
                   <div style="flex: 1;">
                     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-                      <span>✨ Personalised Custom URL + Personalised QR Code</span>
-                      <i class="fas fa-info-circle info-icon"
-                        data-tooltip="Get a memorable name-based link and a beautifully designed custom QR code with your photo on it."></i>
+                      <span>✨ Custom URL + Personalised QR Code</span>
+                      <i class="fas fa-info-circle info-icon" data-tooltip="Get a memorable name-based link and custom QR code with your photo."></i>
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 3px; font-weight: 500;">
                       (e.g., thegreeter.in/<strong>YourCustomName</strong>)</div>
+                    <div class="feat-exclusion-note" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
+                      <i class="fas fa-lock"></i> (Requires Pro / Pro+ / Infinity)
+                    </div>
                   </div>
                 </li>
-                <li class="feat-item star">
-                  <i class="fas fa-check-circle fi-yes"></i> 🚫 100% Ad-Free
-                  <i class="fas fa-info-circle info-icon"
-                    data-tooltip="No annoying third-party ads or promotional pop-ups"></i>
-                </li>
-                <li class="feat-item star">
-                  <i class="fas fa-check-circle fi-yes"></i> 🎵 Background Music / Voice Note
-                  <i class="fas fa-info-circle info-icon"
-                    data-tooltip="Add a special song or record a personal voice message"></i>
-                </li>
-                <li class="feat-item star">
-                  <i class="fas fa-check-circle fi-yes"></i> 📸 HD Photo Quality
-                  <i class="fas fa-info-circle info-icon"
-                    data-tooltip="Display your photos in crisp, uncompressed high resolution"></i>
-                </li>
-                <li class="feat-item star">
-                  <i class="fas fa-check-circle fi-yes"></i> ⏰ Midnight Surprise Countdown
-                  <i class="fas fa-info-circle info-icon"
-                    data-tooltip="Keep the surprise hidden behind a countdown timer until the exact moment"></i>
-                </li>
-                <li class="feat-item star">
-                  <i class="fas fa-check-circle fi-yes"></i> 📅 Long-Term Validity
-                  <i class="fas fa-info-circle info-icon"
-                    data-tooltip="Keep your special link alive so you can revisit it anytime"></i>
+
+                <li class="feat-item star" id="featVirtualCake" style="align-items: flex-start;">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6; margin-top: 2px;"></i>
+                  <div style="flex: 1;">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                      <span>🎂 Virtual Cake Celebration</span>
+                      <i class="fas fa-info-circle info-icon" data-tooltip="Interactive candle blowing, 3D center cake slicing & cake sharing!"></i>
+                    </div>
+                    <div class="feat-exclusion-note" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
+                      <i class="fas fa-lock"></i> (Requires Pro / Pro+ / Infinity)
+                    </div>
                 </li>
               </ul>
             </div>
+
+            <!-- Dedicated Mobile Premium Plan Button inside Premium Card -->
+            <button class="btn-prem-card-mobile" id="premCardProceedBtn">
+              <i class="fas fa-crown"></i>
+              <span id="premCardProceedBtnLabel">Continue with Pro – $1.99</span>
+            </button>
+
+            <!-- Mobile Reassurance Block -->
+            <div class="mobile-reassurance-block">
+              <div style="font-size: 0.84rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                💖 One small upgrade for you, a lifetime memory for them.
+              </div>
+              <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <span>💳 One-Time Payment</span>
+              </div>
+              <div style="font-size: 0.76rem; font-weight: 500; color: var(--text-secondary); margin-top: 4px;">
+                No subscription. No recurring charges.
+              </div>
+            </div>
+          </div>
+
+          <!-- INLINE CHECKOUT EXPAND -->
+          <div class="checkout-details-card" id="inlineCheckout" style="display: none; grid-column: 1 / -1;">
+            <h3 class="checkout-title">Secure Checkout</h3>
+            <p class="checkout-note">Where should we send your receipt and premium link?</p>
+
+            <div style="text-align: left; margin-bottom: 24px;">
+              <div class="optional-contact-label">
+                <i class="fas fa-envelope"></i> Email Address <span class="opt-badge">Recommended</span>
+              </div>
+              <input type="email" id="checkoutEmail" class="optional-contact-input" placeholder="e.g. you@gmail.com"
+                autocomplete="email">
+
+              <div class="optional-contact-label" style="margin-top: 18px;">
+                <i class="fas fa-phone-alt"></i> Phone Number <span class="opt-badge">Optional</span>
+              </div>
+              <input type="tel" id="checkoutPhone" class="optional-contact-input" placeholder="e.g. 9876543210"
+                autocomplete="tel">
+            </div>
+
+            <button class="pay-btn" id="finalPayBtn">
+              <i class="fas fa-shield-alt"></i> <span id="finalPayBtnText">Pay $2.99 Securely</span>
+            </button>
           </div>
 
         </div>
 
-        <!-- SINGLE UNIFIED CTA BUTTON -->
-        <button class="btn-unified" id="unifiedProceedBtn">
+        <!-- SINGLE UNIFIED CTA BUTTON (DESKTOP) -->
+        <button class="btn-unified" id="unifiedProceedBtn" style="background: linear-gradient(135deg, #7b5df6 0%, #e83a59 50%, #ff7a2f 100%); padding: 18px 36px; border-radius: 50px; font-size: 1.2rem;">
           <i class="fas fa-crown" id="unifiedBtnIcon"></i>
-          <span id="unifiedBtnLabel">Continue with Premium</span>
-          <span class="btn-price-badge" id="unifiedBtnPrice">$2.99</span>
+          <span id="unifiedBtnLabel">Continue with Pro – $1.99</span>
         </button>
 
-        <!-- INLINE CHECKOUT EXPAND -->
-        <div class="checkout-details-card" id="inlineCheckout" style="display: none;">
-          <h3 class="checkout-title">Secure Checkout</h3>
-          <p class="checkout-note">Where should we send your receipt and premium link?</p>
-
-          <div style="text-align: left; margin-bottom: 24px;">
-            <div class="optional-contact-label">
-              <i class="fas fa-envelope"></i> Email Address <span class="opt-badge">Recommended</span>
-            </div>
-            <input type="email" id="checkoutEmail" class="optional-contact-input" placeholder="e.g. you@gmail.com"
-              autocomplete="email">
-
-            <div class="optional-contact-label" style="margin-top: 18px;">
-              <i class="fas fa-phone-alt"></i> Phone Number <span class="opt-badge">Optional</span>
-            </div>
-            <input type="tel" id="checkoutPhone" class="optional-contact-input" placeholder="e.g. 9876543210"
-              autocomplete="tel">
+        <!-- DESKTOP REASSURANCE BLOCK (BELOW DESKTOP CTA BUTTON) -->
+        <div class="desktop-reassurance-block">
+          <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+            💖 One small upgrade for you, a lifetime memory for them.
           </div>
-
-          <button class="pay-btn" id="finalPayBtn">
-            <i class="fas fa-shield-alt"></i> <span id="finalPayBtnText">Pay $2.99 Securely</span>
-          </button>
+          <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+            <span>🔒 Secure Payment</span>
+            <span style="opacity: 0.4;">•</span>
+            <span>⚡ Instant Activation</span>
+            <span style="opacity: 0.4;">•</span>
+            <span>💳 One-Time Payment</span>
+          </div>
+          <div style="font-size: 0.78rem; font-weight: 500; color: var(--text-secondary); margin-top: 4px;">
+            No subscription. No recurring charges.
+          </div>
         </div>
 
       </div>
@@ -1926,6 +2125,12 @@
         navigator.clipboard?.writeText(modalLinkInput.value).then(() => { this.innerHTML = '<i class="fas fa-check"></i>'; setTimeout(() => this.innerHTML = '<i class="far fa-copy"></i>', 1500); });
       });
       modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+      modal.querySelectorAll('.modal-close, .modal-button').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeModal();
+        });
+      });
 
       // ----- BACKEND API -----
 
@@ -2768,6 +2973,67 @@
         }
       }
 
+      // Detect user's location and set pricing
+      async function detectUserLocation() {
+        // 1. Instant Timezone / Browser Locale Check (Instant detection for local testing & India users)
+        const tz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '';
+        const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+        const isIndiaLocal = tz.includes('Kolkata') || tz.includes('Calcutta') || lang.includes('en-in') || lang.includes('hi') || lang.includes('ta') || lang.includes('te');
+
+        if (isIndiaLocal) {
+          selectedCurrency = 'INR';
+          selectedGateway = 'cashfree';
+          console.log('Instant Locale Geo-Detection: India (INR)');
+          updatePricingUI();
+          updateUnifiedBtn();
+        }
+
+        // 2. Query Server Geo Endpoint
+        try {
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          const res = await fetch(`${apiBaseUrl}/api/payment/detect-price`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.currency) {
+              selectedCurrency = data.currency;
+              selectedGateway = data.gateway || (data.currency === 'INR' ? 'cashfree' : 'paypal');
+              console.log('Server geo-detection:', { selectedCurrency, selectedGateway, region: data.region });
+              updatePricingUI();
+              updateUnifiedBtn();
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Server geo-detection failed, using public IP fallback');
+        }
+
+        // 3. Fallback to public IP API (ipwho.is)
+        try {
+          const geoRes = await fetch('https://ipwho.is/');
+          if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            if (geoData.success && geoData.country_code) {
+              const countryCode = geoData.country_code.toUpperCase();
+              if (countryCode === 'IN') selectedCurrency = 'INR';
+              else if (countryCode === 'GB') selectedCurrency = 'GBP';
+              else if (countryCode === 'CA') selectedCurrency = 'CAD';
+              else if (countryCode === 'AU') selectedCurrency = 'AUD';
+              else if (countryCode === 'AE') selectedCurrency = 'AED';
+              else if (countryCode === 'PK') selectedCurrency = 'PKR';
+              else if (EUROZONE.includes(countryCode)) selectedCurrency = 'EUR';
+              else selectedCurrency = 'USD';
+
+              selectedGateway = (selectedCurrency === 'INR') ? 'cashfree' : 'paypal';
+              console.log('Public IP API geo-detection:', { selectedCurrency, selectedGateway, countryCode });
+              updatePricingUI();
+              updateUnifiedBtn();
+            }
+          }
+        } catch (e) {
+          console.warn('Client-side IP fallback failed:', e);
+        }
+      }
+
       function buildWishesPrompt() {
         if (!validateEventWithElement().valid || !validateMoodWithElement().valid || !validateNameWithElement().valid) return null;
         if (eventSelect.value === 'festival' && !validateFestivalWithElement().valid) return null;
@@ -3155,72 +3421,6 @@
         });
       }
 
-      // Detect user's location and set pricing
-      async function detectUserLocation() {
-        try {
-          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
-          const res = await fetch(`${apiBaseUrl}/api/payment/detect-price`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success) {
-              selectedCurrency = data.currency;
-              selectedAmount = data.amount;
-              selectedGateway = data.gateway || 'cashfree';
-              console.log('Server geo-detection:', { selectedCurrency, selectedAmount, selectedGateway });
-              updatePricingUI();
-              updateUnifiedBtn();
-              return;
-            }
-          }
-        } catch (e) {
-          console.warn('Server geo-detection failed, using client-side fallback');
-        }
-
-        // Client-side fallback
-        try {
-          const geoRes = await fetch('https://ipapi.co/json/');
-          if (geoRes.ok) {
-            const geoData = await geoRes.json();
-            const countryCode = geoData.country_code;
-
-            let pricing;
-            if (countryCode === 'IN') {
-              pricing = geoPricing['IN'];
-            } else if (EUROZONE.includes(countryCode)) {
-              // Eurozone pricing (matches server-side)
-              pricing = { currency: 'EUR', amount: 4.99, symbol: '€', region: 'Eurozone' };
-            } else if (geoPricing[countryCode]) {
-              pricing = geoPricing[countryCode];
-            } else {
-              // Default to international pricing for VPN/undetected locations
-              pricing = geoPricing['default'];
-            }
-
-            selectedCurrency = pricing.currency;
-            selectedAmount = pricing.amount;
-            selectedGateway = (pricing.currency === 'INR') ? 'cashfree' : 'paypal';
-            console.log('Client geo-detection:', { selectedCurrency, selectedAmount, selectedGateway, countryCode });
-            updatePricingUI();
-            updateUnifiedBtn();
-          } else {
-            // If API call fails, use default international pricing
-            console.warn('ipapi.co returned non-OK status, using default USD pricing');
-            selectedCurrency = 'USD';
-            selectedAmount = 2.99;
-            selectedGateway = 'paypal';
-            updatePricingUI();
-            updateUnifiedBtn();
-          }
-        } catch (e) {
-          console.warn('Client geo-detection failed, using default USD pricing');
-          selectedCurrency = 'USD';
-          selectedAmount = 2.99;
-          selectedGateway = 'paypal';
-          updatePricingUI();
-          updateUnifiedBtn();
-        }
-      }
-
       function updatePricingUI() {
         console.log('updatePricingUI called:', { selectedCurrency, selectedAmount, selectedGateway });
 
@@ -3245,101 +3445,144 @@
         }
 
         // Calculate prices based on currency
-        let starterPrice, proPrice, foreverPrice, starterOriginalPrice;
+        let starterPrice, proPrice, proPlusPrice, foreverPrice;
 
         if (selectedCurrency === 'INR') {
           starterPrice = 29;
-          starterOriginalPrice = 49;
-          proPrice = 99;
+          proPrice = 49;
+          proPlusPrice = 99;
           foreverPrice = 199;
         } else if (selectedCurrency === 'USD') {
           starterPrice = 0.99;
-          starterOriginalPrice = 1.99;
-          proPrice = 2.99;
-          foreverPrice = 9.99;
+          proPrice = 1.99;
+          proPlusPrice = 3.99;
+          foreverPrice = 6.99;
         } else if (selectedCurrency === 'GBP') {
-          starterPrice = 1.49;
-          starterOriginalPrice = 1.49;
-          proPrice = 3.99;
-          foreverPrice = 7.99;
+          starterPrice = 0.99;
+          proPrice = 1.49;
+          proPlusPrice = 2.99;
+          foreverPrice = 5.99;
         } else if (selectedCurrency === 'CAD') {
-          starterPrice = 2.49;
-          starterOriginalPrice = 2.49;
-          proPrice = 6.99;
-          foreverPrice = 12.99;
+          starterPrice = 1.49;
+          proPrice = 2.49;
+          proPlusPrice = 4.99;
+          foreverPrice = 8.99;
         } else if (selectedCurrency === 'AUD') {
-          starterPrice = 2.99;
-          starterOriginalPrice = 2.99;
-          proPrice = 7.99;
-          foreverPrice = 14.99;
+          starterPrice = 1.49;
+          proPrice = 2.99;
+          proPlusPrice = 5.99;
+          foreverPrice = 9.99;
         } else if (selectedCurrency === 'AED') {
-          starterPrice = 5.99;
-          starterOriginalPrice = 5.99;
-          proPrice = 12.99;
-          foreverPrice = 29.99;
+          starterPrice = 3.99;
+          proPrice = 6.99;
+          proPlusPrice = 14.99;
+          foreverPrice = 25.99;
         } else if (selectedCurrency === 'PKR') {
           starterPrice = 99;
-          starterOriginalPrice = 99;
-          proPrice = 299;
-          foreverPrice = 699;
+          proPrice = 149;
+          proPlusPrice = 299;
+          foreverPrice = 599;
         } else if (selectedCurrency === 'EUR') {
-          starterPrice = 1.99;
-          starterOriginalPrice = 1.99;
-          proPrice = 4.99;
-          foreverPrice = 9.99;
+          starterPrice = 0.99;
+          proPrice = 1.99;
+          proPlusPrice = 3.99;
+          foreverPrice = 6.99;
         } else {
           // Default international USD
           starterPrice = 0.99;
-          starterOriginalPrice = 0.99;
-          proPrice = 2.99;
-          foreverPrice = 9.99;
+          proPrice = 1.99;
+          proPlusPrice = 3.99;
+          foreverPrice = 6.99;
         }
 
-        console.log('Calculated prices:', { starterPrice, proPrice, foreverPrice, starterOriginalPrice, symbol });
+        console.log('Calculated prices:', { starterPrice, proPrice, proPlusPrice, foreverPrice, symbol });
 
         // Update plan pills with calculated prices
         const planPills = document.querySelectorAll('.plan-pill');
         planPills.forEach(pill => {
           const plan = pill.dataset.plan;
-          let adjustedPrice, originalPrice;
+          let adjustedPrice;
 
           if (plan === 'starter') {
             adjustedPrice = starterPrice;
-            originalPrice = starterOriginalPrice;
-            // Only show discount if original price is different from adjusted price
-            if (originalPrice !== adjustedPrice) {
-              pill.querySelector('.pill-price').innerHTML = `<span style="text-decoration: line-through; color: #999; font-size: 0.85em; margin-right: 4px;">${symbol}${originalPrice}</span>${symbol}${adjustedPrice}`;
-              pill.querySelector('.pill-offer').style.display = 'inline-block';
-            } else {
-              pill.querySelector('.pill-price').textContent = `${symbol}${adjustedPrice}`;
-              pill.querySelector('.pill-offer').style.display = 'none';
-            }
           } else if (plan === 'pro') {
             adjustedPrice = proPrice;
-            pill.querySelector('.pill-price').textContent = `${symbol}${adjustedPrice}`;
+          } else if (plan === 'pro_plus' || plan === 'proPlus') {
+            adjustedPrice = proPlusPrice;
           } else if (plan === 'forever') {
             adjustedPrice = foreverPrice;
-            pill.querySelector('.pill-price').textContent = `${symbol}${adjustedPrice}`;
           }
+          const priceEl = pill.querySelector('.pill-price');
+          if (priceEl) priceEl.textContent = `${symbol}${adjustedPrice}`;
         });
 
-        // Update active plan price
-        activePlan.price = proPrice;
+        // Default selected plan is Pro ($1.99 / ₹49)
+        activePlan = {
+          plan: 'pro',
+          price: proPrice,
+          days: 100,
+          label: 'Pro (100+ Days)'
+        };
 
         // Update UI elements
         document.getElementById('priceBig').textContent = `${symbol}${activePlan.price}`;
+        document.getElementById('pricePeriod').textContent = `for 100+ Days`;
+        document.getElementById('validityChip').innerHTML = `<i class="fas fa-shield-alt"></i> Active 100+ Days · Ad-Free`;
         document.getElementById('unifiedBtnPrice').textContent = `${symbol}${activePlan.price}`;
         document.getElementById('finalPayBtnText').textContent = `Pay ${symbol}${activePlan.price} Securely`;
 
-        // Update unified button to ensure currency is correct
+        updatePlanFeaturesUI('pro');
         updateUnifiedBtn();
+      }
+
+      function updatePlanFeaturesUI(planKey) {
+        const customUrlRow = document.getElementById('featCustomUrl');
+        const virtualCakeRow = document.getElementById('featVirtualCake');
+        const prioritySupportRow = document.getElementById('featPrioritySupport');
+
+        // Priority Customer Support is included in ALL paid plans (Basic, Pro, Pro+, Infinity)
+        if (prioritySupportRow) {
+          const icon = prioritySupportRow.querySelector('.fa-check-circle, .fa-times-circle');
+          if (icon) icon.className = 'fas fa-check-circle fi-yes';
+          const note = prioritySupportRow.querySelector('.feat-exclusion-note');
+          if (note) note.style.display = 'none';
+        }
+
+        if (planKey === 'starter') {
+          // Basic Plan: Exclude Custom URL & Exclude Virtual Cake
+          if (customUrlRow) {
+            const icon = customUrlRow.querySelector('.fa-check-circle, .fa-times-circle');
+            if (icon) icon.className = 'fas fa-times-circle fi-no';
+            const note = customUrlRow.querySelector('.feat-exclusion-note');
+            if (note) note.style.display = 'block';
+          }
+          if (virtualCakeRow) {
+            const icon = virtualCakeRow.querySelector('.fa-check-circle, .fa-times-circle');
+            if (icon) icon.className = 'fas fa-times-circle fi-no';
+            const note = virtualCakeRow.querySelector('.feat-exclusion-note');
+            if (note) note.style.display = 'block';
+          }
+        } else {
+          // Pro, Pro+, and Infinity: INCLUDE Custom URL & Virtual Cake
+          if (customUrlRow) {
+            const icon = customUrlRow.querySelector('.fa-check-circle, .fa-times-circle');
+            if (icon) icon.className = 'fas fa-check-circle fi-yes';
+            const note = customUrlRow.querySelector('.feat-exclusion-note');
+            if (note) note.style.display = 'none';
+          }
+          if (virtualCakeRow) {
+            const icon = virtualCakeRow.querySelector('.fa-check-circle, .fa-times-circle');
+            if (icon) icon.className = 'fas fa-check-circle fi-yes';
+            const note = virtualCakeRow.querySelector('.feat-exclusion-note');
+            if (note) note.style.display = 'none';
+          }
+        }
       }
 
       // Initialize geo-detection
       detectUserLocation();
 
       // Update UI immediately with default values before geo-detection completes
-      // Use setTimeout to ensure DOM is fully ready
       setTimeout(() => {
         updatePricingUI();
         updateUnifiedBtn();
@@ -3386,7 +3629,7 @@
         goToStep1();
       });
 
-      // 3-tier plan pill switcher (inside premium card)
+      // 4-tier plan pill switcher (inside premium card)
       const planSwitcher = document.getElementById('planSwitcher');
       planSwitcher.querySelectorAll('.plan-pill').forEach(pill => {
         pill.addEventListener('click', (e) => {
@@ -3396,51 +3639,65 @@
 
           // Calculate price based on current currency and plan
           let calculatedPrice;
+          const planKey = pill.dataset.plan;
+
           if (selectedCurrency === 'INR') {
-            if (pill.dataset.plan === 'starter') calculatedPrice = 29;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 99;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 199;
+            if (planKey === 'starter') calculatedPrice = 29;
+            else if (planKey === 'pro') calculatedPrice = 49;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 99;
+            else if (planKey === 'forever') calculatedPrice = 199;
           } else if (selectedCurrency === 'USD') {
-            if (pill.dataset.plan === 'starter') calculatedPrice = 0.99;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 2.99;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 9.99;
+            if (planKey === 'starter') calculatedPrice = 0.99;
+            else if (planKey === 'pro') calculatedPrice = 1.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.99;
+            else if (planKey === 'forever') calculatedPrice = 6.99;
           } else if (selectedCurrency === 'GBP') {
-            if (pill.dataset.plan === 'starter') calculatedPrice = 1.49;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 3.99;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 7.99;
+            if (planKey === 'starter') calculatedPrice = 0.99;
+            else if (planKey === 'pro') calculatedPrice = 1.49;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 2.99;
+            else if (planKey === 'forever') calculatedPrice = 5.99;
           } else if (selectedCurrency === 'CAD') {
-            if (pill.dataset.plan === 'starter') calculatedPrice = 2.49;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 6.99;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 12.99;
+            if (planKey === 'starter') calculatedPrice = 1.49;
+            else if (planKey === 'pro') calculatedPrice = 2.49;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 4.99;
+            else if (planKey === 'forever') calculatedPrice = 8.99;
           } else if (selectedCurrency === 'AUD') {
-            if (pill.dataset.plan === 'starter') calculatedPrice = 2.99;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 7.99;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 14.99;
+            if (planKey === 'starter') calculatedPrice = 1.49;
+            else if (planKey === 'pro') calculatedPrice = 2.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 5.99;
+            else if (planKey === 'forever') calculatedPrice = 9.99;
           } else if (selectedCurrency === 'AED') {
-            if (pill.dataset.plan === 'starter') calculatedPrice = 5.99;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 12.99;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 29.99;
+            if (planKey === 'starter') calculatedPrice = 3.99;
+            else if (planKey === 'pro') calculatedPrice = 6.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 14.99;
+            else if (planKey === 'forever') calculatedPrice = 25.99;
           } else if (selectedCurrency === 'PKR') {
-            if (pill.dataset.plan === 'starter') calculatedPrice = 99;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 299;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 699;
+            if (planKey === 'starter') calculatedPrice = 99;
+            else if (planKey === 'pro') calculatedPrice = 149;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 299;
+            else if (planKey === 'forever') calculatedPrice = 599;
           } else if (selectedCurrency === 'EUR') {
-            if (pill.dataset.plan === 'starter') calculatedPrice = 1.99;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 4.99;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 9.99;
+            if (planKey === 'starter') calculatedPrice = 0.99;
+            else if (planKey === 'pro') calculatedPrice = 1.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.99;
+            else if (planKey === 'forever') calculatedPrice = 6.99;
           } else {
             // Default international USD
-            if (pill.dataset.plan === 'starter') calculatedPrice = 0.99;
-            else if (pill.dataset.plan === 'pro') calculatedPrice = 2.99;
-            else if (pill.dataset.plan === 'forever') calculatedPrice = 9.99;
+            if (planKey === 'starter') calculatedPrice = 0.99;
+            else if (planKey === 'pro') calculatedPrice = 1.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.99;
+            else if (planKey === 'forever') calculatedPrice = 6.99;
           }
 
           activePlan = {
-            plan: pill.dataset.plan,
+            plan: planKey,
             price: calculatedPrice,
             days: +pill.dataset.days,
             label: pill.dataset.label
           };
+
+          // Update dynamic features checkmark list
+          updatePlanFeaturesUI(planKey);
 
           // Get current symbol
           let currentSymbol = '$';
@@ -3454,7 +3711,17 @@
 
           document.getElementById('priceBig').textContent = `${currentSymbol}${activePlan.price}`;
           document.getElementById('pricePeriod').textContent = `for ${activePlan.label}`;
-          document.getElementById('validityChip').innerHTML = `<i class="fas fa-shield-alt"></i> Active ${activePlan.label} · Ad-Free`;
+          document.getElementById('validityChip').innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> 100% Ad-Free Experience`;
+
+          // Update subtitle under Premium Website title
+          const cmpSub = document.getElementById('cmpSubtitle');
+          if (cmpSub) {
+            if (planKey === 'starter') cmpSub.textContent = 'Keep the moment alive for 30+ days';
+            else if (planKey === 'pro') cmpSub.textContent = 'Keep the moment alive for 100+ days';
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') cmpSub.textContent = 'Keep the moment alive for 1 Year';
+            else if (planKey === 'forever') cmpSub.textContent = 'Keep the moment alive for Lifetime ♾️';
+          }
+
           // Selecting a pill auto-picks premium and updates unified button
           selectPremium();
         });
@@ -3485,15 +3752,26 @@
           unifiedBtn.className = 'btn-unified free-mode';
           unifiedIcon.className = 'fas fa-arrow-right';
           unifiedLabel.textContent = 'Continue with Free (24h)';
-          document.getElementById('unifiedBtnPrice').style.display = 'none';
+          const priceBadge = document.getElementById('unifiedBtnPrice');
+          if (priceBadge) priceBadge.style.display = 'none';
         } else {
           unifiedBtn.className = 'btn-unified';
           unifiedIcon.className = 'fas fa-crown';
-          unifiedLabel.textContent = 'Continue with Premium';
-          document.getElementById('unifiedBtnPrice').textContent = `${currentSymbol}${activePlan.price}`;
-          document.getElementById('unifiedBtnPrice').style.display = 'inline-block';
+
+          let planName = 'Pro';
+          if (activePlan.plan === 'starter') planName = 'Starter';
+          else if (activePlan.plan === 'pro') planName = 'Pro';
+          else if (activePlan.plan === 'pro_plus' || activePlan.plan === 'proPlus') planName = 'Pro+';
+          else if (activePlan.plan === 'forever') planName = 'Infinity';
+
+          unifiedLabel.textContent = `Continue with ${planName} – ${currentSymbol}${activePlan.price}`;
+          const premMobileLabel = document.getElementById('premCardProceedBtnLabel');
+          if (premMobileLabel) {
+            premMobileLabel.textContent = `Continue with ${planName} – ${currentSymbol}${activePlan.price}`;
+          }
+          const priceBadge = document.getElementById('unifiedBtnPrice');
+          if (priceBadge) priceBadge.style.display = 'none';
           document.getElementById('finalPayBtnText').textContent = `Pay ${currentSymbol}${activePlan.price} Securely`;
-          // If checkout was already open, keep it open but update the price
         }
       }
 
@@ -3520,6 +3798,28 @@
         selectPremium();
       });
 
+      // Mobile Free Card Proceed Button
+      document.getElementById('freeCardProceedBtn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        localStorage.setItem('userData', JSON.stringify(
+          collectFormData({ isPremium: false, selectedPlan: 'free', planPrice: 0, validityDays: 1 })
+        ));
+        window.location.href = 'generated/preview.html';
+      });
+
+      // Mobile Premium Card Proceed Button
+      document.getElementById('premCardProceedBtn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectPremium();
+        const inlineCheckout = document.getElementById('inlineCheckout');
+        if (inlineCheckout) {
+          inlineCheckout.style.display = 'block';
+          setTimeout(() => {
+            inlineCheckout.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 50);
+        }
+      });
+
       // Unified proceed button
       unifiedBtn.addEventListener('click', () => {
         if (selectedMode === 'free') {
@@ -3530,7 +3830,13 @@
         } else {
           // Expand the inline checkout instead of redirecting instantly
           unifiedBtn.style.display = 'none';
-          document.getElementById('inlineCheckout').style.display = 'block';
+          const inlineCheckout = document.getElementById('inlineCheckout');
+          if (inlineCheckout) {
+            inlineCheckout.style.display = 'block';
+            setTimeout(() => {
+              inlineCheckout.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+          }
         }
       });
 

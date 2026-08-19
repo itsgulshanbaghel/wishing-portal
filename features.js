@@ -2075,6 +2075,912 @@
             const audio = d?.getElementById("crackersAudio");
             if (audio) audio.remove();
         }
+    },
+    virtualCake: {
+        enable(d, w, userName, customText) {
+            if (d.getElementById('magic-virtual-cake-section')) return {};
+
+            if (!d.querySelector('meta[charset]')) {
+                const meta = d.createElement('meta');
+                meta.setAttribute('charset', 'UTF-8');
+                if (d.head) d.head.insertBefore(meta, d.head.firstChild);
+            }
+
+            if (!d.getElementById('greeter-font-awesome')) {
+                const fa = d.createElement('link');
+                fa.id = 'greeter-font-awesome';
+                fa.rel = 'stylesheet';
+                fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
+                d.head.appendChild(fa);
+            }
+            if (!d.getElementById('greeter-cake-fonts')) {
+                const fl = d.createElement('link');
+                fl.id = 'greeter-cake-fonts';
+                fl.rel = 'stylesheet';
+                fl.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Outfit:wght@500;700;800;900&family=Poppins:wght@400;500;600;700&display=swap';
+                d.head.appendChild(fl);
+            }
+
+            if (!d.getElementById('vc-styles')) {
+                const s = d.createElement('style');
+                s.id = 'vc-styles';
+                s.textContent = `
+                :root {
+                    --vc-gold: #FFD700;
+                    --vc-gold2: #FF9100;
+                    --vc-pink: #FF4D8F;
+                    --vc-purple: #7B5DF6;
+                    --vc-bg: #0D0720;
+                }
+                .vc-section {
+                    position: relative;
+                    width: 100%;
+                    margin: clamp(24px,5vw,48px) 0;
+                    padding: clamp(32px,6vw,64px) clamp(16px,4vw,40px);
+                    background: radial-gradient(ellipse at 30% 20%, rgba(123,93,246,0.35) 0%, transparent 65%),
+                                radial-gradient(ellipse at 75% 80%, rgba(255,145,0,0.28) 0%, transparent 65%),
+                                linear-gradient(145deg, rgba(20, 10, 38, 0.88) 0%, rgba(35, 12, 50, 0.82) 100%);
+                    backdrop-filter: blur(20px);
+                    -webkit-backdrop-filter: blur(20px);
+                    border-radius: clamp(24px,4vw,40px);
+                    border: 2px solid rgba(255, 215, 0, 0.45);
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45),
+                                0 0 30px rgba(255, 215, 0, 0.15),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    overflow: hidden;
+                    font-family: 'Poppins', sans-serif;
+                    text-align: center;
+                    color: #fff;
+                    box-sizing: border-box;
+                }
+                /* --- Floating orbs --- */
+                .vc-orb {
+                    position: absolute;
+                    border-radius: 50%;
+                    pointer-events: none;
+                    filter: blur(60px);
+                    opacity: 0.35;
+                    animation: vc-orb-drift 8s ease-in-out infinite alternate;
+                }
+                .vc-orb-1 { width: 260px; height: 260px; background: #7B5DF6; top: -80px; left: -60px; }
+                .vc-orb-2 { width: 200px; height: 200px; background: #FF4D8F; bottom: -60px; right: -40px; animation-delay: -3s; }
+                .vc-orb-3 { width: 160px; height: 160px; background: #FFD700; top: 40%; right: 10%; animation-delay: -5s; opacity: 0.18; }
+                @keyframes vc-orb-drift {
+                    0%   { transform: translate(0,0) scale(1); }
+                    100% { transform: translate(20px,15px) scale(1.08); }
+                }
+                /* --- Shimmer stars --- */
+                .vc-star {
+                    position: absolute;
+                    pointer-events: none;
+                    font-size: clamp(10px,2.5vw,16px);
+                    color: #FFD700;
+                    opacity: 0;
+                    animation: vc-star-twinkle 2.5s ease-in-out infinite;
+                }
+                @keyframes vc-star-twinkle {
+                    0%,100% { opacity:0; transform:scale(0.6) rotate(0deg); }
+                    50%      { opacity:0.9; transform:scale(1.2) rotate(30deg); }
+                }
+                /* --- Title --- */
+                .vc-title {
+                    font-family: 'Outfit', sans-serif;
+                    font-size: clamp(1.35rem, 4.5vw, 2.4rem);
+                    font-weight: 900;
+                    letter-spacing: -0.5px;
+                    margin: 0 0 8px;
+                    line-height: 1.2;
+                    color: #FFD700;
+                }
+                .vc-title-text {
+                    background: linear-gradient(135deg, #FFD700 0%, #FF9100 40%, #FF4D8F 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                }
+                .vc-emoji {
+                    -webkit-text-fill-color: initial;
+                    display: inline-block;
+                    margin-left: 6px;
+                }
+                .vc-subtitle {
+                    font-size: clamp(0.85rem, 2.2vw, 1.05rem);
+                    color: rgba(255, 255, 255, 0.95);
+                    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+                    margin: 0 0 clamp(20px,4vw,36px);
+                    font-weight: 500;
+                }
+                /* --- Wish ribbon --- */
+                .vc-ribbon {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.22), rgba(255, 77, 143, 0.18));
+                    border: 1.5px solid rgba(255, 215, 0, 0.7);
+                    border-radius: 50px;
+                    padding: clamp(8px,2vw,12px) clamp(18px,4vw,30px);
+                    margin: 0 auto clamp(20px,4vw,32px);
+                    max-width: 90%;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                }
+                .vc-ribbon-text {
+                    font-family: 'Great Vibes', cursive;
+                    font-size: clamp(1.2rem, 3.8vw, 1.9rem);
+                    color: #FFD700;
+                    line-height: 1.3;
+                    word-break: break-word;
+                    text-shadow: 0 2px 12px rgba(255,215,0,0.6), 0 1px 3px rgba(0,0,0,0.8);
+                }
+                .vc-ribbon-icon {
+                    color: #FFD700;
+                    font-size: clamp(0.9rem,2.5vw,1.2rem);
+                    flex-shrink: 0;
+                    animation: vc-icon-pulse 1.8s ease-in-out infinite;
+                }
+                @keyframes vc-icon-pulse {
+                    0%,100% { transform: scale(1); opacity: 0.85; }
+                    50%      { transform: scale(1.2); opacity: 1; }
+                }
+                /* === CAKE SCENE === */
+                .vc-scene {
+                    position: relative;
+                    display: inline-flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0;
+                    margin: 0 auto clamp(20px,4vw,36px);
+                    cursor: pointer;
+                }
+                /* --- Vertical Cut Line (Center Red Laser Line) --- */
+                .vc-cut-line {
+                    position: absolute;
+                    left: 50%;
+                    top: -10px;
+                    width: 4px;
+                    height: 0%;
+                    transform: translateX(-50%);
+                    background: linear-gradient(180deg, #ff0055 0%, #ff0000 60%, #ff5500 100%);
+                    box-shadow: 0 0 10px #ff0055, 0 0 20px #ff0000, 0 0 30px #ff5500;
+                    border-radius: 4px;
+                    z-index: 35;
+                    pointer-events: none;
+                    opacity: 0;
+                    transition: height 0.65s linear, opacity 0.2s ease;
+                }
+                .vc-cut-line.slicing {
+                    opacity: 1;
+                    height: 105%;
+                }
+                .vc-cut-line.flash {
+                    animation: vc-cut-glow 0.8s ease-out forwards;
+                }
+                @keyframes vc-cut-glow {
+                    0%   { opacity: 1; box-shadow: 0 0 25px #ff0055, 0 0 45px #ff0000; }
+                    100% { opacity: 0; }
+                }
+
+                /* --- Ceremonial Knife --- */
+                .vc-knife-wrap {
+                    position: absolute;
+                    left: 50%;
+                    top: -55px;
+                    transform: translateX(-50%) rotate(-15deg);
+                    font-size: clamp(2.2rem, 5vw, 3rem);
+                    color: #FFD700;
+                    filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.9));
+                    z-index: 40;
+                    pointer-events: none;
+                    opacity: 0;
+                    transition: top 0.65s linear, opacity 0.25s ease, transform 0.65s ease;
+                }
+                .vc-knife-wrap.slicing {
+                    opacity: 1;
+                    top: calc(100% - 15px);
+                    transform: translateX(-50%) rotate(10deg);
+                }
+
+                /* --- Candles wrapper --- */
+                .vc-candles {
+                    display: flex;
+                    align-items: flex-end;
+                    justify-content: center;
+                    gap: clamp(8px,2vw,14px);
+                    position: relative;
+                    z-index: 10;
+                    margin-bottom: -4px;
+                }
+                .vc-candle {
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+                .vc-candle-stick {
+                    width: clamp(9px,2vw,13px);
+                    height: clamp(32px,6vw,50px);
+                    background: repeating-linear-gradient(
+                        180deg,
+                        #ffffff 0px, #ffffff 6px,
+                        #00c8e0 6px, #00c8e0 12px
+                    );
+                    border-radius: clamp(4px,1vw,6px) clamp(4px,1vw,6px) 2px 2px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.3);
+                    flex-shrink: 0;
+                }
+                .vc-wick {
+                    width: 2px;
+                    height: clamp(5px,1.5vw,8px);
+                    background: #2d2d2d;
+                    border-radius: 1px;
+                    margin-bottom: -1px;
+                }
+                .vc-flame {
+                    position: relative;
+                    width: clamp(12px,3vw,18px);
+                    height: clamp(18px,4vw,26px);
+                    background: radial-gradient(ellipse at 50% 85%, #ffffff 0%, #FFF176 30%, #FF9100 70%, transparent 100%);
+                    border-radius: 50% 50% 30% 30%;
+                    box-shadow: 0 0 clamp(8px,2vw,14px) #FFD700, 0 0 clamp(18px,4vw,28px) rgba(255,145,0,0.6);
+                    animation: vc-flicker 0.55s ease-in-out infinite alternate;
+                    transition: opacity 0.6s ease, transform 0.6s ease;
+                    margin-bottom: -2px;
+                }
+                @keyframes vc-flicker {
+                    0%   { transform: scaleX(1)   scaleY(1)   rotate(-2deg); opacity: 0.92; }
+                    100% { transform: scaleX(0.88) scaleY(1.1) rotate(3deg);  opacity: 1; }
+                }
+                .vc-flame.out {
+                    opacity: 0 !important;
+                    transform: scaleY(0) !important;
+                    animation: none !important;
+                }
+                .vc-smoke {
+                    position: absolute;
+                    top: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: clamp(6px,1.5vw,10px);
+                    height: clamp(6px,1.5vw,10px);
+                    border-radius: 50%;
+                    background: rgba(200,200,220,0.75);
+                    opacity: 0;
+                    pointer-events: none;
+                }
+                .vc-smoke.puffing {
+                    animation: vc-smoke-rise 1.3s ease-out forwards;
+                }
+                @keyframes vc-smoke-rise {
+                    0%   { opacity: 0.8; transform: translateX(-50%) translateY(0)   scale(1); filter: blur(0); }
+                    100% { opacity: 0;   transform: translateX(-40%) translateY(-40px) scale(4); filter: blur(5px); }
+                }
+
+                /* --- Cake Tiers & Center Splitting Halves --- */
+                .vc-tier {
+                    position: relative;
+                    display: flex;
+                    align-items: flex-start;
+                    justify-content: center;
+                    overflow: visible;
+                }
+                .vc-tier-body {
+                    position: relative;
+                    display: flex;
+                    box-shadow: 0 clamp(6px,2vw,12px) clamp(20px,4vw,32px) rgba(0,0,0,0.4);
+                }
+                .vc-top-body {
+                    width: clamp(130px,32vw,190px);
+                    height: clamp(58px,12vw,82px);
+                }
+                .vc-bottom-body {
+                    width: clamp(185px,46vw,265px);
+                    height: clamp(72px,15vw,100px);
+                    margin-top: -3px;
+                }
+
+                /* Halves */
+                .vc-half {
+                    position: relative;
+                    width: 50%;
+                    height: 100%;
+                    overflow: hidden;
+                    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+                .vc-top-body .vc-half.vc-left {
+                    background: linear-gradient(180deg, #FFAD60 0%, #FF8000 55%, #E65C00 100%);
+                    border-radius: clamp(12px,2.5vw,18px) 0 0 clamp(8px,1.5vw,12px);
+                }
+                .vc-top-body .vc-half.vc-right {
+                    background: linear-gradient(180deg, #FFAD60 0%, #FF8000 55%, #E65C00 100%);
+                    border-radius: 0 clamp(12px,2.5vw,18px) clamp(8px,1.5vw,12px) 0;
+                }
+                .vc-bottom-body .vc-half.vc-left {
+                    background: linear-gradient(180deg, #FF6EB4 0%, #E0177D 55%, #B5136A 100%);
+                    border-radius: clamp(12px,2.5vw,18px) 0 0 clamp(8px,1.5vw,12px);
+                }
+                .vc-bottom-body .vc-half.vc-right {
+                    background: linear-gradient(180deg, #FF6EB4 0%, #E0177D 55%, #B5136A 100%);
+                    border-radius: 0 clamp(12px,2.5vw,18px) clamp(8px,1.5vw,12px) 0;
+                }
+
+                /* Frosting drip on each half */
+                .vc-frosting {
+                    position: absolute;
+                    top: 0; left: 0; right: 0;
+                    height: clamp(16px,4vw,24px);
+                    background: #ffffff;
+                    border-radius: 0 0 clamp(10px,2.5vw,16px) clamp(10px,2.5vw,16px);
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                .vc-frosting::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -clamp(8px,2vw,12px);
+                    left: 8%;
+                    right: 8%;
+                    height: clamp(8px,2vw,13px);
+                    background: #ffffff;
+                    border-radius: 0 0 12px 12px;
+                    box-shadow: clamp(16px,4vw,24px) 0 0 #fff;
+                }
+
+                /* Decorative dots on tier halves */
+                .vc-tier-dots {
+                    position: absolute;
+                    bottom: clamp(10px,2.5vw,16px);
+                    left: 0; right: 0;
+                    display: flex;
+                    justify-content: center;
+                    gap: clamp(5px,1.5vw,9px);
+                }
+                .vc-dot {
+                    width: clamp(6px,1.5vw,9px);
+                    height: clamp(6px,1.5vw,9px);
+                    border-radius: 50%;
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+                }
+                .vc-top-body .vc-dot { background: #FF4D8F; }
+                .vc-bottom-body .vc-dot { background: #FFD700; }
+
+                /* Stars on bottom tier */
+                .vc-tier-stars {
+                    position: absolute;
+                    top: 50%; left: 50%;
+                    transform: translate(-50%,-50%);
+                    display: flex;
+                    gap: clamp(6px,1.5vw,10px);
+                    color: rgba(255,255,255,0.4);
+                    font-size: clamp(10px,2.5vw,15px);
+                }
+
+                /* Inner cake cut glow when split */
+                .vc-half.vc-left::after {
+                    content: '';
+                    position: absolute;
+                    top: 0; right: 0; bottom: 0;
+                    width: 8px;
+                    background: linear-gradient(90deg, transparent, #FFD700, #FFF59D);
+                    opacity: 0;
+                    transition: opacity 0.4s ease;
+                }
+                .vc-half.vc-right::before {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; bottom: 0;
+                    width: 8px;
+                    background: linear-gradient(90deg, #FFF59D, #FFD700, transparent);
+                    opacity: 0;
+                    transition: opacity 0.4s ease;
+                }
+
+                /* --- Center Split Action --- */
+                .vc-scene.is-cut .vc-half.vc-left {
+                    transform: translateX(-16px) rotate(-1.5deg);
+                }
+                .vc-scene.is-cut .vc-half.vc-right {
+                    transform: translateX(16px) rotate(1.2deg);
+                }
+                .vc-scene.is-cut .vc-half.vc-left::after,
+                .vc-scene.is-cut .vc-half.vc-right::before {
+                    opacity: 1;
+                }
+                /* Middle candle (index 2) disappears completely on cut */
+                .vc-scene.is-cut .vc-candle[data-i="2"] {
+                    opacity: 0 !important;
+                    transform: scale(0) translateY(-20px) !important;
+                    pointer-events: none !important;
+                    transition: opacity 0.4s ease, transform 0.4s ease !important;
+                }
+                .vc-scene.is-cut .vc-candle[data-i="0"],
+                .vc-scene.is-cut .vc-candle[data-i="1"] {
+                    transform: translateX(-12px) rotate(-4deg);
+                }
+                .vc-scene.is-cut .vc-candle[data-i="3"],
+                .vc-scene.is-cut .vc-candle[data-i="4"] {
+                    transform: translateX(12px) rotate(4deg);
+                }
+
+                /* --- Plate --- */
+                .vc-plate {
+                    width: clamp(210px,52vw,300px);
+                    height: clamp(14px,3vw,22px);
+                    background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #d0d0d0 60%, #9e9e9e 100%);
+                    border-radius: 50%;
+                    margin-top: -4px;
+                    box-shadow: 0 clamp(8px,2vw,16px) clamp(20px,5vw,36px) rgba(0,0,0,0.55),
+                                inset 0 2px 4px rgba(255,255,255,0.8);
+                }
+                /* --- Interaction button --- */
+                .vc-btn-wrap {
+                    margin: 0 auto clamp(16px,4vw,28px);
+                }
+                .vc-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    background: linear-gradient(135deg, #FFD700 0%, #FF9100 55%, #FF4D8F 100%);
+                    color: #1a0628;
+                    border: none;
+                    padding: clamp(13px,3vw,18px) clamp(26px,6vw,44px);
+                    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+                    font-weight: 800;
+                    font-family: 'Outfit', sans-serif;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    box-shadow: 0 clamp(8px,2vw,14px) clamp(20px,4vw,36px) rgba(255,145,0,0.45),
+                                0 0 0 0 rgba(255,215,0,0);
+                    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+                                box-shadow 0.25s ease;
+                    letter-spacing: 0.2px;
+                    white-space: nowrap;
+                    position: relative;
+                    overflow: hidden;
+                }
+                .vc-btn::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 60%);
+                    pointer-events: none;
+                }
+                .vc-btn:hover {
+                    transform: translateY(-3px) scale(1.04);
+                    box-shadow: 0 clamp(14px,3vw,22px) clamp(30px,6vw,50px) rgba(255,145,0,0.6),
+                                0 0 0 4px rgba(255,215,0,0.2);
+                }
+                .vc-btn:active {
+                    transform: translateY(1px) scale(0.98);
+                }
+                .vc-btn.done {
+                    background: linear-gradient(135deg, #2ed573, #00cec9);
+                    box-shadow: 0 10px 30px rgba(46,213,115,0.4);
+                    color: #fff;
+                    pointer-events: none;
+                }
+                /* --- Wish card (post-cut reveal) --- */
+                .vc-wish-card {
+                    display: none;
+                    margin: 0 auto clamp(20px, 4vw, 32px);
+                    max-width: clamp(280px,80vw,560px);
+                    padding: clamp(20px,4vw,32px) clamp(18px,4vw,36px);
+                    background: rgba(255,255,255,0.06);
+                    backdrop-filter: blur(20px);
+                    -webkit-backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255,215,0,0.35);
+                    border-radius: clamp(16px,4vw,28px);
+                    box-shadow: 0 16px 48px rgba(0,0,0,0.35),
+                                inset 0 1px 0 rgba(255,255,255,0.08);
+                    animation: vc-wish-pop 0.65s cubic-bezier(0.34,1.56,0.64,1) forwards;
+                }
+                @keyframes vc-wish-pop {
+                    0%   { opacity:0; transform:translateY(24px) scale(0.88); }
+                    100% { opacity:1; transform:translateY(0)    scale(1); }
+                }
+                .vc-wish-icons {
+                    display: flex;
+                    justify-content: center;
+                    gap: 10px;
+                    font-size: clamp(1.2rem,3.5vw,1.8rem);
+                    color: #FFD700;
+                    margin-bottom: 12px;
+                    animation: vc-icon-pulse 1.5s infinite ease-in-out;
+                }
+                .vc-wish-text {
+                    font-family: 'Poppins', sans-serif;
+                    font-size: clamp(0.88rem,2.2vw,1.1rem);
+                    color: rgba(255,255,255,0.92);
+                    line-height: 1.7;
+                    font-weight: 500;
+                }
+                .vc-wish-sender {
+                    margin-top: 14px;
+                    font-family: 'Great Vibes', cursive;
+                    font-size: clamp(1rem,3vw,1.5rem);
+                    color: #FFD700;
+                    text-shadow: 0 2px 12px rgba(255,215,0,0.4);
+                }
+
+                /* --- Slices Showcase Container --- */
+                .vc-slices-wrapper {
+                    display: none;
+                    margin: clamp(20px, 4vw, 32px) auto 0;
+                    max-width: clamp(300px, 92vw, 780px);
+                    padding: clamp(20px, 4vw, 32px) clamp(14px, 3vw, 24px);
+                    background: rgba(255, 255, 255, 0.05);
+                    backdrop-filter: blur(16px);
+                    -webkit-backdrop-filter: blur(16px);
+                    border-radius: clamp(20px, 4vw, 32px);
+                    border: 1.5px solid rgba(255, 215, 0, 0.35);
+                    box-shadow: 0 20px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+                    animation: vc-wish-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                .vc-slices-heading {
+                    font-family: 'Outfit', sans-serif;
+                    font-size: clamp(1.15rem, 3.5vw, 1.6rem);
+                    font-weight: 800;
+                    color: #FFD700;
+                    margin: 0 0 6px;
+                    letter-spacing: -0.3px;
+                }
+                .vc-slices-sub {
+                    font-size: clamp(0.8rem, 2vw, 0.95rem);
+                    color: rgba(255, 255, 255, 0.75);
+                    margin: 0 0 clamp(16px, 3vw, 24px);
+                }
+                .vc-slices-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(clamp(130px, 38vw, 160px), 1fr));
+                    gap: clamp(12px, 2.5vw, 20px);
+                    justify-content: center;
+                }
+                .vc-slice-card {
+                    position: relative;
+                    background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
+                    border: 1.5px solid rgba(255, 215, 0, 0.3);
+                    border-radius: clamp(14px, 3vw, 20px);
+                    padding: clamp(14px, 3vw, 20px) clamp(10px, 2vw, 16px);
+                    text-align: center;
+                    cursor: pointer;
+                    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+                    user-select: none;
+                }
+                .vc-slice-card:hover {
+                    transform: translateY(-6px) scale(1.05);
+                    border-color: #FFD700;
+                    box-shadow: 0 14px 36px rgba(255, 215, 0, 0.45);
+                }
+                .vc-slice-card:active {
+                    transform: translateY(0) scale(0.97);
+                }
+                .vc-slice-graphic {
+                    position: relative;
+                    font-size: clamp(2.2rem, 6vw, 3rem);
+                    line-height: 1;
+                    margin-bottom: 8px;
+                    display: inline-block;
+                    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+                }
+                .vc-slice-cherry {
+                    position: absolute;
+                    top: -6px;
+                    right: -6px;
+                    font-size: 0.45em;
+                    animation: vc-icon-pulse 2s infinite ease-in-out;
+                }
+                .vc-slice-badge {
+                    display: inline-block;
+                    background: linear-gradient(135deg, #FFD700, #FF9100);
+                    color: #1a0628;
+                    font-family: 'Outfit', sans-serif;
+                    font-weight: 800;
+                    font-size: clamp(0.7rem, 1.8vw, 0.82rem);
+                    padding: 3px 12px;
+                    border-radius: 20px;
+                    margin-bottom: 8px;
+                    box-shadow: 0 2px 8px rgba(255, 145, 0, 0.4);
+                }
+                .vc-slice-label {
+                    font-family: 'Poppins', sans-serif;
+                    font-size: clamp(0.78rem, 2vw, 0.92rem);
+                    color: rgba(255, 255, 255, 0.95);
+                    line-height: 1.4;
+                }
+                .vc-slice-toast {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) scale(0.5);
+                    background: linear-gradient(135deg, #FFD700, #FF4D8F);
+                    color: #1a0628;
+                    font-family: 'Outfit', sans-serif;
+                    font-weight: 900;
+                    font-size: 0.85rem;
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    white-space: nowrap;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                    pointer-events: none;
+                    opacity: 0;
+                    z-index: 50;
+                }
+                .vc-slice-toast.pop {
+                    animation: vc-toast-float 1.2s ease-out forwards;
+                }
+                @keyframes vc-toast-float {
+                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+                    30% { opacity: 1; transform: translate(-50%, -80%) scale(1.1); }
+                    100% { opacity: 0; transform: translate(-50%, -140%) scale(1); }
+                }
+                `;
+                d.head.appendChild(s);
+            }
+
+            const recipient = userName || 'Someone Special';
+            const wishMsg = customText && customText.trim()
+                ? customText.trim()
+                : `Happy Birthday, ${recipient}!`;
+
+            const section = d.createElement('section');
+            section.id = 'magic-virtual-cake-section';
+            section.className = 'vc-section';
+
+            section.innerHTML = `
+                <!-- decorative orbs -->
+                <div class="vc-orb vc-orb-1"></div>
+                <div class="vc-orb vc-orb-2"></div>
+                <div class="vc-orb vc-orb-3"></div>
+                <!-- shimmer stars -->
+                <i class="fas fa-star vc-star" style="top:12%;left:7%;animation-delay:0s"></i>
+                <i class="fas fa-star vc-star" style="top:18%;right:9%;animation-delay:0.7s"></i>
+                <i class="fas fa-sparkles vc-star" style="bottom:22%;left:5%;animation-delay:1.2s"></i>
+                <i class="fas fa-star vc-star" style="bottom:15%;right:7%;animation-delay:0.4s"></i>
+                <i class="fas fa-star vc-star" style="top:50%;left:3%;animation-delay:1.6s;font-size:10px"></i>
+
+                <!-- title -->
+                <h2 class="vc-title">
+                    <i class="fas fa-birthday-cake" style="color:#FFD700;margin-right:10px;"></i><span class="vc-title-text">Cut the Cake</span> <span class="vc-emoji">\u{1F970}</span><i class="fas fa-crown" style="color:#FFD700;margin-left:10px;font-size:0.75em;vertical-align:middle;"></i>
+                </h2>
+                <p class="vc-subtitle">Tap the button to blow out the candles &amp; make a wish!</p>
+
+                <!-- personalised ribbon -->
+                <div class="vc-ribbon">
+                    <i class="fas fa-heart vc-ribbon-icon" style="color:#FF4D8F;"></i>
+                    <span class="vc-ribbon-text">${wishMsg}</span>
+                    <i class="fas fa-heart vc-ribbon-icon" style="color:#FF4D8F;"></i>
+                </div>
+
+                <!-- cake scene -->
+                <div class="vc-scene" id="vc-cake-stage">
+                    <!-- Vertical center red cut line & Knife -->
+                    <div class="vc-cut-line" id="vc-cut-line"></div>
+                    <div class="vc-knife-wrap" id="vc-knife-wrap"><i class="fas fa-utensils"></i></div>
+
+                    <!-- 5 candles sitting on top tier -->
+                    <div class="vc-candles" id="vc-candles">
+                        ${[0,1,2,3,4].map(i => `
+                        <div class="vc-candle" data-i="${i}" id="vc-candle-${i}">
+                            <div class="vc-flame" id="vc-flame-${i}"></div>
+                            <div class="vc-smoke" id="vc-smoke-${i}"></div>
+                            <div class="vc-wick"></div>
+                            <div class="vc-candle-stick"></div>
+                        </div>`).join('')}
+                    </div>
+
+                    <!-- top tier split halves (100% Symmetrical Decoration) -->
+                    <div class="vc-tier">
+                        <div class="vc-tier-body vc-top-body">
+                            <div class="vc-half vc-left">
+                                <div class="vc-frosting"></div>
+                                <div class="vc-tier-dots"><div class="vc-dot"></div><div class="vc-dot"></div></div>
+                                <div class="vc-tier-stars"><i class="fas fa-star"></i></div>
+                            </div>
+                            <div class="vc-half vc-right">
+                                <div class="vc-frosting"></div>
+                                <div class="vc-tier-dots"><div class="vc-dot"></div><div class="vc-dot"></div></div>
+                                <div class="vc-tier-stars"><i class="fas fa-star"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- bottom tier split halves (100% Symmetrical Decoration) -->
+                    <div class="vc-tier">
+                        <div class="vc-tier-body vc-bottom-body">
+                            <div class="vc-half vc-left">
+                                <div class="vc-frosting"></div>
+                                <div class="vc-tier-dots"><div class="vc-dot"></div><div class="vc-dot"></div></div>
+                                <div class="vc-tier-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            </div>
+                            <div class="vc-half vc-right">
+                                <div class="vc-frosting"></div>
+                                <div class="vc-tier-dots"><div class="vc-dot"></div><div class="vc-dot"></div></div>
+                                <div class="vc-tier-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- plate -->
+                    <div class="vc-plate"></div>
+                </div>
+
+                <!-- action button -->
+                <div class="vc-btn-wrap">
+                    <button class="vc-btn" id="vc-blow-btn">
+                        <i class="fas fa-wind"></i>
+                        <span>Blow Candles &amp; Cut Cake!</span>
+                    </button>
+                </div>
+
+                <!-- wish card (hidden until after celebration) -->
+                <div class="vc-wish-card" id="vc-wish-card">
+                    <div class="vc-wish-icons">
+                        <i class="fas fa-gift"></i>
+                        <i class="fas fa-birthday-cake"></i>
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="vc-wish-text">
+                        "May this year bring you boundless joy, laughter, and every dream you dare to dream. You are truly one in a million!"
+                    </div>
+                    <div class="vc-wish-sender">
+                        <i class="fas fa-heart" style="color:#FF4D8F;margin-right:6px;font-size:0.9em;"></i>With all the love in the world
+                    </div>
+                </div>
+
+                <!-- Beautiful Interactive Cake Slices Showcase (Reveals after cake cut!) -->
+                <div class="vc-slices-wrapper" id="vc-slices-wrapper">
+                    <h3 class="vc-slices-heading">
+                        <i class="fas fa-utensils" style="color:#FFD700;margin-right:8px;"></i>Here is your Cake Slice Sharing! \u{1F370}
+                    </h3>
+                    <p class="vc-slices-sub">Tap any slice to take a bite!</p>
+
+                    <div class="vc-slices-grid">
+                        <!-- Slice 1: For You -->
+                        <div class="vc-slice-card">
+                            <div class="vc-slice-graphic">\u{1F370}<span class="vc-slice-cherry">\u{1F353}</span></div>
+                            <div class="vc-slice-badge">For You</div>
+                            <div class="vc-slice-label">Here is a slice for <strong>You</strong>! \u{1F60B}</div>
+                            <div class="vc-slice-toast">Yum! Delicious! \u{1F60B}</div>
+                        </div>
+
+                        <!-- Slice 2: For Me -->
+                        <div class="vc-slice-card">
+                            <div class="vc-slice-graphic">\u{1F370}<span class="vc-slice-cherry">\u{1F352}</span></div>
+                            <div class="vc-slice-badge">For Me</div>
+                            <div class="vc-slice-label">Here is a slice for <strong>Me</strong>! \u{1F382}</div>
+                            <div class="vc-slice-toast">Save me a bite! \u{1F382}</div>
+                        </div>
+
+                        <!-- Slice 3: For Everyone -->
+                        <div class="vc-slice-card">
+                            <div class="vc-slice-graphic">\u{1F370}<span class="vc-slice-cherry">\u{1F31F}</span></div>
+                            <div class="vc-slice-badge">For Everyone</div>
+                            <div class="vc-slice-label">A big slice for <strong>Everyone</strong>! \u{1F389}</div>
+                            <div class="vc-slice-toast">Party Time! \u{1F389}</div>
+                        </div>
+
+                        <!-- Slice 4: Extra Slice of Love -->
+                        <div class="vc-slice-card">
+                            <div class="vc-slice-graphic">\u{1F370}<span class="vc-slice-cherry">\u{1F496}</span></div>
+                            <div class="vc-slice-badge">Extra Slice</div>
+                            <div class="vc-slice-label">An extra slice of <strong>Love</strong>! \u{1F495}</div>
+                            <div class="vc-slice-toast">Made with Love! \u{1F496}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <audio id="vc-audio"
+                    src="https://www.dropbox.com/scl/fi/veung117ggbzx65sxlj98/Crackers-mini.mp3?rlkey=tfheg9i04k6upkavcpdsrghle&st=koce788t&dl=1"
+                    preload="auto" style="display:none;"></audio>
+            `;
+
+            if (w.insertSectionBeforeFinal) {
+                w.insertSectionBeforeFinal(d, section);
+            } else {
+                const container = d.getElementById('sections-container') || d.body;
+                const finalMessage = d.getElementById('magic-final-surprise-section');
+                const cta = d.getElementById('magic-cta-section');
+                const anchor = finalMessage || cta;
+                if (anchor && anchor.parentNode === container) { container.insertBefore(section, anchor); } else { container.appendChild(section); }
+            }
+            const scrollFn = w.scrollToElement || (w.parent && w.parent.scrollToElement);
+            if (scrollFn) scrollFn(d, section);
+
+            /* --- Logic --- */
+            const btn           = section.querySelector('#vc-blow-btn');
+            const stage         = section.querySelector('#vc-cake-stage');
+            const knife         = section.querySelector('#vc-knife-wrap');
+            const cutLine       = section.querySelector('#vc-cut-line');
+            const card          = section.querySelector('#vc-wish-card');
+            const slicesWrap    = section.querySelector('#vc-slices-wrapper');
+            const audio         = section.querySelector('#vc-audio');
+            let done = false;
+
+            /* Interactive Slice Tapping */
+            const sliceCards = section.querySelectorAll('.vc-slice-card');
+            sliceCards.forEach(cardEl => {
+                cardEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const toast = cardEl.querySelector('.vc-slice-toast');
+                    if (toast) {
+                        toast.classList.remove('pop');
+                        void toast.offsetWidth;
+                        toast.classList.add('pop');
+                    }
+                    const cfn = w.confetti || w.canvasConfetti || (typeof window !== 'undefined' && (window.confetti || window.canvasConfetti));
+                    if (cfn) {
+                        const rect = cardEl.getBoundingClientRect();
+                        const x = (rect.left + rect.width / 2) / window.innerWidth;
+                        const y = (rect.top + rect.height / 2) / window.innerHeight;
+                        cfn({ particleCount: 35, spread: 60, origin: { x, y: Math.max(0.2, y) }, zIndex: 99999 });
+                    }
+                });
+            });
+
+            const blowAndCutCake = () => {
+                if (done) return;
+                done = true;
+
+                /* PHASE 1: Light off / blow out ALL 5 candles FIRST (0ms - 450ms) */
+                [0, 1, 2, 3, 4].forEach((i, idx) => {
+                    setTimeout(() => {
+                        const flame = section.querySelector(`#vc-flame-${i}`);
+                        const smoke = section.querySelector(`#vc-smoke-${i}`);
+                        if (flame) flame.classList.add('out');
+                        if (smoke) smoke.classList.add('puffing');
+                    }, idx * 90);
+                });
+
+                /* PHASE 2: After candles are completely lit off, start Knife & Red Line Slicing (at 600ms) */
+                setTimeout(() => {
+                    knife.classList.add('slicing');
+                    cutLine.classList.add('slicing');
+                }, 600);
+
+                /* PHASE 3: Knife reaches bottom -> Split cake halves, disappear middle candle & play sound (at 1250ms) */
+                setTimeout(() => {
+                    const midCandle = section.querySelector('#vc-candle-2');
+                    if (midCandle) {
+                        midCandle.style.opacity = '0';
+                        midCandle.style.transform = 'scale(0) translateY(-20px)';
+                    }
+                    stage.classList.add('is-cut');
+                    cutLine.classList.add('flash');
+                    knife.style.opacity = '0';
+
+                    if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
+                }, 1250);
+
+                /* PHASE 4: Confetti bursts, Wish Card & Slices Showcase reveal (1350ms - 1700ms) */
+                const cfn = w.confetti || w.canvasConfetti || (typeof window !== 'undefined' && (window.confetti || window.canvasConfetti));
+                if (cfn) {
+                    const burst = (opts) => cfn({ zIndex: 99999, ...opts });
+                    setTimeout(() => burst({ particleCount: 160, spread: 100, origin: { x: 0.5, y: 0.55 } }), 1350);
+                    setTimeout(() => burst({ particleCount: 110, spread: 85,  origin: { x: 0.25, y: 0.5 }, angle: 60 }), 1550);
+                    setTimeout(() => burst({ particleCount: 110, spread: 85,  origin: { x: 0.75, y: 0.5 }, angle: 120 }), 1700);
+                    setTimeout(() => burst({ particleCount: 220, spread: 130, origin: { x: 0.5, y: 0.4 },
+                        colors: ['#FFD700','#FF9100','#FF4D8F','#7B5DF6','#ffffff'] }), 1900);
+                }
+
+                setTimeout(() => {
+                    card.style.display = 'block';
+                    if (slicesWrap) slicesWrap.style.display = 'block';
+                    btn.classList.add('done');
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Wish Granted &amp; Cake Cut!</span>';
+                }, 1600);
+            };
+
+            btn.addEventListener('click', blowAndCutCake);
+            stage.addEventListener('click', blowAndCutCake);
+
+            return { cleanup: () => section.remove() };
+        },
+        disable(d) {
+            d?.getElementById('magic-virtual-cake-section')?.remove();
+        }
     }
+
 })
+
 

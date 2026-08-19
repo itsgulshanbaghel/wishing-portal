@@ -8,6 +8,8 @@
     "deploy": "wrangler deploy",
     "deploy:pages": "wrangler pages deploy public",
     "deploy:firebase": "firebase deploy --only hosting",
+    "maintenance:on": "node scripts/enable-maintenance.js",
+    "maintenance:off": "node scripts/disable-maintenance.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "preview": "wrangler pages dev public"
   },
@@ -16,6 +18,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
     "canvas": "^3.2.3",
     "cloudinary": "^1.41.0",
     "compression": "^1.8.1",

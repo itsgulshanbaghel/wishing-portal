@@ -1861,19 +1861,29 @@
        init();
 
       async function init() {
-        // Server-side premium verification
-        isPremiumUser = (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
+        // Only Pro or higher plans (Pro, Pro+, Infinity) can claim custom URL for free (Starter plan users must pay or upgrade)
+        const localUserData = (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}'); } catch(e) { return {}; } })();
+        const storedPlan = (localUserData.selectedPlan || localUserData.plan || localStorage.getItem(`plan_${websiteId}`) || '').toLowerCase();
+        const isProOrHigherLocal = storedPlan === 'pro' || storedPlan === 'pro_plus' || storedPlan === 'proplus' || storedPlan === 'forever' || storedPlan === 'infinity';
+        
+        const localIsPremium = (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
                          localStorage.getItem('isPremium') === 'true' ||
-                         (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}').isPremium === true; } catch(e) { return false; } })();
+                         localUserData.isPremium === true;
+
+        isPremiumUser = localIsPremium && isProOrHigherLocal;
+
         try {
           const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
           const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
           if (premiumRes.ok) {
             const premiumData = await premiumRes.json();
-            if (premiumData.isPremium) {
+            if (premiumData.canClaimFreeCustomUrl) {
               isPremiumUser = true;
               localStorage.setItem('isPremium', 'true');
               if (websiteId) localStorage.setItem(`premium_${websiteId}`, 'true');
+            } else if (premiumData.isPremium && !premiumData.canClaimFreeCustomUrl) {
+              // Starter plan user - custom URL requires purchase or upgrade
+              isPremiumUser = false;
             }
           }
         } catch (err) {

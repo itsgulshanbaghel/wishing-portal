@@ -2451,53 +2451,79 @@
       modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
       // Programmatic event listeners for customModal buttons
-      const customCloseX = modal.querySelector('.modal-close');
-      if (customCloseX) {
-        customCloseX.addEventListener('click', window.closeModal);
-      }
-      const customCloseOk = document.getElementById('customModalOkBtn');
-      if (customCloseOk) {
-        customCloseOk.addEventListener('click', window.closeModal);
-      }
+      modal.querySelectorAll('.modal-close, .modal-button').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.closeModal();
+        });
+      });
 
       // ---------- PREMIUM UPGRADE MODAL ----------
       const upgradeModal = document.getElementById('upgradeModal');
-      window.showUpgradeModal = function (activatedPremiumFeatures) {
+      window.showUpgradeModal = function (activatedFeatures, isProRequired = false) {
         const titleEl = document.getElementById('upgradeModalTitle');
         const msgEl = document.getElementById('upgradeModalMessage');
         const payBtnEl = document.getElementById('upgradePayBtn');
         const cancelBtnEl = document.querySelector('#upgradeModal .modal-button.secondary');
 
         const featureNames = {
+          addMusicSection: currentLang === 'hi' ? '🎵 म्यूजिक जोड़ें (Add Music)' : '🎵 Add Music',
           magicMusic: currentLang === 'hi' ? '🎵 बैकग्राउंड म्यूजिक (Background Music)' : '🎵 Background Music',
           voiceNote: currentLang === 'hi' ? '🎙️ वॉइस नोट (Voice Note)' : '🎙️ Voice Note',
-          countdown: currentLang === 'hi' ? '⏳ सरप्राइज काउंटडाउन (Surprise Countdown)' : '⏳ Surprise Countdown'
+          countdown: currentLang === 'hi' ? '⏳ सरप्राइज काउंटडाउन (Surprise Countdown)' : '⏳ Surprise Countdown',
+          virtualCake: currentLang === 'hi' ? '🎂 वर्चुअल केक सेलिब्रेशन (Virtual Cake Celebration)' : '🎂 Virtual Cake Celebration'
         };
 
-        const listItems = activatedPremiumFeatures.map(f => `<li style="margin-bottom: 6px;">${featureNames[f] || f}</li>`).join('');
+        const listItems = activatedFeatures.map(f => `<li style="margin-bottom: 6px; font-weight:700;">${featureNames[f] || f}</li>`).join('');
 
-        if (currentLang === 'hi') {
-          titleEl.textContent = '🌟 प्रीमियम में अपग्रेड करें';
-          msgEl.innerHTML = `
-            <p style="margin-bottom: 10px; font-weight: 600; font-size: 1.05rem;">आपने निम्नलिखित प्रीमियम फीचर्स का उपयोग किया है:</p>
-            <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
-              ${listItems}
-            </ul>
-            <p style="margin-top: 10px;">इस जादुई बधाई वेबसाइट को बनाने और शेयर करने के लिए कृपया प्रीमियम में अपग्रेड करें (मात्र ₹29 / $0.99 से शुरू)।</p>
-          `;
-          payBtnEl.textContent = 'अभी अपग्रेड करें';
-          if (cancelBtnEl) cancelBtnEl.textContent = 'फ्री जारी रखें (प्रीमियम फीचर्स हटाकर)';
+        if (isProRequired) {
+          if (currentLang === 'hi') {
+            titleEl.textContent = '👑 प्रो में अपग्रेड करें (PRO Plan Required)';
+            msgEl.innerHTML = `
+              <p style="margin-bottom: 10px; font-weight: 600; font-size: 1.05rem;">वर्चुअल केक सेलिब्रेशन PRO प्लान फीचर है:</p>
+              <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+                ${listItems}
+              </ul>
+              <p style="margin-top: 10px;">अपनी वेबसाइट वर्चुअल केक सेलिब्रेशन के साथ शेयर करने के लिए कृपया PRO प्लान में अपग्रेड करें (मात्र ₹49 / $1.99)।</p>
+            `;
+            payBtnEl.textContent = 'PRO में अपग्रेड करें (₹49 / $1.99)';
+            if (cancelBtnEl) cancelBtnEl.textContent = 'फ्री जारी रखें (PRO फीचर हटाकर)';
+          } else {
+            titleEl.textContent = '👑 Upgrade to PRO Plan';
+            msgEl.innerHTML = `
+              <p style="margin-bottom: 10px; font-weight: 600; font-size: 1.05rem;">Virtual Cake Celebration requires the PRO Plan:</p>
+              <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+                ${listItems}
+              </ul>
+              <p style="margin-top: 10px;">To share your website with Virtual Cake Celebration, please upgrade to the PRO Plan ($1.99 / ₹49).</p>
+            `;
+            payBtnEl.textContent = 'Upgrade to PRO ($1.99 / ₹49)';
+            if (cancelBtnEl) cancelBtnEl.textContent = 'Continue (Disable PRO Feature)';
+          }
         } else {
-          titleEl.textContent = '🌟 Upgrade to Premium';
-          msgEl.innerHTML = `
-            <p style="margin-bottom: 10px; font-weight: 600; font-size: 1.05rem;">You have enabled the following premium features:</p>
-            <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
-              ${listItems}
-            </ul>
-            <p style="margin-top: 10px;">To generate and share this magical greeting, please upgrade to premium.</p>
-          `;
-          payBtnEl.textContent = 'Upgrade to Premium';
-          if (cancelBtnEl) cancelBtnEl.textContent = 'Continue Free (Disable Premium Features)';
+          if (currentLang === 'hi') {
+            titleEl.textContent = '🌟 प्रीमियम में अपग्रेड करें';
+            msgEl.innerHTML = `
+              <p style="margin-bottom: 10px; font-weight: 600; font-size: 1.05rem;">आपने निम्नलिखित प्रीमियम फीचर्स का उपयोग किया है:</p>
+              <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+                ${listItems}
+              </ul>
+              <p style="margin-top: 10px;">इस जादुई बधाई वेबसाइट को बनाने और शेयर करने के लिए कृपया प्रीमियम में अपग्रेड करें (मात्र ₹29 / $0.99 से शुरू)।</p>
+            `;
+            payBtnEl.textContent = 'अभी अपग्रेड करें';
+            if (cancelBtnEl) cancelBtnEl.textContent = 'फ्री जारी रखें (प्रीमियम फीचर्स हटाकर)';
+          } else {
+            titleEl.textContent = '🌟 Upgrade to Premium';
+            msgEl.innerHTML = `
+              <p style="margin-bottom: 10px; font-weight: 600; font-size: 1.05rem;">You have enabled the following premium features:</p>
+              <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
+                ${listItems}
+              </ul>
+              <p style="margin-top: 10px;">To generate and share this magical greeting, please upgrade to premium.</p>
+            `;
+            payBtnEl.textContent = 'Upgrade to Premium';
+            if (cancelBtnEl) cancelBtnEl.textContent = 'Continue Free (Disable Premium Features)';
+          }
         }
 
         upgradeModal.classList.add('show');
@@ -2513,7 +2539,7 @@
       };
 
       window.disablePremiumFeaturesAndClose = () => {
-        const premiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
+        const premiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown', 'virtualCake'];
         premiumFeatures.forEach(id => {
           activeFeatureStates.set(id, false);
           applyFeature(id, false);
@@ -3113,8 +3139,8 @@
           const apiBase = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
             ? window.APP_CONFIG.API_BASE_URL
             : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')
-                ? ''
-                : 'https://wishing-portal-05as.onrender.com');
+              ? ''
+              : 'https://wishing-portal-05as.onrender.com');
           xhr.open('POST', `${apiBase}/api/upload-audio`);
 
           xhr.upload.onprogress = (e) => {
@@ -3532,6 +3558,7 @@
           (featureId === 'finalsurprise' && elementId === 'magic-final-surprise-section') ||
           (featureId === 'imageexplosion' && elementId === 'magic-image-explosion-section') ||
           (featureId === 'voicenote' && elementId === 'magic-voice-note-section') ||
+          (featureId === 'virtualcake' && elementId === 'magic-virtual-cake-section') ||
           (featureId === 'giftboxopen' && elementId === 'magic-gift-section')
         );
 
@@ -4325,7 +4352,7 @@
       }).catch(e => console.error("Magic API error", e));
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
       ];
       const noCustomizeIds = new Set(["curtainReveal", "fireworksClick", "bombExplosion", "addMusicSection"]);
 
@@ -4344,6 +4371,13 @@
           else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion") feature.enable(doc, win, userName, customText, images);
           else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
           else feature.enable(doc, win, userName, customText, audio);
+
+          if (window.shouldScrollToFeatureId && window.scrollToElement) {
+            const cakeSection = doc.getElementById('magic-virtual-cake-section');
+            if (cakeSection && (window.shouldScrollToFeatureId === 'virtualCake' || window.shouldScrollToFeatureId === 'virtualcake')) {
+              window.scrollToElement(doc, cakeSection);
+            }
+          }
         }
         adjustIframePadding(activeFeatureStates);
       }
@@ -4364,7 +4398,7 @@
         const actualCategories = {
           [t.catOpening]: ["countdown", "lock", "curtainReveal", "welcomeTyping", "fireworksText"],
           [t.catFloral]: ["flowerRain", "flyingSwans"],
-          [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "scratchReveal"],
+          [t.catPlayful]: ["balloonParty", "virtualCake", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "scratchReveal"],
           [t.catHeart]: ["textFormation", "memoryTimeline", "heartsOnScroll", "oldPaperLetter", "hugSkyLetter", "floatingPolaroids"],
           [t.catFinale]: ["finalSurprise", "addMusicSection", "magicMusic", "voiceNote"]
         };
@@ -4375,17 +4409,22 @@
           ids.forEach(id => {
             const feat = FEATURES_CATALOG.find(f => f.id === id);
             if (!feat) return;
-            const featName = t[feat.nameKey] || feat.nameKey;
+            const featName = (id === "virtualCake") ? (currentLang === 'hi' ? '🎂 वर्चुअल केक सेलिब्रेशन' : '🎂 Virtual Cake Celebration') : (t[feat.nameKey] || feat.nameKey);
             const toggleRow = document.createElement("div"); toggleRow.className = "toggle-row"; toggleRow.id = `toggle-${id}`;
             if (activeFeatureStates.get(id)) toggleRow.classList.add("active");
             const hasCustom = !noCustomizeIds.has(id);
             const labelSpan = document.createElement("span"); labelSpan.className = "toggle-label"; labelSpan.innerText = featName;
 
-            const premiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
-            if (premiumFeatures.includes(id)) {
+            if (id === 'virtualCake') {
+              const badge = document.createElement("span");
+              badge.className = "pro-badge";
+              badge.innerHTML = `<i class="fas fa-crown" style="font-size: 0.65rem; color: #ffd700;"></i> PRO`;
+              badge.style.cssText = "color: #ffffff; background: linear-gradient(135deg, #7b5df6, #e83a59); margin-left: 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 0.62rem; font-weight: 800; padding: 2px 7px; border-radius: 10px; box-shadow: 0 2px 6px rgba(123,93,246,0.35); text-transform: uppercase; vertical-align: middle;";
+              labelSpan.appendChild(badge);
+            } else if (['addMusicSection', 'magicMusic', 'voiceNote', 'countdown'].includes(id)) {
               const badge = document.createElement("span");
               badge.className = "premium-badge";
-              badge.innerHTML = `<i class="fas fa-crown" style="font-size: 0.75rem;"></i>`;
+              badge.innerHTML = `<i class="fas fa-crown" style="font-size: 0.75rem; color: #ffd700;"></i>`;
               badge.style.cssText = "color: #ffd700; margin-left: 6px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; filter: drop-shadow(0 1px 3px rgba(255, 215, 0, 0.45));";
               labelSpan.appendChild(badge);
             }
@@ -4418,7 +4457,7 @@
             const customPanel = hasCustom ? document.createElement("div") : null;
             if (customPanel) customPanel.className = "custom-panel";
             let textarea = null, emojiInput = null, previewDiv = null;
-            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion"].includes(id))) {
+            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualCake"].includes(id))) {
               textarea = document.createElement("textarea"); textarea.placeholder = t.placeholderText; textarea.setAttribute('data-placeholder-key', 'text');
               if (id === "lock") textarea.placeholder = currentLang === 'en' ? "Set the Password here" : "यहाँ पासवर्ड दर्ज करें";
               let def = "";
@@ -4441,6 +4480,7 @@
               else if (id === "floatingPolaroids") def = t.defaultFloatingPolaroids(ev);
               else if (id === "imageExplosion") def = t.defaultFloatingPolaroids(ev); // Reuse polaroid default or add new
               else if (id === "floatingBalloonsNamed") def = name;
+              else if (id === "virtualCake") def = currentLang === 'hi' ? `हैप्पी बर्थडे ${name}!` : `Happy Birthday, ${name}!`;
 
               textarea.value = customData.get(id)?.text || def;
               customPanel.appendChild(textarea);
@@ -5580,25 +5620,44 @@
         overlayShare.classList.remove('show');
       };
       function generateShareLink() {
-        // --- Premium Gating check ---
+        // --- Premium & Pro Tier Gating check ---
         const urlParams = new URLSearchParams(window.location.search);
         const viewId = urlParams.get('view') || urlParams.get('restore');
-        const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+        const userPlan = (localStorage.getItem(`user_plan_${viewId}`) || localStorage.getItem('user_plan') || '').toLowerCase();
+        const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true' || !!userPlan;
+        const isPro = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'].includes(userPlan) || localStorage.getItem(`pro_plan_${viewId}`) === 'true';
 
+        const proFeatures = ['virtualCake'];
+        const basicPremiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown'];
+
+        // 1. Check PRO plan requirement (virtualCake)
+        if (!isPro) {
+          const usedPro = [];
+          for (const [id, active] of activeFeatureStates.entries()) {
+            if (active && proFeatures.includes(id)) {
+              usedPro.push(id);
+            }
+          }
+          if (usedPro.length > 0) {
+            showUpgradeModal(usedPro, true); // Trigger PRO Plan Upgrade Modal
+            return;
+          }
+        }
+
+        // 2. Check Basic Premium plan requirement
         if (!isPremium) {
-          const premiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
           const usedPremium = [];
           for (const [id, active] of activeFeatureStates.entries()) {
-            if (active && premiumFeatures.includes(id)) {
+            if (active && (basicPremiumFeatures.includes(id) || proFeatures.includes(id))) {
               usedPremium.push(id);
             }
           }
           if (usedPremium.length > 0) {
-            showUpgradeModal(usedPremium);
+            showUpgradeModal(usedPremium, false); // Trigger Premium Plan Upgrade Modal
             return;
           }
         }
-        // --- End of Premium Gating check ---
+        // --- End of Premium & Pro Tier Gating check ---
 
         const doc = getIframeDocument();
         if (doc) {

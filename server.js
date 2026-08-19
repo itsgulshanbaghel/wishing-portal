@@ -12,7 +12,8 @@ const multer = require('multer');
 
 const https = require('https');
 
-const cloudinary = require('cloudinary').v2;
+const storage = require('./storage');
+const cloudinary = storage.cloudinary;
 const mongoose = require('mongoose');
 const { Website, Feedback, CustomSlug, Payment, Event } = require('./models');
 const analytics = require('./analytics');
@@ -215,19 +216,11 @@ app.post('/api/upload-audio', uploadAudio.single('file'), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No audio file provided' });
     }
-    const secureUrl = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'audio',
-          resource_type: 'video', // Audios must use 'video' resource type in Cloudinary
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result.secure_url);
-        }
-      );
-      uploadStream.end(req.file.buffer);
-    });
+    const isPremium = req.body.isPremium === 'true' || req.body.isPremium === true;
+    const mimeType = req.file.mimetype || 'audio/mpeg';
+    const filename = req.file.originalname || `audio_${Date.now()}.mp3`;
+
+    const secureUrl = await storage.uploadMedia(req.file.buffer, filename, mimeType, isPremium);
     res.json({ secure_url: secureUrl });
   } catch (err) {
     console.error('Error uploading audio via server:', err);
@@ -535,9 +528,9 @@ app.post('/api/feedback', async (req, res) => {
 });
 
 const RESERVED_SLUGS = new Set([
-  'api','assets','generated','blog','admin','create','index','share','privacy',
-  'terms','contactus','whygreeter','templates','uploads','ping','testme',
-  'favicon.ico','sitemap.xml','robots.txt','crossdomain.xml'
+  'api', 'assets', 'generated', 'blog', 'admin', 'create', 'index', 'share', 'privacy',
+  'terms', 'contactus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
+  'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
 ]);
 
 app.post('/api/custom-url', async (req, res) => {
@@ -627,28 +620,42 @@ function cfHeaders() {
 // ── Server-side geo-pricing (single source of truth, never trust client) ────────
 const PRICING_MAP = {
   // Tier 1: High Spending Power
-  US: { currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'United States',
-        plans: { starter: { amount: 1.99, paypalAmount: 1.99 }, pro: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } } },
-  GB: { currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom',
-        plans: { starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 3.99, paypalAmount: 3.99 }, forever: { amount: 7.99, paypalAmount: 7.99 } } },
-  CA: { currency: 'CAD', symbol: 'CA$', gateway: 'paypal', paypalCurrency: 'CAD', countryName: 'Canada',
-        plans: { starter: { amount: 2.49, paypalAmount: 2.49 }, pro: { amount: 6.99, paypalAmount: 6.99 }, forever: { amount: 12.99, paypalAmount: 12.99 } } },
-  AU: { currency: 'AUD', symbol: 'A$', gateway: 'paypal', paypalCurrency: 'AUD', countryName: 'Australia',
-        plans: { starter: { amount: 2.99, paypalAmount: 2.99 }, pro: { amount: 7.99, paypalAmount: 7.99 }, forever: { amount: 14.99, paypalAmount: 14.99 } } },
-  AE: { currency: 'AED', symbol: 'AED ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'UAE',
-        plans: { starter: { amount: 5.99, paypalAmount: 1.63 }, pro: { amount: 12.99, paypalAmount: 3.53 }, forever: { amount: 29.99, paypalAmount: 8.16 } } },
-  
+  US: {
+    currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'United States',
+    plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.99, paypalAmount: 3.99 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+  },
+  GB: {
+    currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom',
+    plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.49, paypalAmount: 1.49 }, pro_plus: { amount: 2.99, paypalAmount: 2.99 }, forever: { amount: 5.99, paypalAmount: 5.99 } }
+  },
+  CA: {
+    currency: 'CAD', symbol: 'CA$', gateway: 'paypal', paypalCurrency: 'CAD', countryName: 'Canada',
+    plans: { starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 2.49, paypalAmount: 2.49 }, pro_plus: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 8.99, paypalAmount: 8.99 } }
+  },
+  AU: {
+    currency: 'AUD', symbol: 'A$', gateway: 'paypal', paypalCurrency: 'AUD', countryName: 'Australia',
+    plans: { starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 2.99, paypalAmount: 2.99 }, pro_plus: { amount: 5.99, paypalAmount: 5.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
+  },
+  AE: {
+    currency: 'AED', symbol: 'AED ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'UAE',
+    plans: { starter: { amount: 3.99, paypalAmount: 1.09 }, pro: { amount: 6.99, paypalAmount: 1.90 }, pro_plus: { amount: 14.99, paypalAmount: 4.08 }, forever: { amount: 25.99, paypalAmount: 7.07 } }
+  },
+
   // Tier 2: Developing (High Volume)
-  IN: { currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India',
-        plans: { starter: { amount: 29, paypalAmount: 29 }, pro: { amount: 99, paypalAmount: 99 }, forever: { amount: 199, paypalAmount: 199 } } },
-  PK: { currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',
-        plans: { starter: { amount: 99, paypalAmount: 0.99 }, pro: { amount: 299, paypalAmount: 2.99 }, forever: { amount: 699, paypalAmount: 5.99 } } }
+  IN: {
+    currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India',
+    plans: { starter: { amount: 29, paypalAmount: 29 }, pro: { amount: 49, paypalAmount: 49 }, pro_plus: { amount: 99, paypalAmount: 99 }, forever: { amount: 199, paypalAmount: 199 } }
+  },
+  PK: {
+    currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',
+    plans: { starter: { amount: 99, paypalAmount: 0.35 }, pro: { amount: 149, paypalAmount: 0.53 }, pro_plus: { amount: 299, paypalAmount: 1.07 }, forever: { amount: 599, paypalAmount: 2.15 } }
+  }
 };
 
-const EUROZONE = ['AT','BE','CY','EE','FI','FR','DE','GR','IE','IT','LV','LT','LU','MT','NL','PT','SK','SI','ES','HR'];
+const EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
 const DEFAULT_PRICING = {
   currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'International', country: 'XX',
-  plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 2.99, paypalAmount: 2.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
+  plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.99, paypalAmount: 3.99 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
 };
 
 function getGeoPrice(req) {
@@ -666,12 +673,12 @@ function getGeoPrice(req) {
       console.log('[getGeoPrice] Using India pricing (Cashfree)');
       return { ...PRICING_MAP.IN, country: code };
     }
-    
+
     if (EUROZONE.includes(code)) {
       console.log('[getGeoPrice] Using Eurozone pricing (PayPal)');
       return {
         currency: 'EUR', symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', countryName: 'Eurozone', country: code,
-        plans: { starter: { amount: 1.99, paypalAmount: 1.99 }, pro: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
+        plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.99, paypalAmount: 3.99 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
       };
     }
 
@@ -771,10 +778,87 @@ async function capturePayPalOrder(paypalOrderId) {
   return await response.json();
 }
 
+const SERVER_PRICING_MAP = {
+  'IN': { currency: 'INR', amount: 49, symbol: '₹', gateway: 'cashfree', region: 'India' },
+  'US': { currency: 'USD', amount: 1.99, symbol: '$', gateway: 'paypal', region: 'United States' },
+  'GB': { currency: 'GBP', amount: 1.49, symbol: '£', gateway: 'paypal', region: 'United Kingdom' },
+  'CA': { currency: 'CAD', amount: 2.49, symbol: 'CA$', gateway: 'paypal', region: 'Canada' },
+  'AU': { currency: 'AUD', amount: 2.99, symbol: 'A$', gateway: 'paypal', region: 'Australia' },
+  'AE': { currency: 'AED', amount: 6.99, symbol: 'AED ', gateway: 'paypal', region: 'UAE' },
+  'PK': { currency: 'PKR', amount: 149, symbol: 'PKR ', gateway: 'paypal', region: 'Pakistan' },
+  'DEFAULT': { currency: 'USD', amount: 1.99, symbol: '$', gateway: 'paypal', region: 'International' }
+};
+
+const SERVER_EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
+
+function getGeoPrice(req) {
+  // Check Cloudflare country header
+  const cfCountry = req.headers['cf-ipcountry'];
+  if (cfCountry && cfCountry !== 'XX') {
+    const code = cfCountry.toUpperCase();
+    if (code === 'IN') return PRICING_MAP['IN'] || SERVER_PRICING_MAP['IN'];
+    if (SERVER_EUROZONE.includes(code)) return { currency: 'EUR', amount: 1.99, symbol: '€', gateway: 'paypal', region: 'Eurozone', plans: DEFAULT_PRICING.plans };
+    if (PRICING_MAP[code]) return PRICING_MAP[code];
+  }
+
+  // Check client IP
+  const xForwardedFor = req.headers['x-forwarded-for'];
+  let ip = xForwardedFor ? xForwardedFor.split(',')[0].trim() : (req.socket?.remoteAddress || req.ip || '');
+  if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
+
+  const isLocal = !ip || ip === '127.0.0.1' || ip === '::1' || ip.includes('localhost');
+  if (isLocal) {
+    const acceptLang = (req.headers['accept-language'] || '').toLowerCase();
+    if (acceptLang.includes('in') || acceptLang.includes('hi') || acceptLang.includes('ta') || acceptLang.includes('te')) {
+      return SERVER_PRICING_MAP['IN'];
+    }
+  }
+
+  if (ip && !isLocal) {
+    try {
+      const geoip = require('geoip-lite');
+      const geo = geoip.lookup(ip);
+      if (geo && geo.country) {
+        const code = geo.country.toUpperCase();
+        if (code === 'IN') return SERVER_PRICING_MAP['IN'];
+        if (SERVER_EUROZONE.includes(code)) return { currency: 'EUR', amount: 1.99, symbol: '€', gateway: 'paypal', region: 'Eurozone' };
+        if (SERVER_PRICING_MAP[code]) return SERVER_PRICING_MAP[code];
+      }
+    } catch (e) {
+      console.warn('geoip lookup warning:', e.message);
+    }
+  }
+
+  return SERVER_PRICING_MAP['DEFAULT'];
+}
+
 // GET /api/payment/detect-price – returns server-computed price for the caller's location
 app.get('/api/payment/detect-price', (req, res) => {
   const pricing = getGeoPrice(req);
   res.json({ success: true, ...pricing });
+});
+
+// GET /api/premium/check/:websiteId – returns premium status and whether custom URL can be claimed for free
+app.get('/api/premium/check/:websiteId', async (req, res) => {
+  const { websiteId } = req.params;
+  try {
+    const mongoReady = await ensureMongoConnected();
+    if (!mongoReady) return res.json({ isPremium: false, plan: 'free', canClaimFreeCustomUrl: false });
+
+    const payment = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
+    if (!payment) return res.json({ isPremium: false, plan: 'free', canClaimFreeCustomUrl: false });
+
+    const plan = (payment.plan || 'pro').toLowerCase();
+    const canClaimFreeCustomUrl = plan !== 'starter' && plan !== 'free';
+
+    res.json({
+      isPremium: true,
+      plan: payment.plan,
+      canClaimFreeCustomUrl
+    });
+  } catch (e) {
+    res.json({ isPremium: false, plan: 'free', canClaimFreeCustomUrl: false });
+  }
 });
 
 function getPlanMeta(pType, isFreeClaim = false) {
@@ -814,7 +898,7 @@ app.post('/api/payment/create-order', async (req, res) => {
     if (isLocalhost) {
       const orderId = `ORD_LOCAL_${Date.now()}`;
       console.log(`[Localhost Bypass] Automatically approving payment order ${orderId} for testing`);
-      
+
       const sanitizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
       try {
         const mongoReady = await ensureMongoConnected();
@@ -879,26 +963,30 @@ app.post('/api/payment/create-order', async (req, res) => {
 
     // 👑 Premium Free Custom URL Claim Bypass
     // If request indicates premium user or $0 amount or user already paid for this websiteId
-    let isAlreadyPaid = false;
+    let isProOrHigherPaid = false;
     if (websiteId) {
       const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
-      if (paidCheck) isAlreadyPaid = true;
+      if (paidCheck && paidCheck.plan) {
+        const normPlan = paidCheck.plan.toLowerCase();
+        if (normPlan !== 'starter' && normPlan !== 'free') {
+          isProOrHigherPaid = true;
+        }
+      }
     }
 
-    const isFreePremiumClaim = req.body.isPremium === true || req.body.amount === 0 || isAlreadyPaid;
+    const clientPlan = (req.body.plan || '').toLowerCase();
+    const isClientProOrHigher = (clientPlan === 'pro' || clientPlan === 'pro_plus' || clientPlan === 'proplus' || clientPlan === 'forever' || clientPlan === 'infinity');
+
+    const isFreePremiumClaim = (req.body.isPremium === true && (isProOrHigherPaid || isClientProOrHigher)) || (req.body.amount === 0 && (isProOrHigherPaid || isClientProOrHigher));
 
     if (isFreePremiumClaim) {
       console.log(`[Premium Free Claim] Granting free custom URL "${sanitizedSlug}" for websiteId: ${websiteId}`);
       let finalPhotoUrl = qrCenterPhotoUrl || '';
       if (qrCenterPhotoBase64) {
         try {
-          const uploadResult = await cloudinary.uploader.upload(qrCenterPhotoBase64, {
-            folder: 'qr-centers',
-            resource_type: 'image'
-          });
-          finalPhotoUrl = uploadResult.secure_url;
+          finalPhotoUrl = await storage.uploadMedia(qrCenterPhotoBase64, `qr_${sanitizedSlug}.png`, 'image/png', true);
         } catch (uploadErr) {
-          console.error('Error uploading QR center photo to Cloudinary:', uploadErr);
+          console.error('Error uploading QR center photo:', uploadErr);
         }
       }
 
@@ -939,27 +1027,34 @@ app.post('/api/payment/create-order', async (req, res) => {
       });
     }
 
-    // Price determined server-side from geo-IP — never trusted from client
+    // Price determined server-side from geo-IP or validated request
     const geoPricing = getGeoPrice(req);
     const { currency, gateway, paypalCurrency, plans } = geoPricing;
+
+    // Normalize plan key
+    const rawPlan = (req.body.plan || 'pro').toString().toLowerCase();
+    let normPlan = 'pro';
+    if (rawPlan === 'starter' || rawPlan.includes('start')) normPlan = 'starter';
+    else if (rawPlan === 'pro_plus' || rawPlan === 'proplus' || rawPlan.includes('plus')) normPlan = 'pro_plus';
+    else if (rawPlan === 'forever' || rawPlan.includes('forev') || rawPlan.includes('life')) normPlan = 'forever';
+    else normPlan = 'pro';
+
+    const defaultPlans = DEFAULT_PRICING.plans;
+    const planData = (plans && plans[normPlan]) ? plans[normPlan] : (defaultPlans[normPlan] || defaultPlans.pro);
     
-    // Extract amount based on plan type (default to pro if not specified)
-    const planType = req.body.plan || 'pro';
-    const planData = plans[planType] || plans.pro;
-    const amount = planData.amount;
-    const paypalAmount = planData.paypalAmount || amount;
+    let amount = (typeof req.body.amount === 'number' && req.body.amount > 0) ? req.body.amount : planData.amount;
+    let paypalAmount = planData.paypalAmount || amount;
+    if (typeof req.body.amount === 'number' && req.body.amount > 0) {
+      paypalAmount = req.body.amount;
+    }
 
     // Upload QR center photo to Cloudinary if provided as base64
     let finalPhotoUrl = qrCenterPhotoUrl || '';
     if (qrCenterPhotoBase64) {
       try {
-        const uploadResult = await cloudinary.uploader.upload(qrCenterPhotoBase64, {
-          folder: 'qr-centers',
-          resource_type: 'image'
-        });
-        finalPhotoUrl = uploadResult.secure_url;
+        finalPhotoUrl = await storage.uploadMedia(qrCenterPhotoBase64, `qr_${sanitizedSlug}.png`, 'image/png', isClientProOrHigher || isProOrHigherPaid);
       } catch (uploadErr) {
-        console.error('Error uploading QR center photo to Cloudinary:', uploadErr);
+        console.error('Error uploading QR center photo:', uploadErr);
       }
     }
 
@@ -1005,17 +1100,17 @@ app.post('/api/payment/create-order', async (req, res) => {
         const targetPage = req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html';
         const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}?action=payment-success&orderId=${orderId}`;
         const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}`;
-        
+
         console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${paypalCurrency}`);
         const paypalOrder = await createPayPalOrder(paypalAmount, paypalCurrency, returnUrl, cancelUrl);
         const approveLink = paypalOrder.links.find(link => link.rel === 'approve')?.href;
-        
+
         if (!approveLink) {
           throw new Error('PayPal order created but no approval link returned');
         }
 
         // Update payment with paypal details and approval link
-        await Payment.findByIdAndUpdate(payment._id, { 
+        await Payment.findByIdAndUpdate(payment._id, {
           paymentLink: approveLink,
           paypalOrderId: paypalOrder.id
         });
@@ -1041,8 +1136,8 @@ app.post('/api/payment/create-order', async (req, res) => {
     }
 
     // Create order on Cashfree
-       const orderPayload = {
-         order_id: orderId,
+    const orderPayload = {
+      order_id: orderId,
       order_amount: orderAmount.toFixed(2),
       order_currency: currency,
       customer_details: {
@@ -1176,11 +1271,11 @@ app.post('/api/payment/webhook', async (req, res) => {
     }
 
     const { order_id, event, payment_id, data } = eventData;
-    
+
     // Cashfree v2 webhook sometimes nests order_id under data.order_id
     const resolvedOrderId = order_id || (data && data.order_id);
     const resolvedEvent = event || (data && data.event);
-    
+
     if (!resolvedOrderId) {
       console.error('[Webhook] No order_id found in payload:', JSON.stringify(eventData).substring(0, 200));
       return res.status(200).json({ received: true });
@@ -1247,7 +1342,7 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
     if (!payment) {
       return res.status(404).json({ error: 'Payment not found' });
     }
-    
+
     // If payment is still PENDING, try to verify with Cashfree directly
     if (payment.status === 'PENDING' && CF_APP_ID && CF_SECRET_KEY) {
       try {
@@ -1279,7 +1374,7 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
         console.error('[Payment Verify] Direct Cashfree check failed:', verifyErr.message);
       }
     }
-    
+
     res.json({
       status: payment.status,
       slug: payment.slug,
@@ -1306,25 +1401,32 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
     }
 
     // Check if there's a PAID payment for this websiteId
-    const paidPayment = await Payment.findOne({ 
-      websiteId, 
-      status: 'PAID' 
+    const paidPayment = await Payment.findOne({
+      websiteId,
+      status: 'PAID'
     }).lean();
 
     let isPremium = !!paidPayment;
+    let plan = (paidPayment?.plan || 'starter').toLowerCase();
 
     if (!isPremium) {
       try {
         const site = await Website.findOne({ id: websiteId }).lean();
         if (site && site.isPremium) {
           isPremium = true;
+          plan = (site.plan || 'pro').toLowerCase();
         }
-      } catch(e) {}
+      } catch (e) { }
     }
-    
-    res.json({ 
+
+    const canClaimFreeCustomUrl = isPremium && plan !== 'starter' && plan !== 'free';
+
+    res.json({
       isPremium,
       websiteId,
+      plan: paidPayment?.plan || (isPremium ? 'pro' : 'free'),
+      planName: paidPayment?.planName || (plan === 'starter' ? 'Starter' : 'Pro'),
+      canClaimFreeCustomUrl,
       paymentId: paidPayment?.orderId || null,
       slug: paidPayment?.slug || null
     });
@@ -1338,7 +1440,7 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
 app.post('/api/payment/paypal/capture', async (req, res) => {
   try {
     const { orderId } = req.body;
-    
+
     // Input validation
     if (!orderId || typeof orderId !== 'string' || orderId.length > 100) {
       return res.status(400).json({ error: 'Invalid orderId' });
@@ -1365,7 +1467,7 @@ app.post('/api/payment/paypal/capture', async (req, res) => {
     // Capture the PayPal payment
     console.log(`[PayPal] Capturing order ${payment.paypalOrderId}`);
     const captureResult = await capturePayPalOrder(payment.paypalOrderId);
-    
+
     if (captureResult.status === 'COMPLETED') {
       // Update payment status
       await Payment.findByIdAndUpdate(payment._id, {
@@ -1399,21 +1501,21 @@ app.post('/api/payment/paypal/webhook', async (req, res) => {
   try {
     const webhookEvent = req.body;
     const webhookId = webhookEvent.id;
-    
+
     // Verify webhook signature (optional but recommended for production)
     // PayPal webhooks can be verified using the webhook ID and certificates
-    
+
     console.log(`[PayPal Webhook] Received event: ${webhookEvent.event_type}`);
-    
+
     const mongoReady = await ensureMongoConnected();
     if (!mongoReady) {
       return res.status(503).json({ error: 'Server temporarily unavailable' });
     }
 
     // Handle different PayPal webhook events
-    if (webhookEvent.event_type === 'PAYMENT.CAPTURE.COMPLETED' || 
-        webhookEvent.event_type === 'CHECKOUT.ORDER.APPROVED') {
-      
+    if (webhookEvent.event_type === 'PAYMENT.CAPTURE.COMPLETED' ||
+      webhookEvent.event_type === 'CHECKOUT.ORDER.APPROVED') {
+
       const purchaseUnits = webhookEvent.resource?.purchase_units;
       if (!purchaseUnits || purchaseUnits.length === 0) {
         console.error('[PayPal Webhook] No purchase units in event');
@@ -1422,13 +1524,13 @@ app.post('/api/payment/paypal/webhook', async (req, res) => {
 
       const customId = purchaseUnits[0]?.custom_id;
       const paypalOrderId = webhookEvent.resource?.id;
-      
+
       // Find payment by PayPal order ID or custom ID
       let payment = await Payment.findOne({ paypalOrderId }).lean();
       if (!payment && customId) {
         payment = await Payment.findOne({ orderId: customId }).lean();
       }
-      
+
       if (!payment) {
         console.error('[PayPal Webhook] Payment not found for PayPal order:', paypalOrderId);
         return res.status(200).json({ received: true });
@@ -1451,12 +1553,12 @@ app.post('/api/payment/paypal/webhook', async (req, res) => {
 
         console.log(`[PayPal Webhook] Order ${payment.orderId} marked as PAID`);
       }
-    } else if (webhookEvent.event_type === 'PAYMENT.CAPTURE.DECLINED' || 
-               webhookEvent.event_type === 'CHECKOUT.ORDER.DECLINED') {
-      
+    } else if (webhookEvent.event_type === 'PAYMENT.CAPTURE.DECLINED' ||
+      webhookEvent.event_type === 'CHECKOUT.ORDER.DECLINED') {
+
       const paypalOrderId = webhookEvent.resource?.id;
       const payment = await Payment.findOne({ paypalOrderId }).lean();
-      
+
       if (payment && payment.status !== 'FAILED') {
         await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' });
         console.log(`[PayPal Webhook] Order ${payment.orderId} marked as FAILED`);
@@ -1537,7 +1639,7 @@ app.post('/api/og-image', async (req, res) => {
           else resolve(result.secure_url);
         }
       );
-      
+
       uploadStream.end(imageBuffer);
     });
 
@@ -1565,11 +1667,11 @@ app.get('/api/og-meta/:id', async (req, res) => {
 
     // Try to find the config from Cloudinary
     const safeName = id.replace(/[^a-z0-9]/gi, '');
-    
+
     try {
       const url = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/configs/${safeName}`;
       const response = await fetch(url);
-      
+
       if (response.ok) {
         const configData = await response.json();
         const { config = {} } = configData;
@@ -2402,7 +2504,7 @@ app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
       .sort({ timestamp: -1 })
       .limit(1000)
       .lean();
-    
+
     // Calculate unique sites clicked
     const uniqueSiteSet = new Set();
     rawClicks.forEach(click => {

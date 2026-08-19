@@ -64,6 +64,14 @@ export async function onRequest(context) {
         }
       }
 
+      // If backend server returns server error (502, 503, 504)
+      if (response.status >= 502 && response.status <= 504) {
+        if (!isApiRequest && env.ASSETS) {
+          const maintenanceReq = new Request(new URL('/maintenance.html', request.url));
+          return env.ASSETS.fetch(maintenanceReq);
+        }
+      }
+
       // Copy response headers for standard responses
       const responseHeaders = new Headers(response.headers);
       responseHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -75,9 +83,19 @@ export async function onRequest(context) {
       });
     } catch (error) {
       console.error('[PagesFunction] Proxy error:', error);
+
+      if (!isApiRequest && env.ASSETS) {
+        try {
+          const maintenanceReq = new Request(new URL('/maintenance.html', request.url));
+          return await env.ASSETS.fetch(maintenanceReq);
+        } catch (mErr) {
+          console.error('[PagesFunction] Failed to fetch maintenance page asset:', mErr);
+        }
+      }
+
       return new Response(JSON.stringify({ 
         error: 'Backend unavailable', 
-        message: error.message,
+        message: 'The server is currently under maintenance. Please try again soon.',
         backendUrl: BACKEND_URL,
         requestedPath: path
       }), {
