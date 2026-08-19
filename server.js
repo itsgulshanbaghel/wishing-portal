@@ -1130,7 +1130,7 @@ app.post('/api/payment/create-order', async (req, res) => {
         });
       } catch (ppErr) {
         console.error('[PayPal Order Create Error]:', ppErr);
-        return res.status(502).json({
+        return res.status(400).json({
           success: false,
           error: 'Failed to initiate international payment. Please try again later or contact support.',
           orderId
@@ -1138,7 +1138,12 @@ app.post('/api/payment/create-order', async (req, res) => {
       }
     }
 
-    // Create order on Cashfree
+    // Dynamic Cashfree API Base & Headers per request
+    const cfEnv = (process.env.CASHFREE_ENV || '').toLowerCase().trim();
+    const cfApiBase = cfEnv === 'sandbox' ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg';
+    const cfAppId = (process.env.CASHFREE_APP_ID || CF_APP_ID || '').trim();
+    const cfSecretKey = (process.env.CASHFREE_SECRET_KEY || CF_SECRET_KEY || '').trim();
+
     const orderPayload = {
       order_id: orderId,
       order_amount: orderAmount.toFixed(2),
@@ -1151,7 +1156,7 @@ app.post('/api/payment/create-order', async (req, res) => {
       },
       order_meta: {
         return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html'}?action=payment-success&orderId={order_id}`,
-        notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal.onrender.com'}/api/payment/webhook`,
+        notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal-phi.vercel.app'}/api/payment/webhook`,
         payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
       }
     };
@@ -1160,23 +1165,28 @@ app.post('/api/payment/create-order', async (req, res) => {
     let cfError = null;
     let cfData = {};
     try {
-      const cfRes = await fetch(`${CF_API_BASE}/orders`, {
+      const cfRes = await fetch(`${cfApiBase}/orders`, {
         method: 'POST',
-        headers: cfHeaders(),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-id': cfAppId,
+          'x-client-secret': cfSecretKey,
+          'x-api-version': '2023-08-01'
+        },
         body: JSON.stringify(orderPayload)
       });
       cfData = await cfRes.json();
       console.error('[Cashfree] Status:', cfRes.status, 'Body:', JSON.stringify(cfData));
 
       if (cfRes.status === 401) {
-        return res.status(502).json({
+        return res.status(400).json({
           success: false,
-          error: 'Payment gateway authentication failed. Please contact support or try again later.',
+          error: 'Cashfree payment gateway authentication failed. Please verify CASHFREE_APP_ID and CASHFREE_SECRET_KEY in Vercel environment variables.',
           orderId
         });
       }
       if (cfRes.status === 400) {
-        return res.status(502).json({
+        return res.status(400).json({
           success: false,
           error: cfData?.message || 'Invalid order details. Please try again.',
           orderId
@@ -1217,7 +1227,7 @@ app.post('/api/payment/create-order', async (req, res) => {
     }
 
     if (!paymentLink) {
-      return res.status(502).json({
+      return res.status(400).json({
         success: false,
         error: cfError || 'Payment gateway unavailable. Please try again later.',
         orderId

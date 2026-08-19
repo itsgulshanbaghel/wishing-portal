@@ -4000,11 +4000,12 @@
               return;
             }
           } else {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             console.error('[Payment] Server error response:', errorData);
+            const msg = errorData.error || errorData.message || 'Payment initiation failed. Please try again.';
+            alert('Payment Error: ' + msg);
+            throw new Error(msg);
           }
-
-          throw new Error('Payment initiation failed');
 
         } catch (error) {
           console.error('[Payment] Payment flow error:', error);
