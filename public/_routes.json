@@ -3,5 +3,15 @@
   "include": [
     "/*"
   ],
-  "exclude": []
+  "exclude": [
+    "/",
+    "/*.html",
+    "/assets/*",
+    "/templates/*",
+    "/generated/*",
+    "/blog/*",
+    "/favicon.ico",
+    "/robots.txt",
+    "/sitemap.xml"
+  ]
 }
