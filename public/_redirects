@@ -1,3 +1,2 @@
 # Cloudflare Pages Redirects Configuration
-/   /maintenance.html   302
-/index.html   /maintenance.html   302
+# Custom URL routing is handled by functions/[[path]].js

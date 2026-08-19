@@ -9,10 +9,6 @@ export async function onRequest(context) {
   // Backend URL - configured via env variable or default to Vercel backend
   const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-phi.vercel.app';
 
-  if (path === '/' || path === '/index.html') {
-    return Response.redirect(`${url.origin}/maintenance.html`, 302);
-  }
-
   // Check if this is an API request
   const isApiRequest = path.startsWith('/api/');
 
