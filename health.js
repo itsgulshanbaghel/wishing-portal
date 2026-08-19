@@ -7,20 +7,12 @@ let si = null;
 try {
   si = require('systeminformation');
 } catch (e) {
-  console.warn('[Health] systeminformation not available');
+  console.warn('[Health] systeminformation not available in this environment');
 }
-
-let cron = null;
-try {
-  cron = require('node-cron');
-} catch (e) {
-  console.warn('[Health] node-cron not available');
-}
-
+const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const { HealthMetric } = require('./models');
 const mongoose = require('mongoose');
-const os = require('os');
 require('dotenv').config();
 
 // Configuration
@@ -88,12 +80,16 @@ function withTimeout(promise, ms = 8000, fallback = null) {
  */
 async function getCurrentMetrics() {
   try {
-    // Each metric is collected independently so one failure doesn't abort everything
+    const cpuPromise = si ? si.cpu() : Promise.resolve({ cores: 0, model: 'Unknown', speed: 0 });
+    const loadPromise = si ? si.currentLoad() : Promise.resolve({ currentLoad: 0 });
+    const memPromise = si ? si.mem() : Promise.resolve({ used: 0, total: 1, free: 0 });
+    const fsPromise = si ? si.fsSize() : Promise.resolve([]);
+
     const [cpuData, cpuLoad, memData, diskData] = await Promise.all([
-      withTimeout(si.cpu(), 8000, { cores: 0, model: 'Unknown', speed: 0 }),
-      withTimeout(si.currentLoad(), 8000, { currentLoad: 0 }),
-      withTimeout(si.mem(), 8000, { used: 0, total: 1, free: 0 }),
-      withTimeout(si.fsSize(), 8000, [])
+      withTimeout(cpuPromise, 8000, { cores: 0, model: 'Unknown', speed: 0 }),
+      withTimeout(loadPromise, 8000, { currentLoad: 0 }),
+      withTimeout(memPromise, 8000, { used: 0, total: 1, free: 0 }),
+      withTimeout(fsPromise, 8000, [])
     ]);
 
     const mainDisk = (diskData || []).find(d => d.mount === '/' || d.mount === 'C:') || (diskData || [])[0];
