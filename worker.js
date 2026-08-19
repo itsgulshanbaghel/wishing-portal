@@ -11,11 +11,7 @@ export default {
     const pathSegments = path.split('/').filter(Boolean);
     const isSlugRequest = pathSegments.length === 1 && 
                           !pathSegments[0].includes('.') &&
-                          !pathSegments[0].startsWith('api') &&
-                          !pathSegments[0].startsWith('generated') &&
-                          !pathSegments[0].startsWith('blog') &&
-                          !pathSegments[0].startsWith('assets') &&
-                          !pathSegments[0].startsWith('templates') &&
+                          !['api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 'create', 'privacy'].some(s => pathSegments[0].toLowerCase().startsWith(s)) &&
                           pathSegments[0] !== 'favicon.ico' &&
                           pathSegments[0] !== 'robots.txt' &&
                           pathSegments[0] !== 'sitemap.xml';
