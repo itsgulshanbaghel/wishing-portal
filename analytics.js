@@ -4,7 +4,12 @@
  * Stores all data in MongoDB Atlas for persistence and scalability.
  */
 
-const geoip = require('geoip-lite');
+let geoip = null;
+try {
+  geoip = require('geoip-lite');
+} catch (e) {
+  console.warn('[Analytics] geoip-lite not available in serverless');
+}
 const { Visitor, Event, Website } = require('./models');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -22,7 +27,7 @@ function getGeoFromIP(ip) {
   if (cleanIP === '127.0.0.1' || cleanIP === 'localhost' || cleanIP === 'unknown') {
     return { country: 'Local', region: 'Development', city: 'Localhost' };
   }
-  const geo = geoip.lookup(cleanIP);
+  const geo = (geoip && typeof geoip.lookup === 'function') ? geoip.lookup(cleanIP) : null;
   if (geo) {
     return {
       country: geo.country || 'Unknown',

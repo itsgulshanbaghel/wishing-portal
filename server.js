@@ -285,8 +285,12 @@ const upload = multer({
 
 
 // Favicon — suppress 404
-
 app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+// Health check routes
+app.get(['/health', '/api/health'], (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString(), serverless: !!process.env.VERCEL });
+});
 
 
 
@@ -654,7 +658,7 @@ function getGeoPrice(req) {
     const forwarded = req.headers['x-forwarded-for'];
     const ip = forwarded ? forwarded.split(',')[0].trim() : (req.socket && req.socket.remoteAddress) || req.ip || '127.0.0.1';
     const cleanIP = ip.replace('::ffff:', '').replace('::1', '127.0.0.1');
-    const geo = geoip.lookup(cleanIP);
+    const geo = (geoip && typeof geoip.lookup === 'function') ? geoip.lookup(cleanIP) : null;
     const code = (geo ? geo.country : 'XX').toUpperCase();
 
     console.log('[getGeoPrice] IP:', cleanIP, 'Country:', code, 'Geo:', geo);
@@ -807,7 +811,7 @@ function getGeoPrice(req) {
   if (ip && !isLocal) {
     try {
       const geoip = require('geoip-lite');
-      const geo = geoip.lookup(ip);
+      const geo = (geoip && typeof geoip.lookup === 'function') ? geoip.lookup(ip) : null;
       if (geo && geo.country) {
         const code = geo.country.toUpperCase();
         if (code === 'IN') return SERVER_PRICING_MAP['IN'];
