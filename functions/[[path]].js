@@ -9,6 +9,10 @@ export async function onRequest(context) {
   // Backend URL - configured via env variable or default to Render backend
   const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-05as.onrender.com';
 
+  if (path === '/' || path === '/index.html') {
+    return Response.redirect(`${url.origin}/maintenance.html`, 302);
+  }
+
   // Check if this is an API request
   const isApiRequest = path.startsWith('/api/');
 
