@@ -17,10 +17,12 @@ try {
   }
 } catch (e) {}
 
-let nodemailer = null;
+var nodemailer = null;
 try {
   nodemailer = require('nodemailer');
-} catch (e) {}
+} catch (e) {
+  nodemailer = null;
+}
 
 const { HealthMetric } = require('./models');
 const mongoose = require('mongoose');
@@ -50,19 +52,24 @@ const THRESHOLDS = {
 let emailTransporter = null;
 
 function initializeEmailTransporter() {
-  if (nodemailer && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    emailTransporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT) || 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
-    console.log('[Health] Email transporter initialized');
-  } else {
-    console.log('[Health] Email configuration incomplete, email alerts disabled');
+  try {
+    const isNodemailerAvailable = typeof nodemailer !== 'undefined' && nodemailer !== null;
+    if (isNodemailerAvailable && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      emailTransporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT) || 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+      console.log('[Health] Email transporter initialized');
+    } else {
+      console.log('[Health] Email configuration incomplete or nodemailer unavailable, email alerts disabled');
+    }
+  } catch (err) {
+    console.warn('[Health] Failed to initialize email transporter:', err.message);
   }
 }
 
@@ -334,15 +341,21 @@ Please check the admin panel for more details.
  * Start scheduled metrics collection
  */
 function startMetricsCollection() {
+  if (process.env.VERCEL) {
+    console.log('[Health] Skipping cron metrics collection in serverless environment');
+    return;
+  }
   console.log('[Health] Starting metrics collection (every 5 minutes)');
   
   // Collect immediately on start
   collectAndStore();
   
   // Schedule every 5 minutes
-  cron.schedule('*/5 * * * *', () => {
-    collectAndStore();
-  });
+  if (cron) {
+    cron.schedule('*/5 * * * *', () => {
+      collectAndStore();
+    });
+  }
 }
 
 /**

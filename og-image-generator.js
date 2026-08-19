@@ -246,7 +246,10 @@ function generateOGMetaTags(data, websiteUrl) {
  */
 async function saveOGImage(buffer, filename) {
   const fs = require('fs').promises;
-  const uploadsDir = path.join(__dirname, 'uploads', 'og-images');
+  const os = require('os');
+  const uploadsDir = process.env.VERCEL
+    ? path.join(os.tmpdir(), 'uploads', 'og-images')
+    : path.join(__dirname, 'uploads', 'og-images');
   
   try {
     // Create directory if it doesn't exist

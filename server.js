@@ -235,19 +235,21 @@ app.use(express.json({ limit: '10mb' })); // Reduced from 100mb to 10mb
 
 
 // Multer config for template uploads
-
-const uploadsDir = path.join(__dirname, 'uploads');
+const os = require('os');
+const uploadsDir = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'uploads')
+  : path.join(__dirname, 'uploads');
 
 console.log('uploadsDir:', uploadsDir);
-
 console.log('exists:', fs.existsSync(uploadsDir));
 
-if (!fs.existsSync(uploadsDir)) {
-
-  fs.mkdirSync(uploadsDir, { recursive: true });
-
-  console.log('created uploads dir');
-
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('created uploads dir');
+  }
+} catch (err) {
+  console.warn('Could not create uploads directory:', err.message);
 }
 
 const upload = multer({
@@ -1762,18 +1764,16 @@ app.post('/api/upload-template', upload.any(), (req, res) => {
 
 
     const templatesDir = path.join(__dirname, 'public', 'templates');
-
     console.log('templatesDir:', templatesDir);
-
-    if (!fs.existsSync(templatesDir)) {
-
-      fs.mkdirSync(templatesDir, { recursive: true });
-
+    let files = [];
+    try {
+      if (!fs.existsSync(templatesDir)) {
+        fs.mkdirSync(templatesDir, { recursive: true });
+      }
+      files = fs.readdirSync(templatesDir).filter(f => f.startsWith(category) && f.endsWith('.html'));
+    } catch (err) {
+      console.warn('Could not access templates dir:', err.message);
     }
-
-
-
-    const files = fs.readdirSync(templatesDir).filter(f => f.startsWith(category) && f.endsWith('.html'));
 
     console.log('files:', files);
 
