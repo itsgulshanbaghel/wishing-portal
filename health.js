@@ -3,11 +3,24 @@
  * Collects and monitors system metrics: CPU, memory, disk, and MongoDB status
  */
 
-const si = require('systeminformation');
-const cron = require('node-cron');
+let si = null;
+try {
+  si = require('systeminformation');
+} catch (e) {
+  console.warn('[Health] systeminformation not available');
+}
+
+let cron = null;
+try {
+  cron = require('node-cron');
+} catch (e) {
+  console.warn('[Health] node-cron not available');
+}
+
 const nodemailer = require('nodemailer');
 const { HealthMetric } = require('./models');
 const mongoose = require('mongoose');
+const os = require('os');
 require('dotenv').config();
 
 // Configuration

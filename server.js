@@ -2764,7 +2764,11 @@ app.get('/api/cron/cleanup', async (req, res) => {
 
 // 404 handler for unmatched routes
 app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+  const custom404 = path.join(__dirname, 'public', '404.html');
+  if (fs.existsSync(custom404)) {
+    return res.status(404).sendFile(custom404);
+  }
+  res.status(404).json({ error: 'Endpoint not found', path: req.url });
 });
 
 if (require.main === module) {
