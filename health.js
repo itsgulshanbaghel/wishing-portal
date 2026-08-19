@@ -17,6 +17,11 @@ try {
   }
 } catch (e) {}
 
+let nodemailer = null;
+try {
+  nodemailer = require('nodemailer');
+} catch (e) {}
+
 const { HealthMetric } = require('./models');
 const mongoose = require('mongoose');
 require('dotenv').config();
@@ -45,7 +50,7 @@ const THRESHOLDS = {
 let emailTransporter = null;
 
 function initializeEmailTransporter() {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  if (nodemailer && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     emailTransporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT) || 587,
