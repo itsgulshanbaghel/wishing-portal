@@ -3524,12 +3524,21 @@
           label: 'Pro (100+ Days)'
         };
 
-        // Update UI elements
-        document.getElementById('priceBig').textContent = `${symbol}${activePlan.price}`;
-        document.getElementById('pricePeriod').textContent = `for 100+ Days`;
-        document.getElementById('validityChip').innerHTML = `<i class="fas fa-shield-alt"></i> Active 100+ Days · Ad-Free`;
-        document.getElementById('unifiedBtnPrice').textContent = `${symbol}${activePlan.price}`;
-        document.getElementById('finalPayBtnText').textContent = `Pay ${symbol}${activePlan.price} Securely`;
+        // Update UI elements safely
+        const priceBigEl = document.getElementById('priceBig');
+        if (priceBigEl) priceBigEl.textContent = `${symbol}${activePlan.price}`;
+
+        const pricePeriodEl = document.getElementById('pricePeriod');
+        if (pricePeriodEl) pricePeriodEl.textContent = `for 100+ Days`;
+
+        const validityChipEl = document.getElementById('validityChip');
+        if (validityChipEl) validityChipEl.innerHTML = `<i class="fas fa-shield-alt"></i> Active 100+ Days · Ad-Free`;
+
+        const unifiedBtnPriceEl = document.getElementById('unifiedBtnPrice');
+        if (unifiedBtnPriceEl) unifiedBtnPriceEl.textContent = `${symbol}${activePlan.price}`;
+
+        const finalPayBtnTextEl = document.getElementById('finalPayBtnText');
+        if (finalPayBtnTextEl) finalPayBtnTextEl.textContent = `Pay ${symbol}${activePlan.price} Securely`;
 
         updatePlanFeaturesUI('pro');
         updateUnifiedBtn();

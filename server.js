@@ -84,6 +84,7 @@ async function ensureMongoConnected() {
 
 
 const app = express();
+app.set('trust proxy', 1);
 
 const PORT = process.env.PORT || 3000;
 
@@ -406,38 +407,24 @@ app.post('/api/generate', async (req, res) => {
 
 
     const groqApiKeys = [
-
       process.env.GROQ_API_KEY_1,
-
       process.env.GROQ_API_KEY_2
-
-    ].filter(key => key); // Filter out undefined keys
-
-
+    ].filter(Boolean);
 
     if (groqApiKeys.length === 0) {
-
       console.error("No Groq API keys configured in environment variables.");
-
       return res.status(500).json({ error: "Server configuration error" });
-
     }
 
-
-
     let lastError;
-
     for (let i = 0; i < groqApiKeys.length; i++) {
-
       const apiKey = groqApiKeys[i];
-
       try {
-
         const groqModels = [
-          "openai/gpt-oss-120b",
-          "openai/gpt-oss-20b",
-          "qwen/qwen3.6-27b",
-          "groq/compound-mini"
+          "llama-3.3-70b-versatile",
+          "llama-3.1-8b-instant",
+          "mixtral-8x7b-32768",
+          "gemma2-9b-it"
         ];
         let modelSuccess = false;
 
