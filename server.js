@@ -2733,12 +2733,41 @@ app.get('/:slug', async (req, res, next) => {
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
+// 🕒 Vercel Scheduled Cron: Auto-cleanup expired free storage & database records
+app.get('/api/cron/cleanup', async (req, res) => {
+  try {
+    console.log('[Cron] Starting 36h free media & expired website cleanup...');
+    // 1. Purge expired files from Supabase Project 1 (greeter-free)
+    await storage.purgeExpiredFreeFiles();
+
+    // 2. Clean up expired free website entries in MongoDB (older than 36h)
+    const mongoReady = await ensureMongoConnected();
+    let deletedCount = 0;
+    if (mongoReady) {
+      const cutoff = new Date(Date.now() - 36 * 60 * 60 * 1000);
+      const result = await Website.deleteMany({ isPremium: false, createdAt: { $lt: cutoff } });
+      deletedCount = result.deletedCount || 0;
+      console.log(`[Cron] Deleted ${deletedCount} expired free website records from MongoDB`);
+    }
+
+    res.json({
+      success: true,
+      message: 'Cleanup completed successfully',
+      deletedWebsites: deletedCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('[Cron Error] Cleanup failed:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 404 handler for unmatched routes
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-if (!process.env.VERCEL) {
+if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
