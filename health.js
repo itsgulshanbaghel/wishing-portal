@@ -7,10 +7,16 @@ let si = null;
 try {
   si = require('systeminformation');
 } catch (e) {
-  console.warn('[Health] systeminformation not available in this environment');
+  console.warn('[Health] systeminformation not available in serverless');
 }
-const cron = require('node-cron');
-const nodemailer = require('nodemailer');
+
+let cron = null;
+try {
+  if (!process.env.VERCEL) {
+    cron = require('node-cron');
+  }
+} catch (e) {}
+
 const { HealthMetric } = require('./models');
 const mongoose = require('mongoose');
 require('dotenv').config();
@@ -80,17 +86,20 @@ function withTimeout(promise, ms = 8000, fallback = null) {
  */
 async function getCurrentMetrics() {
   try {
-    const cpuPromise = si ? si.cpu() : Promise.resolve({ cores: 0, model: 'Unknown', speed: 0 });
-    const loadPromise = si ? si.currentLoad() : Promise.resolve({ currentLoad: 0 });
-    const memPromise = si ? si.mem() : Promise.resolve({ used: 0, total: 1, free: 0 });
-    const fsPromise = si ? si.fsSize() : Promise.resolve([]);
+    // Each metric is collected independently so one failure doesn't abort everything
+    let cpuData = { cores: 0, model: 'Serverless', speed: 0 };
+    let cpuLoad = { currentLoad: 0 };
+    let memData = { used: 0, total: 1, free: 0 };
+    let diskData = [];
 
-    const [cpuData, cpuLoad, memData, diskData] = await Promise.all([
-      withTimeout(cpuPromise, 8000, { cores: 0, model: 'Unknown', speed: 0 }),
-      withTimeout(loadPromise, 8000, { currentLoad: 0 }),
-      withTimeout(memPromise, 8000, { used: 0, total: 1, free: 0 }),
-      withTimeout(fsPromise, 8000, [])
-    ]);
+    if (si) {
+      [cpuData, cpuLoad, memData, diskData] = await Promise.all([
+        withTimeout(si.cpu(), 8000, { cores: 0, model: 'Unknown', speed: 0 }),
+        withTimeout(si.currentLoad(), 8000, { currentLoad: 0 }),
+        withTimeout(si.mem(), 8000, { used: 0, total: 1, free: 0 }),
+        withTimeout(si.fsSize(), 8000, [])
+      ]);
+    }
 
     const mainDisk = (diskData || []).find(d => d.mount === '/' || d.mount === 'C:') || (diskData || [])[0];
 
@@ -369,6 +378,9 @@ async function cleanupOldMetrics() {
  */
 async function getSystemInfo() {
   try {
+    if (!si) {
+      return { platform: 'serverless', hostname: 'vercel' };
+    }
     const osInfo = await si.osInfo();
     const cpuInfo = await si.cpu();
     const memInfo = await si.mem();
