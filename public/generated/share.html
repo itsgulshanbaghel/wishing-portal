@@ -3085,7 +3085,7 @@
           // Use the same production backend as the rest of the app (Firebase frontend + Render backend)
           const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
             ? window.APP_CONFIG.API_BASE_URL
-            : 'https://wishing-portal-05as.onrender.com';
+            : 'https://wishing-portal-phi.vercel.app';
 
           const response = await fetch(API_BASE + '/api/feedback', {
             method: 'POST',
@@ -3120,7 +3120,7 @@
 
       const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
         ? window.APP_CONFIG.API_BASE_URL
-        : 'https://wishing-portal.onrender.com';
+        : 'https://wishing-portal-phi.vercel.app';
 
       const RESERVED_SLUGS_CLIENT = [
         'api','assets','generated','blog','admin','create','index','share','privacy',
@@ -3156,7 +3156,7 @@
         const payload = JSON.stringify(payloadObj);
         const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
           ? window.APP_CONFIG.API_BASE_URL
-          : 'https://wishing-portal-05as.onrender.com';
+          : 'https://wishing-portal-phi.vercel.app';
 
         let navigated = false;
         const navigateToCustomUrl = () => {

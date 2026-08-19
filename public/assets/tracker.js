@@ -16,8 +16,8 @@
     if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
       return window.APP_CONFIG.API_BASE_URL;
     }
-    // Always point to the Render backend for analytics
-    return 'https://wishing-portal-05as.onrender.com';
+    // Always point to the Vercel backend for analytics
+    return 'https://wishing-portal-phi.vercel.app';
   })();
 
   // ── Utilities ──

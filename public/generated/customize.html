@@ -3140,7 +3140,7 @@
             ? window.APP_CONFIG.API_BASE_URL
             : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')
               ? ''
-              : 'https://wishing-portal-05as.onrender.com');
+              : 'https://wishing-portal-phi.vercel.app');
           xhr.open('POST', `${apiBase}/api/upload-audio`);
 
           xhr.upload.onprogress = (e) => {

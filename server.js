@@ -93,6 +93,7 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
   origin: [
     'https://thegreeter.in',
+    'https://wishing-portal-phi.vercel.app',
     'https://wishing-portal.onrender.com',
     'https://wishing-portal-05as.onrender.com',
     'https://thegreeterindia.web.app',
@@ -105,10 +106,10 @@ const corsOptions = {
   credentials: true
 };
 
-// Allow same-origin requests for Render hosting
+// Allow same-origin requests for Vercel/Render hosting
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (!origin || origin.includes('onrender.com')) {
+  if (!origin || origin.includes('vercel.app') || origin.includes('onrender.com')) {
     res.header('Access-Control-Allow-Origin', origin || '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
@@ -128,7 +129,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       mediaSrc: ["'self'", "https:", "data:", "blob:"],
-      connectSrc: ["'self'", "https://wishing-portal-05as.onrender.com", "https://wishing-portal.onrender.com", "https://api.cashfree.com", "https://api-m.paypal.com", "https://api-m.sandbox.paypal.com", "https://api.cloudinary.com"],
+      connectSrc: ["'self'", "https://wishing-portal-phi.vercel.app", "https://wishing-portal-05as.onrender.com", "https://wishing-portal.onrender.com", "https://api.cashfree.com", "https://api-m.paypal.com", "https://api-m.sandbox.paypal.com", "https://api.cloudinary.com"],
       frameSrc: ["'self'", "https://checkout.razorpay.com", "https://www.paypal.com", "https://sandbox.cashfree.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: []
