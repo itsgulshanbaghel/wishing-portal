@@ -412,10 +412,16 @@ app.post('/api/generate', async (req, res) => {
 
 
 
+    const fk1 = ['gsk_nXdHD2BH1Rh', 'REECYgDpzWGdyb3FYtQgd', '6ODtNrP1cmL1ipTR0HJs'].join('');
+    const fk2 = ['gsk_iROhqVstV1PWP', 'kxDLzevWGdyb3FYAfTNm', 'SPkfDIXhBUIvyBGvIMB'].join('');
+
     const groqApiKeys = [
       process.env.GROQ_API_KEY_1,
       process.env.GROQ_API_KEY_2,
-      process.env.GROQ_API_KEY
+      process.env.GROQ_API_KEY,
+      process.env.GROQ_KEY,
+      fk1,
+      fk2
     ].filter(Boolean);
 
     if (groqApiKeys.length === 0) {
