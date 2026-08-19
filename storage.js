@@ -134,8 +134,10 @@ async function purgeExpiredFreeFiles() {
   }
 }
 
-// Automatically run free storage purge every 6 hours
-setInterval(purgeExpiredFreeFiles, 6 * 60 * 60 * 1000);
+// Automatically run free storage purge every 6 hours (only in long-running container mode)
+if (!process.env.VERCEL && typeof setInterval !== 'undefined') {
+  setInterval(purgeExpiredFreeFiles, 6 * 60 * 60 * 1000);
+}
 
 module.exports = {
   uploadMedia,

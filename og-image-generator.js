@@ -1,5 +1,18 @@
-const sharp = require('sharp');
-const { createCanvas } = require('canvas');
+let sharp = null;
+try {
+  sharp = require('sharp');
+} catch (e) {
+  console.warn('[OG Generator] sharp not loaded in serverless environment');
+}
+
+let createCanvas = null;
+try {
+  const canvasPkg = require('canvas');
+  createCanvas = canvasPkg.createCanvas;
+} catch (e) {
+  console.warn('[OG Generator] canvas not loaded in serverless environment');
+}
+
 const path = require('path');
 
 /**
@@ -8,6 +21,9 @@ const path = require('path');
  */
 async function generateOGImage(data) {
   try {
+    if (!createCanvas) {
+      return 'https://thegreeter.in/assets/og-cover.webp';
+    }
     const {
       recipientName = 'Someone Special',
       eventType = 'Birthday',
