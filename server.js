@@ -414,7 +414,8 @@ app.post('/api/generate', async (req, res) => {
 
     const groqApiKeys = [
       process.env.GROQ_API_KEY_1,
-      process.env.GROQ_API_KEY_2
+      process.env.GROQ_API_KEY_2,
+      process.env.GROQ_API_KEY
     ].filter(Boolean);
 
     if (groqApiKeys.length === 0) {
@@ -427,10 +428,9 @@ app.post('/api/generate', async (req, res) => {
       const apiKey = groqApiKeys[i];
       try {
         const groqModels = [
-          "llama-3.3-70b-versatile",
-          "llama-3.1-8b-instant",
-          "mixtral-8x7b-32768",
-          "gemma2-9b-it"
+          "openai/gpt-oss-20b",
+          "openai/gpt-oss-120b",
+          "qwen/qwen3.6-27b"
         ];
         let modelSuccess = false;
 
@@ -459,7 +459,10 @@ app.post('/api/generate', async (req, res) => {
             const data = await response.json();
             console.log(`Groq API Success (${targetModel}):`, data);
 
-            if (data.choices?.[0]?.message?.content) {
+            let content = data.choices?.[0]?.message?.content;
+            if (content) {
+              content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+              data.choices[0].message.content = content;
               return res.json(data);
             }
           } catch (mErr) {
