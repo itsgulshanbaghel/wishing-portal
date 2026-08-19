@@ -6,8 +6,8 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  // Backend URL - configured via env variable or default to Render backend
-  const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-05as.onrender.com';
+  // Backend URL - configured via env variable or default to Vercel backend
+  const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-phi.vercel.app';
 
   if (path === '/' || path === '/index.html') {
     return Response.redirect(`${url.origin}/maintenance.html`, 302);
