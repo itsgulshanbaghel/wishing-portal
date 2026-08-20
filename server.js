@@ -311,19 +311,44 @@ app.post('/api/config', async (req, res) => {
       isPremium: !!isPremium
     };
 
-    const data = JSON.stringify({ html, config, metadata });
-    const dataUri = `data:application/json;base64,${Buffer.from(data).toString('base64')}`;
-    const result = await cloudinary.uploader.upload(dataUri, {
-      resource_type: 'raw',
-      public_id: id,
-      folder: 'configs',
-      context: {
-        event_type: metadata.eventType,
-        recipient: metadata.recipientName,
-        template: metadata.templateName,
-        created: new Date().toISOString()
+    const dataObj = { html, config, metadata };
+    const dataJson = JSON.stringify(dataObj);
+
+    // Save to MongoDB Website collection for instant, high-reliability retrieval
+    try {
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        await Website.findOneAndUpdate(
+          { id },
+          {
+            id,
+            recipientName: metadata.recipientName,
+            eventType: metadata.eventType,
+            templateName: metadata.templateName,
+            metadata: dataObj
+          },
+          { upsert: true, new: true }
+        );
       }
-    });
+    } catch (dbErr) {
+      console.warn('[Server] DB config save warning:', dbErr.message);
+    }
+
+    // Upload to Storage (Supabase / Cloudinary fallback)
+    try {
+      const dataBuffer = Buffer.from(dataJson, 'utf8');
+      await storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', isPremium);
+    } catch (uploadErr) {
+      console.warn('[Server] Storage upload warning:', uploadErr.message);
+      try {
+        const dataUri = `data:application/json;base64,${dataBuffer.toString('base64')}`;
+        await cloudinary.uploader.upload(dataUri, {
+          resource_type: 'raw',
+          public_id: id,
+          folder: 'configs'
+        });
+      } catch (cErr) {}
+    }
 
     // Register website in analytics
     console.log('[Server] Registering website:', metadata.id, metadata.recipientName);
@@ -343,43 +368,44 @@ app.post('/api/config', async (req, res) => {
   }
 });
 
-
-
 // Retrieve shared config + HTML
-
 app.get('/api/config/:id', async (req, res) => {
-
   try {
-
     const safeName = req.params.id.replace(/[^a-z0-9]/gi, '');
+    if (!safeName) return res.status(400).json({ error: 'Invalid ID' });
 
-    const url = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/configs/${safeName}`;
-
-    const response = await fetch(url);
-    if (!response.ok) return res.status(404).json({ error: 'Not found' });
-
-    const data = await response.text();
-
+    // 1. Try fetching from MongoDB Website collection
     try {
-
-      const json = JSON.parse(data);
-
-      res.json(json);
-
-    } catch (err) {
-
-      res.status(500).json({ error: 'Failed to parse' });
-
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        const doc = await Website.findOne({ id: safeName }).lean();
+        if (doc && doc.metadata && doc.metadata.html) {
+          return res.json(doc.metadata);
+        }
+      }
+    } catch (dbErr) {
+      console.warn('[Server] DB config fetch warning:', dbErr.message);
     }
 
+    // 2. Try Cloudinary fallback
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    if (cloudName) {
+      const url = `https://res.cloudinary.com/${cloudName}/raw/upload/configs/${safeName}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.text();
+        try {
+          const json = JSON.parse(data);
+          return res.json(json);
+        } catch (err) {}
+      }
+    }
+
+    return res.status(404).json({ error: 'Config not found' });
   } catch (err) {
-
     console.error('Error reading config:', err);
-
-    res.status(500).json({ error: 'Failed to read' });
-
+    res.status(500).json({ error: 'Failed to read config' });
   }
-
 });
 
 
