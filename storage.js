@@ -134,6 +134,40 @@ async function purgeExpiredFreeFiles() {
   }
 }
 
+/**
+ * Get Supabase Storage statistics (Project 1 Free vs Project 2 Premium) for Admin Panel
+ */
+async function getSupabaseStats() {
+  const freeConfigured = !!supabaseFree;
+  const premiumConfigured = !!supabasePremium;
+
+  let freeFileCount = 0;
+  let premiumFileCount = 0;
+
+  if (supabaseFree) {
+    try {
+      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free');
+      if (data) freeFileCount = data.length;
+    } catch (e) {}
+  }
+
+  if (supabasePremium) {
+    try {
+      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium');
+      if (data) premiumFileCount = data.length;
+    } catch (e) {}
+  }
+
+  return {
+    configured: freeConfigured || premiumConfigured,
+    freeProject: freeConfigured ? 'Project 1 (greeter-free)' : 'Not Configured',
+    premiumProject: premiumConfigured ? 'Project 2 (greeter-premium)' : 'Not Configured',
+    freeFilesCount: freeFileCount,
+    premiumFilesCount: premiumFileCount,
+    totalFilesCount: freeFileCount + premiumFileCount
+  };
+}
+
 // Automatically run free storage purge every 6 hours (only in long-running container mode)
 if (!process.env.VERCEL && typeof setInterval !== 'undefined') {
   setInterval(purgeExpiredFreeFiles, 6 * 60 * 60 * 1000);
@@ -142,5 +176,6 @@ if (!process.env.VERCEL && typeof setInterval !== 'undefined') {
 module.exports = {
   uploadMedia,
   purgeExpiredFreeFiles,
+  getSupabaseStats,
   cloudinary
 };

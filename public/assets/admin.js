@@ -433,6 +433,17 @@
     setText('kpiTodayUnique', formatNum(o.todayUniqueVisitors || 0));
     setText('kpiWebsiteViews', formatNum(o.totalWebsiteViews || 0));
 
+    // Render CockroachDB Serverless & Supabase Storage System Metrics
+    const cr = dashData.cockroachStats || {};
+    setText('kpiCockroachCount', formatNum(cr.totalRecordsCount || 0));
+    setText('kpiCockroachFree', formatNum(cr.freeRecordsCount || 0));
+    setText('kpiCockroachPrem', formatNum(cr.premiumRecordsCount || 0));
+
+    const sb = dashData.supabaseStats || {};
+    setText('kpiSupabaseCount', formatNum(sb.totalFilesCount || 0));
+    setText('kpiSupaFree', formatNum(sb.freeFilesCount || 0));
+    setText('kpiSupaPrem', formatNum(sb.premiumFilesCount || 0));
+
     // Update labels to reflect period
     const labels = {
       'kpiTotalViews': 'Page Views (' + periodLabel + ')',

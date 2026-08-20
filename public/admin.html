@@ -100,6 +100,24 @@
             <div class="kpi-card accent-red"><div class="kpi-icon"><i class="fas fa-user-check"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayUnique">--</span><span class="kpi-label">Unique Visitors (Today)</span></div></div>
             <div class="kpi-card accent-gold"><div class="kpi-icon"><i class="fas fa-binoculars"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiWebsiteViews">--</span><span class="kpi-label">Website Views</span></div></div>
           </div>
+
+          <!-- Multi-Database & Storage Infrastructure Status -->
+          <div class="kpi-grid" style="margin-top: 15px;">
+            <div class="kpi-card accent-purple">
+              <div class="kpi-icon"><i class="fas fa-database"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-value" id="kpiCockroachCount">--</span>
+                <span class="kpi-label">CockroachDB Serverless (Free: <span id="kpiCockroachFree">0</span> | Prem: <span id="kpiCockroachPrem">0</span>)</span>
+              </div>
+            </div>
+            <div class="kpi-card accent-cyan">
+              <div class="kpi-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-value" id="kpiSupabaseCount">--</span>
+                <span class="kpi-label">Supabase Storage (Proj 1: <span id="kpiSupaFree">0</span> | Proj 2: <span id="kpiSupaPrem">0</span>)</span>
+              </div>
+            </div>
+          </div>
           <div class="chart-row">
             <div class="chart-card wide"><h3><i class="fas fa-chart-area"></i> Traffic Trend (30 Days)</h3><canvas id="trendChart"></canvas></div>
           </div>

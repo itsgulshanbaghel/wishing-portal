@@ -18,6 +18,7 @@ const mongoose = require('mongoose');
 const { Website, Feedback, CustomSlug, Payment, Event } = require('./models');
 const analytics = require('./analytics');
 const health = require('./health');
+const cockroach = require('./cockroach');
 const { generateOGImage, generateOGMetaTags, saveOGImage } = require('./og-image-generator');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -346,6 +347,13 @@ app.post('/api/config', async (req, res) => {
       console.warn('[Server] DB config save warning:', dbErr.message);
     }
 
+    // Save to CockroachDB Serverless (dual-table routing: free_records vs premium_records)
+    try {
+      await cockroach.saveRecord(id, metadata, isPremium);
+    } catch (crErr) {
+      console.warn('[Server] CockroachDB save warning:', crErr.message);
+    }
+
     // Upload to Storage (Supabase / Cloudinary fallback)
     try {
       const dataBuffer = Buffer.from(dataJson, 'utf8');
@@ -397,6 +405,16 @@ app.get('/api/config/:id', async (req, res) => {
       }
     } catch (dbErr) {
       console.warn('[Server] DB config fetch warning:', dbErr.message);
+    }
+
+    // 2. Try fetching from CockroachDB Serverless
+    try {
+      const crRecord = await cockroach.getRecord(safeName);
+      if (crRecord && crRecord.metadata && crRecord.metadata.html) {
+        return res.json(crRecord.metadata);
+      }
+    } catch (crErr) {
+      console.warn('[Server] CockroachDB config fetch warning:', crErr.message);
     }
 
     // 2. Try Cloudinary fallback
@@ -2153,6 +2171,15 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
     }
 
     const data = await analytics.getDashboardData(days);
+
+    // Fetch live CockroachDB & Supabase storage metrics for Admin Panel
+    try {
+      data.cockroachStats = await cockroach.getCockroachStats();
+      data.supabaseStats = await storage.getSupabaseStats();
+    } catch (sErr) {
+      console.warn('[Admin] Multi-DB stats error:', sErr.message);
+    }
+
     res.json(data);
   } catch (err) {
     console.error('Dashboard error:', err);
@@ -2816,7 +2843,10 @@ app.get('/api/cron/cleanup', async (req, res) => {
     // 1. Purge expired files from Supabase Project 1 (greeter-free)
     await storage.purgeExpiredFreeFiles();
 
-    // 2. Clean up expired free website entries in MongoDB (older than 36h)
+    // 2. Purge expired free records from CockroachDB free_records table
+    const cockroachDeleted = await cockroach.purgeExpiredFreeRecords();
+
+    // 3. Clean up expired free website entries in MongoDB (older than 36h)
     const mongoReady = await ensureMongoConnected();
     let deletedCount = 0;
     if (mongoReady) {
@@ -2830,6 +2860,7 @@ app.get('/api/cron/cleanup', async (req, res) => {
       success: true,
       message: 'Cleanup completed successfully',
       deletedWebsites: deletedCount,
+      cockroachDeletedRecords: cockroachDeleted,
       timestamp: new Date().toISOString()
     });
   } catch (err) {
