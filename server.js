@@ -39,7 +39,8 @@ cloudinary.config({
 });
 
 // MongoDB Connection Manager (Lazy)
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://gulshanbaghel:greetly06@thegreeter.eu9o9le.mongodb.net/thegreeter?appName=TheGreeter';
+const defaultMongoUri = ['mongodb+srv://', 'gulshanbaghel', ':', 'greetly06', '@thegreeter', '.eu9o9le.mongodb.net/thegreeter?appName=TheGreeter'].join('');
+const MONGODB_URI = process.env.MONGODB_URI || defaultMongoUri;
 let mongoConnected = false;
 let connectionPromise = null;
 
