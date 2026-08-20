@@ -2720,6 +2720,18 @@
             let resText = String(data.choices[0].message.content);
             resText = resText.replace(/<think>[\s\S]*?<\/think>/gi, '');
             resText = resText.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+            resText = resText.replace(/\[think\][\s\S]*?\[\/think\]/gi, '');
+
+            if (resText.includes('**Analyze') || resText.includes('**Identify') || resText.includes('**Draft') || resText.includes('**Check') || resText.includes('**Constraint')) {
+              const draftMatch = resText.match(/\*\*(?:Draft|Final|Result|Wish|Message)[^*]*\*\*[:\s]*([\s\S]*?)(?=\n\d+\.|\n\*\*Check|\n[A-Z\u0900-\u097F]|\$|$)/i);
+              if (draftMatch && draftMatch[1] && draftMatch[1].trim().length > 10) {
+                resText = draftMatch[1];
+              } else {
+                resText = resText.replace(/\d+\.\s+\*\*(?:Analyze|Identify|Constraint|Check|Role|Mood|Tone)[^*]*\*\*[\s\S]*?(?=\n\n|\n\d+\.|$)/gi, '');
+                resText = resText.replace(/\*\*(?:Analyze|Identify|Constraint|Check|Role|Mood|Tone)[^*]*\*\*[\s\S]*?(?=\n\n|\n\d+\.|$)/gi, '');
+              }
+            }
+
             if (resText.includes('<think>') || resText.includes('<thinking>') || resText.toLowerCase().includes("thinking process")) {
               const bMatch = resText.match(/(?:[•\*|-]|\d+\.)\s+.+/);
               if (bMatch && bMatch.index > 0) {
@@ -2728,6 +2740,8 @@
                 resText = resText.replace(/<think>[\s\S]*/gi, '').replace(/<thinking>[\s\S]*/gi, '');
               }
             }
+            resText = resText.replace(/^\d+\.\s+\*\*[^*]+\*\*[:\s]*/gm, '');
+            resText = resText.replace(/\n\d+\.\s+\*\*(?:Check|Verify|Constraint)[^*]*\*\*[\s\S]*/gi, '');
             resText = resText.replace(/^Here's a thinking process:[\s\S]*?(?=(?:[•\*|-]|\d+\.)|\n\n|\n[A-Z\u0900-\u097F])/gi, '');
             resText = resText.replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|Here is|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]\s*/i, '');
             return resText.trim();

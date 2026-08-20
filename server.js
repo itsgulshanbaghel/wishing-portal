@@ -456,7 +456,18 @@ function cleanAIResponse(rawText) {
   text = text.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
   text = text.replace(/\[think\][\s\S]*?\[\/think\]/gi, '');
 
-  // 2. Remove unclosed <think> or <thinking> blocks (e.g. truncated or open reasoning tags)
+  // 2. Extract pure wish/message draft if model outputs markdown reasoning steps (e.g., 1. **Analyze...** 3. **Draft...** 4. **Check...**)
+  if (text.includes('**Analyze') || text.includes('**Identify') || text.includes('**Draft') || text.includes('**Check') || text.includes('**Constraint')) {
+    const draftMatch = text.match(/\*\*(?:Draft|Final|Result|Wish|Message)[^*]*\*\*[:\s]*([\s\S]*?)(?=\n\d+\.|\n\*\*Check|\n[A-Z\u0900-\u097F]|\$|$)/i);
+    if (draftMatch && draftMatch[1] && draftMatch[1].trim().length > 10) {
+      text = draftMatch[1];
+    } else {
+      text = text.replace(/\d+\.\s+\*\*(?:Analyze|Identify|Constraint|Check|Role|Mood|Tone)[^*]*\*\*[\s\S]*?(?=\n\n|\n\d+\.|$)/gi, '');
+      text = text.replace(/\*\*(?:Analyze|Identify|Constraint|Check|Role|Mood|Tone)[^*]*\*\*[\s\S]*?(?=\n\n|\n\d+\.|$)/gi, '');
+    }
+  }
+
+  // 3. Remove unclosed <think> or <thinking> blocks
   if (text.includes('<think>') || text.includes('<thinking>') || text.toLowerCase().includes("thinking process")) {
     const bulletMatch = text.match(/(?:[•\*|-]|\d+\.)\s+.+/);
     if (bulletMatch && bulletMatch.index > 0) {
@@ -467,7 +478,9 @@ function cleanAIResponse(rawText) {
     }
   }
 
-  // 3. Remove conversational prefixes and reasoning header remnants
+  // 4. Remove leftover markdown headers & conversational prefixes
+  text = text.replace(/^\d+\.\s+\*\*[^*]+\*\*[:\s]*/gm, '');
+  text = text.replace(/\n\d+\.\s+\*\*(?:Check|Verify|Constraint)[^*]*\*\*[\s\S]*/gi, '');
   text = text.replace(/^Here's a thinking process:[\s\S]*?(?=(?:[•\*|-]|\d+\.)|\n\n|\n[A-Z\u0900-\u097F])/gi, '');
   text = text.replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|Here is|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]\s*/i, '');
 

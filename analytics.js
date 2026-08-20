@@ -360,15 +360,21 @@ class AnalyticsStore {
       const ip = getClientIP(req);
       const geo = getGeoFromIP(ip);
 
-      const website = await Website.create({
-        id: websiteData.id,
-        recipientName: websiteData.recipientName,
-        eventType: websiteData.eventType,
-        templateName: websiteData.templateName,
-        creatorGeo: geo,
-        metadata: websiteData.metadata || {},
-        isPremium: !!websiteData.isPremium
-      });
+      const website = await Website.findOneAndUpdate(
+        { id: websiteData.id },
+        {
+          $set: {
+            id: websiteData.id,
+            recipientName: websiteData.recipientName,
+            eventType: websiteData.eventType,
+            templateName: websiteData.templateName,
+            creatorGeo: geo,
+            metadata: websiteData.metadata || {},
+            isPremium: !!websiteData.isPremium
+          }
+        },
+        { upsert: true, returnDocument: 'after' }
+      );
 
       // Track the creation as an event
       await this.trackEvent(req, {
