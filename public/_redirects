@@ -1,3 +1,2 @@
-# Cloudflare Pages Redirects Configuration
-/   /index.html   200
-/index.html   /index.html   200
+# Cloudflare Redirects Configuration
+# Custom URL routing is handled by worker.js
