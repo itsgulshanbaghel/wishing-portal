@@ -360,19 +360,21 @@ class AnalyticsStore {
       const ip = getClientIP(req);
       const geo = getGeoFromIP(ip);
 
+      const updateFields = {
+        id: websiteData.id,
+        recipientName: websiteData.recipientName,
+        eventType: websiteData.eventType,
+        templateName: websiteData.templateName,
+        creatorGeo: geo,
+        isPremium: !!websiteData.isPremium
+      };
+      if (websiteData.metadata && Object.keys(websiteData.metadata).length > 0) {
+        updateFields.metadata = websiteData.metadata;
+      }
+
       const website = await Website.findOneAndUpdate(
         { id: websiteData.id },
-        {
-          $set: {
-            id: websiteData.id,
-            recipientName: websiteData.recipientName,
-            eventType: websiteData.eventType,
-            templateName: websiteData.templateName,
-            creatorGeo: geo,
-            metadata: websiteData.metadata || {},
-            isPremium: !!websiteData.isPremium
-          }
-        },
+        { $set: updateFields },
         { upsert: true, returnDocument: 'after' }
       );
 
