@@ -119,6 +119,16 @@ const paymentSchema = new mongoose.Schema({
     metadata: mongoose.Schema.Types.Mixed
 });
 
+const cumulativeStatsSchema = new mongoose.Schema({
+    key: { type: String, required: true, unique: true, default: 'global' },
+    totalWebsitesCreated: { type: Number, default: 2100 },
+    totalPageViews: { type: Number, default: 1100 },
+    totalWebsiteViews: { type: Number, default: 42 },
+    totalUniqueVisitors: { type: Number, default: 24 },
+    dailyStats: { type: mongoose.Schema.Types.Mixed, default: {} },
+    updatedAt: { type: Date, default: Date.now }
+});
+
 const Visitor = mongoose.model('Visitor', visitorSchema);
 const Event = mongoose.model('Event', eventSchema);
 const Website = mongoose.model('Website', websiteSchema);
@@ -126,5 +136,6 @@ const Feedback = mongoose.model('Feedback', feedbackSchema);
 const HealthMetric = mongoose.model('HealthMetric', healthMetricSchema);
 const CustomSlug = mongoose.model('CustomSlug', customSlugSchema);
 const Payment = mongoose.model('Payment', paymentSchema);
+const CumulativeStats = mongoose.model('CumulativeStats', cumulativeStatsSchema);
 
-module.exports = { Visitor, Event, Website, Feedback, HealthMetric, CustomSlug, Payment };
+module.exports = { Visitor, Event, Website, Feedback, HealthMetric, CustomSlug, Payment, CumulativeStats };

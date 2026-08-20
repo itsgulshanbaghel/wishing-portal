@@ -101,18 +101,27 @@ async function ensureTablesExist() {
       );
     `;
 
+    const createCountersTable = `
+      CREATE TABLE IF NOT EXISTS system_counters (
+        counter_key VARCHAR(64) PRIMARY KEY,
+        count BIGINT DEFAULT 0
+      );
+    `;
+
     if (pFree) {
       await pFree.query(createWebsitesTable('free_records'));
       await pFree.query(createSlugsTable);
       await pFree.query(createPaymentsTable);
+      await pFree.query(createCountersTable);
     }
     if (pPrem) {
       await pPrem.query(createWebsitesTable('premium_records'));
       await pPrem.query(createSlugsTable);
       await pPrem.query(createPaymentsTable);
+      await pPrem.query(createCountersTable);
     }
     tablesInitialized = true;
-    console.log('[CockroachDB] Primary DB tables initialized (free_records, premium_records, custom_slugs, payments)');
+    console.log('[CockroachDB] Primary DB tables initialized (free_records, premium_records, custom_slugs, payments, system_counters)');
     return true;
   } catch (err) {
     console.error('[CockroachDB] Table initialization error:', err.message);
@@ -419,6 +428,47 @@ async function purgeExpiredFreeRecords() {
   }
 }
 
+/**
+ * Increment persistent global counter in CockroachDB
+ */
+async function incrementGlobalCounter(key, amount = 1) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return false;
+  try {
+    await ensureTablesExist();
+    await pool.query(
+      `INSERT INTO system_counters (counter_key, count) VALUES ($1, $2)
+       ON CONFLICT (counter_key) DO UPDATE SET count = system_counters.count + EXCLUDED.count;`,
+      [key, amount]
+    );
+    return true;
+  } catch (err) {
+    console.error(`[CockroachDB] incrementGlobalCounter error (${key}):`, err.message);
+    return false;
+  }
+}
+
+/**
+ * Get all persistent global counters from CockroachDB
+ */
+async function getGlobalCounters() {
+  const pool = poolFree || poolPremium;
+  const counters = {};
+  if (!pool) return counters;
+  try {
+    await ensureTablesExist();
+    const res = await pool.query('SELECT * FROM system_counters');
+    if (res.rows) {
+      res.rows.forEach(r => {
+        counters[r.counter_key] = parseInt(r.count || 0, 10);
+      });
+    }
+  } catch (err) {
+    console.error('[CockroachDB] getGlobalCounters error:', err.message);
+  }
+  return counters;
+}
+
 module.exports = {
   saveRecord,
   getRecord,
@@ -429,5 +479,7 @@ module.exports = {
   savePayment,
   getCockroachStats,
   purgeExpiredFreeRecords,
+  incrementGlobalCounter,
+  getGlobalCounters,
   ensureTablesExist
 };

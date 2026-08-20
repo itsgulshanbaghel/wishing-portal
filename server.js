@@ -15,7 +15,7 @@ const https = require('https');
 const storage = require('./storage');
 const cloudinary = storage.cloudinary;
 const mongoose = require('mongoose');
-const { Website, Feedback, CustomSlug, Payment, Event } = require('./models');
+const { Website, Feedback, CustomSlug, Payment, Event, CumulativeStats } = require('./models');
 const analytics = require('./analytics');
 const health = require('./health');
 const cockroach = require('./cockroach');
@@ -353,6 +353,11 @@ app.post('/api/config', async (req, res) => {
     } catch (crErr) {
       console.warn('[Server] CockroachDB save warning:', crErr.message);
     }
+
+    // Increment persistent global website creation counter
+    try {
+      await analytics.incrementPersistentCounter('website_created', isPremium);
+    } catch (cntErr) {}
 
     // Upload to Storage (Supabase / Cloudinary fallback)
     try {

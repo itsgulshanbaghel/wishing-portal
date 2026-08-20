@@ -110,24 +110,39 @@ async function uploadMedia(fileContent, fileName, mimeType = 'image/jpeg', isPre
 }
 
 /**
- * Purge files older than 24h from Free Supabase Bucket (Project 1)
+ * Purge ALL files older than 36h from Free Supabase Bucket (Project 1)
+ * Deletes JSON configs, images, audio — every file type in the free/ folder.
+ * Uses Supabase file metadata (created_at) rather than filename timestamps.
  */
 async function purgeExpiredFreeFiles() {
   if (!supabaseFree) return;
   try {
-    const { data, error } = await supabaseFree.storage.from(BUCKET_NAME).list('free');
+    const { data, error } = await supabaseFree.storage.from(BUCKET_NAME).list('free', { limit: 1000 });
     if (error || !data) return;
 
     const now = Date.now();
-    const maxAgeInMs = 36 * 60 * 60 * 1000; // 36 hours buffer
+    const maxAgeMs = 36 * 60 * 60 * 1000; // 36 hours
+
     const expiredFiles = data.filter(f => {
+      // Use Supabase created_at metadata (ISO string) if available
+      if (f.created_at) {
+        const fileAge = now - new Date(f.created_at).getTime();
+        return fileAge > maxAgeMs;
+      }
+      // Fallback: try to parse timestamp prefix from filename (legacy)
       const timestamp = parseInt(f.name.split('_')[0], 10);
-      return timestamp && (now - timestamp > maxAgeInMs);
+      return timestamp && (now - timestamp > maxAgeMs);
     }).map(f => `free/${f.name}`);
 
     if (expiredFiles.length > 0) {
       const { error: delErr } = await supabaseFree.storage.from(BUCKET_NAME).remove(expiredFiles);
-      if (!delErr) console.log(`[Supabase Free Purge] Deleted ${expiredFiles.length} expired 36h files from Project 1`);
+      if (!delErr) {
+        console.log(`[Supabase Free Purge] Deleted ${expiredFiles.length} expired files (>36h) from Project 1 (free/)`);
+      } else {
+        console.error('[Supabase Free Purge Error]:', delErr.message);
+      }
+    } else {
+      console.log('[Supabase Free Purge] No expired files found in free/ folder');
     }
   } catch (e) {
     console.error('[Supabase Free Purge Error]:', e.message);
