@@ -2549,9 +2549,15 @@
       
       // Server-side premium verification
       async function initShareLink() {
+        const localUserData = (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}'); } catch(e) { return {}; } })();
+        const storedPlan = (localUserData.selectedPlan || localUserData.plan || localStorage.getItem(`plan_${viewId}`) || '').toLowerCase();
+        const hasPaidPlan = storedPlan && storedPlan !== 'free';
+
         let isPremium = (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') ||
                          localStorage.getItem('isPremium') === 'true' ||
-                         (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}').isPremium === true; } catch(e) { return false; } })();
+                         localUserData.isPremium === true ||
+                         hasPaidPlan;
+
         if (viewId) {
           try {
             const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
@@ -2577,10 +2583,12 @@
             fullLink = storedCustomUrl;
             linkInput.value = storedCustomUrl;
           } else {
-            // Add _v=c parameter for premium users to hide popups and CTAs
             const lang = localStorage.getItem('greeter_lang') || 'en';
             const premiumParam = isPremium ? '&_v=c' : '';
-            fullLink = `${window.location.origin}/generated/customize.html?view=${viewId}${premiumParam}&lang=${lang}`;
+            const domain = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+              ? window.location.origin
+              : 'https://thegreeter.in';
+            fullLink = `${domain}/generated/customize.html?view=${viewId}${premiumParam}&lang=${lang}`;
             linkInput.value = fullLink;
           }
         }

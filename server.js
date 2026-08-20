@@ -958,6 +958,33 @@ app.post('/api/payment/create-order', async (req, res) => {
       return res.status(503).json({ error: 'Server temporarily unavailable. Please try again later.' });
     }
 
+// Premium status check endpoint
+app.get('/api/premium/check/:websiteId', async (req, res) => {
+  try {
+    const { websiteId } = req.params;
+    if (!websiteId) return res.status(400).json({ isPremium: false, canClaimFreeCustomUrl: false });
+
+    const mongoReady = await ensureMongoConnected();
+    if (!mongoReady) return res.json({ isPremium: false, canClaimFreeCustomUrl: false });
+
+    const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
+    if (paidCheck) {
+      const planKey = (paidCheck.plan || '').toLowerCase();
+      const canClaimFreeCustomUrl = planKey !== 'starter' && planKey !== 'free';
+      return res.json({
+        isPremium: true,
+        plan: paidCheck.plan,
+        canClaimFreeCustomUrl
+      });
+    }
+
+    return res.json({ isPremium: false, canClaimFreeCustomUrl: false });
+  } catch (err) {
+    console.error('Error checking premium status:', err);
+    res.status(500).json({ isPremium: false, canClaimFreeCustomUrl: false });
+  }
+});
+
     // Check if slug already taken by a PAID payment for a DIFFERENT websiteId
     const existingPaid = await Payment.findOne({ slug: sanitizedSlug, status: 'PAID' }).lean();
     if (existingPaid && existingPaid.websiteId !== websiteId) {
