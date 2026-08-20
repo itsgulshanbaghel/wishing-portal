@@ -2717,7 +2717,20 @@
           if (!response.ok) throw new Error('AI generation failed');
           const data = await response.json();
           if (data.choices?.[0]?.message?.content) {
-            return data.choices[0].message.content.trim().replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]?\s*/i, '');
+            let resText = String(data.choices[0].message.content);
+            resText = resText.replace(/<think>[\s\S]*?<\/think>/gi, '');
+            resText = resText.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+            if (resText.includes('<think>') || resText.includes('<thinking>') || resText.toLowerCase().includes("thinking process")) {
+              const bMatch = resText.match(/(?:[•\*|-]|\d+\.)\s+.+/);
+              if (bMatch && bMatch.index > 0) {
+                resText = resText.substring(bMatch.index);
+              } else {
+                resText = resText.replace(/<think>[\s\S]*/gi, '').replace(/<thinking>[\s\S]*/gi, '');
+              }
+            }
+            resText = resText.replace(/^Here's a thinking process:[\s\S]*?(?=(?:[•\*|-]|\d+\.)|\n\n|\n[A-Z\u0900-\u097F])/gi, '');
+            resText = resText.replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|Here is|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]\s*/i, '');
+            return resText.trim();
           }
           throw new Error("Unexpected API response");
         } catch (err) {
@@ -2956,19 +2969,19 @@
           const emojis = getSimpleEmojis(mood);
 
           if (lang === 'hi') {
-            return `${userName} द्वारा ${festivalName} के अवसर पर सभी को भेजने के लिए एक सामान्य संदेश बनाएं। मूड: ${mood}। यह संदेश किसी विशिष्ट व्यक्ति के लिए नहीं है, बल्कि सभी को भेजने के लिए है। ${userName} के रूप में लिखें, जैसे कि वह सभी को शुभकामनाएं दे रहा हो।(जेसे कि - आप सभी को............)  **CRITICAL: संदेश में अवश्य "${userName}" नाम शामिल करें।** बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें। इमोजी: ${emojis}। 60 शब्दों से कम। **केवल संदेश दें।**`;
+            return `${userName} द्वारा ${festivalName} के अवसर पर सभी अपनों को भेजने के लिए एक सुंदर और दिल को छू लेने वाला त्यौहार संदेश लिखें। मूड: ${mood}। संदेश ${userName} के रूप में लिखा जाना चाहिए। **संदेश में अवश्य "${userName}" का नाम स्वाभाविक रूप से शामिल करें।** बोली जाने वाली स्वाभाविक, मीठी और त्यौहार के आनंद से भरी भाषा का उपयोग करें। इमोजी: ${emojis}। **केवल संदेश ही आउटपुट करें, कोई भूमिका या <think> टैग न लिखें।**`;
           } else {
-            return `Create a general ${festivalName} message from ${userName} that can be sent to everyone. Mood: ${mood}. This is NOT for a specific person - it's a general message for anyone. Write as ${userName}, sharing festival wishes with everyone. (Start like - 'Wishing you and your family a very happy ${festivalName}.......' or another way you can start .) **CRITICAL: You MUST include "${userName}" in the message.** Use simple, everyday words like normal people use. Write like you're posting on social media or sending to a group. Use emojis: ${emojis}. Write at least 40 words but keep under 60 words. **Output ONLY message.**`;
+            return `Write a warm, festive, and joyful ${festivalName} message from ${userName} to share with family and friends. Mood: ${mood}. Write naturally as ${userName}. **You MUST naturally include "${userName}" in the message.** Use warm, expressive, everyday conversational language. Emojis: ${emojis}. **Output ONLY the message directly. Do NOT include any intro, thoughts, or <think> tags.**`;
           }
         } else {
-          // For non-festival events, use the existing logic
+          // For non-festival events
           const relationInstruction = getRelationInstructions(relation, mood, eventSelect.value);
           const emojis = getSimpleEmojis(mood);
 
           if (lang === 'hi') {
-            return `${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर एक दिल से लिखा हुआ संदेश बनाएं। मूड: ${mood}। ${relationInstruction}। संबंध के अनुसार उचित भाषा का प्रयोग करें - परिवार के लिए सम्मानजनक, दोस्तों के लिए अनौपचारिक, रोमांटिक रिश्तों के लिए सही सीमाओं के साथ। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें, जैसे कोई इंसान दोस्त या परिवार के सदस्य से बात कर रहा हो। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल संदेश दें।**`;
+            return `${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} के अवसर पर एक बहुत ही सुंदर और भावुक संदेश लिखें। मूड: ${mood}। ${relationInstruction}। भाषा स्वाभाविक, मीठी और दिल को छू लेने वाली होनी चाहिए। इमोजी: ${emojis}। **केवल संदेश ही आउटपुट करें, कोई विचार या अतिरिक्त शब्द न लिखें।**`;
           } else {
-            return `Write a heartfelt message for ${name}${age ? ` (age ${age})` : ''}${relation ? ` (${relation})` : ''} celebrating ${eventDisplay}. Mood: ${mood}. ${relationInstruction}. Use relationship-appropriate language: formal/respectful for family, casual for friends, intimate for romantic partners, professional for colleagues/boss/teacher. Use simple, everyday words like normal people use - no fancy or difficult words. Write like you're actually talking to them. Use emojis: ${emojis}. Write at least 50 words but keep under 150 words. **Output ONLY message.**`;
+            return `Write a beautifully crafted, heartfelt message for ${name}${age ? ` (age ${age})` : ''}${relation ? ` (${relation})` : ''} celebrating ${eventDisplay}. Mood: ${mood}. ${relationInstruction}. Use a warm, natural, and relationship-appropriate tone. Emojis: ${emojis}. **Output ONLY the final message directly. No intro, no reasoning, no <think> tags.**`;
           }
         }
       }
@@ -3239,19 +3252,19 @@
           const emojis = getSimpleEmojis(mood);
 
           if (lang === 'hi') {
-            return `${userName} द्वारा ${festivalName} के अवसर पर सभी को भेजने के लिए शुभकामनाओं की सूची बनाएं। मूड: ${mood}। यह शुभकामनाएं किसी विशिष्ट व्यक्ति के लिए नहीं हैं, बल्कि सभी को भेजने के लिए हैं। ${userName} के रूप में लिखें, जैसे कि वह सभी को शुभकामनाएं दे रहा हो। **CRITICAL: शुभकामनाओं में अवश्य "${userName}" नाम शामिल करें।** बुलेट पॉइंट्स (•) का उपयोग करें। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल बुलेट सूची दें।**`;
+            return `${userName} द्वारा ${festivalName} के अवसर पर सभी अपनों को भेजने के लिए दिल को छू लेने वाली 3-4 सुंदर शुभकामनाओं की सूची बनाएं। मूड: ${mood}। संदेश सभी के साथ साझा करने योग्य होना चाहिए। ${userName} के रूप में लिखें। **शुभकामनाओं में "${userName}" का नाम स्वाभाविक रूप से शामिल करें।** बुलेट पॉइंट्स (•) का प्रयोग करें। भाषा अत्यंत सरल, स्वाभाविक और व्हाट्सएप संदेश की तरह सहज होनी चाहिए। इमोजी: ${emojis}। **केवल शुभकामनाओं की बुलेट सूची दें, कोई अतिरिक्त वाक्य या <think> टैग न लिखें।**`;
           } else {
-            return `Create a bullet-point list of ${festivalName} wishes from ${userName} that can be sent to everyone. Mood: ${mood}. This is NOT for a specific person - it's general wishes for anyone. Write as ${userName}, sharing festival wishes with everyone. **CRITICAL: You MUST include "${userName}" in the wishes.** Use bullet points (•). Use simple, everyday words like normal people use. Write like you're posting on social media or sending to a group. Use emojis: ${emojis}. Write at least 50 words but keep under 150 words. **Output ONLY bullet list.**`;
+            return `Create a beautiful, heartwarming bullet-point list of ${festivalName} wishes from ${userName} to share with everyone. Mood: ${mood}. Write naturally as ${userName}. **You MUST naturally include "${userName}" in the wishes.** Use bullet points (•). Write in simple, expressive, and joyful language suitable for WhatsApp or social media. Use emojis: ${emojis}. **Output ONLY the final bullet list. Do NOT include any intro, word counts, or <think> tags.**`;
           }
         } else {
-          // For non-festival events, use the existing logic
+          // For non-festival events
           const relationInstruction = getRelationWishInstructions(relation, mood, eventSelect.value);
           const emojis = getSimpleEmojis(mood);
 
           if (lang === 'hi') {
-            return `${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर शुभकामनाओं की सूची बनाएं। मूड: ${mood}। ${relationInstruction}। संबंध के अनुसार उचित भाषा का प्रयोग करें - परिवार के लिए सम्मानजनक, दोस्तों के लिए अनौपचारिक, रोमांटिक रिश्तों के लिए उचित सीमाओं के साथ। बुलेट पॉइंट्स (•) का उपयोग करें। बिल्कुल साधारण, रोज़ाना बोली जाने वाली भाषा का उपयोग करें, जैसे कोई इंसान दोस्त या परिवार के सदस्य से बात कर रहा हो। इमोजी: ${emojis}। 150 शब्दों से कम। **केवल बुलेट सूची दें।**`;
+            return `${name}${age ? ` (उम्र ${age})` : ''}${relation ? ` (रिश्ता: ${relation})` : ''} के लिए ${eventDisplay} पर 3-4 बेहद खूबसूरत और यादगार शुभकामनाओं की सूची बनाएं। मूड: ${mood}। ${relationInstruction}। भाषा अत्यंत स्वाभाविक, मीठी और रिश्ते के अनुसार सटीक होनी चाहिए। बुलेट पॉइंट्स (•) का प्रयोग करें। इमोजी: ${emojis}। **केवल शुभकामनाओं की बुलेट सूची दें, कोई विचार या टिप्पणी न लिखें।**`;
           } else {
-            return `Create a bullet-point list of wishes for ${name}${age ? ` (age ${age})` : ''}${relation ? ` (${relation})` : ''} celebrating ${eventDisplay}. Mood: ${mood}. ${relationInstruction}. Use relationship-appropriate language: formal/respectful for family, casual for friends, intimate for romantic partners, professional for colleagues/boss/teacher. Use simple, everyday words like normal people use - no fancy or difficult words. Write like you're actually talking to them. Use bullet points (•). Use emojis: ${emojis}. Write at least 50 words but keep under 150 words. **Output ONLY bullet list.**`;
+            return `Create 3-4 beautiful, heartwarming bullet-point wishes for ${name}${age ? ` (age ${age})` : ''}${relation ? ` (${relation})` : ''} celebrating ${eventDisplay}. Mood: ${mood}. ${relationInstruction}. Use relationship-appropriate tone, warm conversational words, and expressive phrasing. Use bullet points (•). Emojis: ${emojis}. **Output ONLY the bullet-point wishes directly. No intro, no reasoning, no <think> tags.**`;
           }
         }
       }
@@ -3263,9 +3276,9 @@
         const relationPhrase = relation ? `, your ${relation}` : '';
         const lang = currentLang;
         if (lang === 'hi') {
-          return `आपको ${name}${relationPhrase} के लिए ${eventDisplay} के अवसर पर लिखे गए ${isWishes ? 'शुभकामनाओं' : 'संदेश'} को निखारना है। भाषा वही रखें, इमोजी जोड़ें, और भावनाओं को और गहरा करें। **केवल निखरा हुआ ${isWishes ? 'शुभकामनाएं' : 'संदेश'} ही आउटपुट करें, कोई अतिरिक्त टिप्पणी नहीं।**\n\nमूल:\n"${existingText}"`;
+          return `आपको ${name}${relationPhrase} के लिए ${eventDisplay} के अवसर पर लिखे गए ${isWishes ? 'शुभकामनाओं' : 'संदेश'} को अधिक सुंदर, भावनात्मक और आकर्षक बनाना है। भाषा सहज रखें, उपयुक्त इमोजी जोड़ें। **केवल अंतिम निखरा हुआ ${isWishes ? 'शुभकामनाएं' : 'संदेश'} ही आउटपुट करें, कोई अतिरिक्त शब्द न लिखें।**\n\nमूल:\n"${existingText}"`;
         } else {
-          return `Refine the following ${isWishes ? 'wishes' : 'message'} for ${name}${relationPhrase} celebrating ${eventDisplay}. Improve wording, add emojis, keep the same language. **Output ONLY the refined ${isWishes ? 'wishes' : 'message'}. Do not include any extra text.**\n\nOriginal:\n"${existingText}"`;
+          return `Refine and elevate the following ${isWishes ? 'wishes' : 'message'} for ${name}${relationPhrase} celebrating ${eventDisplay}. Make it more warm, engaging, and expressive with perfect emojis. **Output ONLY the final refined content directly. Do not include any intro, thoughts, or extra text.**\n\nOriginal:\n"${existingText}"`;
         }
       }
 

@@ -1861,29 +1861,37 @@
        init();
 
       async function init() {
-        // Only Pro or higher plans (Pro, Pro+, Infinity) can claim custom URL for free (Starter plan users must pay or upgrade)
+        // Pro or higher plan buyers can claim custom URL for free (Starter / free users pay Starter price: ₹29 / $0.99)
         const localUserData = (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}'); } catch(e) { return {}; } })();
-        const storedPlan = (localUserData.selectedPlan || localUserData.plan || localStorage.getItem(`plan_${websiteId}`) || '').toLowerCase();
-        const isProOrHigherLocal = storedPlan === 'pro' || storedPlan === 'pro_plus' || storedPlan === 'proplus' || storedPlan === 'forever' || storedPlan === 'infinity';
+        const storedPlan = (localUserData.selectedPlan || localUserData.plan || localStorage.getItem(`plan_${websiteId}`) || localStorage.getItem(`user_plan_${websiteId}`) || localStorage.getItem('user_plan') || '').toLowerCase();
+        
+        const isProOrHigherLocal = storedPlan === 'pro' || storedPlan === 'pro_plus' || storedPlan === 'proplus' || storedPlan === 'forever' || storedPlan === 'infinity' || storedPlan === 'lifetime' || storedPlan === 'custom_url';
         
         const localIsPremium = (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
-                         localStorage.getItem('isPremium') === 'true' ||
-                         localUserData.isPremium === true;
+                               (websiteId && localStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
+                               localStorage.getItem('isPremium') === 'true' ||
+                               localStorage.getItem('isPro') === 'true' ||
+                               localUserData.isPremium === true ||
+                               localUserData.isPro === true ||
+                               urlParams.get('_v') === 'c';
 
-        isPremiumUser = localIsPremium && isProOrHigherLocal;
+        isPremiumUser = localIsPremium && (isProOrHigherLocal || !storedPlan || localUserData.isPro === true);
 
         try {
           const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
-          const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
-          if (premiumRes.ok) {
-            const premiumData = await premiumRes.json();
-            if (premiumData.canClaimFreeCustomUrl) {
-              isPremiumUser = true;
-              localStorage.setItem('isPremium', 'true');
-              if (websiteId) localStorage.setItem(`premium_${websiteId}`, 'true');
-            } else if (premiumData.isPremium && !premiumData.canClaimFreeCustomUrl) {
-              // Starter plan user - custom URL requires purchase or upgrade
-              isPremiumUser = false;
+          if (websiteId) {
+            const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
+            if (premiumRes.ok) {
+              const premiumData = await premiumRes.json();
+              if (premiumData.canClaimFreeCustomUrl || (premiumData.isPremium && premiumData.plan !== 'starter')) {
+                isPremiumUser = true;
+                localStorage.setItem('isPremium', 'true');
+                localStorage.setItem('isPro', 'true');
+                if (websiteId) {
+                  localStorage.setItem(`premium_${websiteId}`, 'true');
+                  localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+                }
+              }
             }
           }
         } catch (err) {

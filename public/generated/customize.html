@@ -2484,9 +2484,9 @@
               <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
                 ${listItems}
               </ul>
-              <p style="margin-top: 10px;">अपनी वेबसाइट वर्चुअल केक सेलिब्रेशन के साथ शेयर करने के लिए कृपया PRO प्लान में अपग्रेड करें (मात्र ₹49 / $1.99)।</p>
+              <p style="margin-top: 10px;">अपनी वेबसाइट वर्चुअल केक सेलिब्रेशन के साथ शेयर करने के लिए कृपया PRO प्लान में अपग्रेड करें।</p>
             `;
-            payBtnEl.textContent = 'PRO में अपग्रेड करें (₹49 / $1.99)';
+            payBtnEl.textContent = 'PRO में अपग्रेड करें';
             if (cancelBtnEl) cancelBtnEl.textContent = 'फ्री जारी रखें (PRO फीचर हटाकर)';
           } else {
             titleEl.textContent = '👑 Upgrade to PRO Plan';
@@ -2495,9 +2495,9 @@
               <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
                 ${listItems}
               </ul>
-              <p style="margin-top: 10px;">To share your website with Virtual Cake Celebration, please upgrade to the PRO Plan ($1.99 / ₹49).</p>
+              <p style="margin-top: 10px;">To share your website with Virtual Cake Celebration, please upgrade to the PRO Plan.</p>
             `;
-            payBtnEl.textContent = 'Upgrade to PRO ($1.99 / ₹49)';
+            payBtnEl.textContent = 'Upgrade to PRO Plan';
             if (cancelBtnEl) cancelBtnEl.textContent = 'Continue (Disable PRO Feature)';
           }
         } else {
@@ -5623,9 +5623,21 @@
         // --- Premium & Pro Tier Gating check ---
         const urlParams = new URLSearchParams(window.location.search);
         const viewId = urlParams.get('view') || urlParams.get('restore');
-        const userPlan = (localStorage.getItem(`user_plan_${viewId}`) || localStorage.getItem('user_plan') || '').toLowerCase();
-        const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true' || !!userPlan;
-        const isPro = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'].includes(userPlan) || localStorage.getItem(`pro_plan_${viewId}`) === 'true';
+        const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+        const userPlan = (localStorage.getItem(`user_plan_${viewId}`) || localStorage.getItem('user_plan') || userDataObj.plan || '').toLowerCase();
+        
+        const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
+                          localStorage.getItem('pendingPremiumForNextWebsite') === 'true' || 
+                          localStorage.getItem('isPremium') === 'true' ||
+                          userDataObj.isPremium === true ||
+                          urlParams.get('_v') === 'c' ||
+                          !!userPlan;
+                          
+        const isPro = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime', 'starter', 'custom_url'].includes(userPlan) || 
+                      localStorage.getItem(`pro_plan_${viewId}`) === 'true' ||
+                      localStorage.getItem('isPro') === 'true' ||
+                      userDataObj.isPro === true ||
+                      isPremium; // Any paid/premium user has full PRO access
 
         const proFeatures = ['virtualCake'];
         const basicPremiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown'];
@@ -6625,7 +6637,23 @@
         // Try server first, fall back to localStorage
         fetch((API_BASE || window.location.origin) + '/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
-          .then(data => { applySharedView(data.html, data.config); })
+          .then(data => {
+            if (data && (data.isPremium || (data.metadata && data.metadata.isPremium))) {
+              localStorage.setItem(`premium_${viewId}`, 'true');
+              localStorage.setItem(`pro_plan_${viewId}`, 'true');
+              localStorage.setItem('isPremium', 'true');
+              localStorage.setItem('isPro', 'true');
+              const plan = data.plan || (data.metadata && data.metadata.plan) || 'pro';
+              localStorage.setItem(`user_plan_${viewId}`, plan);
+              localStorage.setItem('user_plan', plan);
+              const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
+              userDataObj.isPremium = true;
+              userDataObj.isPro = true;
+              userDataObj.plan = plan;
+              localStorage.setItem('userData', JSON.stringify(userDataObj));
+            }
+            applySharedView(data.html, data.config);
+          })
           .catch(() => {
             const storedHtml = localStorage.getItem('final_magic_' + viewId);
             const storedConfig = localStorage.getItem('magic_config_' + viewId);

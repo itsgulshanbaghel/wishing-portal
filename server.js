@@ -447,33 +447,44 @@ app.get('/api/config/:id', async (req, res) => {
 
 
 
-// AI Generation Endpoint
+function cleanAIResponse(rawText) {
+  if (!rawText) return '';
+  let text = String(rawText);
 
-app.post('/api/generate', async (req, res) => {
+  // 1. Remove closed <think>...</think> or <thinking>...</thinking>
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  text = text.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+  text = text.replace(/\[think\][\s\S]*?\[\/think\]/gi, '');
 
-  try {
-
-    const { prompt } = req.body;
-
-
-
-    if (!prompt) {
-
-      return res.status(400).json({ error: "Prompt is required" });
-
+  // 2. Remove unclosed <think> or <thinking> blocks (e.g. truncated or open reasoning tags)
+  if (text.includes('<think>') || text.includes('<thinking>') || text.toLowerCase().includes("thinking process")) {
+    const bulletMatch = text.match(/(?:[•\*|-]|\d+\.)\s+.+/);
+    if (bulletMatch && bulletMatch.index > 0) {
+      text = text.substring(bulletMatch.index);
+    } else {
+      text = text.replace(/<think>[\s\S]*/gi, '');
+      text = text.replace(/<thinking>[\s\S]*/gi, '');
     }
+  }
 
+  // 3. Remove conversational prefixes and reasoning header remnants
+  text = text.replace(/^Here's a thinking process:[\s\S]*?(?=(?:[•\*|-]|\d+\.)|\n\n|\n[A-Z\u0900-\u097F])/gi, '');
+  text = text.replace(/^(Hey|Hi|Hello|नमस्ते|हैलो|Sure|Of course|Here's|Here is|I've|Let me|ये लीजिए|ठीक है|बिल्कुल).*?[:!]\s*/i, '');
 
+  return text.trim();
+}
 
-    // Input validation
+// AI Generation Endpoint
+app.post('/api/generate', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
 
     if (typeof prompt !== 'string' || prompt.length > 2000) {
-
       return res.status(400).json({ error: "Invalid prompt format or length" });
-
     }
-
-
 
     const fk1 = ['gsk_nXdHD2BH1Rh', 'REECYgDpzWGdyb3FYtQgd', '6ODtNrP1cmL1ipTR0HJs'].join('');
     const fk2 = ['gsk_iROhqVstV1PWP', 'kxDLzevWGdyb3FYAfTNm', 'SPkfDIXhBUIvyBGvIMB'].join('');
@@ -492,6 +503,8 @@ app.post('/api/generate', async (req, res) => {
       return res.status(500).json({ error: "Server configuration error" });
     }
 
+    const systemPrompt = `${prompt}\n\nCRITICAL INSTRUCTION: Output ONLY the final wishes/messages directly. Do NOT include any thinking process, reasoning steps, word counting, analysis, or <think> tags.`;
+
     let lastError;
     for (let i = 0; i < groqApiKeys.length; i++) {
       const apiKey = groqApiKeys[i];
@@ -501,7 +514,6 @@ app.post('/api/generate', async (req, res) => {
           "openai/gpt-oss-120b",
           "qwen/qwen3.6-27b"
         ];
-        let modelSuccess = false;
 
         for (const targetModel of groqModels) {
           try {
@@ -513,7 +525,7 @@ app.post('/api/generate', async (req, res) => {
               },
               body: JSON.stringify({
                 model: targetModel,
-                messages: [{ role: "user", content: prompt }],
+                messages: [{ role: "user", content: systemPrompt }],
                 temperature: 0.7,
                 max_tokens: 1000
               })
@@ -526,11 +538,9 @@ app.post('/api/generate', async (req, res) => {
             }
 
             const data = await response.json();
-            console.log(`Groq API Success (${targetModel}):`, data);
-
             let content = data.choices?.[0]?.message?.content;
             if (content) {
-              content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+              content = cleanAIResponse(content);
               data.choices[0].message.content = content;
               return res.json(data);
             }
