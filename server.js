@@ -53,12 +53,24 @@ async function connectToMongo() {
 
   // If connection is in progress, wait for it
   if (connectionPromise) {
-    await connectionPromise;
-    return mongoConnected;
+    try {
+      await connectionPromise;
+      if (mongoose.connection.readyState === 1) {
+        mongoConnected = true;
+        return true;
+      }
+    } catch (e) {
+      connectionPromise = null;
+    }
   }
 
-  // Start new connection
-  connectionPromise = mongoose.connect(MONGODB_URI);
+  // Start new serverless-optimized connection
+  const uri = process.env.MONGODB_URI || defaultMongoUri;
+  connectionPromise = mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 10000,
+    bufferCommands: false
+  });
 
   try {
     await connectionPromise;
@@ -66,8 +78,7 @@ async function connectToMongo() {
     mongoConnected = true;
     return true;
   } catch (err) {
-    console.error('[Server] MongoDB connection error:', err);
-    console.log('[Server] Running in fallback mode - analytics will be limited');
+    console.error('[Server] MongoDB connection error:', err.message);
     mongoConnected = false;
     connectionPromise = null;
     return false;
