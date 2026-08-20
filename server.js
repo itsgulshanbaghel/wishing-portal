@@ -134,9 +134,6 @@ const corsOptions = {
 // Apply CORS for all routes — must come before all route definitions
 app.use(cors(corsOptions));
 
-// Handle ALL OPTIONS preflight requests globally (before auth middleware blocks them)
-app.options('*', cors(corsOptions));
-
 // Security headers with Helmet
 app.use(helmet({
   contentSecurityPolicy: {
@@ -2048,8 +2045,6 @@ function adminAuth(req, res, next) {
   return res.status(401).json({ error: 'Invalid credentials' });
 }
 
-// Explicitly handle CORS preflight for all /api/admin/* routes
-app.options('/api/admin/*', cors(corsOptions));
 
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
