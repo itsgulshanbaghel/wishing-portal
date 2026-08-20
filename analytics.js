@@ -489,7 +489,6 @@ class AnalyticsStore {
         .limit(200);
 
       // Websites List - fetch from CockroachDB Primary DB, Supabase Storage, and MongoDB
-      const cockroach = require('./cockroach');
       const storage = require('./storage');
       const crWebsites = await cockroach.getAllWebsites();
       const sbWebsites = await storage.listSupabaseWebsites();
