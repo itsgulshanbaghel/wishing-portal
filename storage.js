@@ -70,7 +70,12 @@ async function uploadMedia(fileContent, fileName, mimeType = 'image/jpeg', isPre
 
     const folderPrefix = isPremium ? 'premium' : 'free';
     const cleanFileName = fileName.replace(/[^a-zA-Z0-9_.-]/g, '_');
-    const path = `${folderPrefix}/${Date.now()}_${cleanFileName}`;
+    // JSON configs use stable paths (no timestamp) so they can be retrieved by ID
+    // Media files (images, audio) use timestamp prefix for uniqueness
+    const isJsonConfig = cleanFileName.endsWith('.json');
+    const path = isJsonConfig
+      ? `${folderPrefix}/${cleanFileName}`
+      : `${folderPrefix}/${Date.now()}_${cleanFileName}`;
 
     // Upload to Supabase Storage Bucket
     const { data, error } = await client.storage

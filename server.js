@@ -396,7 +396,8 @@ app.get('/api/config/:id', async (req, res) => {
       const mongoReady = await ensureMongoConnected();
       if (mongoReady) {
         const doc = await Website.findOne({ id: safeName }).lean();
-        if (doc && doc.metadata && doc.metadata.html) {
+        if (doc && doc.metadata) {
+          // Return full metadata object (contains html, config, metadata fields)
           return res.json(doc.metadata);
         }
       }
@@ -407,7 +408,7 @@ app.get('/api/config/:id', async (req, res) => {
     // 2. Try fetching from CockroachDB Serverless
     try {
       const crRecord = await cockroach.getRecord(safeName);
-      if (crRecord && crRecord.metadata && crRecord.metadata.html) {
+      if (crRecord && crRecord.metadata) {
         return res.json(crRecord.metadata);
       }
     } catch (crErr) {
