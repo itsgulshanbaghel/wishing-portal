@@ -168,6 +168,43 @@ async function getSupabaseStats() {
   };
 }
 
+/**
+ * List all website JSON configs stored in Supabase Project 1 (Free) and Project 2 (Premium)
+ */
+async function listSupabaseWebsites() {
+  const websites = [];
+  if (supabaseFree) {
+    try {
+      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free');
+      if (data) {
+        data.filter(f => f.name.endsWith('.json')).forEach(f => {
+          websites.push({
+            id: f.name.replace('.json', ''),
+            isPremium: false,
+            createdAt: f.created_at || f.updated_at || new Date().toISOString()
+          });
+        });
+      }
+    } catch (e) {}
+  }
+
+  if (supabasePremium) {
+    try {
+      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium');
+      if (data) {
+        data.filter(f => f.name.endsWith('.json')).forEach(f => {
+          websites.push({
+            id: f.name.replace('.json', ''),
+            isPremium: true,
+            createdAt: f.created_at || f.updated_at || new Date().toISOString()
+          });
+        });
+      }
+    } catch (e) {}
+  }
+  return websites;
+}
+
 // Automatically run free storage purge every 6 hours (only in long-running container mode)
 if (!process.env.VERCEL && typeof setInterval !== 'undefined') {
   setInterval(purgeExpiredFreeFiles, 6 * 60 * 60 * 1000);
@@ -177,5 +214,6 @@ module.exports = {
   uploadMedia,
   purgeExpiredFreeFiles,
   getSupabaseStats,
+  listSupabaseWebsites,
   cloudinary
 };

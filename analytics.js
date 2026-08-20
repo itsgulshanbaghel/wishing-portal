@@ -432,9 +432,11 @@ class AnalyticsStore {
         .sort({ timestamp: -1 })
         .limit(200);
 
-      // Websites List - fetch from CockroachDB Primary DB first
+      // Websites List - fetch from CockroachDB Primary DB, Supabase Storage, and MongoDB
       const cockroach = require('./cockroach');
+      const storage = require('./storage');
       const crWebsites = await cockroach.getAllWebsites();
+      const sbWebsites = await storage.listSupabaseWebsites();
 
       const websitesListFilter = days === -1 ? {} : { createdAt: timeFilter };
       const rawWebsites = await Website.find(websitesListFilter)
@@ -442,9 +444,12 @@ class AnalyticsStore {
         .limit(10000)
         .lean().catch(() => []);
 
-      // Merge CockroachDB primary records with MongoDB fallback records
+      // Merge CockroachDB, Supabase Storage, and MongoDB fallback records
       const combinedMap = new Map();
       crWebsites.forEach(cw => combinedMap.set(cw.id, cw));
+      sbWebsites.forEach(sw => {
+        if (!combinedMap.has(sw.id)) combinedMap.set(sw.id, sw);
+      });
       rawWebsites.forEach(mw => {
         if (!combinedMap.has(mw.id)) combinedMap.set(mw.id, mw);
       });
