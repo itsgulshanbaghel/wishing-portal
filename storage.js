@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const cloudinary = require('cloudinary').v2;
 
@@ -80,7 +81,11 @@ async function uploadMedia(fileContent, fileName, mimeType = 'image/jpeg', isPre
       });
 
     if (error) {
-      console.error(`[Supabase Upload Error] (${isPremium ? 'Premium Project 2' : 'Free Project 1'}):`, error.message);
+      if (error.message && error.message.includes('row-level security policy')) {
+        console.warn(`[Supabase RLS Notice] (${isPremium ? 'Premium Project 2' : 'Free Project 1'}): Upload blocked by Supabase RLS policy. To allow uploads, add an INSERT policy on Supabase Dashboard -> Storage -> Policies for bucket '${BUCKET_NAME}'`);
+      } else {
+        console.error(`[Supabase Upload Error] (${isPremium ? 'Premium Project 2' : 'Free Project 1'}):`, error.message);
+      }
       throw error;
     }
 

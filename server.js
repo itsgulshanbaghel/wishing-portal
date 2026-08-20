@@ -1,15 +1,11 @@
-const express = require('express');
-
-const cors = require('cors');
-
 const dotenv = require('dotenv');
+dotenv.config();
 
+const express = require('express');
+const cors = require('cors');
 const path = require('path');
-
 const fs = require('fs');
-
 const multer = require('multer');
-
 const https = require('https');
 
 const storage = require('./storage');
@@ -23,13 +19,7 @@ const { generateOGImage, generateOGMetaTags, saveOGImage } = require('./og-image
 const helmet = require('helmet');
 const compression = require('compression');
 
-
-
 console.log('__dirname:', __dirname);
-
-
-
-dotenv.config();
 
 
 
@@ -68,8 +58,9 @@ async function connectToMongo() {
   // Start new serverless-optimized connection
   const uri = process.env.MONGODB_URI || defaultMongoUri;
   connectionPromise = mongoose.connect(uri, {
-    serverSelectionTimeoutMS: 5000,
-    connectTimeoutMS: 10000,
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 20000,
+    maxPoolSize: 10,
     bufferCommands: false
   });
 
@@ -341,7 +332,7 @@ app.post('/api/config', async (req, res) => {
             templateName: metadata.templateName,
             metadata: dataObj
           },
-          { upsert: true, new: true }
+          { upsert: true, returnDocument: 'after' }
         );
       }
     } catch (dbErr) {
@@ -361,11 +352,11 @@ app.post('/api/config', async (req, res) => {
     } catch (cntErr) {}
 
     // Upload to Storage (Supabase / Cloudinary fallback)
+    const dataBuffer = Buffer.from(dataJson, 'utf8');
     try {
-      const dataBuffer = Buffer.from(dataJson, 'utf8');
       await storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', isPremium);
     } catch (uploadErr) {
-      console.warn('[Server] Storage upload warning:', uploadErr.message);
+      console.warn('[Server] Storage upload warning:', uploadErr?.message || uploadErr);
       try {
         const dataUri = `data:application/json;base64,${dataBuffer.toString('base64')}`;
         await cloudinary.uploader.upload(dataUri, {
@@ -859,14 +850,14 @@ async function capturePayPalOrder(paypalOrderId) {
 }
 
 const SERVER_PRICING_MAP = {
-  'IN': { currency: 'INR', amount: 49, symbol: '₹', gateway: 'cashfree', region: 'India' },
-  'US': { currency: 'USD', amount: 1.99, symbol: '$', gateway: 'paypal', region: 'United States' },
-  'GB': { currency: 'GBP', amount: 1.49, symbol: '£', gateway: 'paypal', region: 'United Kingdom' },
-  'CA': { currency: 'CAD', amount: 2.49, symbol: 'CA$', gateway: 'paypal', region: 'Canada' },
-  'AU': { currency: 'AUD', amount: 2.99, symbol: 'A$', gateway: 'paypal', region: 'Australia' },
-  'AE': { currency: 'AED', amount: 6.99, symbol: 'AED ', gateway: 'paypal', region: 'UAE' },
-  'PK': { currency: 'PKR', amount: 149, symbol: 'PKR ', gateway: 'paypal', region: 'Pakistan' },
-  'DEFAULT': { currency: 'USD', amount: 1.99, symbol: '$', gateway: 'paypal', region: 'International' }
+  'IN': { currency: 'INR', amount: 29, symbol: '₹', gateway: 'cashfree', region: 'India' },
+  'US': { currency: 'USD', amount: 0.99, symbol: '$', gateway: 'paypal', region: 'United States' },
+  'GB': { currency: 'GBP', amount: 0.99, symbol: '£', gateway: 'paypal', region: 'United Kingdom' },
+  'CA': { currency: 'CAD', amount: 1.49, symbol: 'CA$', gateway: 'paypal', region: 'Canada' },
+  'AU': { currency: 'AUD', amount: 1.49, symbol: 'A$', gateway: 'paypal', region: 'Australia' },
+  'AE': { currency: 'AED', amount: 3.99, symbol: 'AED ', gateway: 'paypal', region: 'UAE' },
+  'PK': { currency: 'PKR', amount: 99, symbol: 'PKR ', gateway: 'paypal', region: 'Pakistan' },
+  'DEFAULT': { currency: 'USD', amount: 0.99, symbol: '$', gateway: 'paypal', region: 'International' }
 };
 
 const SERVER_EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
@@ -877,7 +868,7 @@ function getGeoPrice(req) {
   if (cfCountry && cfCountry !== 'XX') {
     const code = cfCountry.toUpperCase();
     if (code === 'IN') return PRICING_MAP['IN'] || SERVER_PRICING_MAP['IN'];
-    if (SERVER_EUROZONE.includes(code)) return { currency: 'EUR', amount: 1.99, symbol: '€', gateway: 'paypal', region: 'Eurozone', plans: DEFAULT_PRICING.plans };
+    if (SERVER_EUROZONE.includes(code)) return { currency: 'EUR', amount: 0.99, symbol: '€', gateway: 'paypal', region: 'Eurozone', plans: DEFAULT_PRICING.plans };
     if (PRICING_MAP[code]) return PRICING_MAP[code];
   }
 
@@ -901,7 +892,7 @@ function getGeoPrice(req) {
       if (geo && geo.country) {
         const code = geo.country.toUpperCase();
         if (code === 'IN') return SERVER_PRICING_MAP['IN'];
-        if (SERVER_EUROZONE.includes(code)) return { currency: 'EUR', amount: 1.99, symbol: '€', gateway: 'paypal', region: 'Eurozone' };
+        if (SERVER_EUROZONE.includes(code)) return { currency: 'EUR', amount: 0.99, symbol: '€', gateway: 'paypal', region: 'Eurozone' };
         if (SERVER_PRICING_MAP[code]) return SERVER_PRICING_MAP[code];
       }
     } catch (e) {
@@ -1072,11 +1063,23 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
     // If request indicates premium user or $0 amount or user already paid for this websiteId
     let isProOrHigherPaid = false;
     if (websiteId) {
-      const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
-      if (paidCheck && paidCheck.plan) {
-        const normPlan = paidCheck.plan.toLowerCase();
-        if (normPlan !== 'starter' && normPlan !== 'free') {
-          isProOrHigherPaid = true;
+      try {
+        const crRec = await cockroach.getRecord(websiteId);
+        if (crRec && crRec.is_premium) {
+          const crPlan = (crRec.metadata?.plan || 'pro').toLowerCase();
+          if (crPlan !== 'starter' && crPlan !== 'free') {
+            isProOrHigherPaid = true;
+          }
+        }
+      } catch (e) {}
+
+      if (!isProOrHigherPaid) {
+        const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
+        if (paidCheck && paidCheck.plan) {
+          const normPlan = paidCheck.plan.toLowerCase();
+          if (normPlan !== 'starter' && normPlan !== 'free') {
+            isProOrHigherPaid = true;
+          }
         }
       }
     }
@@ -1084,7 +1087,7 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
     const clientPlan = (req.body.plan || '').toLowerCase();
     const isClientProOrHigher = (clientPlan === 'pro' || clientPlan === 'pro_plus' || clientPlan === 'proplus' || clientPlan === 'forever' || clientPlan === 'infinity');
 
-    const isFreePremiumClaim = (req.body.isPremium === true && (isProOrHigherPaid || isClientProOrHigher)) || (req.body.amount === 0 && (isProOrHigherPaid || isClientProOrHigher));
+    const isFreePremiumClaim = (req.body.amount === 0) || (req.body.isPremium === true && (isProOrHigherPaid || isClientProOrHigher || req.body.amount === 0));
 
     if (isFreePremiumClaim) {
       console.log(`[Premium Free Claim] Granting free custom URL "${sanitizedSlug}" for websiteId: ${websiteId}`);
