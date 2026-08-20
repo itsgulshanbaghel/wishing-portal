@@ -326,13 +326,15 @@ app.post('/api/config', async (req, res) => {
         await Website.findOneAndUpdate(
           { id },
           {
-            id,
-            recipientName: metadata.recipientName,
-            eventType: metadata.eventType,
-            templateName: metadata.templateName,
-            metadata: dataObj
+            $set: {
+              id,
+              recipientName: metadata.recipientName,
+              eventType: metadata.eventType,
+              templateName: metadata.templateName,
+              metadata: dataObj
+            }
           },
-          { upsert: true, returnDocument: 'after' }
+          { upsert: true, returnDocument: 'after', strict: false }
         );
       }
     } catch (dbErr) {
