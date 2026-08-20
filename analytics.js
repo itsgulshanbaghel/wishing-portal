@@ -432,16 +432,27 @@ class AnalyticsStore {
         .sort({ timestamp: -1 })
         .limit(200);
 
-      // Websites List - respect time period filter
+      // Websites List - fetch from CockroachDB Primary DB first
+      const cockroach = require('./cockroach');
+      const crWebsites = await cockroach.getAllWebsites();
+
       const websitesListFilter = days === -1 ? {} : { createdAt: timeFilter };
       const rawWebsites = await Website.find(websitesListFilter)
         .sort({ createdAt: -1 })
         .limit(10000)
-        .lean();
+        .lean().catch(() => []);
+
+      // Merge CockroachDB primary records with MongoDB fallback records
+      const combinedMap = new Map();
+      crWebsites.forEach(cw => combinedMap.set(cw.id, cw));
+      rawWebsites.forEach(mw => {
+        if (!combinedMap.has(mw.id)) combinedMap.set(mw.id, mw);
+      });
+      const allUnifiedWebsites = Array.from(combinedMap.values());
 
       const { CustomSlug, Payment } = require('./models');
-      const paidPayments = await Payment.find({ status: 'PAID' }).sort({ paidAt: -1, createdAt: -1 }).lean();
-      const customSlugs = await CustomSlug.find({}).lean();
+      const paidPayments = await Payment.find({ status: 'PAID' }).sort({ paidAt: -1, createdAt: -1 }).lean().catch(() => []);
+      const customSlugs = await CustomSlug.find({}).lean().catch(() => []);
 
       const paidMap = new Map();
       paidPayments.forEach(p => {
@@ -457,7 +468,7 @@ class AnalyticsStore {
         }
       });
 
-      const websites = rawWebsites.map(w => {
+      const websites = allUnifiedWebsites.map(w => {
         const payment = paidMap.get(w.id);
         const slug = slugMap.get(w.id);
         const isPremium = !!payment || !!slug;

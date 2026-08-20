@@ -612,21 +612,26 @@ app.post('/api/custom-url', async (req, res) => {
       return res.status(400).json({ error: 'This custom URL is reserved. Please choose another.' });
     }
 
-    const ensureMongoConnectedResult = await ensureMongoConnected();
-    if (!ensureMongoConnectedResult) {
-      return res.status(503).json({ error: 'Server temporarily unavailable. Please try again later.' });
-    }
-
-    const existing = await CustomSlug.findOne({ slug: sanitized }).lean();
-    if (existing) {
-      if (existing.websiteId === websiteId) {
+    // Save to CockroachDB Primary DB
+    const crExisting = await cockroach.getCustomSlug(sanitized);
+    if (crExisting) {
+      if (crExisting.websiteId === websiteId) {
         return res.status(200).json({ success: true, message: 'Custom URL already claimed', slug: sanitized });
       }
       return res.status(409).json({ error: 'This custom URL is already taken. Try another one.' });
     }
 
-    await CustomSlug.create({ slug: sanitized, websiteId });
-    res.json({ success: true, message: 'Custom URL created successfully', slug: sanitized });
+    await cockroach.saveCustomSlug(sanitized, websiteId);
+
+    // Mirror to MongoDB fallback
+    try {
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        await CustomSlug.create({ slug: sanitized, websiteId }).catch(() => {});
+      }
+    } catch (e) {}
+
+    return res.json({ success: true, message: 'Custom URL created successfully', slug: sanitized });
   } catch (err) {
     console.error('Error setting custom URL:', err);
     if (err.code === 11000) {
@@ -2806,25 +2811,29 @@ app.get('/:slug', async (req, res, next) => {
   if (!slug) return next();
 
   try {
-    const mongoReady = await ensureMongoConnected();
-    if (mongoReady) {
-      let entry = await CustomSlug.findOne({ slug }).lean();
+    // 1. Try CockroachDB Primary DB lookup first
+    let entry = await cockroach.getCustomSlug(slug);
 
-      if (!entry) {
-        const paidPayment = await Payment.findOne({ slug: slug, status: 'PAID' }).lean();
-        if (paidPayment) {
-          entry = { slug: paidPayment.slug, websiteId: paidPayment.websiteId };
+    if (!entry) {
+      // 2. Try MongoDB fallback
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        let mEntry = await CustomSlug.findOne({ slug }).lean();
+        if (!mEntry) {
+          const paidPayment = await Payment.findOne({ slug: slug, status: 'PAID' }).lean();
+          if (paidPayment) {
+            mEntry = { slug: paidPayment.slug, websiteId: paidPayment.websiteId };
+          }
         }
+        if (mEntry) entry = mEntry;
       }
+    }
 
-      if (entry) {
-        console.log(`[CustomURL] Redirecting slug "${slug}" to websiteId "${entry.websiteId}"`);
-        // _v=c tells the generated page this is a paid custom URL visit (clean layout) —
-        // the page will suppress the nudge popup and CTA section for a cleaner experience.
-        return res.redirect(`/generated/customize.html?view=${entry.websiteId}&_v=c`);
-      } else {
-        console.log(`[CustomURL] Slug "${slug}" not found in DB`);
-      }
+    if (entry && entry.websiteId) {
+      console.log(`[CustomURL] Redirecting slug "${slug}" to websiteId "${entry.websiteId}"`);
+      return res.redirect(`/generated/customize.html?view=${entry.websiteId}&_v=c`);
+    } else {
+      console.log(`[CustomURL] Slug "${slug}" not found in DB`);
     }
   } catch (dbErr) {
     console.error('[CustomURL] lookup failed:', dbErr);
