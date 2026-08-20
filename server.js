@@ -1034,8 +1034,8 @@ app.post('/api/payment/create-order', async (req, res) => {
     const geoPricing = getGeoPrice(req);
     const { currency, gateway, paypalCurrency, plans } = geoPricing;
 
-    // Normalize plan key
-    const rawPlan = (req.body.plan || 'pro').toString().toLowerCase();
+    // Normalize plan key (default to starter for custom URL claims)
+    const rawPlan = (req.body.plan || 'starter').toString().toLowerCase();
     let normPlan = 'pro';
     if (rawPlan === 'starter' || rawPlan.includes('start')) normPlan = 'starter';
     else if (rawPlan === 'pro_plus' || rawPlan === 'proplus' || rawPlan.includes('plus')) normPlan = 'pro_plus';

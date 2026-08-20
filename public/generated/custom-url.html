@@ -1836,15 +1836,15 @@
       let qrPhotoBase64 = ''; // base64 string
       let qrCode = null;
 
-// Geo-based pricing configuration
+// Geo-based pricing configuration (aligned with Starter Plan: ₹29 / $0.99 / €0.99 / £0.99 / A$1.49)
        const geoPricing = {
          'IN': { currency: 'INR', amount: 29, symbol: '₹', region: 'India' },
-         'EU': { currency: 'EUR', amount: 1.00, symbol: '€', region: 'Europe' },
-         'GB': { currency: 'GBP', amount: 1.00, symbol: '£', region: 'United Kingdom' },
-         'US': { currency: 'USD', amount: 1.00, symbol: '$', region: 'United States' },
-         'AU': { currency: 'AUD', amount: 1.50, symbol: 'A$', region: 'Australia & NZ' },
-         'NZ': { currency: 'AUD', amount: 1.50, symbol: 'A$', region: 'Australia & NZ' },
-         'default': { currency: 'USD', amount: 1.00, symbol: '$', region: 'International' }
+         'EU': { currency: 'EUR', amount: 0.99, symbol: '€', region: 'Europe' },
+         'GB': { currency: 'GBP', amount: 0.99, symbol: '£', region: 'United Kingdom' },
+         'US': { currency: 'USD', amount: 0.99, symbol: '$', region: 'United States' },
+         'AU': { currency: 'AUD', amount: 1.49, symbol: 'A$', region: 'Australia & NZ' },
+         'NZ': { currency: 'AUD', amount: 1.49, symbol: 'A$', region: 'Australia & NZ' },
+         'default': { currency: 'USD', amount: 0.99, symbol: '$', region: 'International' }
        };
 
        // Poll Status for Payment Success Redirections
