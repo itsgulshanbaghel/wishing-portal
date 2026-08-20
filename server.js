@@ -343,7 +343,7 @@ app.post('/api/config', async (req, res) => {
 
     // Save to CockroachDB Serverless (dual-table routing: free_records vs premium_records)
     try {
-      await cockroach.saveRecord(id, metadata, isPremium);
+      await cockroach.saveRecord(id, dataObj, isPremium);
     } catch (crErr) {
       console.warn('[Server] CockroachDB save warning:', crErr.message);
     }
