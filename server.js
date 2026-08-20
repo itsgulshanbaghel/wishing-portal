@@ -105,33 +105,37 @@ const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 const corsOptions = {
-  origin: [
-    'https://thegreeter.in',
-    'https://wishing-portal-phi.vercel.app',
-    'https://wishing-portal.onrender.com',
-    'https://wishing-portal-05as.onrender.com',
-    'https://thegreeterindia.web.app',
-    'https://thegreeterindia.firebaseapp.com',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000'
-  ],
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      'https://thegreeter.in',
+      'https://www.thegreeter.in',
+      'https://wishing-portal-phi.vercel.app',
+      'https://wishing-portal.onrender.com',
+      'https://wishing-portal-05as.onrender.com',
+      'https://thegreeterindia.web.app',
+      'https://thegreeterindia.firebaseapp.com',
+      'http://localhost:3000',
+      'http://127.0.0.1:3000'
+    ];
+    // Allow requests with no origin (server-to-server, curl, Vercel cron)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('onrender.com')) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked: ${origin}`));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
-// Allow same-origin requests for Vercel/Render hosting
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (!origin || origin.includes('vercel.app') || origin.includes('onrender.com')) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-  }
-  next();
-});
+// Apply CORS for all routes — must come before all route definitions
 app.use(cors(corsOptions));
+
+// Handle ALL OPTIONS preflight requests globally (before auth middleware blocks them)
+app.options('*', cors(corsOptions));
 
 // Security headers with Helmet
 app.use(helmet({
@@ -2030,6 +2034,8 @@ const ADMIN_USERNAME = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASS || 'Greeter@2026#Secure';
 
 function adminAuth(req, res, next) {
+  // Always pass CORS preflight OPTIONS through without auth check
+  if (req.method === 'OPTIONS') return next();
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Basic ')) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -2041,6 +2047,9 @@ function adminAuth(req, res, next) {
   }
   return res.status(401).json({ error: 'Invalid credentials' });
 }
+
+// Explicitly handle CORS preflight for all /api/admin/* routes
+app.options('/api/admin/*', cors(corsOptions));
 
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
