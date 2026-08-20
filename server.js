@@ -423,7 +423,17 @@ app.get('/api/config/:id', async (req, res) => {
       console.warn('[Server] CockroachDB config fetch warning:', crErr.message);
     }
 
-    // 2. Try Cloudinary fallback
+    // 2. Try Supabase Storage (Project 1 Free or Project 2 Premium)
+    try {
+      const sbConfig = await storage.readWebsiteConfig(safeName);
+      if (sbConfig) {
+        return res.json(sbConfig);
+      }
+    } catch (sbErr) {
+      console.warn('[Server] Supabase config fetch warning:', sbErr.message);
+    }
+
+    // 3. Try Cloudinary fallback (legacy links)
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     if (cloudName) {
       const url = `https://res.cloudinary.com/${cloudName}/raw/upload/configs/${safeName}`;
@@ -1726,33 +1736,12 @@ app.post('/api/og-image', async (req, res) => {
     const filename = `${websiteId || slug}-og-${Date.now()}.png`;
     const imagePath = await saveOGImage(imageBuffer, filename);
 
-    // Upload to Cloudinary for faster CDN delivery
-    const cloudinaryUrl = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          public_id: `og-images/${websiteId || slug}`,
-          folder: 'og-images',
-          resource_type: 'auto',
-          overwrite: true,
-          context: {
-            website_id: websiteId,
-            event_type: eventType,
-            recipient: recipientName,
-            generated_at: new Date().toISOString()
-          }
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result.secure_url);
-        }
-      );
-
-      uploadStream.end(imageBuffer);
-    });
+    // Upload to Supabase Storage (Project 1 Free or Project 2 Premium)
+    const mediaUrl = await storage.uploadMedia(imageBuffer, filename, 'image/png', false);
 
     res.json({
       success: true,
-      imageUrl: cloudinaryUrl,
+      imageUrl: mediaUrl,
       localPath: imagePath,
       websiteId
     });

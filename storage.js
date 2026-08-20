@@ -220,6 +220,37 @@ async function listSupabaseWebsites() {
   return websites;
 }
 
+/**
+ * Reads website JSON config directly from Supabase Storage (Project 1 or Project 2)
+ */
+async function readWebsiteConfig(id) {
+  const fileName = id.endsWith('.json') ? id : `${id}.json`;
+  
+  // Try Supabase Premium first
+  if (supabasePremium) {
+    try {
+      const { data, error } = await supabasePremium.storage.from(BUCKET_NAME).download(`premium/${fileName}`);
+      if (data && !error) {
+        const text = await data.text();
+        return JSON.parse(text);
+      }
+    } catch (e) {}
+  }
+
+  // Try Supabase Free
+  if (supabaseFree) {
+    try {
+      const { data, error } = await supabaseFree.storage.from(BUCKET_NAME).download(`free/${fileName}`);
+      if (data && !error) {
+        const text = await data.text();
+        return JSON.parse(text);
+      }
+    } catch (e) {}
+  }
+
+  return null;
+}
+
 // Automatically run free storage purge every 6 hours (only in long-running container mode)
 if (!process.env.VERCEL && typeof setInterval !== 'undefined') {
   setInterval(purgeExpiredFreeFiles, 6 * 60 * 60 * 1000);
@@ -230,5 +261,6 @@ module.exports = {
   purgeExpiredFreeFiles,
   getSupabaseStats,
   listSupabaseWebsites,
+  readWebsiteConfig,
   cloudinary
 };
