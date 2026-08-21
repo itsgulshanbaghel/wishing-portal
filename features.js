@@ -104,7 +104,7 @@
             if (d.getElementById("magic-curtain-reveal-root")) return;
             const cd = d.createElement("div");
             cd.id = "magic-curtain-reveal-root";
-            cd.style.cssText = "position:fixed; inset:0; z-index:2147483647; display:flex; pointer-events:none;";
+            cd.style.cssText = "position:fixed; inset:0; z-index:2147483647; display:flex; pointer-events:auto; overflow:hidden;";
             cd.innerHTML = `
                 <div class="left" style="flex:1; background:repeating-linear-gradient(90deg,#5a0000 0,#8a0000 40px,#5a0000 80px); transition:transform 3.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin:left; box-shadow: 10px 0 30px rgba(0,0,0,0.5); border-right: 2px solid gold;"></div>
                 <div class="right" style="flex:1; background:repeating-linear-gradient(90deg,#5a0000 0,#8a0000 40px,#5a0000 80px); transition:transform 3.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin:right; box-shadow: -10px 0 30px rgba(0,0,0,0.5); border-left: 2px solid gold;"></div>
@@ -112,21 +112,27 @@
             `;
             d.body.appendChild(cd);
             const btn = cd.querySelector("#curtain-open-btn");
+            let opened = false;
             const openCurtains = () => {
+                if (opened) return;
+                opened = true;
+                cd.style.pointerEvents = "none";
                 const l = cd.querySelector(".left");
                 const r = cd.querySelector(".right");
                 if (l) l.style.transform = "translateX(-100%)";
                 if (r) r.style.transform = "translateX(100%)";
-                btn.remove();
+                if (btn) btn.remove();
                 try {
                     if (w && typeof w.scrollTo === 'function') {
                         w.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 } catch (err) {}
                 window.dispatchEvent(new CustomEvent('curtainOpened'));
-                setTimeout(() => cd?.remove(), 4000);
+                setTimeout(() => cd?.remove(), 3500);
             };
             btn.onclick = openCurtains;
+            // Fail-safe: Auto open curtains after 10s if user doesn't tap
+            setTimeout(() => { if (!opened) openCurtains(); }, 10000);
             return {};
         },
         disable(d) { d?.getElementById("magic-curtain-reveal-root")?.remove(); }
@@ -214,13 +220,63 @@
                 overlay.appendChild(container);
                 d.body.appendChild(overlay);
                 const msgPara = container.querySelector("#magic-typing-welcome-msg");
-                setTimeout(() => { container.style.transform = "scale(1.2)"; container.style.opacity = "1"; const audio = d.createElement('audio'); audio.id = 'magic-welcome-audio'; audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1'; audio.loop = true; audio.volume = 0.5; audio.preload = 'auto'; d.body.appendChild(audio); audio.addEventListener('canplay', () => { audio.play().catch(e => console.log('Audio play failed', e)); let idx = 0; const iv = setInterval(() => { if (idx < msgText.length) { msgPara.innerHTML += msgText[idx]; idx++; } else { clearInterval(iv); const audio = d.getElementById('magic-welcome-audio'); if (audio) { audio.pause(); audio.remove(); } setTimeout(() => { overlay.style.opacity = "0"; setTimeout(() => { overlay?.remove(); d.body.classList.remove('magic-noscroll'); window.dispatchEvent(new CustomEvent('welcomeTypingFinished')); }, 1500); }, 3500); } }, 75); }); }, 100);
-                return { intervals: [iv] };
+
+                let finished = false;
+                const finishWelcome = () => {
+                    if (finished) return;
+                    finished = true;
+                    const audio = d.getElementById('magic-welcome-audio');
+                    if (audio) { audio.pause(); audio.remove(); }
+                    overlay.style.opacity = "0";
+                    setTimeout(() => {
+                        overlay?.remove();
+                        d.body.classList.remove('magic-noscroll');
+                        window.dispatchEvent(new CustomEvent('welcomeTypingFinished'));
+                    }, 1200);
+                };
+
+                setTimeout(() => {
+                    container.style.transform = "scale(1.2)";
+                    container.style.opacity = "1";
+                    
+                    // Attempt audio playback gracefully
+                    try {
+                        const audio = d.createElement('audio');
+                        audio.id = 'magic-welcome-audio';
+                        audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1';
+                        audio.loop = true; audio.volume = 0.5; audio.preload = 'auto';
+                        d.body.appendChild(audio);
+                        audio.play().catch(() => {});
+                    } catch (e) {}
+
+                    // Start typing text independently of audio canplay event
+                    let idx = 0;
+                    const iv = setInterval(() => {
+                        if (idx < msgText.length) {
+                            msgPara.innerHTML += msgText[idx];
+                            idx++;
+                        } else {
+                            clearInterval(iv);
+                            setTimeout(finishWelcome, 2500);
+                        }
+                    }, 65);
+
+                    // Fail-safe: Guarantee welcome message unfreezes after max 6.5 seconds
+                    setTimeout(finishWelcome, 6500);
+                }, 100);
+
+                return { intervals: [] };
             };
+
             const curtain = d.getElementById("magic-curtain-reveal-root");
             if (curtain) {
                 const handler = () => { startTyping(); window.removeEventListener('curtainOpened', handler); };
                 window.addEventListener('curtainOpened', handler);
+                // Fail-safe: If curtainOpened doesn't fire in 8s, auto-start typing
+                setTimeout(() => {
+                    window.removeEventListener('curtainOpened', handler);
+                    startTyping();
+                }, 8000);
                 return {};
             } else {
                 return startTyping();
@@ -230,7 +286,6 @@
             const overlay = d?.getElementById("magic-welcome-typing-root");
             if (overlay) { overlay.remove(); d.body.classList.remove('magic-noscroll'); }
             const audio = d?.getElementById('magic-welcome-audio');
-
             if (audio) { audio.pause(); audio.remove(); }
         }
     },

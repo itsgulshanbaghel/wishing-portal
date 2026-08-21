@@ -6174,17 +6174,24 @@
           window.applyFeature('curtainReveal', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
           
           window.applyFeature('welcomeTyping', false);
-
           window.welcomeFinished = false;
-
           showContent();
 
           window._curtainOpenedHandler = () => {
             window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
-            window.curtainOpened = true;
-            runStages();
+            if (!window.curtainOpened) {
+              window.curtainOpened = true;
+              runStages();
+            }
           };
           window.addEventListener('curtainOpened', window._curtainOpenedHandler);
+          // Safety timeout: Auto-advance after 11s if curtain is opened or user doesn't tap
+          setTimeout(() => {
+            if (!window.curtainOpened) {
+              window.curtainOpened = true;
+              runStages();
+            }
+          }, 11000);
           return;
         }
 
@@ -6199,10 +6206,19 @@
 
           window._welcomeFinishedHandler = () => {
             window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
-            window.welcomeFinished = true;
-            runStages();
+            if (!window.welcomeFinished) {
+              window.welcomeFinished = true;
+              runStages();
+            }
           };
           window.addEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+          // Safety timeout: Auto-advance after 8s if welcome message is delayed
+          setTimeout(() => {
+            if (!window.welcomeFinished) {
+              window.welcomeFinished = true;
+              runStages();
+            }
+          }, 8000);
           return;
         }
 
