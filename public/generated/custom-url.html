@@ -1801,7 +1801,9 @@
       const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : 'https://wishing-portal-phi.vercel.app';
       const RESERVED_SLUGS_CLIENT = [
         'api', 'assets', 'generated', 'blog', 'admin', 'create', 'index', 'share', 'privacy',
-        'terms', 'contactus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme', 'favicon.ico', 'sitemap.xml', 'robots.txt'
+        'terms', 'contactus', 'aboutus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
+        'preview', 'customize', 'custom-url', 'login', 'logout', 'dashboard', 'support', 'help',
+        'null', 'undefined', 'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
       ];
 
       // Page Elements
@@ -2702,6 +2704,14 @@ function initCashfreeCheckout(paymentSessionId, orderId) {
         mainInterface.style.display = 'none';
         errorScreen.style.display = 'none';
         successScreen.style.display = 'block';
+
+        localStorage.setItem('isPremium', 'true');
+        localStorage.setItem('isPro', 'true');
+        const targetId = paymentData?.websiteId || websiteId || new URLSearchParams(window.location.search).get('view');
+        if (targetId) {
+          localStorage.setItem(`premium_${targetId}`, 'true');
+          localStorage.setItem(`pro_plan_${targetId}`, 'true');
+        }
 
         const finalUrl = `https://thegreeter.in/${paymentData.slug}`;
 

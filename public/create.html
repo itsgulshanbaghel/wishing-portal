@@ -3887,8 +3887,9 @@
         const finalEmail = email || 'guest@thegreeter.in';
         const finalPhone = phone || '9999999999';
 
-        // Generate a Website ID (Greeter ID) for this project
-        const websiteId = Math.random().toString(36).substring(2, 12);
+        // Reuse existing Website ID (Greeter ID) if available, otherwise generate new one
+        const existingUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const websiteId = existingUserData.websiteId || Math.random().toString(36).substring(2, 12);
 
         // Store user data with websiteId
         localStorage.setItem('userData', JSON.stringify(
@@ -3973,8 +3974,7 @@
 
                 // Determine mode based on hostname
                 const isProduction = window.location.hostname !== 'localhost' &&
-                  window.location.hostname !== '127.0.0.1' &&
-                  !window.location.hostname.includes('.onrender.com');
+                  window.location.hostname !== '127.0.0.1';
 
                 console.log('[Payment] Cashfree mode:', isProduction ? 'production' : 'sandbox');
                 console.log('[Payment] Cashfree SDK available:', typeof Cashfree !== 'undefined');
@@ -3991,7 +3991,7 @@
                 const checkoutOptions = {
                   paymentSessionId: data.paymentSessionId,
                   redirectTarget: '_self',
-                  redirectUrl: `${window.location.origin}/generated/preview.html?action=payment-success&orderId=${data.orderId}`,
+                  redirectUrl: `${window.location.origin}/generated/preview.html?action=payment-success&orderId=${data.orderId}&view=${websiteId}`,
                 };
 
                 console.log('[Payment] Checkout options:', checkoutOptions);
@@ -4193,8 +4193,12 @@
             userData.isPremium = true;
             if (data.websiteId) userData.websiteId = data.websiteId;
             localStorage.setItem('userData', JSON.stringify(userData));
+            localStorage.setItem('isPremium', 'true');
 
-            const targetWebsiteId = data.websiteId || userData.websiteId;
+            const targetWebsiteId = data.websiteId || userData.websiteId || new URLSearchParams(window.location.search).get('view');
+            if (targetWebsiteId) {
+              localStorage.setItem(`premium_${targetWebsiteId}`, 'true');
+            }
             const redirectUrl = targetWebsiteId ? `generated/preview.html?view=${targetWebsiteId}` : 'generated/preview.html';
 
             // Update loading message

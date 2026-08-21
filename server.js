@@ -306,6 +306,16 @@ app.post('/api/config', async (req, res) => {
     if (!html) return res.status(400).json({ error: 'HTML is required' });
     const id = websiteId || req.body.id || Math.random().toString(36).substring(2, 12);
 
+    // Auto-verify payment status from DB to ensure premium state is never lost
+    let effectiveIsPremium = !!isPremium;
+    try {
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        const paidCheck = await Payment.findOne({ websiteId: id, status: 'PAID' }).lean();
+        if (paidCheck) effectiveIsPremium = true;
+      }
+    } catch (e) {}
+
     // Extract metadata for analytics
     const metadata = {
       id,
@@ -313,7 +323,7 @@ app.post('/api/config', async (req, res) => {
       templateName: config?.templateName || config?.template || 'unknown',
       recipientName: config?.recipientName || config?.name || config?.userName || 'Unknown',
       features: config?.activeFeatures?.map(f => f[0]) || [],
-      isPremium: !!isPremium
+      isPremium: effectiveIsPremium
     };
 
     const dataObj = { html, config, metadata };
@@ -343,20 +353,20 @@ app.post('/api/config', async (req, res) => {
 
     // Save to CockroachDB Serverless (dual-table routing: free_records vs premium_records)
     try {
-      await cockroach.saveRecord(id, dataObj, isPremium);
+      await cockroach.saveRecord(id, dataObj, effectiveIsPremium);
     } catch (crErr) {
       console.warn('[Server] CockroachDB save warning:', crErr.message);
     }
 
     // Increment persistent global website creation counter
     try {
-      await analytics.incrementPersistentCounter('website_created', isPremium);
+      await analytics.incrementPersistentCounter('website_created', effectiveIsPremium);
     } catch (cntErr) {}
 
     // Upload to Storage (Supabase / Cloudinary fallback)
     const dataBuffer = Buffer.from(dataJson, 'utf8');
     try {
-      await storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', isPremium);
+      await storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', effectiveIsPremium);
     } catch (uploadErr) {
       console.warn('[Server] Storage upload warning:', uploadErr?.message || uploadErr);
       try {
@@ -621,8 +631,9 @@ app.post('/api/feedback', async (req, res) => {
 
 const RESERVED_SLUGS = new Set([
   'api', 'assets', 'generated', 'blog', 'admin', 'create', 'index', 'share', 'privacy',
-  'terms', 'contactus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
-  'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
+  'terms', 'contactus', 'aboutus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
+  'preview', 'customize', 'custom-url', 'login', 'logout', 'dashboard', 'support', 'help',
+  'null', 'undefined', 'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
 ]);
 
 app.post('/api/custom-url', async (req, res) => {
@@ -677,6 +688,9 @@ app.post('/api/custom-url', async (req, res) => {
 app.get('/api/custom-url/check/:slug', async (req, res) => {
   try {
     const sanitized = req.params.slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-$/g, '');
+    if (RESERVED_SLUGS.has(sanitized)) {
+      return res.json({ available: false, reserved: true, message: 'This word is reserved' });
+    }
     const ensureMongoConnectedResult = await ensureMongoConnected();
     if (!ensureMongoConnectedResult) {
       return res.status(503).json({ available: false });
@@ -1234,8 +1248,8 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
     if (gateway === 'paypal') {
       try {
         const targetPage = req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html';
-        const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}?action=payment-success&orderId=${orderId}`;
-        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}`;
+        const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}?action=payment-success&orderId=${orderId}&view=${websiteId}`;
+        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}?view=${websiteId}`;
 
         console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${paypalCurrency}`);
         const paypalOrder = await createPayPalOrder(paypalAmount, paypalCurrency, returnUrl, cancelUrl);
@@ -1288,7 +1302,7 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
         customer_phone: customer.customer_phone || '9999999999'
       },
       order_meta: {
-        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html'}?action=payment-success&orderId={order_id}`,
+        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html'}?action=payment-success&orderId={order_id}&view=${websiteId}`,
         notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal-phi.vercel.app'}/api/payment/webhook`,
         payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
       }
@@ -1521,8 +1535,18 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
       }
     }
 
+    const planKey = (payment.plan || 'starter').toLowerCase();
+    const canClaimFreeCustomUrl = payment.status === 'PAID' && planKey !== 'starter' && planKey !== 'free';
+
     res.json({
       status: payment.status,
+      isPremium: payment.status === 'PAID',
+      orderId: payment.orderId,
+      websiteId: payment.websiteId,
+      plan: payment.plan || 'pro',
+      planName: payment.planName || 'Pro Plan',
+      planDays: payment.planDays || 100,
+      canClaimFreeCustomUrl,
       slug: payment.slug,
       amount: payment.amount,
       currency: payment.currency,
@@ -1572,6 +1596,7 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
       websiteId,
       plan: paidPayment?.plan || (isPremium ? 'pro' : 'free'),
       planName: paidPayment?.planName || (plan === 'starter' ? 'Starter' : 'Pro'),
+      planDays: paidPayment?.planDays || (plan === 'forever' ? 99999 : (plan === 'pro_plus' ? 365 : (plan === 'pro' ? 100 : 30))),
       canClaimFreeCustomUrl,
       paymentId: paidPayment?.orderId || null,
       slug: paidPayment?.slug || null
