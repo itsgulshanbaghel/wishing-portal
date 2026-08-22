@@ -399,43 +399,55 @@ app.get('/api/config/:id', async (req, res) => {
     if (!safeName) return res.status(400).json({ error: 'Invalid ID' });
 
     // 1. Try fetching from CockroachDB Serverless Primary DB
+    let isPremiumRecord = false;
     try {
       const crRecord = await cockroach.getRecord(safeName);
-      if (crRecord && crRecord.metadata && (crRecord.metadata.html || Object.keys(crRecord.metadata).length > 2)) {
-        const resObj = Object.assign({}, crRecord.metadata);
-        if (crRecord.isPremium || crRecord.is_premium) {
-          resObj.isPremium = true;
-          if (typeof resObj.metadata === 'object' && resObj.metadata !== null) {
-            resObj.metadata.isPremium = true;
+      if (crRecord) {
+        isPremiumRecord = !!(crRecord.isPremium || crRecord.is_premium);
+        if (crRecord.metadata && crRecord.metadata.html) {
+          const resObj = Object.assign({}, crRecord.metadata);
+          if (isPremiumRecord) {
+            resObj.isPremium = true;
+            if (typeof resObj.metadata === 'object' && resObj.metadata !== null) {
+              resObj.metadata.isPremium = true;
+            }
           }
+          return res.json(resObj);
         }
-        return res.json(resObj);
       }
     } catch (crErr) {
       console.warn('[Server] CockroachDB config fetch warning:', crErr.message);
     }
 
-    // 2. Try fetching from MongoDB Website collection (Read-Only Fallback for legacy websites)
+    // 2. Try Supabase Storage (Primary asset store for complete JSON configs)
+    try {
+      const sbConfig = await storage.readWebsiteConfig(safeName);
+      if (sbConfig && sbConfig.html) {
+        if (isPremiumRecord || sbConfig.isPremium || (sbConfig.metadata && sbConfig.metadata.isPremium)) {
+          sbConfig.isPremium = true;
+          if (typeof sbConfig.metadata === 'object' && sbConfig.metadata !== null) {
+            sbConfig.metadata.isPremium = true;
+          }
+          // Repair damaged CockroachDB record asynchronously
+          cockroach.saveRecord(safeName, sbConfig, true).catch(() => {});
+        }
+        return res.json(sbConfig);
+      }
+    } catch (sbErr) {
+      console.warn('[Server] Supabase config fetch warning:', sbErr.message);
+    }
+
+    // 3. Try fetching from MongoDB Website collection (Read-Only Fallback for legacy websites)
     try {
       const mongoReady = await ensureMongoConnected();
       if (mongoReady) {
         const doc = await Website.findOne({ id: safeName }).lean();
-        if (doc && doc.metadata && (doc.metadata.html || Object.keys(doc.metadata).length > 2)) {
+        if (doc && doc.metadata && doc.metadata.html) {
           return res.json(doc.metadata);
         }
       }
     } catch (dbErr) {
       console.warn('[Server] DB config fetch warning:', dbErr.message);
-    }
-
-    // 3. Try Supabase Storage (Project 1 Free or Project 2 Premium)
-    try {
-      const sbConfig = await storage.readWebsiteConfig(safeName);
-      if (sbConfig) {
-        return res.json(sbConfig);
-      }
-    } catch (sbErr) {
-      console.warn('[Server] Supabase config fetch warning:', sbErr.message);
     }
 
     // 3. Try Cloudinary fallback (legacy links)
@@ -1039,10 +1051,19 @@ app.post('/api/payment/create-order', async (req, res) => {
       // Upgrade website record to premium in CockroachDB
       if (websiteId) {
         try {
-          const rec = await cockroach.getRecord(websiteId);
-          const meta = rec?.metadata || { id: websiteId, isPremium: true };
-          meta.isPremium = true;
-          await cockroach.saveRecord(websiteId, meta, true);
+          let meta = null;
+          const crRec = await cockroach.getRecord(websiteId);
+          if (crRec && crRec.metadata && crRec.metadata.html) {
+            meta = crRec.metadata;
+          } else {
+            const sbMeta = await storage.readWebsiteConfig(websiteId);
+            if (sbMeta && sbMeta.html) meta = sbMeta;
+          }
+          if (meta && meta.html) {
+            meta.isPremium = true;
+            if (typeof meta.metadata === 'object' && meta.metadata !== null) meta.metadata.isPremium = true;
+            await cockroach.saveRecord(websiteId, meta, true);
+          }
         } catch (e) {}
       }
 
