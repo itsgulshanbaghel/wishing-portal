@@ -313,10 +313,15 @@ app.post('/api/config', async (req, res) => {
     // Auto-verify payment status from DB to ensure premium state is never lost
     let effectiveIsPremium = !!isPremium;
     try {
-      const mongoReady = await ensureMongoConnected();
-      if (mongoReady) {
-        const paidCheck = await Payment.findOne({ websiteId: id, status: 'PAID' }).lean();
-        if (paidCheck) effectiveIsPremium = true;
+      const crRecord = await cockroach.getRecord(id);
+      if (crRecord && (crRecord.isPremium || crRecord.is_premium)) {
+        effectiveIsPremium = true;
+      } else {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          const paidCheck = await Payment.findOne({ websiteId: id, status: 'PAID' }).lean();
+          if (paidCheck) effectiveIsPremium = true;
+        }
       }
     } catch (e) {}
 
