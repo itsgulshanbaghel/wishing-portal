@@ -338,14 +338,14 @@ app.post('/api/config', async (req, res) => {
     const dataObj = { html, config, metadata };
     const dataJson = JSON.stringify(dataObj);
 
-    // 1. Save to CockroachDB Serverless Primary DB (dual-table routing: free_records vs premium_records)
+    // 1. Save lightweight indexing record to CockroachDB Serverless Primary DB (~200 bytes)
     try {
-      await cockroach.saveRecord(id, dataObj, effectiveIsPremium);
+      await cockroach.saveRecord(id, metadata, effectiveIsPremium);
     } catch (crErr) {
       console.warn('[Server] CockroachDB save warning:', crErr.message);
     }
 
-    // 2. Upload to Supabase Storage (Free bucket vs Premium bucket)
+    // 2. Upload full website JSON payload to Supabase Storage (Single Source of Truth for JSON configs)
     const dataBuffer = Buffer.from(dataJson, 'utf8');
     try {
       await storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', effectiveIsPremium);
@@ -403,43 +403,45 @@ app.get('/api/config/:id', async (req, res) => {
     const safeName = req.params.id.replace(/[^a-z0-9]/gi, '');
     if (!safeName) return res.status(400).json({ error: 'Invalid ID' });
 
-    // 1. Try fetching from CockroachDB Serverless Primary DB
-    let isPremiumRecord = false;
+    // 1. Fetch full JSON payload from Supabase Storage (Single Source of Truth)
+    let sbConfig = null;
     try {
-      const crRecord = await cockroach.getRecord(safeName);
-      if (crRecord) {
-        isPremiumRecord = !!(crRecord.isPremium || crRecord.is_premium);
-        if (crRecord.metadata && crRecord.metadata.html) {
-          const resObj = Object.assign({}, crRecord.metadata);
-          if (isPremiumRecord) {
-            resObj.isPremium = true;
-            if (typeof resObj.metadata === 'object' && resObj.metadata !== null) {
-              resObj.metadata.isPremium = true;
-            }
-          }
-          return res.json(resObj);
-        }
-      }
-    } catch (crErr) {
-      console.warn('[Server] CockroachDB config fetch warning:', crErr.message);
-    }
-
-    // 2. Try Supabase Storage (Primary asset store for complete JSON configs)
-    try {
-      const sbConfig = await storage.readWebsiteConfig(safeName);
-      if (sbConfig && sbConfig.html) {
-        if (isPremiumRecord || sbConfig.isPremium || (sbConfig.metadata && sbConfig.metadata.isPremium)) {
-          sbConfig.isPremium = true;
-          if (typeof sbConfig.metadata === 'object' && sbConfig.metadata !== null) {
-            sbConfig.metadata.isPremium = true;
-          }
-          // Repair damaged CockroachDB record asynchronously
-          cockroach.saveRecord(safeName, sbConfig, true).catch(() => {});
-        }
-        return res.json(sbConfig);
-      }
+      sbConfig = await storage.readWebsiteConfig(safeName);
     } catch (sbErr) {
       console.warn('[Server] Supabase config fetch warning:', sbErr.message);
+    }
+
+    // 2. Check CockroachDB Primary DB for premium status and lightweight metadata
+    let isPremiumRecord = false;
+    let crRecord = null;
+    try {
+      crRecord = await cockroach.getRecord(safeName);
+      if (crRecord) {
+        isPremiumRecord = !!(crRecord.isPremium || crRecord.is_premium);
+      }
+    } catch (crErr) {}
+
+    // If Supabase Storage returned the complete JSON config (HTML + config)
+    if (sbConfig && sbConfig.html) {
+      if (isPremiumRecord || sbConfig.isPremium || (sbConfig.metadata && sbConfig.metadata.isPremium)) {
+        sbConfig.isPremium = true;
+        if (typeof sbConfig.metadata === 'object' && sbConfig.metadata !== null) {
+          sbConfig.metadata.isPremium = true;
+        }
+      }
+      return res.json(sbConfig);
+    }
+
+    // 3. Fallback: If record was saved in CockroachDB metadata column (legacy/recovery fallback)
+    if (crRecord && crRecord.metadata && crRecord.metadata.html) {
+      const resObj = Object.assign({}, crRecord.metadata);
+      if (isPremiumRecord) {
+        resObj.isPremium = true;
+        if (typeof resObj.metadata === 'object' && resObj.metadata !== null) {
+          resObj.metadata.isPremium = true;
+        }
+      }
+      return res.json(resObj);
     }
 
     // 3. Try fetching from MongoDB Website collection (Read-Only Fallback for legacy websites)
