@@ -1,6 +1,12 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const cloudinary = require('cloudinary').v2;
+let sharp = null;
+try {
+  sharp = require('sharp');
+} catch (e) {
+  console.warn('[Storage] sharp module not available for image compression');
+}
 
 // Legacy Cloudinary configuration (kept active for old links & fallback)
 cloudinary.config({
@@ -64,6 +70,23 @@ async function uploadMedia(fileContent, fileName, mimeType = 'image/jpeg', isPre
       buffer = Buffer.from(fileContent, 'base64');
     } else {
       throw new Error('Invalid file content provided for upload');
+    }
+
+    // Compress image using Sharp ONLY for Free Plan users (isPremium === false)
+    if (!isPremium && sharp && mimeType && mimeType.startsWith('image/') && !mimeType.includes('svg')) {
+      try {
+        const compressed = await sharp(buffer)
+          .resize({ width: 1200, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 80 })
+          .toBuffer();
+        buffer = compressed;
+        mimeType = 'image/webp';
+        console.log(`[Storage] Compressed free plan image "${fileName}" to WebP (80% quality)`);
+      } catch (compressErr) {
+        console.warn('[Storage] Sharp image compression warning:', compressErr.message);
+      }
+    } else if (isPremium) {
+      console.log(`[Storage] Uploading uncompressed original file for Premium user: "${fileName}"`);
     }
 
     await ensureBucketPublic(client);

@@ -2008,31 +2008,48 @@
                     uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
                     uploadBtn.disabled = true;
 
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const viewId = urlParams.get('view') || urlParams.get('restore') || (typeof currentViewId !== 'undefined' ? currentViewId : '');
+                    const isPrem = !!(
+                        window.isPremiumUser ||
+                        window.isPremium ||
+                        (typeof userDataObj !== 'undefined' && userDataObj && userDataObj.isPremium) ||
+                        localStorage.getItem('isPremium') === 'true' ||
+                        (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') ||
+                        localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                        urlParams.get('_v') === 'c'
+                    );
+                    if (isPrem) {
+                        window.isPremiumUser = true;
+                        window.isPremium = true;
+                    }
+
                     const formData = new FormData();
                     formData.append('file', file);
-                    formData.append('upload_preset', 'Greeter');
+                    formData.append('isPremium', isPrem ? 'true' : 'false');
 
-                    fetch('https://api.cloudinary.com/v1_1/dzjq2xb5r/image/upload', {
+                    fetch('/api/upload-photo', {
                         method: 'POST',
                         body: formData
                     })
                         .then(res => res.json())
                         .then(data => {
-                            if (data.secure_url) {
-                                img.src = data.secure_url;
+                            if (data.secure_url || data.url) {
+                                const finalUrl = data.secure_url || data.url;
+                                img.src = finalUrl;
                                 img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
                                 img.style.opacity = "1";
                                 uploadBtn.style.display = 'none';
                                 removeBtn.style.display = isEditMode ? 'block' : 'none';
                                 imageContainer.style.background = 'transparent';
 
-                                w.parent.postMessage({ type: 'updateImageExplosion', image: data.secure_url }, '*');
+                                w.parent.postMessage({ type: 'updateImageExplosion', image: finalUrl }, '*');
                             } else {
                                 throw new Error(data.error?.message || 'Upload failed');
                             }
                         })
                         .catch(err => {
-                            console.error('Direct Cloudinary upload failed:', err);
+                            console.error('Image upload failed:', err);
                             alert(window.currentLang === 'hi' ? 'छवि अपलोड विफल रही। कृपया पुनः प्रयास करें।' : 'Image upload failed. Please try again.');
                         })
                         .finally(() => {

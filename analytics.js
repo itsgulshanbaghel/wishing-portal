@@ -288,37 +288,48 @@ class AnalyticsStore {
       const searchEngine = extractSearchEngine(rawReferer);
       const searchKeywords = extractSearchKeywords(rawReferer);
 
-      // Update or create visitor
-      await Visitor.findOneAndUpdate(
-        { visitorId },
-        { $set: { lastVisit: new Date(), ip, geo }, $setOnInsert: { firstVisit: new Date() } },
-        { upsert: true }
-      );
+      // Update or create visitor in CockroachDB & Mongo
+      const cockroach = require('./cockroach');
+      cockroach.saveVisitor({ visitorId, ip, geo }).catch(() => {});
+      try {
+        await Visitor.findOneAndUpdate(
+          { visitorId },
+          { $set: { lastVisit: new Date(), ip, geo }, $setOnInsert: { firstVisit: new Date() } },
+          { upsert: true }
+        );
+      } catch (mErr) {}
 
-      // Create event with enhanced traffic data
-      const event = await Event.create({
-        visitorId,
-        type: 'pageview',
-        page,
-        geo,
-        details: {
-          userAgent: ua,
-          referer: rawReferer,
-          device: _parseDevice(ua),
-          browser: _parseBrowser(ua),
-          os: _parseOS(ua),
-          trafficSource,
-          searchEngine,
-          searchKeywords,
-          utmSource: utmParams.utmSource,
-          utmMedium: utmParams.utmMedium,
-          utmCampaign: utmParams.utmCampaign,
-          utmContent: utmParams.utmContent,
-          utmTerm: utmParams.utmTerm
-        }
-      });
+      // Create event in CockroachDB & Mongo
+      const eventDetails = {
+        userAgent: ua,
+        referer: rawReferer,
+        device: _parseDevice(ua),
+        browser: _parseBrowser(ua),
+        os: _parseOS(ua),
+        trafficSource,
+        searchEngine,
+        searchKeywords,
+        utmSource: utmParams.utmSource,
+        utmMedium: utmParams.utmMedium,
+        utmCampaign: utmParams.utmCampaign,
+        utmContent: utmParams.utmContent,
+        utmTerm: utmParams.utmTerm
+      };
 
-      return event;
+      cockroach.saveEvent({ type: 'pageview', visitorId, page, details: eventDetails }).catch(() => {});
+      
+      let event = null;
+      try {
+        event = await Event.create({
+          visitorId,
+          type: 'pageview',
+          page,
+          geo,
+          details: eventDetails
+        });
+      } catch (mErr) {}
+
+      return event || { visitorId, type: 'pageview', page };
     } catch (err) {
       console.error('[Analytics] Error tracking pageview:', err.message);
     }
@@ -339,14 +350,26 @@ class AnalyticsStore {
       const visitorId = _hashIP(ip);
       const websiteId = eventData.websiteId || eventData.details?.websiteId || null;
 
-      const event = await Event.create({
-        visitorId,
+      const cockroach = require('./cockroach');
+      cockroach.saveEvent({
         type: eventData.type || 'event',
-        page: eventData.page,
-        websiteId: websiteId,
-        details: eventData.details || {},
-        geo
-      });
+        visitorId,
+        page: eventData.page || '',
+        websiteId: websiteId || '',
+        details: eventData.details || {}
+      }).catch(() => {});
+
+      let event = null;
+      try {
+        event = await Event.create({
+          visitorId,
+          type: eventData.type || 'event',
+          page: eventData.page,
+          websiteId: websiteId,
+          details: eventData.details || {},
+          geo
+        });
+      } catch (mErr) {}
 
       return event;
     } catch (err) {
@@ -372,11 +395,17 @@ class AnalyticsStore {
         updateFields.metadata = websiteData.metadata;
       }
 
-      const website = await Website.findOneAndUpdate(
-        { id: websiteData.id },
-        { $set: updateFields },
-        { upsert: true, returnDocument: 'after' }
-      );
+      const cockroach = require('./cockroach');
+      cockroach.saveRecord(websiteData.id, websiteData, !!websiteData.isPremium).catch(() => {});
+
+      let website = null;
+      try {
+        website = await Website.findOneAndUpdate(
+          { id: websiteData.id },
+          { $set: updateFields },
+          { upsert: true, returnDocument: 'after' }
+        );
+      } catch (mErr) {}
 
       // Track the creation as an event
       await this.trackEvent(req, {
@@ -400,22 +429,26 @@ class AnalyticsStore {
       const visitorId = _hashIP(ip);
       const geo = getGeoFromIP(ip);
 
-      const website = await Website.findOneAndUpdate(
-        { id: websiteId },
-        {
-          $inc: { views: 1 },
-          $addToSet: { uniqueViewers: visitorId }
-        },
-        { returnDocument: 'after' }
-      );
+      const cockroach = require('./cockroach');
+      cockroach.incrementView(websiteId).catch(() => {});
 
-      if (website) {
-        await this.trackEvent(req, {
-          type: 'website-view',
-          websiteId,
-          geo
-        });
-      }
+      let website = null;
+      try {
+        website = await Website.findOneAndUpdate(
+          { id: websiteId },
+          {
+            $inc: { views: 1 },
+            $addToSet: { uniqueViewers: visitorId }
+          },
+          { returnDocument: 'after' }
+        );
+      } catch (mErr) {}
+
+      await this.trackEvent(req, {
+        type: 'website-view',
+        websiteId,
+        geo
+      });
 
       return website;
     } catch (err) {

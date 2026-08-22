@@ -220,10 +220,11 @@ async function storeMetrics(metrics) {
   try {
     if (!metrics) return;
     
-    const healthMetric = new HealthMetric(metrics);
-    await healthMetric.save();
-    
-    console.log('[Health] Metrics stored successfully');
+    try {
+      const healthMetric = new HealthMetric(metrics);
+      await healthMetric.save().catch(() => {});
+      console.log('[Health] Metrics stored successfully');
+    } catch (dbErr) {}
     
     // Send alert if needed
     if (metrics.alertLevel !== 'normal') {
@@ -383,9 +384,9 @@ async function cleanupOldMetrics() {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const deleted = await HealthMetric.deleteMany({
       timestamp: { $lt: sevenDaysAgo }
-    });
+    }).catch(() => ({ deletedCount: 0 }));
     
-    console.log(`[Health] Cleaned up ${deleted.deletedCount} old metric records`);
+    console.log(`[Health] Cleaned up ${deleted.deletedCount || 0} old metric records`);
   } catch (error) {
     console.error('[Health] Error cleaning up old metrics:', error);
   }

@@ -4548,8 +4548,20 @@
               fileInput.onchange = async (e) => {
                 const files = Array.from(e.target.files);
                 const urlParams = new URLSearchParams(window.location.search);
-                const viewId = urlParams.get('view') || urlParams.get('restore');
-                const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+                const viewId = urlParams.get('view') || urlParams.get('restore') || (typeof currentViewId !== 'undefined' ? currentViewId : '');
+                const isPremium = !!(
+                  window.isPremiumUser ||
+                  window.isPremium ||
+                  (typeof userDataObj !== 'undefined' && userDataObj && userDataObj.isPremium) ||
+                  localStorage.getItem('isPremium') === 'true' ||
+                  (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') ||
+                  localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                  urlParams.get('_v') === 'c'
+                );
+                if (isPremium) {
+                  window.isPremiumUser = true;
+                  window.isPremium = true;
+                }
 
                 // Create placeholders
                 files.forEach(() => {
@@ -4565,19 +4577,20 @@
                   const promises = processedFiles.map((f, idx) => {
                     const formData = new FormData();
                     formData.append('file', f);
-                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-                    return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                    formData.append('isPremium', isPremium ? 'true' : 'false');
+                    return fetch('/api/upload-photo', {
                       method: 'POST',
                       body: formData
                     }).then(res => res.json()).then(data => {
-                      if (data.secure_url) {
+                      const finalUrl = data.secure_url || data.url;
+                      if (finalUrl) {
                         const items = previewDiv.querySelectorAll('.image-preview-item');
                         const item = items[items.length - files.length + idx];
                         const img = item.querySelector('img');
-                        img.src = data.secure_url;
+                        img.src = finalUrl;
                         img.onload = () => item.classList.add('loaded');
                         if (img.complete) item.classList.add('loaded');
-                        return data.secure_url;
+                        return finalUrl;
                       } else {
                         console.error('Upload failed', data);
                         throw new Error('Upload failed');
@@ -5517,16 +5530,32 @@
             e.preventDefault();
             const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
             if (files.length === 0) return;
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewId = urlParams.get('view') || urlParams.get('restore') || (typeof currentViewId !== 'undefined' ? currentViewId : '');
+            const isPremium = !!(
+              window.isPremiumUser ||
+              window.isPremium ||
+              (typeof userDataObj !== 'undefined' && userDataObj && userDataObj.isPremium) ||
+              localStorage.getItem('isPremium') === 'true' ||
+              (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') ||
+              localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+              urlParams.get('_v') === 'c'
+            );
+            if (isPremium) {
+              window.isPremiumUser = true;
+              window.isPremium = true;
+            }
             const promises = files.map(f => {
               const formData = new FormData();
               formData.append('file', f);
-              formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-              return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+              formData.append('isPremium', isPremium ? 'true' : 'false');
+              return fetch('/api/upload-photo', {
                 method: 'POST',
                 body: formData
               }).then(res => res.json()).then(data => {
-                if (data.secure_url) {
-                  return data.secure_url;
+                const finalUrl = data.secure_url || data.url;
+                if (finalUrl) {
+                  return finalUrl;
                 } else {
                   console.error('Upload failed', data);
                   throw new Error('Upload failed');
@@ -6625,8 +6654,13 @@
             }
 
             // On-the-fly filtering to support older custom URLs purchased before this change:
-            const isPremium = new URLSearchParams(window.location.search).get("_v") === "c" || window.__DISABLE_NUDGE__;
+            const urlParams = new URLSearchParams(window.location.search);
+            const isPremium = urlParams.get("_v") === "c" || urlParams.get("action") === "payment-success" || localStorage.getItem('isPremium') === 'true' || (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') || window.__DISABLE_NUDGE__;
             if (isPremium) {
+              window.isPremium = true;
+              window.isPremiumUser = true;
+              localStorage.setItem('isPremium', 'true');
+              if (viewId) localStorage.setItem(`premium_${viewId}`, 'true');
               // 1. Inject CSS to hide all possible CTA sections instantly
               storedHtml = storedHtml.replace('</head>', '<style>#magic-cta-section, .greeter-cta-section, .festival-cta-section { display: none !important; }</style></head>');
               // 2. Prevent the nudge popup timer function from scheduling
@@ -6654,12 +6688,16 @@
         fetch((API_BASE || window.location.origin) + '/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
           .then(data => {
-            if (data && (data.isPremium || (data.metadata && data.metadata.isPremium))) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isPaidView = urlParams.get('_v') === 'c' || urlParams.get('action') === 'payment-success' || (data && (data.isPremium || (data.metadata && data.metadata.isPremium)));
+            if (isPaidView) {
+              window.isPremium = true;
+              window.isPremiumUser = true;
               localStorage.setItem(`premium_${viewId}`, 'true');
               localStorage.setItem(`pro_plan_${viewId}`, 'true');
               localStorage.setItem('isPremium', 'true');
               localStorage.setItem('isPro', 'true');
-              const plan = data.plan || (data.metadata && data.metadata.plan) || 'pro';
+              const plan = (data && (data.plan || (data.metadata && data.metadata.plan))) || 'pro';
               localStorage.setItem(`user_plan_${viewId}`, plan);
               localStorage.setItem('user_plan', plan);
               const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');

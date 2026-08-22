@@ -108,20 +108,59 @@ async function ensureTablesExist() {
       );
     `;
 
+    const createEventsTable = `
+      CREATE TABLE IF NOT EXISTS events (
+        id SERIAL PRIMARY KEY,
+        type VARCHAR(64),
+        visitor_id VARCHAR(128),
+        session_id VARCHAR(128),
+        page TEXT,
+        website_id VARCHAR(64),
+        details JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    const createFeedbackTable = `
+      CREATE TABLE IF NOT EXISTS feedback (
+        id SERIAL PRIMARY KEY,
+        website_id VARCHAR(64),
+        responses JSONB,
+        ip VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    const createVisitorsTable = `
+      CREATE TABLE IF NOT EXISTS visitors (
+        visitor_id VARCHAR(128) PRIMARY KEY,
+        first_visit TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        last_visit TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        ip VARCHAR(64),
+        geo JSONB
+      );
+    `;
+
     if (pFree) {
       await pFree.query(createWebsitesTable('free_records'));
       await pFree.query(createSlugsTable);
       await pFree.query(createPaymentsTable);
       await pFree.query(createCountersTable);
+      await pFree.query(createEventsTable);
+      await pFree.query(createFeedbackTable);
+      await pFree.query(createVisitorsTable);
     }
     if (pPrem) {
       await pPrem.query(createWebsitesTable('premium_records'));
       await pPrem.query(createSlugsTable);
       await pPrem.query(createPaymentsTable);
       await pPrem.query(createCountersTable);
+      await pPrem.query(createEventsTable);
+      await pPrem.query(createFeedbackTable);
+      await pPrem.query(createVisitorsTable);
     }
     tablesInitialized = true;
-    console.log('[CockroachDB] Primary DB tables initialized (free_records, premium_records, custom_slugs, payments, system_counters)');
+    console.log('[CockroachDB] Primary DB tables initialized (free_records, premium_records, custom_slugs, payments, system_counters, events, feedback, visitors)');
     return true;
   } catch (err) {
     console.error('[CockroachDB] Table initialization error:', err.message);
@@ -159,6 +198,13 @@ async function saveRecord(websiteId, metadata, isPremium = false) {
 
     await pool.query(query, [websiteId, recipient, eventType, templateName, !!isPremium, jsonMeta]);
     console.log(`[CockroachDB] Saved record "${websiteId}" to ${tableName}`);
+
+    // If saving as premium, purge any previous record from free_records so it won't be auto-deleted
+    if (isPremium && poolFree) {
+      try {
+        await poolFree.query('DELETE FROM free_records WHERE id = $1', [websiteId]);
+      } catch (e) {}
+    }
     return true;
   } catch (err) {
     console.error(`[CockroachDB] Save record error for ${websiteId}:`, err.message);
@@ -408,7 +454,7 @@ async function getCockroachStats() {
 }
 
 /**
- * Purge expired free user records older than 36h from free_records table
+ * Purge expired free user records older than 36h from free_records table & unlinked free custom slugs
  */
 async function purgeExpiredFreeRecords() {
   if (!poolFree) return 0;
@@ -421,6 +467,22 @@ async function purgeExpiredFreeRecords() {
     if (deleted > 0) {
       console.log(`[CockroachDB] Purged ${deleted} expired free user records (>36h) from free_records table`);
     }
+
+    // Purge unlinked custom slugs for free websites older than 36h
+    try {
+      const slugRes = await poolFree.query(
+        `DELETE FROM custom_slugs 
+         WHERE created_at < NOW() - INTERVAL '36 hours' 
+         AND website_id NOT IN (SELECT id FROM premium_records) 
+         AND website_id NOT IN (SELECT id FROM free_records)`
+      );
+      if (slugRes.rowCount > 0) {
+        console.log(`[CockroachDB] Purged ${slugRes.rowCount} unlinked free custom slugs (>36h)`);
+      }
+    } catch (slugErr) {
+      console.warn('[CockroachDB] Slug purge warning:', slugErr.message);
+    }
+
     return deleted;
   } catch (err) {
     console.error('[CockroachDB] Purge error:', err.message);
@@ -469,6 +531,75 @@ async function getGlobalCounters() {
   return counters;
 }
 
+/**
+ * Telemetry Helpers in CockroachDB (bypasses MongoDB write limits)
+ */
+async function saveEvent(eventData) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return false;
+  try {
+    await ensureTablesExist();
+    await pool.query(
+      `INSERT INTO events (type, visitor_id, session_id, page, website_id, details)
+       VALUES ($1, $2, $3, $4, $5, $6);`,
+      [
+        eventData.type || 'event',
+        eventData.visitorId || '',
+        eventData.sessionId || '',
+        eventData.page || '',
+        eventData.websiteId || '',
+        JSON.stringify(eventData.details || {})
+      ]
+    );
+    return true;
+  } catch (err) {
+    console.warn('[CockroachDB] saveEvent warning:', err.message);
+    return false;
+  }
+}
+
+async function saveFeedback(feedbackData) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return false;
+  try {
+    await ensureTablesExist();
+    await pool.query(
+      `INSERT INTO feedback (website_id, responses, ip) VALUES ($1, $2, $3);`,
+      [
+        feedbackData.websiteId || '',
+        JSON.stringify(feedbackData.responses || {}),
+        feedbackData.ip || ''
+      ]
+    );
+    return true;
+  } catch (err) {
+    console.warn('[CockroachDB] saveFeedback warning:', err.message);
+    return false;
+  }
+}
+
+async function saveVisitor(visitorData) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return false;
+  try {
+    await ensureTablesExist();
+    await pool.query(
+      `INSERT INTO visitors (visitor_id, first_visit, last_visit, ip, geo)
+       VALUES ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $2, $3)
+       ON CONFLICT (visitor_id) DO UPDATE SET last_visit = CURRENT_TIMESTAMP;`,
+      [
+        visitorData.visitorId || '',
+        visitorData.ip || '',
+        JSON.stringify(visitorData.geo || {})
+      ]
+    );
+    return true;
+  } catch (err) {
+    console.warn('[CockroachDB] saveVisitor warning:', err.message);
+    return false;
+  }
+}
+
 module.exports = {
   saveRecord,
   getRecord,
@@ -481,5 +612,8 @@ module.exports = {
   purgeExpiredFreeRecords,
   incrementGlobalCounter,
   getGlobalCounters,
+  saveEvent,
+  saveFeedback,
+  saveVisitor,
   ensureTablesExist
 };

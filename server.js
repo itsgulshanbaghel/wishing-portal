@@ -130,13 +130,13 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://cdn.cashfree.com", "https://www.paypal.com", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://pagead2.googlesyndication.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://cdn.cashfree.com", "https://sdk.cashfree.com", "https://www.paypal.com", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://pagead2.googlesyndication.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       mediaSrc: ["'self'", "https:", "data:", "blob:"],
-      connectSrc: ["'self'", "https://wishing-portal-phi.vercel.app", "https://wishing-portal-05as.onrender.com", "https://wishing-portal.onrender.com", "https://api.cashfree.com", "https://api-m.paypal.com", "https://api-m.sandbox.paypal.com", "https://api.cloudinary.com"],
-      frameSrc: ["'self'", "https://checkout.razorpay.com", "https://www.paypal.com", "https://sandbox.cashfree.com"],
+      connectSrc: ["'self'", "https:", "wss:", "blob:"],
+      frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com", "https://open.spotify.com", "https://checkout.razorpay.com", "https://www.paypal.com", "https://sandbox.cashfree.com", "https://api.cashfree.com", "https://payments.cashfree.com", "https://sdk.cashfree.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: []
     }
@@ -148,7 +148,7 @@ app.use(helmet({
   },
   // Additional content protection headers
   frameguard: {
-    action: 'deny' // Prevent site from being embedded in iframes
+    action: 'sameorigin'
   },
   noSniff: true, // Prevent MIME type sniffing
   referrerPolicy: {
@@ -210,30 +210,34 @@ app.use('/api/analytics/event', (req, res, next) => {
   req.on('error', next);
 });
 
-// Upload audio to Cloudinary - must be before express.json to handle multipart/form-data
-const uploadAudio = multer({
+// Upload media / photo / audio to Supabase Storage - must be before express.json to handle multipart/form-data
+const uploadMediaMulter = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 20 * 1024 * 1024 // 20MB limit
+    fileSize: 25 * 1024 * 1024 // 25MB limit
   }
 });
 
-app.post('/api/upload-audio', uploadAudio.single('file'), async (req, res) => {
+const handleMediaUpload = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No audio file provided' });
+      return res.status(400).json({ error: 'No media file provided' });
     }
     const isPremium = req.body.isPremium === 'true' || req.body.isPremium === true;
-    const mimeType = req.file.mimetype || 'audio/mpeg';
-    const filename = req.file.originalname || `audio_${Date.now()}.mp3`;
+    const mimeType = req.file.mimetype || 'image/jpeg';
+    const filename = req.file.originalname || `upload_${Date.now()}.jpg`;
 
     const secureUrl = await storage.uploadMedia(req.file.buffer, filename, mimeType, isPremium);
-    res.json({ secure_url: secureUrl });
+    res.json({ secure_url: secureUrl, url: secureUrl });
   } catch (err) {
-    console.error('Error uploading audio via server:', err);
-    res.status(500).json({ error: err.message || 'Failed to upload audio' });
+    console.error('Error uploading media via server:', err);
+    res.status(500).json({ error: err.message || 'Failed to upload media' });
   }
-});
+};
+
+app.post('/api/upload-audio', uploadMediaMulter.single('file'), handleMediaUpload);
+app.post('/api/upload-photo', uploadMediaMulter.single('file'), handleMediaUpload);
+app.post('/api/upload-media', uploadMediaMulter.single('file'), handleMediaUpload);
 
 app.use(express.json({ limit: '10mb' })); // Reduced from 100mb to 10mb
 
@@ -329,7 +333,22 @@ app.post('/api/config', async (req, res) => {
     const dataObj = { html, config, metadata };
     const dataJson = JSON.stringify(dataObj);
 
-    // Save to MongoDB Website collection for instant, high-reliability retrieval
+    // 1. Save to CockroachDB Serverless Primary DB (dual-table routing: free_records vs premium_records)
+    try {
+      await cockroach.saveRecord(id, dataObj, effectiveIsPremium);
+    } catch (crErr) {
+      console.warn('[Server] CockroachDB save warning:', crErr.message);
+    }
+
+    // 2. Upload to Supabase Storage (Free bucket vs Premium bucket)
+    const dataBuffer = Buffer.from(dataJson, 'utf8');
+    try {
+      await storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', effectiveIsPremium);
+    } catch (uploadErr) {
+      console.warn('[Server] Supabase storage upload warning:', uploadErr?.message || uploadErr);
+    }
+
+    // 3. Optional non-blocking MongoDB write attempt (swallows quota errors gracefully)
     try {
       const mongoReady = await ensureMongoConnected();
       if (mongoReady) {
@@ -345,17 +364,10 @@ app.post('/api/config', async (req, res) => {
             }
           },
           { upsert: true, returnDocument: 'after', strict: false }
-        );
+        ).catch(() => {});
       }
     } catch (dbErr) {
-      console.warn('[Server] DB config save warning:', dbErr.message);
-    }
-
-    // Save to CockroachDB Serverless (dual-table routing: free_records vs premium_records)
-    try {
-      await cockroach.saveRecord(id, dataObj, effectiveIsPremium);
-    } catch (crErr) {
-      console.warn('[Server] CockroachDB save warning:', crErr.message);
+      console.warn('[Server] Mongo DB config save warning (ignored):', dbErr.message);
     }
 
     // Increment persistent global website creation counter
@@ -363,31 +375,14 @@ app.post('/api/config', async (req, res) => {
       await analytics.incrementPersistentCounter('website_created', effectiveIsPremium);
     } catch (cntErr) {}
 
-    // Upload to Storage (Supabase / Cloudinary fallback)
-    const dataBuffer = Buffer.from(dataJson, 'utf8');
-    try {
-      await storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', effectiveIsPremium);
-    } catch (uploadErr) {
-      console.warn('[Server] Storage upload warning:', uploadErr?.message || uploadErr);
-      try {
-        const dataUri = `data:application/json;base64,${dataBuffer.toString('base64')}`;
-        await cloudinary.uploader.upload(dataUri, {
-          resource_type: 'raw',
-          public_id: id,
-          folder: 'configs'
-        });
-      } catch (cErr) {}
-    }
-
     // Register website in analytics
     console.log('[Server] Registering website:', metadata.id, metadata.recipientName);
     try {
-      await ensureMongoConnected();
       await analytics.registerWebsite(req, metadata);
       analytics.trackEvent(req, { type: 'website_created', details: { id, eventType: metadata.eventType } });
       console.log('[Server] Website registered successfully');
     } catch (e) {
-      console.error('[Server] Analytics registration failed:', e);
+      console.error('[Server] Analytics registration warning:', e.message);
     }
 
     res.json({ id });
@@ -403,13 +398,29 @@ app.get('/api/config/:id', async (req, res) => {
     const safeName = req.params.id.replace(/[^a-z0-9]/gi, '');
     if (!safeName) return res.status(400).json({ error: 'Invalid ID' });
 
-    // 1. Try fetching from MongoDB Website collection
+    // 1. Try fetching from CockroachDB Serverless Primary DB
+    try {
+      const crRecord = await cockroach.getRecord(safeName);
+      if (crRecord && crRecord.metadata && (crRecord.metadata.html || Object.keys(crRecord.metadata).length > 2)) {
+        const resObj = Object.assign({}, crRecord.metadata);
+        if (crRecord.isPremium || crRecord.is_premium) {
+          resObj.isPremium = true;
+          if (typeof resObj.metadata === 'object' && resObj.metadata !== null) {
+            resObj.metadata.isPremium = true;
+          }
+        }
+        return res.json(resObj);
+      }
+    } catch (crErr) {
+      console.warn('[Server] CockroachDB config fetch warning:', crErr.message);
+    }
+
+    // 2. Try fetching from MongoDB Website collection (Read-Only Fallback for legacy websites)
     try {
       const mongoReady = await ensureMongoConnected();
       if (mongoReady) {
         const doc = await Website.findOne({ id: safeName }).lean();
         if (doc && doc.metadata && (doc.metadata.html || Object.keys(doc.metadata).length > 2)) {
-          // Return full metadata object (contains html, config, metadata fields)
           return res.json(doc.metadata);
         }
       }
@@ -417,17 +428,7 @@ app.get('/api/config/:id', async (req, res) => {
       console.warn('[Server] DB config fetch warning:', dbErr.message);
     }
 
-    // 2. Try fetching from CockroachDB Serverless
-    try {
-      const crRecord = await cockroach.getRecord(safeName);
-      if (crRecord && crRecord.metadata && crRecord.metadata.html) {
-        return res.json(crRecord.metadata);
-      }
-    } catch (crErr) {
-      console.warn('[Server] CockroachDB config fetch warning:', crErr.message);
-    }
-
-    // 2. Try Supabase Storage (Project 1 Free or Project 2 Premium)
+    // 3. Try Supabase Storage (Project 1 Free or Project 2 Premium)
     try {
       const sbConfig = await storage.readWebsiteConfig(safeName);
       if (sbConfig) {
@@ -612,16 +613,27 @@ app.post('/api/feedback', async (req, res) => {
       return res.status(400).json({ error: 'Responses are required' });
     }
 
-    await ensureMongoConnected();
-
-    const feedback = new Feedback({
+    // Save feedback to CockroachDB Primary DB
+    await cockroach.saveFeedback({
       websiteId,
       responses,
-      ip: req.ip,
-      geo: {} // Could be populated if geo service is available
+      ip: req.ip
     });
 
-    await feedback.save();
+    // Optional non-blocking MongoDB write attempt
+    try {
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        const feedback = new Feedback({
+          websiteId,
+          responses,
+          ip: req.ip,
+          geo: {}
+        });
+        await feedback.save().catch(() => {});
+      }
+    } catch (e) {}
+
     res.json({ success: true, message: 'Feedback submitted successfully' });
   } catch (err) {
     console.error('Error saving feedback:', err);
@@ -1011,6 +1023,29 @@ app.post('/api/payment/create-order', async (req, res) => {
       console.log(`[Localhost Bypass] Automatically approving payment order ${orderId} for testing`);
 
       const sanitizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+      await cockroach.savePayment({
+        orderId,
+        websiteId,
+        slug: sanitizedSlug || slug,
+        amount: 0,
+        currency: 'INR',
+        status: 'PAID',
+        paymentMethod: 'localhost'
+      });
+      if (sanitizedSlug) {
+        await cockroach.saveCustomSlug(sanitizedSlug, websiteId);
+      }
+
+      // Upgrade website record to premium in CockroachDB
+      if (websiteId) {
+        try {
+          const rec = await cockroach.getRecord(websiteId);
+          const meta = rec?.metadata || { id: websiteId, isPremium: true };
+          meta.isPremium = true;
+          await cockroach.saveRecord(websiteId, meta, true);
+        } catch (e) {}
+      }
+
       try {
         const mongoReady = await ensureMongoConnected();
         if (mongoReady) {
@@ -1023,11 +1058,9 @@ app.post('/api/payment/create-order', async (req, res) => {
             status: 'PAID',
             gateway: 'localhost',
             customerDetails: customerDetails || { customer_name: 'Local Tester', customer_email: email || 'test@localhost', customer_phone: phone || '9999999999' }
-          });
+          }).catch(() => {});
         }
-      } catch (e) {
-        console.error('[Localhost Bypass] DB save warning:', e.message);
-      }
+      } catch (e) {}
 
       const redirectUrl = `/generated/customize.html?view=${websiteId}&_v=c&lang=en`;
       return res.json({
@@ -1061,46 +1094,13 @@ app.post('/api/payment/create-order', async (req, res) => {
       return res.status(400).json({ error: 'Slug must be 3-30 characters' });
     }
 
-    const mongoReady = await ensureMongoConnected();
-    if (!mongoReady) {
-      return res.status(503).json({ error: 'Server temporarily unavailable. Please try again later.' });
-    }
-
-// Premium status check endpoint
-app.get('/api/premium/check/:websiteId', async (req, res) => {
-  try {
-    const { websiteId } = req.params;
-    if (!websiteId) return res.status(400).json({ isPremium: false, canClaimFreeCustomUrl: false });
-
-    const mongoReady = await ensureMongoConnected();
-    if (!mongoReady) return res.json({ isPremium: false, canClaimFreeCustomUrl: false });
-
-    const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
-    if (paidCheck) {
-      const planKey = (paidCheck.plan || '').toLowerCase();
-      const canClaimFreeCustomUrl = planKey !== 'starter' && planKey !== 'free';
-      return res.json({
-        isPremium: true,
-        plan: paidCheck.plan,
-        canClaimFreeCustomUrl
-      });
-    }
-
-    return res.json({ isPremium: false, canClaimFreeCustomUrl: false });
-  } catch (err) {
-    console.error('Error checking premium status:', err);
-    res.status(500).json({ isPremium: false, canClaimFreeCustomUrl: false });
-  }
-});
-
-    // Check if slug already taken by a PAID payment for a DIFFERENT websiteId
-    const existingPaid = await Payment.findOne({ slug: sanitizedSlug, status: 'PAID' }).lean();
-    if (existingPaid && existingPaid.websiteId !== websiteId) {
+    // Check if slug already taken in CockroachDB or Mongo
+    const existingSlug = await cockroach.getCustomSlug(sanitizedSlug);
+    if (existingSlug && existingSlug.websiteId !== websiteId) {
       return res.status(409).json({ error: 'This personalized URL is already taken. Try another.' });
     }
 
     // 👑 Premium Free Custom URL Claim Bypass
-    // If request indicates premium user or $0 amount or user already paid for this websiteId
     let isProOrHigherPaid = false;
     if (websiteId) {
       try {
@@ -1114,13 +1114,18 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
       } catch (e) {}
 
       if (!isProOrHigherPaid) {
-        const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
-        if (paidCheck && paidCheck.plan) {
-          const normPlan = paidCheck.plan.toLowerCase();
-          if (normPlan !== 'starter' && normPlan !== 'free') {
-            isProOrHigherPaid = true;
+        try {
+          const mongoReady = await ensureMongoConnected();
+          if (mongoReady) {
+            const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
+            if (paidCheck && paidCheck.plan) {
+              const normPlan = paidCheck.plan.toLowerCase();
+              if (normPlan !== 'starter' && normPlan !== 'free') {
+                isProOrHigherPaid = true;
+              }
+            }
           }
-        }
+        } catch (e) {}
       }
     }
 
@@ -1142,28 +1147,43 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
 
       const freeOrderId = `ORD_PREM_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const freePlanMeta = getPlanMeta(req.body.plan, true);
-      await Payment.create({
+
+      await cockroach.savePayment({
         orderId: freeOrderId,
         websiteId,
         slug: sanitizedSlug,
+        plan: freePlanMeta.plan,
+        planName: freePlanMeta.planName,
         amount: 0,
         currency: req.body.currency || 'INR',
         status: 'PAID',
-        gateway: 'free_premium_claim',
-        plan: freePlanMeta.plan,
-        planName: freePlanMeta.planName,
-        planDays: freePlanMeta.planDays,
-        customerDetails: customerDetails || { customer_name: 'Premium User', customer_email: email || 'guest@thegreeter.in', customer_phone: phone || '9999999999' },
-        qrCenterType: qrCenterType || 'none',
-        qrCenterText: qrCenterText || '',
-        qrCenterPhotoUrl: finalPhotoUrl || '',
-        paidAt: new Date()
+        paymentMethod: 'free_premium_claim'
       });
+      await cockroach.saveCustomSlug(sanitizedSlug, websiteId);
 
-      const existingSlugRec = await CustomSlug.findOne({ slug: sanitizedSlug }).lean();
-      if (!existingSlugRec) {
-        await CustomSlug.create({ slug: sanitizedSlug, websiteId });
-      }
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          await Payment.create({
+            orderId: freeOrderId,
+            websiteId,
+            slug: sanitizedSlug,
+            amount: 0,
+            currency: req.body.currency || 'INR',
+            status: 'PAID',
+            gateway: 'free_premium_claim',
+            plan: freePlanMeta.plan,
+            planName: freePlanMeta.planName,
+            planDays: freePlanMeta.planDays,
+            customerDetails: customerDetails || { customer_name: 'Premium User', customer_email: email || 'guest@thegreeter.in', customer_phone: phone || '9999999999' },
+            qrCenterType: qrCenterType || 'none',
+            qrCenterText: qrCenterText || '',
+            qrCenterPhotoUrl: finalPhotoUrl || '',
+            paidAt: new Date()
+          }).catch(() => {});
+          await CustomSlug.create({ slug: sanitizedSlug, websiteId }).catch(() => {});
+        }
+      } catch (e) {}
 
       return res.json({
         success: true,
@@ -1198,7 +1218,7 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
       paypalAmount = req.body.amount;
     }
 
-    // Upload QR center photo to Cloudinary if provided as base64
+    // Upload QR center photo to Supabase Storage if provided as base64
     let finalPhotoUrl = qrCenterPhotoUrl || '';
     if (qrCenterPhotoBase64) {
       try {
@@ -1208,41 +1228,49 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
       }
     }
 
-    // Check if same user already has a pending/failed order for this slug - cancel old ones
-    await Payment.updateMany(
-      { websiteId, slug: sanitizedSlug, status: { $in: ['PENDING', 'FAILED'] } },
-      { $set: { status: 'CANCELLED' } }
-    );
-
     const orderId = `ORD_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    // We never ask users for credentials on our site.
-    // Cashfree only needs placeholder values to create the order;
-    // actual payment details are collected on Cashfree's own checkout screen.
     const customer = customerDetails && customerDetails.customer_phone !== '9999999999'
       ? customerDetails
       : (customerDetails || { customer_name: 'Guest', customer_email: 'guest@thegreeter.in', customer_phone: '9999999999' });
-    const orderAmount = amount; // already a number from getGeoPrice()
+    const orderAmount = amount;
 
     const planMeta = getPlanMeta(req.body.plan, false);
 
-    // Create payment record
-    const payment = await Payment.create({
+    // Save payment to CockroachDB Primary DB
+    await cockroach.savePayment({
       orderId,
       websiteId,
       slug: sanitizedSlug,
-      amount: orderAmount,
-      currency,
-      status: 'PENDING',
-      gateway,
       plan: planMeta.plan,
       planName: planMeta.planName,
-      planDays: planMeta.planDays,
-      customerDetails: customer,
-      qrCenterType: qrCenterType || 'none',
-      qrCenterText: qrCenterText || '',
-      qrCenterPhotoUrl: finalPhotoUrl || '',
-      metadata: { source: req.headers['user-agent'] || 'web' }
+      amount,
+      currency,
+      status: 'PENDING',
+      paymentMethod: gateway
     });
+
+    // Optional non-blocking Mongo write
+    try {
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        await Payment.create({
+          orderId,
+          websiteId,
+          slug: sanitizedSlug,
+          amount,
+          currency,
+          status: 'PENDING',
+          gateway,
+          plan: planMeta.plan,
+          planName: planMeta.planName,
+          planDays: planMeta.planDays,
+          qrCenterType: qrCenterType || 'none',
+          qrCenterText: qrCenterText || '',
+          qrCenterPhotoUrl: finalPhotoUrl || '',
+          metadata: { source: req.headers['user-agent'] || 'web' }
+        }).catch(() => {});
+      }
+    } catch (e) {}
 
     // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
     if (gateway === 'paypal') {
@@ -1466,21 +1494,43 @@ app.post('/api/payment/webhook', async (req, res) => {
       newStatus = 'EXPIRED';
     }
 
-    await Payment.findByIdAndUpdate(payment._id, {
+    // Update CockroachDB Primary DB
+    await cockroach.savePayment({
+      orderId: payment.orderId,
+      websiteId: payment.websiteId,
+      slug: payment.slug,
       status: newStatus,
-      cfPaymentId: payment_id || payment.cfPaymentId,
-      cfSignature: signature,
-      paidAt: newStatus === 'PAID' ? new Date() : payment.paidAt
+      paymentMethod: payment.gateway || 'cashfree'
     });
 
-    // If payment succeeded, reserve the custom URL
     if (newStatus === 'PAID') {
-      const { CustomSlug } = require('./models');
-      const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
-      if (!existingSlug) {
-        await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId });
+      if (payment.slug) {
+        await cockroach.saveCustomSlug(payment.slug, payment.websiteId);
+      }
+      // Upgrade website record to premium in CockroachDB
+      const record = await cockroach.getRecord(payment.websiteId);
+      if (record) {
+        await cockroach.saveRecord(payment.websiteId, record.metadata, true);
       }
     }
+
+    // Non-blocking Mongo write
+    try {
+      await Payment.findByIdAndUpdate(payment._id, {
+        status: newStatus,
+        cfPaymentId: payment_id || payment.cfPaymentId,
+        cfSignature: signature,
+        paidAt: newStatus === 'PAID' ? new Date() : payment.paidAt
+      }).catch(() => {});
+
+      if (newStatus === 'PAID') {
+        const { CustomSlug } = require('./models');
+        const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
+        if (!existingSlug) {
+          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => {});
+        }
+      }
+    } catch (e) {}
 
     console.log(`[Webhook] Order ${resolvedOrderId} status updated to ${newStatus}`);
     res.status(200).json({ received: true, status: newStatus });
@@ -1518,7 +1568,7 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
             const { CustomSlug } = require('./models');
             const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
             if (!existingSlug) {
-              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId });
+              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => {});
             }
             return res.json({
               status: 'PAID',
@@ -1640,25 +1690,45 @@ app.post('/api/payment/paypal/capture', async (req, res) => {
     const captureResult = await capturePayPalOrder(payment.paypalOrderId);
 
     if (captureResult.status === 'COMPLETED') {
-      // Update payment status
-      await Payment.findByIdAndUpdate(payment._id, {
+      // Update CockroachDB Primary DB
+      await cockroach.savePayment({
+        orderId: payment.orderId,
+        websiteId: payment.websiteId,
+        slug: payment.slug,
         status: 'PAID',
-        paidAt: new Date(),
-        paypalCaptureId: captureResult.id
+        paymentMethod: 'paypal'
       });
-
-      // Reserve the custom URL
-      const { CustomSlug } = require('./models');
-      const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
-      if (!existingSlug) {
-        await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId });
+      if (payment.slug) {
+        await cockroach.saveCustomSlug(payment.slug, payment.websiteId);
       }
+      const record = await cockroach.getRecord(payment.websiteId);
+      if (record) {
+        await cockroach.saveRecord(payment.websiteId, record.metadata, true);
+      }
+
+      // Non-blocking Mongo write
+      try {
+        await Payment.findByIdAndUpdate(payment._id, {
+          status: 'PAID',
+          paidAt: new Date(),
+          paypalCaptureId: captureResult.id
+        }).catch(() => {});
+
+        const { CustomSlug } = require('./models');
+        const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
+        if (!existingSlug) {
+          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => {});
+        }
+      } catch (e) {}
 
       console.log(`[PayPal] Order ${orderId} captured successfully`);
       return res.json({ success: true, status: 'PAID', slug: payment.slug });
     } else {
       console.error('[PayPal] Capture failed:', captureResult);
-      await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' });
+      await cockroach.savePayment({ orderId: payment.orderId, websiteId: payment.websiteId, status: 'FAILED' });
+      try {
+        await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' }).catch(() => {});
+      } catch (e) {}
       return res.status(400).json({ error: 'Payment capture failed', details: captureResult });
     }
   } catch (err) {
@@ -1671,59 +1741,51 @@ app.post('/api/payment/paypal/capture', async (req, res) => {
 app.post('/api/payment/paypal/webhook', async (req, res) => {
   try {
     const webhookEvent = req.body;
-    const webhookId = webhookEvent.id;
-
-    // Verify webhook signature (optional but recommended for production)
-    // PayPal webhooks can be verified using the webhook ID and certificates
-
     console.log(`[PayPal Webhook] Received event: ${webhookEvent.event_type}`);
-
-    const mongoReady = await ensureMongoConnected();
-    if (!mongoReady) {
-      return res.status(503).json({ error: 'Server temporarily unavailable' });
-    }
 
     // Handle different PayPal webhook events
     if (webhookEvent.event_type === 'PAYMENT.CAPTURE.COMPLETED' ||
       webhookEvent.event_type === 'CHECKOUT.ORDER.APPROVED') {
 
       const purchaseUnits = webhookEvent.resource?.purchase_units;
-      if (!purchaseUnits || purchaseUnits.length === 0) {
-        console.error('[PayPal Webhook] No purchase units in event');
-        return res.status(200).json({ received: true });
-      }
-
-      const customId = purchaseUnits[0]?.custom_id;
+      const customId = purchaseUnits?.[0]?.custom_id;
       const paypalOrderId = webhookEvent.resource?.id;
 
-      // Find payment by PayPal order ID or custom ID
-      let payment = await Payment.findOne({ paypalOrderId }).lean();
-      if (!payment && customId) {
-        payment = await Payment.findOne({ orderId: customId }).lean();
+      // Update CockroachDB Primary DB
+      let crRecord = null;
+      if (customId) {
+        crRecord = await cockroach.getRecord(customId);
       }
+      await cockroach.savePayment({
+        orderId: customId || paypalOrderId,
+        status: 'PAID',
+        paymentMethod: 'paypal'
+      });
 
-      if (!payment) {
-        console.error('[PayPal Webhook] Payment not found for PayPal order:', paypalOrderId);
-        return res.status(200).json({ received: true });
-      }
+      // Optional Mongo fallback write
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          let payment = await Payment.findOne({ paypalOrderId }).lean();
+          if (!payment && customId) {
+            payment = await Payment.findOne({ orderId: customId }).lean();
+          }
 
-      // Update payment status if not already paid
-      if (payment.status !== 'PAID') {
-        await Payment.findByIdAndUpdate(payment._id, {
-          status: 'PAID',
-          paidAt: new Date(),
-          paypalCaptureId: webhookEvent.id
-        });
+          if (payment && payment.status !== 'PAID') {
+            await Payment.findByIdAndUpdate(payment._id, {
+              status: 'PAID',
+              paidAt: new Date(),
+              paypalCaptureId: webhookEvent.id
+            }).catch(() => {});
 
-        // Reserve the custom URL
-        const { CustomSlug } = require('./models');
-        const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
-        if (!existingSlug) {
-          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId });
+            const { CustomSlug } = require('./models');
+            const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
+            if (!existingSlug) {
+              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => {});
+            }
+          }
         }
-
-        console.log(`[PayPal Webhook] Order ${payment.orderId} marked as PAID`);
-      }
+      } catch (e) {}
     } else if (webhookEvent.event_type === 'PAYMENT.CAPTURE.DECLINED' ||
       webhookEvent.event_type === 'CHECKOUT.ORDER.DECLINED') {
 
@@ -2175,7 +2237,7 @@ app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
         }
 
         if (existing) {
-          await Website.updateOne({ id }, { $set: metadata });
+          await Website.updateOne({ id }, { $set: metadata }).catch(() => {});
         } else {
           await analytics.registerWebsite({ headers: {}, socket: {} }, metadata);
         }
