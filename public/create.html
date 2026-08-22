@@ -3434,18 +3434,56 @@
         'default': { currency: 'USD', amount: 2.99, symbol: '$', region: 'International' }
       };
 
-      // Eurozone countries (server-side handling)
-      const EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
+      // Card selection state
+      let selectedMode = 'premium'; // 'free' or 'premium'
 
-      // Helper function to load scripts dynamically
-      function loadScript(src) {
-        return new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = src;
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
+      function updateUnifiedBtn() {
+        const unifiedBtn = document.getElementById('unifiedProceedBtn');
+        const unifiedLabel = document.getElementById('unifiedBtnLabel');
+        const unifiedIcon = document.getElementById('unifiedBtnIcon');
+        if (!unifiedBtn) return;
+
+        let currentSymbol = '$';
+        if (selectedCurrency === 'INR') currentSymbol = '₹';
+        else if (selectedCurrency === 'EUR') currentSymbol = '€';
+        else if (selectedCurrency === 'GBP') currentSymbol = '£';
+        else if (selectedCurrency === 'CAD') currentSymbol = 'CA$';
+        else if (selectedCurrency === 'AUD') currentSymbol = 'A$';
+        else if (selectedCurrency === 'AED') currentSymbol = 'AED ';
+        else if (selectedCurrency === 'PKR') currentSymbol = 'PKR ';
+
+        if (selectedMode === 'free') {
+          unifiedBtn.style.display = 'flex';
+          const inlineChk = document.getElementById('inlineCheckout');
+          if (inlineChk) inlineChk.style.display = 'none';
+          unifiedBtn.className = 'btn-unified free-mode';
+          if (unifiedIcon) unifiedIcon.className = 'fas fa-arrow-right';
+          if (unifiedLabel) unifiedLabel.textContent = 'Continue with Free (24h)';
+          const priceBadge = document.getElementById('unifiedBtnPrice');
+          if (priceBadge) priceBadge.style.display = 'none';
+        } else {
+          unifiedBtn.className = 'btn-unified';
+          if (unifiedIcon) unifiedIcon.className = 'fas fa-crown';
+
+          let planName = 'Pro';
+          if (typeof activePlan !== 'undefined' && activePlan) {
+            if (activePlan.plan === 'starter') planName = 'Starter';
+            else if (activePlan.plan === 'pro') planName = 'Pro';
+            else if (activePlan.plan === 'pro_plus' || activePlan.plan === 'proPlus') planName = 'Pro+';
+            else if (activePlan.plan === 'forever') planName = 'Infinity';
+          }
+
+          const priceVal = (typeof activePlan !== 'undefined' && activePlan) ? activePlan.price : (selectedAmount || 49);
+          if (unifiedLabel) unifiedLabel.textContent = `Continue with ${planName} – ${currentSymbol}${priceVal}`;
+          const premMobileLabel = document.getElementById('premCardProceedBtnLabel');
+          if (premMobileLabel) {
+            premMobileLabel.textContent = `Continue with ${planName} – ${currentSymbol}${priceVal}`;
+          }
+          const priceBadge = document.getElementById('unifiedBtnPrice');
+          if (priceBadge) priceBadge.style.display = 'none';
+          const finalPayBtn = document.getElementById('finalPayBtnText');
+          if (finalPayBtn) finalPayBtn.textContent = `Pay ${currentSymbol}${priceVal} Securely`;
+        }
       }
 
       function updatePricingUI() {
@@ -3763,53 +3801,11 @@
         });
       });
 
-      // Card selection state
-      let selectedMode = 'premium'; // 'free' or 'premium'
       const freeCard = document.getElementById('freeCard');
       const premiumCard = document.getElementById('premiumCard');
       const unifiedBtn = document.getElementById('unifiedProceedBtn');
       const unifiedLabel = document.getElementById('unifiedBtnLabel');
       const unifiedIcon = document.getElementById('unifiedBtnIcon');
-
-      function updateUnifiedBtn() {
-        // Get current symbol
-        let currentSymbol = '$';
-        if (selectedCurrency === 'INR') currentSymbol = '₹';
-        else if (selectedCurrency === 'EUR') currentSymbol = '€';
-        else if (selectedCurrency === 'GBP') currentSymbol = '£';
-        else if (selectedCurrency === 'CAD') currentSymbol = 'CA$';
-        else if (selectedCurrency === 'AUD') currentSymbol = 'A$';
-        else if (selectedCurrency === 'AED') currentSymbol = 'AED ';
-        else if (selectedCurrency === 'PKR') currentSymbol = 'PKR ';
-
-        if (selectedMode === 'free') {
-          unifiedBtn.style.display = 'flex';
-          document.getElementById('inlineCheckout').style.display = 'none';
-          unifiedBtn.className = 'btn-unified free-mode';
-          unifiedIcon.className = 'fas fa-arrow-right';
-          unifiedLabel.textContent = 'Continue with Free (24h)';
-          const priceBadge = document.getElementById('unifiedBtnPrice');
-          if (priceBadge) priceBadge.style.display = 'none';
-        } else {
-          unifiedBtn.className = 'btn-unified';
-          unifiedIcon.className = 'fas fa-crown';
-
-          let planName = 'Pro';
-          if (activePlan.plan === 'starter') planName = 'Starter';
-          else if (activePlan.plan === 'pro') planName = 'Pro';
-          else if (activePlan.plan === 'pro_plus' || activePlan.plan === 'proPlus') planName = 'Pro+';
-          else if (activePlan.plan === 'forever') planName = 'Infinity';
-
-          unifiedLabel.textContent = `Continue with ${planName} – ${currentSymbol}${activePlan.price}`;
-          const premMobileLabel = document.getElementById('premCardProceedBtnLabel');
-          if (premMobileLabel) {
-            premMobileLabel.textContent = `Continue with ${planName} – ${currentSymbol}${activePlan.price}`;
-          }
-          const priceBadge = document.getElementById('unifiedBtnPrice');
-          if (priceBadge) priceBadge.style.display = 'none';
-          document.getElementById('finalPayBtnText').textContent = `Pay ${currentSymbol}${activePlan.price} Securely`;
-        }
-      }
 
       function selectFree() {
         selectedMode = 'free';

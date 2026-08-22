@@ -1288,10 +1288,9 @@ app.post('/api/payment/create-order', async (req, res) => {
         }
 
         // Update payment with paypal details and approval link
-        await Payment.findByIdAndUpdate(payment._id, {
-          paymentLink: approveLink,
-          paypalOrderId: paypalOrder.id
-        });
+        try {
+          await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink: approveLink, paypalOrderId: paypalOrder.id } }).catch(() => {});
+        } catch (e) {}
 
         return res.json({
           success: true,
@@ -1384,7 +1383,11 @@ app.post('/api/payment/create-order', async (req, res) => {
       cfError = err.message || 'Network error while connecting to payment gateway';
     }
 
-    await Payment.findByIdAndUpdate(payment._id, { paymentLink });
+    try {
+      if (paymentLink) {
+        await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink } }).catch(() => {});
+      }
+    } catch (e) {}
 
     // If we have a payment_session_id but no payment_link, return session_id for drop-in checkout
     if (!paymentLink && cfData.payment_session_id) {
