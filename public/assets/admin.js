@@ -9,7 +9,7 @@
     if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
       return window.APP_CONFIG.API_BASE_URL;
     }
-    return 'https://wishing-portal-phi.vercel.app';
+    return '';
   };
 
   const API = getApiBaseUrl();
