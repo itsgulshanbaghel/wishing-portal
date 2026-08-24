@@ -194,14 +194,14 @@ async function getSupabaseStats() {
 
   if (supabaseFree) {
     try {
-      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free');
+      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free', { limit: 5000 });
       if (data) freeFileCount = data.length;
     } catch (e) { }
   }
 
   if (supabasePremium) {
     try {
-      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium');
+      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium', { limit: 5000 });
       if (data) premiumFileCount = data.length;
     } catch (e) { }
   }
@@ -223,7 +223,7 @@ async function listSupabaseWebsites() {
   const websites = [];
   if (supabaseFree) {
     try {
-      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free');
+      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free', { limit: 5000, sortBy: { column: 'created_at', order: 'desc' } });
       if (data) {
         data.filter(f => f.name.endsWith('.json')).forEach(f => {
           websites.push({
@@ -238,7 +238,7 @@ async function listSupabaseWebsites() {
 
   if (supabasePremium) {
     try {
-      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium');
+      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium', { limit: 5000, sortBy: { column: 'created_at', order: 'desc' } });
       if (data) {
         data.filter(f => f.name.endsWith('.json')).forEach(f => {
           websites.push({
@@ -291,7 +291,7 @@ async function listSupabaseFilesDetailed() {
   const files = [];
   if (supabaseFree) {
     try {
-      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } });
+      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free', { limit: 5000, sortBy: { column: 'created_at', order: 'desc' } });
       if (data) {
         data.forEach(f => {
           const { data: urlData } = supabaseFree.storage.from(BUCKET_NAME).getPublicUrl(`free/${f.name}`);
@@ -313,7 +313,7 @@ async function listSupabaseFilesDetailed() {
 
   if (supabasePremium) {
     try {
-      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } });
+      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium', { limit: 5000, sortBy: { column: 'created_at', order: 'desc' } });
       if (data) {
         data.forEach(f => {
           const { data: urlData } = supabasePremium.storage.from(BUCKET_NAME).getPublicUrl(`premium/${f.name}`);
