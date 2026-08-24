@@ -566,11 +566,14 @@ class AnalyticsStore {
           }
         }
 
+        const defaultPlan = isPremium ? (slug ? 'custom_url' : 'premium') : 'free';
+        const defaultPlanName = isPremium ? (slug ? 'Custom URL' : '👑 Premium') : 'Free';
+
         return {
           ...w,
           isPremium,
-          plan: isPremium ? (plan || 'pro') : 'free',
-          planName: isPremium ? (planName || 'Paid Plan') : 'Free',
+          plan: plan || defaultPlan,
+          planName: planName || defaultPlanName,
           planDays: isPremium ? (planDays || 365) : 0,
           paidAmount: amount,
           currency,

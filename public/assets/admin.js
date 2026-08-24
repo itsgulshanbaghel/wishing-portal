@@ -987,11 +987,18 @@
       const tr = document.createElement('tr');
       const time = a.timestamp ? new Date(a.timestamp).toLocaleString() : '--';
       const badge = getBadge(a.type);
-      let details = '';
-      if (a.type === 'pageview' || a.type === 'pageView') details = a.page || '';
-      else if (a.type === 'event') details = (a.eventType || '') + ' ' + (a.details ? JSON.stringify(a.details).slice(0, 60) : '');
-      else if (a.type === 'website-view') details = `Website: ${a.websiteId || 'Unknown'} | View`;
-      else if (a.type === 'websiteCreated') details = `ID: ${a.websiteId || ''} | ${a.recipientName || ''}`;
+      let details = a.page || '';
+      if (a.type === 'website_created' || a.type === 'websiteCreated') {
+        const name = a.details?.recipientName || a.recipientName || '';
+        const ev = a.details?.eventType || a.eventType || 'site';
+        details = `Created ${name ? `"${name}"` : 'Website'} (${ev}) [${a.websiteId || a.id || ''}]`;
+      } else if (a.type === 'website-view' || a.type === 'website_view') {
+        details = `Website Viewed: ${a.websiteId || 'Unknown'}`;
+      } else if (a.type === 'feature') {
+        details = `Feature: ${a.details?.feature || 'unknown'} (${a.details?.action || 'used'})`;
+      } else if (a.details && typeof a.details === 'object' && Object.keys(a.details).length > 0) {
+        details = `${a.page || ''} ${JSON.stringify(a.details).slice(0, 60)}`;
+      }
       const loc = a.geo ? `${a.geo.city || ''}, ${a.geo.country || ''}` : '--';
       tr.innerHTML = `<td>${time}</td><td>${badge}</td><td>${details}</td><td>${loc}</td>`;
       tbody.appendChild(tr);
@@ -1670,7 +1677,18 @@
       const tr = document.createElement('tr');
       const time = a.timestamp ? new Date(a.timestamp).toLocaleString() : '--';
       const badge = getBadge(a.type);
-      let details = a.page || a.eventType || a.websiteId || '';
+      let details = a.page || '';
+      if (a.type === 'website_created' || a.type === 'websiteCreated') {
+        const name = a.details?.recipientName || a.recipientName || '';
+        const ev = a.details?.eventType || a.eventType || 'site';
+        details = `Created ${name ? `"${name}"` : 'Website'} (${ev}) [${a.websiteId || a.id || ''}]`;
+      } else if (a.type === 'website-view' || a.type === 'website_view') {
+        details = `Website Viewed: ${a.websiteId || 'Unknown'}`;
+      } else if (a.type === 'feature') {
+        details = `Feature: ${a.details?.feature || 'unknown'} (${a.details?.action || 'used'})`;
+      } else if (a.details && typeof a.details === 'object' && Object.keys(a.details).length > 0) {
+        details = `${a.page || ''} ${JSON.stringify(a.details).slice(0, 60)}`;
+      }
       const loc = a.geo ? `${a.geo.city || ''}, ${a.geo.country || ''}` : '--';
       tr.innerHTML = `<td>${time}</td><td>${badge}</td><td>${details}</td><td>${loc}</td>`;
       tbody.appendChild(tr);

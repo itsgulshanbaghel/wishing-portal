@@ -2550,6 +2550,7 @@ app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
       const wId = click.websiteId || click.details?.websiteId || null;
       const website = wId ? websiteMap.get(wId) : null;
       const payment = wId ? paidMap.get(wId) : null;
+      const isPaidSite = !!(payment || website?.isPremium);
 
       return {
         ...click,
@@ -2557,8 +2558,8 @@ app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
         websiteRecipientName: website?.recipientName || 'Unknown',
         websiteEventType: website?.eventType || 'Unknown',
         websiteTemplateName: website?.templateName || 'Unknown',
-        isPaid: !!payment,
-        paymentAmount: payment ? `${payment.currency || 'INR'} ${payment.amount || 0}` : null
+        isPaid: isPaidSite,
+        paymentAmount: payment ? `${payment.currency || 'INR'} ${payment.amount || 0}` : (website?.isPremium ? 'Premium' : null)
       };
     });
 
