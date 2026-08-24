@@ -4975,8 +4975,6 @@
                 try {
                   const urlParams = new URLSearchParams(window.location.search);
                   const viewId = urlParams.get('view') || urlParams.get('restore');
-                  const urlParams = new URLSearchParams(window.location.search);
-                  const viewId = urlParams.get('view') || urlParams.get('restore');
                   const isPremium = !!(
                     (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') ||
                     sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
