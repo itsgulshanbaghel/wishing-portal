@@ -511,7 +511,7 @@ class AnalyticsStore {
       const websites = allUnifiedWebsites.map(w => {
         const payment = paidMap.get(w.id);
         const slug = slugMap.get(w.id) || w.slug;
-        const isPremium = !!(payment && (payment.status === 'PAID' || payment.status === 'COMPLETED')) || !!slug;
+        const isPremium = !!(w.isPremium || (payment && (payment.status === 'PAID' || payment.status === 'COMPLETED')) || slug);
 
         let plan = payment?.plan || null;
         let planName = payment?.planName || null;
@@ -572,23 +572,29 @@ class AnalyticsStore {
             plan = 'custom_url';
             planName = 'Custom URL';
             planDays = 365;
+          } else {
+            plan = 'premium';
+            planName = '👑 Premium';
+            planDays = 365;
           }
         }
 
         const defaultPlan = isPremium ? (slug ? 'custom_url' : 'premium') : 'free';
         const defaultPlanName = isPremium ? (slug ? 'Custom URL' : '👑 Premium') : 'Free';
 
+        const m = w.metadata || {};
+        const c = m.config || {};
         let recipientName = w.recipientName;
-        if (!recipientName || recipientName === 'Unknown' || recipientName === 'Untitled Site') {
-          recipientName = w.metadata?.recipientName || w.metadata?.config?.recipientName || w.metadata?.config?.name || w.metadata?.config?.userName || 'Special Recipient';
+        if (!recipientName || recipientName === 'Unknown' || recipientName === 'Untitled Site' || recipientName === 'Special Recipient') {
+          recipientName = m.recipientName || m.userName || m.name || c.userName || c.recipientName || c.name || (w.id ? `Site #${w.id.slice(0, 6)}` : 'Gift Website');
         }
         let eventType = w.eventType;
         if (!eventType || eventType === 'unknown') {
-          eventType = w.metadata?.eventType || w.metadata?.config?.eventType || w.metadata?.config?.category || 'birthday';
+          eventType = m.eventType || m.category || c.eventType || c.category || 'birthday';
         }
         let templateName = w.templateName;
         if (!templateName || templateName === 'default') {
-          templateName = w.metadata?.templateName || w.metadata?.config?.templateName || 'birthday1';
+          templateName = m.templateName || m.template || c.templateName || c.template || 'birthday1';
         }
 
         return {

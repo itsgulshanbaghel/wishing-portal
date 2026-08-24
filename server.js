@@ -1588,17 +1588,26 @@ app.post('/api/payment/webhook', async (req, res) => {
 app.get('/api/payment/status/:orderId', async (req, res) => {
   try {
     const { orderId } = req.params;
-    const mongoReady = await ensureMongoConnected();
-    if (!mongoReady) {
-      return res.status(503).json({ error: 'Server temporarily unavailable.' });
-    }
-    const payment = await Payment.findOne({ orderId }).lean();
+
+    // 1. Fetch from CockroachDB / MongoDB
+    let payment = null;
+    try {
+      const crPayments = await cockroach.getAllPayments(500);
+      payment = crPayments.find(p => p.orderId === orderId);
+    } catch (e) { }
+
     if (!payment) {
-      return res.status(404).json({ error: 'Payment not found' });
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          payment = await Payment.findOne({ orderId }).lean();
+        }
+      } catch (e) { }
     }
 
-    // If payment is still PENDING, try to verify with Cashfree directly
-    if (payment.status === 'PENDING' && CF_APP_ID && CF_SECRET_KEY) {
+    // 2. If still pending or not found in local DB, verify directly with Cashfree
+    let isDirectPaid = false;
+    if (CF_APP_ID && CF_SECRET_KEY) {
       try {
         const cfRes = await fetch(`${CF_API_BASE}/orders/${orderId}`, {
           method: 'GET',
@@ -1608,19 +1617,53 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
           const cfData = await cfRes.json();
           const cfStatus = cfData.order_status || cfData.status;
           if (cfStatus === 'PAID' || cfStatus === 'SUCCESS') {
-            await Payment.findByIdAndUpdate(payment._id, { status: 'PAID', paidAt: new Date() });
-            const { CustomSlug } = require('./models');
-            const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
-            if (!existingSlug) {
-              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => { });
+            isDirectPaid = true;
+            const websiteId = payment?.websiteId || cfData.customer_details?.customer_id;
+            const slug = payment?.slug || '';
+
+            // Update CockroachDB Primary DB
+            await cockroach.savePayment({
+              orderId,
+              websiteId,
+              slug,
+              amount: cfData.order_amount || payment?.amount || 0,
+              currency: cfData.order_currency || payment?.currency || 'INR',
+              status: 'PAID',
+              paymentMethod: 'cashfree'
+            });
+
+            if (slug && websiteId) {
+              await cockroach.saveCustomSlug(slug, websiteId);
             }
+
+            if (websiteId) {
+              const rec = await cockroach.getRecord(websiteId);
+              if (rec) {
+                await cockroach.saveRecord(websiteId, rec.metadata, true);
+              }
+            }
+
+            // Update Mongo
+            try {
+              const mongoReady = await ensureMongoConnected();
+              if (mongoReady) {
+                await Payment.findOneAndUpdate(
+                  { orderId },
+                  { status: 'PAID', paidAt: new Date() },
+                  { upsert: false }
+                );
+              }
+            } catch (e) { }
+
             return res.json({
               status: 'PAID',
-              orderId: payment.orderId,
-              slug: payment.slug,
-              websiteId: payment.websiteId,
-              qrCenterText: payment.qrCenterText,
-              qrCenterPhotoUrl: payment.qrCenterPhotoUrl
+              isPremium: true,
+              orderId,
+              slug,
+              websiteId,
+              plan: payment?.plan || 'starter',
+              planName: payment?.planName || 'Starter (30+ Days)',
+              planDays: payment?.planDays || 30
             });
           }
         }
@@ -1629,25 +1672,26 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
       }
     }
 
-    const planKey = (payment.plan || 'starter').toLowerCase();
-    const canClaimFreeCustomUrl = payment.status === 'PAID' && planKey !== 'starter' && planKey !== 'free';
+    if (!payment && !isDirectPaid) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    const isPaid = payment?.status === 'PAID' || payment?.status === 'COMPLETED' || isDirectPaid;
+    const planKey = (payment?.plan || 'starter').toLowerCase();
+    const canClaimFreeCustomUrl = isPaid && planKey !== 'starter' && planKey !== 'free';
 
     res.json({
-      status: payment.status,
-      isPremium: payment.status === 'PAID',
-      orderId: payment.orderId,
-      websiteId: payment.websiteId,
-      plan: payment.plan || 'pro',
-      planName: payment.planName || 'Pro Plan',
-      planDays: payment.planDays || 100,
+      status: isPaid ? 'PAID' : (payment?.status || 'PENDING'),
+      isPremium: isPaid,
+      orderId: payment?.orderId || orderId,
+      websiteId: payment?.websiteId,
+      plan: payment?.plan || 'starter',
+      planName: payment?.planName || 'Starter (30+ Days)',
+      planDays: payment?.planDays || 30,
       canClaimFreeCustomUrl,
-      slug: payment.slug,
-      amount: payment.amount,
-      currency: payment.currency,
-      paymentLink: payment.paymentLink,
-      qrCenterType: payment.qrCenterType,
-      qrCenterText: payment.qrCenterText,
-      qrCenterPhotoUrl: payment.qrCenterPhotoUrl
+      slug: payment?.slug,
+      amount: payment?.amount,
+      currency: payment?.currency || 'INR'
     });
   } catch (err) {
     console.error('Payment status check error:', err);
@@ -1659,26 +1703,56 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
 app.get('/api/premium/check/:websiteId', async (req, res) => {
   try {
     const { websiteId } = req.params;
-    const mongoReady = await ensureMongoConnected();
-    if (!mongoReady) {
-      return res.status(503).json({ error: 'Server temporarily unavailable.' });
-    }
 
-    // Check if there's a PAID payment for this websiteId
-    const paidPayment = await Payment.findOne({
-      websiteId,
-      status: 'PAID'
-    }).lean();
+    // 1. Check CockroachDB Primary DB
+    let isPremium = false;
+    let plan = 'free';
+    let planName = 'Free';
+    let planDays = 0;
+    let slug = null;
+    let paymentId = null;
 
-    let isPremium = !!paidPayment;
-    let plan = (paidPayment?.plan || 'starter').toLowerCase();
+    try {
+      const crRecord = await cockroach.getRecord(websiteId);
+      if (crRecord && (crRecord.isPremium || crRecord.is_premium)) {
+        isPremium = true;
+        plan = 'pro';
+        planName = '👑 Premium';
+        planDays = 365;
+      }
 
+      const crPayments = await cockroach.getAllPayments(500);
+      const paidPayment = crPayments.find(p => p.websiteId === websiteId && (p.status === 'PAID' || p.status === 'COMPLETED'));
+      if (paidPayment) {
+        isPremium = true;
+        plan = paidPayment.plan || 'starter';
+        planName = paidPayment.planName || 'Starter Plan';
+        planDays = paidPayment.planDays || 30;
+        paymentId = paidPayment.orderId;
+        slug = paidPayment.slug;
+      }
+
+      const crSlug = await cockroach.getCustomSlug(websiteId);
+      if (crSlug) {
+        isPremium = true;
+        slug = slug || crSlug.slug;
+      }
+    } catch (e) { }
+
+    // 2. Fallback to MongoDB if not found
     if (!isPremium) {
       try {
-        const site = await Website.findOne({ id: websiteId }).lean();
-        if (site && site.isPremium) {
-          isPremium = true;
-          plan = (site.plan || 'pro').toLowerCase();
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          const paidPayment = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
+          if (paidPayment) {
+            isPremium = true;
+            plan = (paidPayment.plan || 'starter').toLowerCase();
+            planName = paidPayment.planName || 'Starter Plan';
+            planDays = paidPayment.planDays || 30;
+            paymentId = paidPayment.orderId;
+            slug = paidPayment.slug;
+          }
         }
       } catch (e) { }
     }
@@ -1688,12 +1762,12 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
     res.json({
       isPremium,
       websiteId,
-      plan: paidPayment?.plan || (isPremium ? 'pro' : 'free'),
-      planName: paidPayment?.planName || (plan === 'starter' ? 'Starter' : 'Pro'),
-      planDays: paidPayment?.planDays || (plan === 'forever' ? 99999 : (plan === 'pro_plus' ? 365 : (plan === 'pro' ? 100 : 30))),
+      plan,
+      planName,
+      planDays,
       canClaimFreeCustomUrl,
-      paymentId: paidPayment?.orderId || null,
-      slug: paidPayment?.slug || null
+      paymentId,
+      slug
     });
   } catch (err) {
     console.error('Premium check error:', err);
