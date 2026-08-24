@@ -340,19 +340,30 @@ async function listSupabaseFilesDetailed() {
  * Delete a website JSON config and associated media from Supabase Storage
  */
 async function deleteWebsiteConfig(id) {
-  const fileName = id.endsWith('.json') ? id : `${id}.json`;
+  if (!id) return { freeDeleted: false, premiumDeleted: false };
+  const rawId = id.replace(/\.json$/, '');
+  const fileName = `${rawId}.json`;
   const results = { freeDeleted: false, premiumDeleted: false };
+
+  const pathsToRemove = [
+    `free/${fileName}`,
+    `premium/${fileName}`,
+    fileName,
+    `free/${rawId}`,
+    `premium/${rawId}`,
+    rawId
+  ];
 
   if (supabaseFree) {
     try {
-      const { error } = await supabaseFree.storage.from(BUCKET_NAME).remove([`free/${fileName}`]);
+      const { error } = await supabaseFree.storage.from(BUCKET_NAME).remove(pathsToRemove);
       if (!error) results.freeDeleted = true;
     } catch (e) {}
   }
 
   if (supabasePremium) {
     try {
-      const { error } = await supabasePremium.storage.from(BUCKET_NAME).remove([`premium/${fileName}`]);
+      const { error } = await supabasePremium.storage.from(BUCKET_NAME).remove(pathsToRemove);
       if (!error) results.premiumDeleted = true;
     } catch (e) {}
   }

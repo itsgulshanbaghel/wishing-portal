@@ -119,6 +119,7 @@ async function ensureTablesExist() {
         page TEXT,
         website_id VARCHAR(64),
         details JSONB,
+        geo JSONB,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -149,6 +150,7 @@ async function ensureTablesExist() {
       await pFree.query(createPaymentsTable);
       await pFree.query(createCountersTable);
       await pFree.query(createEventsTable);
+      await pFree.query('ALTER TABLE events ADD COLUMN IF NOT EXISTS geo JSONB;').catch(() => {});
       await pFree.query(createFeedbackTable);
       await pFree.query(createVisitorsTable);
     }
@@ -158,6 +160,7 @@ async function ensureTablesExist() {
       await pPrem.query(createPaymentsTable);
       await pPrem.query(createCountersTable);
       await pPrem.query(createEventsTable);
+      await pPrem.query('ALTER TABLE events ADD COLUMN IF NOT EXISTS geo JSONB;').catch(() => {});
       await pPrem.query(createFeedbackTable);
       await pPrem.query(createVisitorsTable);
     }
@@ -306,9 +309,31 @@ async function getAllWebsites() {
       try {
         const query = `
           SELECT r.id, 
-                 COALESCE(NULLIF(r.recipient_name, 'Unknown'), NULLIF(r.recipient_name, 'Untitled Site'), NULLIF(r.metadata->>'recipientName', ''), NULLIF(r.metadata->'config'->>'recipientName', ''), NULLIF(r.metadata->'config'->>'name', ''), NULLIF(r.metadata->'config'->>'userName', ''), 'Special Recipient') as recipient_name,
-                 COALESCE(NULLIF(r.event_type, 'unknown'), NULLIF(r.metadata->>'eventType', ''), NULLIF(r.metadata->'config'->>'eventType', ''), NULLIF(r.metadata->'config'->>'category', ''), 'birthday') as event_type,
-                 COALESCE(NULLIF(r.template_name, 'default'), NULLIF(r.metadata->>'templateName', ''), NULLIF(r.metadata->'config'->>'templateName', ''), 'birthday1') as template_name,
+                 COALESCE(
+                   NULLIF(r.recipient_name, 'Unknown'), 
+                   NULLIF(r.recipient_name, 'Untitled Site'), 
+                   NULLIF(r.metadata->>'recipientName', ''), 
+                   NULLIF(r.metadata->>'userName', ''), 
+                   NULLIF(r.metadata->>'name', ''), 
+                   NULLIF(r.metadata->'config'->>'recipientName', ''), 
+                   NULLIF(r.metadata->'config'->>'userName', ''), 
+                   NULLIF(r.metadata->'config'->>'name', ''), 
+                   'Special Recipient'
+                 ) as recipient_name,
+                 COALESCE(
+                   NULLIF(r.event_type, 'unknown'), 
+                   NULLIF(r.metadata->>'eventType', ''), 
+                   NULLIF(r.metadata->>'category', ''), 
+                   NULLIF(r.metadata->'config'->>'eventType', ''), 
+                   NULLIF(r.metadata->'config'->>'category', ''), 
+                   'birthday'
+                 ) as event_type,
+                 COALESCE(
+                   NULLIF(r.template_name, 'default'), 
+                   NULLIF(r.metadata->>'templateName', ''), 
+                   NULLIF(r.metadata->'config'->>'templateName', ''), 
+                   'birthday1'
+                 ) as template_name,
                  r.is_premium, 
                  GREATEST(r.views, COALESCE(e.view_count, 0)) as views,
                  COALESCE(e.unique_count, 0) as unique_viewers_count,
@@ -589,15 +614,16 @@ async function saveEvent(eventData) {
   try {
     await ensureTablesExist();
     await pool.query(
-      `INSERT INTO events (type, visitor_id, session_id, page, website_id, details)
-       VALUES ($1, $2, $3, $4, $5, $6);`,
+      `INSERT INTO events (type, visitor_id, session_id, page, website_id, details, geo)
+       VALUES ($1, $2, $3, $4, $5, $6, $7);`,
       [
         eventData.type || 'event',
         eventData.visitorId || '',
         eventData.sessionId || '',
         eventData.page || '',
         eventData.websiteId || '',
-        JSON.stringify(eventData.details || {})
+        JSON.stringify(eventData.details || {}),
+        eventData.geo ? JSON.stringify(eventData.geo) : null
       ]
     );
     return true;
@@ -746,17 +772,19 @@ async function getPersonaliseClicks(limit = 1000) {
   try {
     await ensureTablesExist();
     const res = await pool.query(
-      `SELECT id, type, visitor_id as "visitorId", session_id as "sessionId", page, website_id as "websiteId", details, created_at as "timestamp"
-       FROM events 
-       WHERE type = 'personalise_url_click' OR details->>'action' = 'clicked_personalise_url_button'
-       ORDER BY created_at DESC 
+      `SELECT e.id, e.type, e.visitor_id as "visitorId", e.session_id as "sessionId", e.page, e.website_id as "websiteId", e.details, COALESCE(e.geo, v.geo) as geo, e.created_at as "timestamp"
+       FROM events e
+       LEFT JOIN visitors v ON e.visitor_id = v.visitor_id
+       WHERE e.type = 'personalise_url_click' OR e.details->>'action' = 'clicked_personalise_url_button'
+       ORDER BY e.created_at DESC 
        LIMIT $1`,
       [limit]
     );
 
     const clicks = (res.rows || []).map(r => ({
       ...r,
-      details: typeof r.details === 'string' ? JSON.parse(r.details) : (r.details || {})
+      details: typeof r.details === 'string' ? JSON.parse(r.details) : (r.details || {}),
+      geo: typeof r.geo === 'string' ? JSON.parse(r.geo) : (r.geo || null)
     }));
 
     const uniqueSiteSet = new Set();
@@ -1072,22 +1100,26 @@ async function getDashboardAnalytics(days = 7) {
  * Delete a website record from all CockroachDB tables
  */
 async function deleteWebsiteRecords(websiteId) {
-  const pool = poolFree || poolPremium;
-  if (!pool) return { success: false, deletedCount: 0 };
+  const pools = [poolFree, poolPremium].filter((p, idx, arr) => p && arr.indexOf(p) === idx);
+  if (pools.length === 0) return { success: false, deletedCount: 0 };
 
   try {
     await ensureTablesExist();
     let deletedCount = 0;
 
-    for (const tableName of ['premium_records', 'free_records']) {
-      const res = await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [websiteId]);
-      deletedCount += res.rowCount || 0;
-    }
+    for (const pool of pools) {
+      for (const tableName of ['premium_records', 'free_records']) {
+        try {
+          const res = await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [websiteId]);
+          deletedCount += res.rowCount || 0;
+        } catch (e) {}
+      }
 
-    await pool.query('DELETE FROM custom_slugs WHERE website_id = $1', [websiteId]).catch(() => {});
-    await pool.query('DELETE FROM payments WHERE website_id = $1', [websiteId]).catch(() => {});
-    await pool.query('DELETE FROM events WHERE website_id = $1', [websiteId]).catch(() => {});
-    await pool.query('DELETE FROM feedback WHERE website_id = $1', [websiteId]).catch(() => {});
+      await pool.query('DELETE FROM custom_slugs WHERE website_id = $1', [websiteId]).catch(() => {});
+      await pool.query('DELETE FROM payments WHERE website_id = $1', [websiteId]).catch(() => {});
+      await pool.query('DELETE FROM events WHERE website_id = $1', [websiteId]).catch(() => {});
+      await pool.query('DELETE FROM feedback WHERE website_id = $1', [websiteId]).catch(() => {});
+    }
 
     return { success: true, websiteId, deletedCount };
   } catch (err) {
@@ -1100,8 +1132,8 @@ async function deleteWebsiteRecords(websiteId) {
  * Bulk delete websites from CockroachDB
  */
 async function bulkDeleteWebsiteRecords(websiteIds = []) {
-  const pool = poolFree || poolPremium;
-  if (!pool || !Array.isArray(websiteIds) || websiteIds.length === 0) {
+  const pools = [poolFree, poolPremium].filter((p, idx, arr) => p && arr.indexOf(p) === idx);
+  if (pools.length === 0 || !Array.isArray(websiteIds) || websiteIds.length === 0) {
     return { success: true, deletedCount: 0 };
   }
 
@@ -1109,15 +1141,19 @@ async function bulkDeleteWebsiteRecords(websiteIds = []) {
     await ensureTablesExist();
     let totalDeleted = 0;
 
-    for (const tableName of ['premium_records', 'free_records']) {
-      const res = await pool.query(`DELETE FROM ${tableName} WHERE id = ANY($1::varchar[])`, [websiteIds]);
-      totalDeleted += res.rowCount || 0;
-    }
+    for (const pool of pools) {
+      for (const tableName of ['premium_records', 'free_records']) {
+        try {
+          const res = await pool.query(`DELETE FROM ${tableName} WHERE id = ANY($1::varchar[])`, [websiteIds]);
+          totalDeleted += res.rowCount || 0;
+        } catch (e) {}
+      }
 
-    await pool.query('DELETE FROM custom_slugs WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
-    await pool.query('DELETE FROM payments WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
-    await pool.query('DELETE FROM events WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
-    await pool.query('DELETE FROM feedback WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+      await pool.query('DELETE FROM custom_slugs WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+      await pool.query('DELETE FROM payments WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+      await pool.query('DELETE FROM events WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+      await pool.query('DELETE FROM feedback WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+    }
 
     return { success: true, deletedCount: totalDeleted };
   } catch (err) {

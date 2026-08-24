@@ -356,7 +356,8 @@ class AnalyticsStore {
         visitorId,
         page: eventData.page || '',
         websiteId: websiteId || '',
-        details: eventData.details || {}
+        details: eventData.details || {},
+        geo: geo || null
       }).catch(() => { });
 
       let event = null;
@@ -586,9 +587,9 @@ class AnalyticsStore {
         const c = m.config || {};
 
         let recipientName = w.recipientName;
-        if (!recipientName || recipientName === 'Unknown' || recipientName === 'Untitled Site' || recipientName === 'Special Recipient' || recipientName.startsWith('Site #')) {
-          const candidate = m.recipientName || m.userName || m.name || c.userName || c.recipientName || c.name;
-          if (candidate && candidate !== 'Unknown' && candidate !== 'Loved One' && candidate !== 'Special Recipient') {
+        if (!recipientName || recipientName === 'Unknown' || recipientName === 'Untitled Site' || recipientName.startsWith('Site #')) {
+          const candidate = m.recipientName || m.userName || m.name || c.userName || c.recipientName || c.name || (w.id ? `Site #${w.id.slice(0, 6)}` : null);
+          if (candidate && candidate !== 'Unknown') {
             recipientName = candidate;
           } else {
             recipientName = `Gift Site (${w.id ? w.id.slice(0, 6) : 'Special'})`;

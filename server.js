@@ -2289,34 +2289,45 @@ app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
   console.log('[Server] POST /api/admin/sync-websites reached');
   try {
     const sbWebsites = await storage.listSupabaseWebsites();
+    const crWebsites = await cockroach.getAllWebsites().catch(() => []);
+    const crMap = new Map();
+    crWebsites.forEach(w => crMap.set(w.id, w));
+
+    // Filter down to websites needing sync/enrichment
+    const itemsToSync = sbWebsites.filter(item => {
+      const existing = crMap.get(item.id);
+      return !existing || !existing.recipientName || existing.recipientName === 'Unknown' || existing.recipientName === 'Untitled Site' || existing.recipientName === 'Special Recipient';
+    });
+
     let syncedCount = 0;
+    const chunkSize = 15;
 
-    for (const item of sbWebsites) {
-      try {
-        const existing = await cockroach.getRecord(item.id);
-        if (existing && existing.recipientName && existing.recipientName !== 'Unknown') continue;
+    for (let i = 0; i < itemsToSync.length; i += chunkSize) {
+      const chunk = itemsToSync.slice(i, i + chunkSize);
+      await Promise.all(chunk.map(async (item) => {
+        try {
+          const fullData = await storage.readWebsiteConfig(item.id);
+          if (fullData) {
+            const config = fullData.config || {};
+            const meta = fullData.metadata || {};
+            const isPrem = !!(item.isPremium || fullData.isPremium || meta.isPremium);
 
-        const fullData = await storage.readWebsiteConfig(item.id);
-        if (fullData) {
-          const config = fullData.config || {};
-          const meta = fullData.metadata || {};
-          const isPrem = !!(item.isPremium || fullData.isPremium || meta.isPremium);
+            const metadata = {
+              id: item.id,
+              eventType: meta.eventType || config.eventType || config.category || 'birthday',
+              recipientName: meta.recipientName || meta.userName || meta.name || config.recipientName || config.userName || config.name || 'Special Recipient',
+              templateName: meta.templateName || config.templateName || config.template || 'birthday1',
+              features: config.activeFeatures?.map(f => f[0]) || [],
+              isPremium: isPrem
+            };
 
-          const metadata = {
-            id: item.id,
-            eventType: meta.eventType || config.eventType || config.category || 'unknown',
-            recipientName: meta.recipientName || config.recipientName || config.name || config.userName || 'Unknown',
-            templateName: meta.templateName || config.templateName || config.template || 'unknown',
-            features: config.activeFeatures?.map(f => f[0]) || [],
-            isPremium: isPrem
-          };
-
-          await cockroach.saveRecord(item.id, metadata, isPrem);
-          syncedCount++;
+            await cockroach.saveRecord(item.id, metadata, isPrem);
+            syncedCount++;
+          }
+        } catch (innerErr) {
+          console.warn(`[Admin Sync] Error syncing ${item.id}:`, innerErr.message);
         }
-      } catch (innerErr) {
-        console.warn(`[Admin Sync] Error syncing ${item.id}:`, innerErr.message);
-      }
+      }));
     }
 
     res.json({ success: true, synced: syncedCount, message: `Successfully verified and synced ${syncedCount} websites from Supabase Storage` });
@@ -2385,7 +2396,7 @@ app.get('/api/admin/supabase-list', adminAuth, async (req, res) => {
 app.delete('/api/admin/website/:id', adminAuth, async (req, res) => {
   try {
     const websiteId = req.params.id;
-    const force = req.query.force === 'true' || req.body?.force === true;
+    const force = req.query.force === 'false' ? false : true;
 
     if (!websiteId) {
       return res.status(400).json({ error: 'Website ID is required' });
@@ -2629,19 +2640,29 @@ app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
     const websiteMap = new Map();
     crWebsites.forEach(w => { if (w.id) websiteMap.set(w.id, w); });
 
-    // Enrich all clicks with website & payment data
+    // Enrich all clicks with website, geo & payment data
     const enrichedClicks = (clickData.clicks || []).map(click => {
       const wId = click.websiteId || click.details?.websiteId || null;
       const website = wId ? websiteMap.get(wId) : null;
       const payment = wId ? paidMap.get(wId) : null;
       const isPaidSite = !!(payment || website?.isPremium);
+      const geoLoc = click.geo || website?.creatorGeo || null;
+
+      const recipient = (website?.recipientName && website.recipientName !== 'Unknown' && website.recipientName !== 'Untitled Site')
+        ? website.recipientName
+        : (click.details?.recipientName || click.details?.name || 'Special Recipient');
+
+      const evType = (website?.eventType && website.eventType !== 'unknown')
+        ? website.eventType
+        : (click.details?.eventType || 'birthday');
 
       return {
         ...click,
         websiteId: wId || click.visitorId || '--',
-        websiteRecipientName: website?.recipientName || 'Unknown',
-        websiteEventType: website?.eventType || 'Unknown',
-        websiteTemplateName: website?.templateName || 'Unknown',
+        websiteRecipientName: recipient,
+        websiteEventType: evType,
+        websiteTemplateName: website?.templateName || 'birthday1',
+        geo: geoLoc,
         isPaid: isPaidSite,
         paymentAmount: payment ? `${payment.currency || 'INR'} ${payment.amount || 0}` : (website?.isPremium ? 'Premium' : null)
       };
