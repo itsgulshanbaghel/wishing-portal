@@ -310,11 +310,13 @@ app.post('/api/config', async (req, res) => {
     if (!html) return res.status(400).json({ error: 'HTML is required' });
     const id = websiteId || req.body.id || Math.random().toString(36).substring(2, 12);
 
-    // Auto-verify payment status from DB to ensure premium state is never lost
-    let effectiveIsPremium = !!isPremium;
+    // Auto-verify payment status from DB to ensure premium state is only granted for verified payments
+    let effectiveIsPremium = false;
     try {
-      const crRecord = await cockroach.getRecord(id);
-      if (crRecord && (crRecord.isPremium || crRecord.is_premium)) {
+      const crPayments = await cockroach.getAllPayments(100);
+      const isPaidPayment = Array.isArray(crPayments) && crPayments.some(p => p.websiteId === id && (p.status === 'PAID' || p.status === 'COMPLETED'));
+      const crSlug = await cockroach.getCustomSlug(id);
+      if (isPaidPayment || !!crSlug) {
         effectiveIsPremium = true;
       } else {
         const mongoReady = await ensureMongoConnected();

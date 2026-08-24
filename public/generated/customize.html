@@ -4552,11 +4552,10 @@
                 const isPremium = !!(
                   window.isPremiumUser ||
                   window.isPremium ||
-                  (typeof userDataObj !== 'undefined' && userDataObj && userDataObj.isPremium) ||
-                  localStorage.getItem('isPremium') === 'true' ||
-                  (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') ||
-                  localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                  urlParams.get('_v') === 'c'
+                  (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') ||
+                  sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                  urlParams.get('_v') === 'c' ||
+                  urlParams.get('action') === 'payment-success'
                 );
                 if (isPremium) {
                   window.isPremiumUser = true;
@@ -4728,10 +4727,12 @@
                 try {
                   const urlParams = new URLSearchParams(window.location.search);
                   const viewId = urlParams.get('view') || urlParams.get('restore');
-                  const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' ||
-                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                    !!userDataObj.isPremium;
+                  const isPremium = !!(
+                    (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') ||
+                    sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                    urlParams.get('_v') === 'c' ||
+                    urlParams.get('action') === 'payment-success'
+                  );
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
                   if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
@@ -4905,10 +4906,12 @@
                     try {
                       const urlParams = new URLSearchParams(window.location.search);
                       const viewId = urlParams.get('view') || urlParams.get('restore');
-                      const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                      const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' ||
-                        localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                        !!userDataObj.isPremium;
+                      const isPremium = !!(
+                        (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') ||
+                        sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                        urlParams.get('_v') === 'c' ||
+                        urlParams.get('action') === 'payment-success'
+                      );
 
                       // Only upload to Cloudinary for premium users
                       let secureUrl;
@@ -4972,10 +4975,14 @@
                 try {
                   const urlParams = new URLSearchParams(window.location.search);
                   const viewId = urlParams.get('view') || urlParams.get('restore');
-                  const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                  const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' ||
-                    localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                    !!userDataObj.isPremium;
+                  const urlParams = new URLSearchParams(window.location.search);
+                  const viewId = urlParams.get('view') || urlParams.get('restore');
+                  const isPremium = !!(
+                    (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') ||
+                    sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+                    urlParams.get('_v') === 'c' ||
+                    urlParams.get('action') === 'payment-success'
+                  );
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
                   if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
@@ -5535,11 +5542,10 @@
             const isPremium = !!(
               window.isPremiumUser ||
               window.isPremium ||
-              (typeof userDataObj !== 'undefined' && userDataObj && userDataObj.isPremium) ||
-              localStorage.getItem('isPremium') === 'true' ||
-              (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') ||
-              localStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-              urlParams.get('_v') === 'c'
+              (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') ||
+              sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+              urlParams.get('_v') === 'c' ||
+              urlParams.get('action') === 'payment-success'
             );
             if (isPremium) {
               window.isPremiumUser = true;
@@ -5655,17 +5661,13 @@
         const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
         const userPlan = (localStorage.getItem(`user_plan_${viewId}`) || localStorage.getItem('user_plan') || userDataObj.plan || '').toLowerCase();
         
-        const isPremium = localStorage.getItem(`premium_${viewId}`) === 'true' || 
-                          localStorage.getItem('pendingPremiumForNextWebsite') === 'true' || 
-                          localStorage.getItem('isPremium') === 'true' ||
-                          userDataObj.isPremium === true ||
+        const isPremium = (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') || 
+                          sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' || 
                           urlParams.get('_v') === 'c' ||
-                          !!userPlan;
+                          urlParams.get('action') === 'payment-success';
                           
         const isPro = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime', 'starter', 'custom_url'].includes(userPlan) || 
-                      localStorage.getItem(`pro_plan_${viewId}`) === 'true' ||
-                      localStorage.getItem('isPro') === 'true' ||
-                      userDataObj.isPro === true ||
+                      (viewId && sessionStorage.getItem(`pro_plan_${viewId}`) === 'true') ||
                       isPremium; // Any paid/premium user has full PRO access
 
         const proFeatures = ['virtualCake'];
@@ -6359,9 +6361,8 @@
           }
 
           // Save to server for cross-browser sharing
-          const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-          const currentViewId = urlParams.get('view') || urlParams.get('restore') || userDataObj.websiteId;
-          const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || (currentViewId && localStorage.getItem(`premium_${currentViewId}`) === 'true') || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
+          const currentViewId = urlParams.get('view') || urlParams.get('restore') || (typeof userDataObj !== 'undefined' ? userDataObj?.websiteId : null);
+          const isPremium = (currentViewId && sessionStorage.getItem(`premium_${currentViewId}`) === 'true') || sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' || urlParams.get('_v') === 'c' || urlParams.get('action') === 'payment-success';
 
           fetch((API_BASE || '') + '/api/config', {
             method: 'POST',
@@ -6383,24 +6384,11 @@
                 // Save customization state before navigating
                 saveCustomizationState(data.id);
 
-                // Store premium status per website ID
-                const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-                const isPremium = userDataObj.isPremium || localStorage.getItem('isPremium') === 'true' || (currentViewId && localStorage.getItem(`premium_${currentViewId}`) === 'true') || localStorage.getItem('pendingPremiumForNextWebsite') === 'true';
-
                 if (isPremium) {
-                  localStorage.setItem(`premium_${data.id}`, 'true');
-                  localStorage.setItem('isPremium', 'true');
-                  // Update userData to reflect premium status
-                  userDataObj.isPremium = true;
-                  delete userDataObj.pendingPremiumPayment;
-                  localStorage.setItem('userData', JSON.stringify(userDataObj));
-                  // Clear the pending flag
-                  localStorage.removeItem('pendingPremiumForNextWebsite');
+                  sessionStorage.setItem(`premium_${data.id}`, 'true');
+                  sessionStorage.removeItem('pendingPremiumForNextWebsite');
                 } else {
-                  // Clean up any pending payment flags if not premium
-                  delete userDataObj.pendingPremiumPayment;
-                  localStorage.setItem('userData', JSON.stringify(userDataObj));
-                  localStorage.removeItem('pendingPremiumForNextWebsite');
+                  sessionStorage.removeItem('pendingPremiumForNextWebsite');
                 }
 
                 const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
@@ -6684,7 +6672,7 @@
           }
         }
 
-        // Try server first, fall back to localStorage
+        // Try server first, fall back to sessionStorage
         fetch((API_BASE || window.location.origin) + '/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
           .then(data => {
@@ -6693,24 +6681,16 @@
             if (isPaidView) {
               window.isPremium = true;
               window.isPremiumUser = true;
-              localStorage.setItem(`premium_${viewId}`, 'true');
-              localStorage.setItem(`pro_plan_${viewId}`, 'true');
-              localStorage.setItem('isPremium', 'true');
-              localStorage.setItem('isPro', 'true');
+              sessionStorage.setItem(`premium_${viewId}`, 'true');
+              sessionStorage.setItem(`pro_plan_${viewId}`, 'true');
               const plan = (data && (data.plan || (data.metadata && data.metadata.plan))) || 'pro';
-              localStorage.setItem(`user_plan_${viewId}`, plan);
-              localStorage.setItem('user_plan', plan);
-              const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
-              userDataObj.isPremium = true;
-              userDataObj.isPro = true;
-              userDataObj.plan = plan;
-              localStorage.setItem('userData', JSON.stringify(userDataObj));
+              sessionStorage.setItem(`user_plan_${viewId}`, plan);
             }
             applySharedView(data.html, data.config);
           })
           .catch(() => {
-            const storedHtml = localStorage.getItem('final_magic_' + viewId);
-            const storedConfig = localStorage.getItem('magic_config_' + viewId);
+            const storedHtml = localStorage.getItem('final_magic_' + viewId) || sessionStorage.getItem('final_magic_' + viewId);
+            const storedConfig = localStorage.getItem('magic_config_' + viewId) || sessionStorage.getItem('magic_config_' + viewId);
             applySharedView(storedHtml, storedConfig);
           });
       })();

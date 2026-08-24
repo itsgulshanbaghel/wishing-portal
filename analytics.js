@@ -511,7 +511,7 @@ class AnalyticsStore {
       const websites = allUnifiedWebsites.map(w => {
         const payment = paidMap.get(w.id);
         const slug = slugMap.get(w.id) || w.slug;
-        const isPremium = !!payment || !!slug || !!w.isPremium;
+        const isPremium = !!(payment && (payment.status === 'PAID' || payment.status === 'COMPLETED')) || !!slug;
 
         let plan = payment?.plan || null;
         let planName = payment?.planName || null;
