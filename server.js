@@ -327,14 +327,22 @@ app.post('/api/config', async (req, res) => {
       }
     } catch (e) { }
 
+    // Geolocation from Cloudflare / Vercel headers
+    const cityHeader = req.headers['cf-ipcity'] || req.headers['x-vercel-ip-city'] || '';
+    const countryHeader = req.headers['cf-ipcountry'] || req.headers['x-vercel-ip-country'] || 'IN';
+    const city = cityHeader ? decodeURIComponent(cityHeader) : 'New Delhi';
+    const country = countryHeader === 'IN' || countryHeader === 'India' ? 'India' : countryHeader;
+    const creatorGeo = { city, country };
+
     // Extract metadata for analytics
     const metadata = {
       id,
-      eventType: config?.eventType || config?.category || 'unknown',
-      templateName: config?.templateName || config?.template || 'unknown',
-      recipientName: config?.recipientName || config?.name || config?.userName || 'Unknown',
+      eventType: config?.eventType || config?.category || req.body.eventType || 'birthday',
+      templateName: config?.templateName || config?.template || req.body.templateName || 'birthday1',
+      recipientName: config?.recipientName || config?.name || config?.userName || req.body.recipientName || 'Special Recipient',
       features: config?.activeFeatures?.map(f => f[0]) || [],
-      isPremium: effectiveIsPremium
+      isPremium: effectiveIsPremium,
+      creatorGeo
     };
 
     const dataObj = { html, config, metadata };

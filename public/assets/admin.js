@@ -1150,7 +1150,9 @@
       card.className = 'website-card' + (w.isPremium ? ' premium-card' : '');
 
       const created = w.createdAt ? new Date(w.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '--';
-      const loc = w.creatorGeo ? `${w.creatorGeo.city || 'Local'}, ${w.creatorGeo.country || 'Host'}` : 'Unknown Location';
+      const city = w.creatorGeo?.city || 'New Delhi';
+      const country = w.creatorGeo?.country || 'India';
+      const loc = `${city}, ${country}`;
       const viewUrl = window.location.origin + '/generated/customize.html?view=' + w.id;
       const isChecked = selectedWebsiteIds.has(w.id);
 
