@@ -247,7 +247,7 @@ class AnalyticsStore {
           { key: 'global' },
           { $inc: { totalWebsitesCreated: 1 }, $set: { updatedAt: new Date() } },
           { upsert: true }
-        ).catch(() => {});
+        ).catch(() => { });
       } else if (type === 'page_views') {
         await cockroach.incrementGlobalCounter('total_page_views', 1);
         await cockroach.incrementGlobalCounter('today_page_views', 1);
@@ -255,21 +255,21 @@ class AnalyticsStore {
           { key: 'global' },
           { $inc: { totalPageViews: 1 }, $set: { updatedAt: new Date() } },
           { upsert: true }
-        ).catch(() => {});
+        ).catch(() => { });
       } else if (type === 'website_views') {
         await cockroach.incrementGlobalCounter('total_website_views', 1);
         await CumulativeStats.findOneAndUpdate(
           { key: 'global' },
           { $inc: { totalWebsiteViews: 1 }, $set: { updatedAt: new Date() } },
           { upsert: true }
-        ).catch(() => {});
+        ).catch(() => { });
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // ── Track Page View ──
   async trackPageView(req, page) {
-    this.incrementPersistentCounter('page_views').catch(() => {});
+    this.incrementPersistentCounter('page_views').catch(() => { });
     try {
       const ip = getClientIP(req);
       const geo = getGeoFromIP(ip);
@@ -290,14 +290,14 @@ class AnalyticsStore {
 
       // Update or create visitor in CockroachDB & Mongo
       const cockroach = require('./cockroach');
-      cockroach.saveVisitor({ visitorId, ip, geo }).catch(() => {});
+      cockroach.saveVisitor({ visitorId, ip, geo }).catch(() => { });
       try {
         await Visitor.findOneAndUpdate(
           { visitorId },
           { $set: { lastVisit: new Date(), ip, geo }, $setOnInsert: { firstVisit: new Date() } },
           { upsert: true }
         );
-      } catch (mErr) {}
+      } catch (mErr) { }
 
       // Create event in CockroachDB & Mongo
       const eventDetails = {
@@ -316,8 +316,8 @@ class AnalyticsStore {
         utmTerm: utmParams.utmTerm
       };
 
-      cockroach.saveEvent({ type: 'pageview', visitorId, page, details: eventDetails }).catch(() => {});
-      
+      cockroach.saveEvent({ type: 'pageview', visitorId, page, details: eventDetails }).catch(() => { });
+
       let event = null;
       try {
         event = await Event.create({
@@ -327,7 +327,7 @@ class AnalyticsStore {
           geo,
           details: eventDetails
         });
-      } catch (mErr) {}
+      } catch (mErr) { }
 
       return event || { visitorId, type: 'pageview', page };
     } catch (err) {
@@ -339,7 +339,7 @@ class AnalyticsStore {
   async trackEvent(req, eventData) {
     try {
       if (typeof eventData === 'string') {
-        try { eventData = JSON.parse(eventData); } catch (e) {}
+        try { eventData = JSON.parse(eventData); } catch (e) { }
       }
       if (!eventData || typeof eventData !== 'object') {
         eventData = {};
@@ -357,7 +357,7 @@ class AnalyticsStore {
         page: eventData.page || '',
         websiteId: websiteId || '',
         details: eventData.details || {}
-      }).catch(() => {});
+      }).catch(() => { });
 
       let event = null;
       try {
@@ -369,7 +369,7 @@ class AnalyticsStore {
           details: eventData.details || {},
           geo
         });
-      } catch (mErr) {}
+      } catch (mErr) { }
 
       return event;
     } catch (err) {
@@ -396,7 +396,7 @@ class AnalyticsStore {
       }
 
       const cockroach = require('./cockroach');
-      cockroach.saveRecord(websiteData.id, websiteData, !!websiteData.isPremium).catch(() => {});
+      cockroach.saveRecord(websiteData.id, websiteData, !!websiteData.isPremium).catch(() => { });
 
       let website = null;
       try {
@@ -405,7 +405,7 @@ class AnalyticsStore {
           { $set: updateFields },
           { upsert: true, returnDocument: 'after' }
         );
-      } catch (mErr) {}
+      } catch (mErr) { }
 
       // Track the creation as an event
       await this.trackEvent(req, {
@@ -423,14 +423,14 @@ class AnalyticsStore {
   // ── Track Website View ──
   async trackWebsiteView(req, websiteId) {
     // Increment persistent global website view counter (never decrements on cleanup)
-    this.incrementPersistentCounter('website_views').catch(() => {});
+    this.incrementPersistentCounter('website_views').catch(() => { });
     try {
       const ip = getClientIP(req);
       const visitorId = _hashIP(ip);
       const geo = getGeoFromIP(ip);
 
       const cockroach = require('./cockroach');
-      cockroach.incrementView(websiteId).catch(() => {});
+      cockroach.incrementView(websiteId).catch(() => { });
 
       let website = null;
       try {
@@ -442,7 +442,7 @@ class AnalyticsStore {
           },
           { returnDocument: 'after' }
         );
-      } catch (mErr) {}
+      } catch (mErr) { }
 
       await this.trackEvent(req, {
         type: 'website-view',
@@ -459,101 +459,31 @@ class AnalyticsStore {
   // ── Dashboard Data ──
   async getDashboardData(days = 7) {
     try {
-      const now = new Date();
-      // Create today at midnight UTC to match MongoDB timestamps
-      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const cockroach = require('./cockroach');
+      const storage = require('./storage');
 
-      // Handle different time periods correctly
-      let cutoff;
-      let timeFilter;
-
-      if (days === -1) {
-        // All Time - no date filter
-        cutoff = null;
-        timeFilter = {}; // No date filter for all time
-      } else if (days === 0) {
-        // Today
-        cutoff = today;
-        timeFilter = { $gte: today };
-      } else {
-        // Last X days
-        cutoff = new Date(today);
-        cutoff.setDate(cutoff.getDate() - days);
-        timeFilter = { $gte: cutoff };
+      // 1. Fetch comprehensive analytics from CockroachDB Primary DB
+      let crData = null;
+      try {
+        crData = await cockroach.getDashboardAnalytics(days);
+      } catch (crErr) {
+        console.warn('[Analytics] CockroachDB getDashboardAnalytics warning:', crErr.message);
       }
 
-      // Persistent Overview KPI Counters (Monotonically Increasing)
-      const cockroach = require('./cockroach');
-      const { CumulativeStats } = require('./models');
+      // 2. Fetch unified websites list across CockroachDB & Supabase Storage
+      const crWebsites = await cockroach.getAllWebsites().catch(() => []);
+      const sbWebsites = await storage.listSupabaseWebsites().catch(() => []);
 
-      const crCounters = await cockroach.getGlobalCounters().catch(() => ({}));
-      const mongoStats = await CumulativeStats.findOne({ key: 'global' }).lean().catch(() => null);
-
-      const pageViewFilter = days === -1 ? { type: 'pageview' } : { type: 'pageview', timestamp: timeFilter };
-      const websiteFilter = days === -1 ? {} : { createdAt: timeFilter };
-      const eventFilter = days === -1 ? {} : { timestamp: timeFilter };
-
-      const activePageViews = await Event.countDocuments(pageViewFilter).catch(() => 0);
-      const activeWebsites = await Website.countDocuments(websiteFilter).catch(() => 0);
-      const activeUniqueArr = await Event.distinct('visitorId', eventFilter).catch(() => []);
-
-      const activeTodayViews = await Event.countDocuments({ type: 'pageview', timestamp: { $gte: today } }).catch(() => 0);
-      const activeTodayWebsites = await Website.countDocuments({ createdAt: { $gte: today } }).catch(() => 0);
-      const activeTodayUniqueArr = await Event.distinct('visitorId', { timestamp: { $gte: today } }).catch(() => []);
-
-      // Calculate total website views for the period (sum of views in period)
-      const websiteViewsFilter = days === -1 ? {} : { createdAt: timeFilter };
-      const websiteViewsAgg = await Website.aggregate([
-        { $match: websiteViewsFilter },
-        { $group: { _id: null, totalViews: { $sum: '$views' } } }
-      ]).catch(() => []);
-      const activeWebsiteViewsSum = websiteViewsAgg && websiteViewsAgg.length > 0 ? websiteViewsAgg[0].totalViews : 0;
-
-      // Cumulative Base Values (Always Increase, Never Drop)
-      const baseWebsitesCreated = Math.max(2100, crCounters.total_websites_created || 0, mongoStats?.totalWebsitesCreated || 0);
-      const basePageViews = Math.max(1100, crCounters.total_page_views || 0, mongoStats?.totalPageViews || 0);
-      const baseWebsiteViews = Math.max(42, crCounters.total_website_views || 0, mongoStats?.totalWebsiteViews || 0);
-      const baseUniqueVisitors = Math.max(24, mongoStats?.totalUniqueVisitors || 0);
-
-      const totalPageViews = Math.max(basePageViews, activePageViews);
-      const totalWebsites = Math.max(baseWebsitesCreated, activeWebsites);
-      const uniqueVisitors = (activeUniqueArr.length > 0) ? activeUniqueArr : new Array(baseUniqueVisitors).fill(0);
-      const todayViews = Math.max(crCounters.today_page_views || 0, activeTodayViews, 124);
-      const todayWebsites = Math.max(crCounters.today_websites_created || 0, activeTodayWebsites, 797);
-      const todayUnique = (activeTodayUniqueArr.length > 0) ? activeTodayUniqueArr : new Array(16).fill(0);
-      const totalWebsiteViews = Math.max(baseWebsiteViews, activeWebsiteViewsSum);
-
-      // Recent Activity — always limit to avoid massive payloads on All Time
-      const recentEventsFilter = days === -1 ? {} : { timestamp: timeFilter };
-      const recentEvents = await Event.find(recentEventsFilter)
-        .sort({ timestamp: -1 })
-        .limit(200);
-
-      // Websites List - fetch from CockroachDB Primary DB, Supabase Storage, and MongoDB
-      const storage = require('./storage');
-      const crWebsites = await cockroach.getAllWebsites();
-      const sbWebsites = await storage.listSupabaseWebsites();
-
-      const websitesListFilter = days === -1 ? {} : { createdAt: timeFilter };
-      const rawWebsites = await Website.find(websitesListFilter)
-        .sort({ createdAt: -1 })
-        .limit(10000)
-        .lean().catch(() => []);
-
-      // Merge CockroachDB, Supabase Storage, and MongoDB fallback records
       const combinedMap = new Map();
       crWebsites.forEach(cw => combinedMap.set(cw.id, cw));
       sbWebsites.forEach(sw => {
         if (!combinedMap.has(sw.id)) combinedMap.set(sw.id, sw);
       });
-      rawWebsites.forEach(mw => {
-        if (!combinedMap.has(mw.id)) combinedMap.set(mw.id, mw);
-      });
       const allUnifiedWebsites = Array.from(combinedMap.values());
 
-      const { CustomSlug, Payment } = require('./models');
-      const paidPayments = await Payment.find({ status: 'PAID' }).sort({ paidAt: -1, createdAt: -1 }).lean().catch(() => []);
-      const customSlugs = await CustomSlug.find({}).lean().catch(() => []);
+      // 3. Enrich websites with payment & custom slug info from CockroachDB
+      const paidPayments = await cockroach.getAllPayments(500).catch(() => []);
+      const customSlugs = await cockroach.getAllCustomSlugs().catch(() => []);
 
       const paidMap = new Map();
       paidPayments.forEach(p => {
@@ -571,8 +501,8 @@ class AnalyticsStore {
 
       const websites = allUnifiedWebsites.map(w => {
         const payment = paidMap.get(w.id);
-        const slug = slugMap.get(w.id);
-        const isPremium = !!payment || !!slug;
+        const slug = slugMap.get(w.id) || w.slug;
+        const isPremium = !!payment || !!slug || !!w.isPremium;
 
         let plan = payment?.plan || null;
         let planName = payment?.planName || null;
@@ -580,20 +510,49 @@ class AnalyticsStore {
         let amount = payment?.amount ?? null;
         let currency = payment?.currency || 'INR';
 
+        if (payment?.plan) {
+          const p = payment.plan.toLowerCase();
+          if (p === 'starter') {
+            plan = 'starter';
+            planName = planName || 'Starter (30+ Days)';
+            planDays = planDays || 30;
+          } else if (p === 'pro') {
+            plan = 'pro';
+            planName = planName || 'Pro (100+ Days)';
+            planDays = planDays || 100;
+          } else if (p === 'pro_plus' || p === 'proplus') {
+            plan = 'pro_plus';
+            planName = planName || 'Pro+ (1 Year)';
+            planDays = planDays || 365;
+          } else if (p === 'forever' || p === 'infinity') {
+            plan = 'forever';
+            planName = planName || 'Infinity (Lifetime)';
+            planDays = planDays || 99999;
+          } else if (p === 'custom_url') {
+            plan = 'custom_url';
+            planName = planName || 'Custom URL';
+            planDays = planDays || 365;
+          }
+        }
+
         if (isPremium && !planName) {
           if (payment) {
-            const amt = payment.amount;
-            if (amt === 29 || amt === 1.99) {
+            const amt = Number(payment.amount);
+            if (amt === 29 || amt === 0.99) {
               plan = 'starter';
-              planName = '100+ Days';
+              planName = 'Starter (30+ Days)';
+              planDays = 30;
+            } else if (amt === 49 || amt === 1.99) {
+              plan = 'pro';
+              planName = 'Pro (100+ Days)';
               planDays = 100;
             } else if (amt === 99 || amt === 3.99 || amt === 4.99) {
-              plan = 'pro';
-              planName = '1 Year';
+              plan = 'pro_plus';
+              planName = 'Pro+ (1 Year)';
               planDays = 365;
             } else if (amt === 199 || amt === 9.99) {
               plan = 'forever';
-              planName = 'Forever';
+              planName = 'Infinity (Lifetime)';
               planDays = 99999;
             } else {
               plan = 'custom_url';
@@ -616,434 +575,58 @@ class AnalyticsStore {
           paidAmount: amount,
           currency,
           customSlug: slug || payment?.slug || null,
-          paidAt: payment?.paidAt || payment?.createdAt || null
+          paidAt: payment?.createdAt || null
         };
       });
 
-      // Top Websites - respect time period filter
-      const topWebsitesFilter = days === -1 ? {} : { createdAt: timeFilter };
-      const topWebsites = await Website.find(topWebsitesFilter)
-        .sort({ views: -1 })
-        .limit(20)
-        .lean();
+      // Top websites sorted by views
+      const topWebsites = [...websites].sort((a, b) => (Number(b.views || 0) - Number(a.views || 0))).slice(0, 20);
 
-      // Daily Stats for charts - handle All Time case
-      const dailyStatsFilter = days === -1 ? {} : { timestamp: timeFilter };
-      const dailyStats = await Event.aggregate([
-        { $match: dailyStatsFilter },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } },
-            views: { $sum: { $cond: [{ $eq: ["$type", "pageview"] }, 1, 0] } },
-            uniqueVisitors: { $addToSet: "$visitorId" }
-          }
-        },
-        {
-          $project: {
-            _id: 1,
-            views: 1,
-            uniqueVisitors: { $size: "$uniqueVisitors" }
-          }
-        },
-        { $sort: { _id: 1 } }
-      ]);
-
-      const websiteStatsFilter = days === -1 ? {} : { createdAt: timeFilter };
-      const websiteStats = await Website.aggregate([
-        { $match: websiteStatsFilter },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "UTC" } },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { _id: 1 } }
-      ]);
-
-      // Merge stats for trend chart - include all dates from both datasets
-      const allDates = new Set([
-        ...dailyStats.map(s => s._id),
-        ...websiteStats.map(w => w._id)
-      ]);
-
-      const trendData = Array.from(allDates).sort().map(date => {
-        const eventStat = dailyStats.find(s => s._id === date);
-        const websiteStat = websiteStats.find(w => w._id === date);
-
+      // If CockroachDB returned data, use it as authoritative
+      if (crData && crData.overview) {
         return {
-          date: date,
-          views: eventStat ? eventStat.views : 0,
-          uniqueVisitors: eventStat ? eventStat.uniqueVisitors : 0,
-          websitesCreated: websiteStat ? websiteStat.count : 0
+          ...crData,
+          websites,
+          topWebsites
         };
-      });
+      }
 
-      // Distribution charts
-      const pageviewFilter = days === -1 ? { type: 'pageview' } : { type: 'pageview', timestamp: timeFilter };
-
-      const deviceDistribution = await Event.aggregate([
-        { $match: pageviewFilter },
-        { $group: { _id: '$details.device', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]);
-
-      const browserDistribution = await Event.aggregate([
-        { $match: pageviewFilter },
-        { $group: { _id: '$details.browser', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]);
-
-      const osDistribution = await Event.aggregate([
-        { $match: pageviewFilter },
-        { $group: { _id: '$details.os', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]);
-
-      const eventTypeDistribution = await Event.aggregate([
-        { $match: eventFilter },
-        { $group: { _id: '$type', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]);
-
-      const websitesByEventType = await Website.aggregate([
-        { $match: websiteFilter },
-        { $group: { _id: '$eventType', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]);
-
-      const hourlyDistribution = await Event.aggregate([
-        { $match: pageviewFilter },
-        {
-          $group: {
-            _id: { $hour: '$timestamp' },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { '_id': 1 } }
-      ]);
-
-      // Additional distributions
-      const pageViewsByPage = await Event.aggregate([
-        { $match: pageviewFilter },
-        { $group: { _id: '$page', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 20 }
-      ]);
-
-      const refererDistribution = await Event.aggregate([
-        { $match: pageviewFilter },
-        { $group: { _id: '$details.referer', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 20 }
-      ]);
-
-      const exitPages = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'exit' } },
-        { $group: { _id: '$page', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 20 }
-      ]);
-
-      const geoDistribution = await Event.aggregate([
-        { $match: pageviewFilter },
-        { $group: { _id: '$geo.country', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 20 }
-      ]);
-
-      const geoUniqueVisitorsAgg = await Event.aggregate([
-        { $match: pageviewFilter },
-        { $group: { _id: { country: '$geo.country', visitorId: '$visitorId' } } },
-        { $group: { _id: '$_id.country', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 20 }
-      ]);
-
-      const featureStatsAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature' } },
-        {
-          $group: {
-            _id: { feature: '$details.feature', action: '$details.action' },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { count: -1 } }
-      ]);
-
-      const featureStats = {};
-      featureStatsAgg.forEach(item => {
-        const rawFeature = item._id.feature || 'Unknown';
-        const { key: featureKey, display: featureDisplay } = this._normalizeFeature(rawFeature);
-        const action = (item._id.action || '').toString().trim();
-        if (!featureStats[featureKey]) featureStats[featureKey] = {
-          display: featureDisplay,
-          enabled: 0, disabled: 0, total: 0,
-          tried: 0, used: 0, triedEnabled: 0, triedDisabled: 0
-        };
-
-        // Legacy logic and mapping for backward compatibility
-        if (action === 'enable' || action === 'enabled') {
-          featureStats[featureKey].enabled += item.count;
-          // Treat legacy immediate enable as a 'tried' interaction
-          featureStats[featureKey].triedEnabled += item.count;
-          featureStats[featureKey].tried += item.count;
-        } else if (action === 'disable' || action === 'disabled') {
-          featureStats[featureKey].disabled += item.count;
-          featureStats[featureKey].triedDisabled += item.count;
-          featureStats[featureKey].tried += item.count;
-        }
-
-        // New logic for tried vs used
-        if (action === 'tried_enable') {
-          featureStats[featureKey].triedEnabled += item.count;
-          featureStats[featureKey].tried += item.count;
-        } else if (action === 'tried_disable') {
-          featureStats[featureKey].triedDisabled += item.count;
-          featureStats[featureKey].tried += item.count;
-        } else if (action === 'used' || action === 'use') {
-          // Accept both 'used' and legacy 'use'
-          featureStats[featureKey].used += item.count;
-        }
-
-        // Also accept plain 'use' as a tried interaction if needed
-        if (action === 'use') {
-          featureStats[featureKey].tried += item.count;
-        }
-
-        featureStats[featureKey].total += item.count;
-      });
-
-      // Feature usage over time
-      const featureTrendAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature' } },
-        {
-          $group: {
-            _id: { date: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } }, feature: '$details.feature' },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { '_id.date': 1 } }
-      ]);
-
-      // Build featureTrend, featureByDevice, featureByBrowser, featureByHour using normalized keys
-      const featureTrendRaw = {};
-      featureTrendAgg.forEach(item => {
-        const date = item._id.date;
-        const feature = item._id.feature || 'Unknown';
-        if (!featureTrendRaw[date]) featureTrendRaw[date] = {};
-        featureTrendRaw[date][feature] = item.count;
-      });
-
-      // Normalize feature keys across trend/device/browser/hour datasets
-      const featureTrend = {};
-      Object.keys(featureTrendRaw).forEach(date => {
-        featureTrend[date] = {};
-        Object.keys(featureTrendRaw[date]).forEach(rawF => {
-          const { key } = this._normalizeFeature(rawF);
-          featureTrend[date][key] = (featureTrend[date][key] || 0) + featureTrendRaw[date][rawF];
-        });
-      });
-
-      // Feature usage by device
-      const featureDeviceAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature' } },
-        {
-          $group: {
-            _id: { device: '$details.device', feature: '$details.feature' },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { count: -1 } }
-      ]);
-
-      const featureByDeviceRaw = {};
-      featureDeviceAgg.forEach(item => {
-        const device = item._id.device || 'Unknown';
-        const feature = item._id.feature || 'Unknown';
-        if (!featureByDeviceRaw[device]) featureByDeviceRaw[device] = {};
-        featureByDeviceRaw[device][feature] = item.count;
-      });
-
-      const featureByDevice = {};
-      Object.keys(featureByDeviceRaw).forEach(device => {
-        featureByDevice[device] = {};
-        Object.keys(featureByDeviceRaw[device]).forEach(rawF => {
-          const { key } = this._normalizeFeature(rawF);
-          featureByDevice[device][key] = (featureByDevice[device][key] || 0) + featureByDeviceRaw[device][rawF];
-        });
-      });
-
-      const featureBrowserAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature' } },
-        {
-          $group: {
-            _id: { browser: '$details.browser', feature: '$details.feature' },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { count: -1 } }
-      ]);
-
-      const featureByBrowserRaw = {};
-      featureBrowserAgg.forEach(item => {
-        const browser = item._id.browser || 'Unknown';
-        const feature = item._id.feature || 'Unknown';
-        if (!featureByBrowserRaw[browser]) featureByBrowserRaw[browser] = {};
-        featureByBrowserRaw[browser][feature] = item.count;
-      });
-
-      const featureByBrowser = {};
-      Object.keys(featureByBrowserRaw).forEach(browser => {
-        featureByBrowser[browser] = {};
-        Object.keys(featureByBrowserRaw[browser]).forEach(rawF => {
-          const { key } = this._normalizeFeature(rawF);
-          featureByBrowser[browser][key] = (featureByBrowser[browser][key] || 0) + featureByBrowserRaw[browser][rawF];
-        });
-      });
-
-      // Feature usage by hour
-      const featureHourAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature' } },
-        {
-          $group: {
-            _id: { hour: { $hour: '$timestamp' }, feature: '$details.feature' },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { '_id.hour': 1 } }
-      ]);
-
-      const featureByHourRaw = {};
-      featureHourAgg.forEach(item => {
-        const hour = item._id.hour;
-        const feature = item._id.feature || 'Unknown';
-        if (!featureByHourRaw[hour]) featureByHourRaw[hour] = {};
-        featureByHourRaw[hour][feature] = item.count;
-      });
-
-      const featureByHour = {};
-      Object.keys(featureByHourRaw).forEach(hour => {
-        featureByHour[hour] = {};
-        Object.keys(featureByHourRaw[hour]).forEach(rawF => {
-          const { key } = this._normalizeFeature(rawF);
-          featureByHour[hour][key] = (featureByHour[hour][key] || 0) + featureByHourRaw[hour][rawF];
-        });
-      });
-
-
-      // Unique visitor counts for tried vs used (better conversion metric)
-      const triedVisitorAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature', $or: [{ 'details.action': 'tried_enable' }, { 'details.action': 'tried_disable' }, { 'details.action': 'enable' }, { 'details.action': 'disable' }] } },
-        { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
-      ]);
-
-      const triedEnableVisitorAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature', $or: [{ 'details.action': 'tried_enable' }, { 'details.action': 'enable' }, { 'details.action': 'enabled' }] } },
-        { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
-      ]);
-
-      const usedVisitorAgg = await Event.aggregate([
-        { $match: { ...eventFilter, type: 'feature', $or: [{ 'details.action': 'used' }, { 'details.action': 'use' }] } },
-        { $group: { _id: '$details.feature', visitors: { $addToSet: '$visitorId' } } }
-      ]);
-
-      const triedVisitorsMap = {};
-      triedVisitorAgg.forEach(item => { triedVisitorsMap[item._id || 'Unknown'] = (item.visitors || []).length; });
-      const triedEnabledVisitorsMap = {};
-      triedEnableVisitorAgg.forEach(item => { triedEnabledVisitorsMap[item._id || 'Unknown'] = (item.visitors || []).length; });
-      const usedVisitorsMap = {};
-      usedVisitorAgg.forEach(item => { usedVisitorsMap[item._id || 'Unknown'] = (item.visitors || []).length; });
-
-      // Attach unique visitor counts to featureStats
-      Object.keys(featureStats).forEach(f => {
-        featureStats[f].triedVisitors = triedVisitorsMap[featureStats[f].display] || triedVisitorsMap[f] || 0;
-        featureStats[f].triedEnabledVisitors = triedEnabledVisitorsMap[featureStats[f].display] || triedEnabledVisitorsMap[f] || 0;
-        featureStats[f].usedVisitors = usedVisitorsMap[featureStats[f].display] || usedVisitorsMap[f] || 0;
-      });
-
-      // Calculate trending features (recent growth)
-      const currentTime = new Date();
-      const recentDays = 3;
-      const recentCutoff = new Date(currentTime);
-      recentCutoff.setDate(recentCutoff.getDate() - recentDays);
-
-      const recentFeatureAgg = await Event.aggregate([
-        { $match: { timestamp: { $gte: recentCutoff }, type: 'feature' } },
-        {
-          $group: {
-            _id: { feature: '$details.feature' },
-            recentCount: { $sum: 1 }
-          }
-        }
-      ]);
-
-      const olderCutoff = new Date(recentCutoff);
-      olderCutoff.setDate(olderCutoff.getDate() - recentDays);
-
-      const olderFeatureAgg = await Event.aggregate([
-        { $match: { timestamp: { $gte: olderCutoff, $lt: recentCutoff }, type: 'feature' } },
-        {
-          $group: {
-            _id: { feature: '$details.feature' },
-            olderCount: { $sum: 1 }
-          }
-        }
-      ]);
-
-      const trendingFeatures = {};
-      recentFeatureAgg.forEach(item => {
-        const feature = item._id.feature || 'Unknown';
-        trendingFeatures[feature] = { recent: item.recentCount, older: 0 };
-      });
-
-      olderFeatureAgg.forEach(item => {
-        const feature = item._id.feature || 'Unknown';
-        if (!trendingFeatures[feature]) trendingFeatures[feature] = { recent: 0, older: 0 };
-        trendingFeatures[feature].older = item.olderCount;
-      });
-
-      // Calculate growth rate
-      Object.keys(trendingFeatures).forEach(feature => {
-        const data = trendingFeatures[feature];
-        const growth = data.older > 0 ? ((data.recent - data.older) / data.older) * 100 : (data.recent > 0 ? 100 : 0);
-        data.growth = growth;
-        data.total = data.recent + data.older;
-      });
-
+      // Safe Fallback with historical floor minimums
+      const crCounters = await cockroach.getGlobalCounters().catch(() => ({}));
       return {
         period: days,
         overview: {
-          totalPageViews,
-          totalWebsitesCreated: totalWebsites,
-          periodUniqueVisitors: uniqueVisitors.length,
-          todayViews,
-          todayUniqueVisitors: todayUnique.length,
-          todayWebsitesCreated: todayWebsites,
-          totalWebsiteViews
+          totalPageViews: Math.max(1100, crCounters.total_page_views || 0),
+          totalWebsitesCreated: Math.max(2100, crCounters.total_websites_created || 0, websites.length),
+          periodUniqueVisitors: 24,
+          todayViews: Math.max(124, crCounters.today_page_views || 0),
+          todayUniqueVisitors: 16,
+          todayWebsitesCreated: Math.max(797, crCounters.today_websites_created || 0),
+          totalWebsiteViews: Math.max(42, crCounters.total_website_views || 0)
         },
         charts: {
-          trendData,
-          deviceDistribution: deviceDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          browserDistribution: browserDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          osDistribution: osDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          eventTypeDistribution: eventTypeDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          websitesByEventType: websitesByEventType.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          hourlyDistribution: hourlyDistribution.map(item => ({ hour: item._id, count: item.count })),
-          pageViewsByPage: pageViewsByPage.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          refererDistribution: refererDistribution.reduce((acc, item) => { acc[item._id || 'Direct'] = item.count; return acc; }, {}),
-          exitPages: exitPages.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          geoDistribution: geoDistribution.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          geoUniqueVisitors: geoUniqueVisitorsAgg.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          featureStats: featureStats,
-          featureTrend: featureTrend,
-          featureByDevice: featureByDevice,
-          featureByBrowser: featureByBrowser,
-          featureByHour: featureByHour,
-          trendingFeatures: trendingFeatures
+          trendData: [],
+          deviceDistribution: {},
+          browserDistribution: {},
+          osDistribution: {},
+          eventTypeDistribution: {},
+          websitesByEventType: {},
+          hourlyDistribution: [],
+          pageViewsByPage: {},
+          refererDistribution: {},
+          exitPages: {},
+          geoDistribution: {},
+          geoUniqueVisitors: {},
+          featureStats: {},
+          featureTrend: {},
+          featureByDevice: {},
+          featureByBrowser: {},
+          featureByHour: {},
+          trendingFeatures: {}
         },
-        recentActivity: recentEvents,
-        websites: websites,
-        topWebsites: topWebsites
+        recentActivity: [],
+        websites,
+        topWebsites
       };
     } catch (err) {
       console.error('[Analytics] Error getting dashboard data:', err);
@@ -1110,140 +693,82 @@ class AnalyticsStore {
   // ── Traffic Sources Analytics ──
   async getTrafficSourcesData(days = 7) {
     try {
-      const now = new Date();
-      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const cockroach = require('./cockroach');
+      const pool = cockroach.poolFree || cockroach.poolPremium;
 
-      let timeFilter;
-      if (days === -1) {
-        timeFilter = {};
-      } else if (days === 0) {
-        timeFilter = { $gte: today };
-      } else {
-        const cutoff = new Date(today);
-        cutoff.setDate(cutoff.getDate() - days);
-        timeFilter = { $gte: cutoff };
+      if (pool) {
+        let timeWhere = '';
+        if (days === 0) {
+          timeWhere = 'WHERE created_at >= CURRENT_DATE';
+        } else if (days > 0) {
+          timeWhere = `WHERE created_at >= NOW() - INTERVAL '${days} days'`;
+        }
+
+        const pvFilter = timeWhere ? timeWhere + " AND type = 'pageview'" : "WHERE type = 'pageview'";
+
+        const [tsDistRes, seDistRes, kwRes, socRes, utmRes, refRes, trendRes, kpiRes, recentRes] = await Promise.all([
+          pool.query(`SELECT details->>'trafficSource' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'trafficSource' IS NOT NULL GROUP BY details->>'trafficSource' ORDER BY count DESC`),
+          pool.query(`SELECT details->>'trafficSource' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'trafficSource' ILIKE '%Search%' GROUP BY details->>'trafficSource' ORDER BY count DESC`),
+          pool.query(`SELECT details->>'searchKeywords' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'searchKeywords' IS NOT NULL AND details->>'searchKeywords' != '' GROUP BY details->>'searchKeywords' ORDER BY count DESC LIMIT 50`),
+          pool.query(`SELECT details->>'trafficSource' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'trafficSource' IN ('WhatsApp Share', 'Instagram', 'Facebook', 'Twitter (X)', 'Telegram', 'Social Media') GROUP BY details->>'trafficSource' ORDER BY count DESC LIMIT 20`),
+          pool.query(`SELECT details->>'utmCampaign' as campaign, details->>'utmSource' as source, details->>'utmMedium' as medium, COUNT(*) as count FROM events ${pvFilter} AND details->>'utmCampaign' IS NOT NULL AND details->>'utmCampaign' != '' GROUP BY details->>'utmCampaign', details->>'utmSource', details->>'utmMedium' ORDER BY count DESC LIMIT 50`),
+          pool.query(`SELECT details->>'referer' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'trafficSource' IN ('External Referral', 'Referral') GROUP BY details->>'referer' ORDER BY count DESC LIMIT 30`),
+          pool.query(`SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date, details->>'trafficSource' as source, COUNT(*) as count FROM events ${pvFilter} GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD'), details->>'trafficSource' ORDER BY date ASC`),
+          pool.query(`
+            SELECT 
+              COUNT(*) as total,
+              COUNT(CASE WHEN details->>'trafficSource' = 'Google Search' THEN 1 END) as google,
+              COUNT(CASE WHEN details->>'trafficSource' = 'Bing Search' THEN 1 END) as bing,
+              COUNT(CASE WHEN details->>'trafficSource' IN ('Other Search Engine', 'DuckDuckGo Search', 'Yahoo Search') THEN 1 END) as other_search,
+              COUNT(CASE WHEN details->>'trafficSource' IN ('Direct / Typed URL', 'Direct') THEN 1 END) as direct,
+              COUNT(CASE WHEN details->>'trafficSource' = 'Shared Generated Website' THEN 1 END) as shared,
+              COUNT(CASE WHEN details->>'trafficSource' IN ('WhatsApp Share', 'Instagram', 'Facebook', 'Twitter (X)', 'Telegram', 'Social Media') THEN 1 END) as social,
+              COUNT(CASE WHEN details->>'trafficSource' IN ('External Referral', 'Referral') THEN 1 END) as referral
+            FROM events ${pvFilter}
+          `),
+          pool.query(`SELECT id, type, visitor_id as "visitorId", session_id as "sessionId", page, website_id as "websiteId", details, created_at as "timestamp" FROM events ${pvFilter} ORDER BY created_at DESC LIMIT 100`)
+        ]);
+
+        const kRow = kpiRes.rows[0] || {};
+        const totalSessions = parseInt(kRow.total || 0, 10);
+        const googleSearch = parseInt(kRow.google || 0, 10);
+        const bingSearch = parseInt(kRow.bing || 0, 10);
+        const otherSearch = parseInt(kRow.other_search || 0, 10);
+
+        return {
+          period: days,
+          kpi: {
+            totalSessions,
+            googleSearch,
+            bingSearch,
+            otherSearch,
+            organicSearch: googleSearch + bingSearch + otherSearch,
+            directTraffic: parseInt(kRow.direct || 0, 10),
+            sharedWebsites: parseInt(kRow.shared || 0, 10),
+            socialMedia: parseInt(kRow.social || 0, 10),
+            referral: parseInt(kRow.referral || 0, 10)
+          },
+          charts: {
+            trafficSourceDistribution: (tsDistRes.rows || []).reduce((acc, r) => { acc[r.key || 'Direct / Typed URL'] = parseInt(r.count, 10); return acc; }, {}),
+            searchEngineDistribution: (seDistRes.rows || []).reduce((acc, r) => { acc[r.key || 'Google Search'] = parseInt(r.count, 10); return acc; }, {}),
+            topKeywords: (kwRes.rows || []).reduce((acc, r) => { acc[r.key || 'Unknown'] = parseInt(r.count, 10); return acc; }, {}),
+            socialPlatforms: (socRes.rows || []).reduce((acc, r) => { acc[r.key || 'Social'] = parseInt(r.count, 10); return acc; }, {}),
+            utmCampaigns: (utmRes.rows || []).map(r => ({ campaign: r.campaign, source: r.source, medium: r.medium, count: parseInt(r.count, 10) })),
+            topReferrers: (refRes.rows || []).reduce((acc, r) => { acc[r.key || 'Unknown'] = parseInt(r.count, 10); return acc; }, {}),
+            trafficTrend: (trendRes.rows || []).map(r => ({ _id: { date: r.date, source: r.source }, count: parseInt(r.count, 10) }))
+          },
+          recentTraffic: (recentRes.rows || []).map(r => ({
+            ...r,
+            details: typeof r.details === 'string' ? JSON.parse(r.details) : (r.details || {})
+          }))
+        };
       }
-
-      const pageviewFilter = days === -1 ? { type: 'pageview' } : { type: 'pageview', timestamp: timeFilter };
-
-      // Traffic source distribution
-      const trafficSourceDistribution = await Event.aggregate([
-        { $match: pageviewFilter },
-        { $group: { _id: '$details.trafficSource', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]);
-
-      // Search engine distribution
-      const searchEngineDistribution = await Event.aggregate([
-        { $match: { ...pageviewFilter, 'details.trafficSource': { $regex: /Search/i } } },
-        { $group: { _id: '$details.trafficSource', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]);
-
-      // Top search keywords
-      const topKeywords = await Event.aggregate([
-        { $match: { ...pageviewFilter, 'details.searchKeywords': { $nin: [null, '', undefined] } } },
-        { $group: { _id: '$details.searchKeywords', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 50 }
-      ]);
-
-      // Social media & messaging platforms
-      const socialPlatforms = await Event.aggregate([
-        {
-          $match: {
-            ...pageviewFilter,
-            'details.trafficSource': { $in: ['WhatsApp Share', 'Instagram', 'Facebook', 'Twitter (X)', 'Telegram', 'Social Media'] }
-          }
-        },
-        { $group: { _id: '$details.trafficSource', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 20 }
-      ]);
-
-      // UTM campaign performance
-      const utmCampaigns = await Event.aggregate([
-        { $match: { ...pageviewFilter, 'details.utmCampaign': { $nin: [null, '', undefined] } } },
-        {
-          $group: {
-            _id: {
-              campaign: '$details.utmCampaign',
-              source: '$details.utmSource',
-              medium: '$details.utmMedium'
-            },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { count: -1 } },
-        { $limit: 50 }
-      ]);
-
-      // Top referring domains
-      const topReferrers = await Event.aggregate([
-        { $match: { ...pageviewFilter, 'details.trafficSource': { $in: ['External Referral', 'Referral'] } } },
-        { $group: { _id: '$details.referer', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 30 }
-      ]);
-
-      // Traffic sources trend over time
-      const trafficTrend = await Event.aggregate([
-        { $match: pageviewFilter },
-        {
-          $group: {
-            _id: {
-              date: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } },
-              source: '$details.trafficSource'
-            },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { '_id.date': 1 } }
-      ]);
-
-      // KPI calculations
-      const totalSessions = await Event.countDocuments(pageviewFilter);
-      const googleSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Google Search' });
-      const bingSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Bing Search' });
-      const otherSearch = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': { $in: ['Other Search Engine', 'DuckDuckGo Search', 'Yahoo Search'] } });
-      const directTraffic = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': { $in: ['Direct / Typed URL', 'Direct'] } });
-      const sharedWebsites = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': 'Shared Generated Website' });
-      const socialMedia = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': { $in: ['WhatsApp Share', 'Instagram', 'Facebook', 'Twitter (X)', 'Telegram', 'Social Media'] } });
-      const referral = await Event.countDocuments({ ...pageviewFilter, 'details.trafficSource': { $in: ['External Referral', 'Referral'] } });
-
-      // Recent traffic sessions with full details
-      const recentTraffic = await Event.find(pageviewFilter)
-        .sort({ timestamp: -1 })
-        .limit(100);
 
       return {
         period: days,
-        kpi: {
-          totalSessions,
-          googleSearch,
-          bingSearch,
-          otherSearch,
-          organicSearch: googleSearch + bingSearch + otherSearch,
-          directTraffic,
-          sharedWebsites,
-          socialMedia,
-          referral
-        },
-        charts: {
-          trafficSourceDistribution: trafficSourceDistribution.reduce((acc, item) => { acc[item._id || 'Direct / Typed URL'] = item.count; return acc; }, {}),
-          searchEngineDistribution: searchEngineDistribution.reduce((acc, item) => { acc[item._id || 'Google Search'] = item.count; return acc; }, {}),
-          topKeywords: topKeywords.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          socialPlatforms: socialPlatforms.reduce((acc, item) => { acc[item._id || 'Social'] = item.count; return acc; }, {}),
-          utmCampaigns: utmCampaigns.map(item => ({
-            campaign: item._id.campaign,
-            source: item._id.source,
-            medium: item._id.medium,
-            count: item.count
-          })),
-          topReferrers: topReferrers.reduce((acc, item) => { acc[item._id || 'Unknown'] = item.count; return acc; }, {}),
-          trafficTrend
-        },
-        recentTraffic
+        kpi: { totalSessions: 0, googleSearch: 0, bingSearch: 0, otherSearch: 0, organicSearch: 0, directTraffic: 0, sharedWebsites: 0, socialMedia: 0, referral: 0 },
+        charts: { trafficSourceDistribution: {}, searchEngineDistribution: {}, topKeywords: {}, socialPlatforms: {}, utmCampaigns: [], topReferrers: {}, trafficTrend: [] },
+        recentTraffic: []
       };
     } catch (err) {
       console.error('[Analytics] Error getting traffic sources data:', err);
@@ -1261,11 +786,8 @@ class AnalyticsStore {
     if (!cloud || !websiteId) return;
     try {
       await Promise.allSettled([
-        // Delete raw JSON config
         cloud.uploader.destroy(`configs/${websiteId}`, { resource_type: 'raw' }),
         cloud.api.delete_resources_by_prefix(`configs/${websiteId}`, { resource_type: 'raw' }),
-
-        // Delete OG preview images and image assets
         cloud.uploader.destroy(`og-images/${websiteId}`, { resource_type: 'image' }),
         cloud.uploader.destroy(`images/${websiteId}`, { resource_type: 'image' }),
         cloud.uploader.destroy(`photos/${websiteId}`, { resource_type: 'image' }),
@@ -1283,13 +805,13 @@ class AnalyticsStore {
   // ── Delete Single Website & All Related Resources ──
   async deleteWebsite(websiteId, force = false, cloudinaryRef = null) {
     try {
+      const cockroach = require('./cockroach');
+      const storage = require('./storage');
       const { Website, Event, Feedback, CustomSlug, Payment } = require('./models');
-      const cloud = cloudinaryRef || require('cloudinary').v2;
 
-      // 1. Check if website is Premium / Paid
-      const paidPayment = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
-      const customSlug = await CustomSlug.findOne({ websiteId }).lean();
-      const isPremium = Boolean(paidPayment || customSlug);
+      // 1. Check if website is Premium / Paid in CockroachDB
+      const record = await cockroach.getRecord(websiteId);
+      const isPremium = !!(record && (record.isPremium || record.is_premium));
 
       if (isPremium && !force) {
         return {
@@ -1299,36 +821,40 @@ class AnalyticsStore {
         };
       }
 
-      // 2. Delete Cloudinary Raw Config & Image Assets
+      // 2. Delete from CockroachDB tables
+      const crDeleteRes = await cockroach.deleteWebsiteRecords(websiteId);
+
+      // 3. Delete from Supabase Storage
+      const sbDeleteRes = await storage.deleteWebsiteConfig(websiteId);
+
+      // 4. Delete Cloudinary Raw Config & Image Assets (legacy safety)
+      const cloud = cloudinaryRef || require('cloudinary').v2;
       let cloudinaryDeleted = false;
       try {
         await this._deleteCloudinaryWebsiteAssets(cloud, websiteId);
         cloudinaryDeleted = true;
-      } catch (cErr) {
-        console.warn(`[Analytics] Cloudinary destroy warning for website ${websiteId}:`, cErr.message);
-      }
+      } catch (cErr) {}
 
-      // 3. Delete MongoDB documents across collections
-      const websiteRes = await Website.deleteOne({ id: websiteId });
-      const eventsRes = await Event.deleteMany({ websiteId });
-      const feedbackRes = await Feedback.deleteMany({ websiteId });
-      const customSlugRes = await CustomSlug.deleteMany({ websiteId });
-      const paymentRes = await Payment.deleteMany({ websiteId });
+      // 5. Non-blocking MongoDB cleanup (swallows errors)
+      try {
+        await Promise.allSettled([
+          Website.deleteOne({ id: websiteId }),
+          Event.deleteMany({ websiteId }),
+          Feedback.deleteMany({ websiteId }),
+          CustomSlug.deleteMany({ websiteId }),
+          Payment.deleteMany({ websiteId })
+        ]);
+      } catch (mErr) {}
 
-      console.log(`[Analytics] Deleted website ${websiteId}: website=${websiteRes.deletedCount}, events=${eventsRes.deletedCount}, feedback=${feedbackRes.deletedCount}, slugs=${customSlugRes.deletedCount}, payments=${paymentRes.deletedCount}`);
+      console.log(`[Analytics] Deleted website ${websiteId}: cockroach=${crDeleteRes.deletedCount}, supabaseFree=${sbDeleteRes.freeDeleted}, supabasePrem=${sbDeleteRes.premiumDeleted}`);
 
       return {
         success: true,
         websiteId,
         isPremium,
-        cloudinaryDeleted,
-        deleted: {
-          website: websiteRes.deletedCount,
-          events: eventsRes.deletedCount,
-          feedback: feedbackRes.deletedCount,
-          customSlugs: customSlugRes.deletedCount,
-          payments: paymentRes.deletedCount
-        }
+        cockroachDeleted: crDeleteRes.deletedCount,
+        supabaseDeleted: sbDeleteRes,
+        cloudinaryDeleted
       };
     } catch (err) {
       console.error(`[Analytics] Error deleting website ${websiteId}:`, err);
@@ -1339,9 +865,11 @@ class AnalyticsStore {
   // ── Bulk Delete Websites (With Age Filtering & Premium Protection) ──
   async bulkDeleteWebsites({ websiteIds = null, olderThanDays = null, protectPremium = true } = {}, cloudinaryRef = null) {
     try {
+      const cockroach = require('./cockroach');
+      const storage = require('./storage');
       const { Website, Event, Feedback, CustomSlug, Payment } = require('./models');
 
-      // 1. Determine candidate website IDs
+      // 1. Determine candidate website IDs from CockroachDB & Supabase
       let candidateIds = new Set();
 
       if (Array.isArray(websiteIds) && websiteIds.length > 0) {
@@ -1353,11 +881,15 @@ class AnalyticsStore {
       if (olderThanDays !== null && olderThanDays !== undefined && !isNaN(olderThanDays)) {
         const daysNum = parseInt(olderThanDays);
         if (daysNum >= 0) {
+          const allWebsites = await cockroach.getAllWebsites();
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - daysNum);
 
-          const oldSites = await Website.find({ createdAt: { $lt: cutoffDate } }, { id: 1 }).lean();
-          oldSites.forEach(s => candidateIds.add(s.id));
+          allWebsites.forEach(w => {
+            if (w.createdAt && new Date(w.createdAt) < cutoffDate) {
+              candidateIds.add(w.id);
+            }
+          });
         }
       }
 
@@ -1366,9 +898,11 @@ class AnalyticsStore {
         return { success: true, deletedCount: 0, protectedCount: 0, message: 'No candidate websites matched the deletion criteria.' };
       }
 
-      // 2. Identify Premium / Paid Websites
-      const paidWebsiteIds = new Set(await Payment.distinct('websiteId', { status: 'PAID' }));
-      const slugWebsiteIds = new Set(await CustomSlug.distinct('websiteId'));
+      // 2. Identify Premium / Paid Websites from CockroachDB
+      const allPayments = await cockroach.getAllPayments(1000);
+      const allSlugs = await cockroach.getAllCustomSlugs();
+      const paidWebsiteIds = new Set(allPayments.map(p => p.websiteId));
+      const slugWebsiteIds = new Set(allSlugs.map(s => s.websiteId));
 
       const toDelete = [];
       const protectedList = [];
@@ -1387,20 +921,30 @@ class AnalyticsStore {
       let totalDeletedCount = 0;
 
       if (idsToDelete.length > 0) {
-        // Bulk delete MongoDB records across all collections simultaneously
-        const [websiteRes] = await Promise.all([
-          Website.deleteMany({ id: { $in: idsToDelete } }),
-          Event.deleteMany({ websiteId: { $in: idsToDelete } }),
-          Feedback.deleteMany({ websiteId: { $in: idsToDelete } }),
-          CustomSlug.deleteMany({ websiteId: { $in: idsToDelete } }),
-          Payment.deleteMany({ websiteId: { $in: idsToDelete } })
-        ]);
+        // Bulk delete from CockroachDB
+        const crRes = await cockroach.bulkDeleteWebsiteRecords(idsToDelete);
+        totalDeletedCount = crRes.deletedCount || idsToDelete.length;
 
-        totalDeletedCount = websiteRes.deletedCount || idsToDelete.length;
+        // Delete from Supabase Storage concurrently in batches
+        const chunkSize = 10;
+        for (let i = 0; i < idsToDelete.length; i += chunkSize) {
+          const chunk = idsToDelete.slice(i, i + chunkSize);
+          await Promise.allSettled(chunk.map(id => storage.deleteWebsiteConfig(id)));
+        }
+
+        // Non-blocking MongoDB cleanup
+        try {
+          await Promise.allSettled([
+            Website.deleteMany({ id: { $in: idsToDelete } }),
+            Event.deleteMany({ websiteId: { $in: idsToDelete } }),
+            Feedback.deleteMany({ websiteId: { $in: idsToDelete } }),
+            CustomSlug.deleteMany({ websiteId: { $in: idsToDelete } }),
+            Payment.deleteMany({ websiteId: { $in: idsToDelete } })
+          ]);
+        } catch (mErr) {}
 
         // Destroy Cloudinary configs & image assets concurrently in batches
         const cloud = cloudinaryRef || require('cloudinary').v2;
-        const chunkSize = 10;
         for (let i = 0; i < idsToDelete.length; i += chunkSize) {
           const chunk = idsToDelete.slice(i, i + chunkSize);
           await Promise.allSettled(chunk.map(id => this._deleteCloudinaryWebsiteAssets(cloud, id)));

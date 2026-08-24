@@ -96,7 +96,7 @@ const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 const corsOptions = {
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     const allowedOrigins = [
       'https://thegreeter.in',
       'https://www.thegreeter.in',
@@ -323,7 +323,7 @@ app.post('/api/config', async (req, res) => {
           if (paidCheck) effectiveIsPremium = true;
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // Extract metadata for analytics
     const metadata = {
@@ -369,7 +369,7 @@ app.post('/api/config', async (req, res) => {
             }
           },
           { upsert: true, returnDocument: 'after', strict: false }
-        ).catch(() => {});
+        ).catch(() => { });
       }
     } catch (dbErr) {
       console.warn('[Server] Mongo DB config save warning (ignored):', dbErr.message);
@@ -378,7 +378,7 @@ app.post('/api/config', async (req, res) => {
     // Increment persistent global website creation counter
     try {
       await analytics.incrementPersistentCounter('website_created', effectiveIsPremium);
-    } catch (cntErr) {}
+    } catch (cntErr) { }
 
     // Register website in analytics
     console.log('[Server] Registering website:', metadata.id, metadata.recipientName);
@@ -419,7 +419,7 @@ app.get('/api/config/:id', async (req, res) => {
       if (crRecord) {
         isPremiumRecord = !!(crRecord.isPremium || crRecord.is_premium);
       }
-    } catch (crErr) {}
+    } catch (crErr) { }
 
     // If Supabase Storage returned the complete JSON config (HTML + config)
     if (sbConfig && sbConfig.html) {
@@ -467,7 +467,7 @@ app.get('/api/config/:id', async (req, res) => {
         try {
           const json = JSON.parse(data);
           return res.json(json);
-        } catch (err) {}
+        } catch (err) { }
       }
     }
 
@@ -649,9 +649,9 @@ app.post('/api/feedback', async (req, res) => {
           ip: req.ip,
           geo: {}
         });
-        await feedback.save().catch(() => {});
+        await feedback.save().catch(() => { });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     res.json({ success: true, message: 'Feedback submitted successfully' });
   } catch (err) {
@@ -702,9 +702,9 @@ app.post('/api/custom-url', async (req, res) => {
     try {
       const mongoReady = await ensureMongoConnected();
       if (mongoReady) {
-        await CustomSlug.create({ slug: sanitized, websiteId }).catch(() => {});
+        await CustomSlug.create({ slug: sanitized, websiteId }).catch(() => { });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     return res.json({ success: true, message: 'Custom URL created successfully', slug: sanitized });
   } catch (err) {
@@ -722,12 +722,23 @@ app.get('/api/custom-url/check/:slug', async (req, res) => {
     if (RESERVED_SLUGS.has(sanitized)) {
       return res.json({ available: false, reserved: true, message: 'This word is reserved' });
     }
-    const ensureMongoConnectedResult = await ensureMongoConnected();
-    if (!ensureMongoConnectedResult) {
-      return res.status(503).json({ available: false });
+
+    // 1. Check CockroachDB Primary DB
+    const crExisting = await cockroach.getCustomSlug(sanitized);
+    if (crExisting) {
+      return res.json({ available: false, message: 'This custom URL is already taken' });
     }
-    const existing = await CustomSlug.findOne({ slug: sanitized }).lean();
-    res.json({ available: !existing });
+
+    // 2. Fallback to MongoDB
+    try {
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        const existing = await CustomSlug.findOne({ slug: sanitized }).lean();
+        if (existing) return res.json({ available: false });
+      }
+    } catch (e) { }
+
+    res.json({ available: true });
   } catch (err) {
     console.error('Custom URL check failed:', err);
     res.status(500).json({ available: false });
@@ -1071,7 +1082,7 @@ app.post('/api/payment/create-order', async (req, res) => {
             if (typeof meta.metadata === 'object' && meta.metadata !== null) meta.metadata.isPremium = true;
             await cockroach.saveRecord(websiteId, meta, true);
           }
-        } catch (e) {}
+        } catch (e) { }
       }
 
       try {
@@ -1086,9 +1097,9 @@ app.post('/api/payment/create-order', async (req, res) => {
             status: 'PAID',
             gateway: 'localhost',
             customerDetails: customerDetails || { customer_name: 'Local Tester', customer_email: email || 'test@localhost', customer_phone: phone || '9999999999' }
-          }).catch(() => {});
+          }).catch(() => { });
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const redirectUrl = `/generated/customize.html?view=${websiteId}&_v=c&lang=en`;
       return res.json({
@@ -1139,7 +1150,7 @@ app.post('/api/payment/create-order', async (req, res) => {
             isProOrHigherPaid = true;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       if (!isProOrHigherPaid) {
         try {
@@ -1153,7 +1164,7 @@ app.post('/api/payment/create-order', async (req, res) => {
               }
             }
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -1208,10 +1219,10 @@ app.post('/api/payment/create-order', async (req, res) => {
             qrCenterText: qrCenterText || '',
             qrCenterPhotoUrl: finalPhotoUrl || '',
             paidAt: new Date()
-          }).catch(() => {});
-          await CustomSlug.create({ slug: sanitizedSlug, websiteId }).catch(() => {});
+          }).catch(() => { });
+          await CustomSlug.create({ slug: sanitizedSlug, websiteId }).catch(() => { });
         }
-      } catch (e) {}
+      } catch (e) { }
 
       return res.json({
         success: true,
@@ -1239,7 +1250,7 @@ app.post('/api/payment/create-order', async (req, res) => {
 
     const defaultPlans = DEFAULT_PRICING.plans;
     const planData = (plans && plans[normPlan]) ? plans[normPlan] : (defaultPlans[normPlan] || defaultPlans.pro);
-    
+
     let amount = (typeof req.body.amount === 'number' && req.body.amount > 0) ? req.body.amount : planData.amount;
     let paypalAmount = planData.paypalAmount || amount;
     if (typeof req.body.amount === 'number' && req.body.amount > 0) {
@@ -1296,9 +1307,9 @@ app.post('/api/payment/create-order', async (req, res) => {
           qrCenterText: qrCenterText || '',
           qrCenterPhotoUrl: finalPhotoUrl || '',
           metadata: { source: req.headers['user-agent'] || 'web' }
-        }).catch(() => {});
+        }).catch(() => { });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
     if (gateway === 'paypal') {
@@ -1317,8 +1328,8 @@ app.post('/api/payment/create-order', async (req, res) => {
 
         // Update payment with paypal details and approval link
         try {
-          await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink: approveLink, paypalOrderId: paypalOrder.id } }).catch(() => {});
-        } catch (e) {}
+          await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink: approveLink, paypalOrderId: paypalOrder.id } }).catch(() => { });
+        } catch (e) { }
 
         return res.json({
           success: true,
@@ -1413,9 +1424,9 @@ app.post('/api/payment/create-order', async (req, res) => {
 
     try {
       if (paymentLink) {
-        await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink } }).catch(() => {});
+        await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink } }).catch(() => { });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // If we have a payment_session_id but no payment_link, return session_id for drop-in checkout
     if (!paymentLink && cfData.payment_session_id) {
@@ -1552,16 +1563,16 @@ app.post('/api/payment/webhook', async (req, res) => {
         cfPaymentId: payment_id || payment.cfPaymentId,
         cfSignature: signature,
         paidAt: newStatus === 'PAID' ? new Date() : payment.paidAt
-      }).catch(() => {});
+      }).catch(() => { });
 
       if (newStatus === 'PAID') {
         const { CustomSlug } = require('./models');
         const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
         if (!existingSlug) {
-          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => {});
+          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => { });
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     console.log(`[Webhook] Order ${resolvedOrderId} status updated to ${newStatus}`);
     res.status(200).json({ received: true, status: newStatus });
@@ -1599,7 +1610,7 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
             const { CustomSlug } = require('./models');
             const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
             if (!existingSlug) {
-              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => {});
+              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => { });
             }
             return res.json({
               status: 'PAID',
@@ -1743,14 +1754,14 @@ app.post('/api/payment/paypal/capture', async (req, res) => {
           status: 'PAID',
           paidAt: new Date(),
           paypalCaptureId: captureResult.id
-        }).catch(() => {});
+        }).catch(() => { });
 
         const { CustomSlug } = require('./models');
         const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
         if (!existingSlug) {
-          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => {});
+          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => { });
         }
-      } catch (e) {}
+      } catch (e) { }
 
       console.log(`[PayPal] Order ${orderId} captured successfully`);
       return res.json({ success: true, status: 'PAID', slug: payment.slug });
@@ -1758,8 +1769,8 @@ app.post('/api/payment/paypal/capture', async (req, res) => {
       console.error('[PayPal] Capture failed:', captureResult);
       await cockroach.savePayment({ orderId: payment.orderId, websiteId: payment.websiteId, status: 'FAILED' });
       try {
-        await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' }).catch(() => {});
-      } catch (e) {}
+        await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' }).catch(() => { });
+      } catch (e) { }
       return res.status(400).json({ error: 'Payment capture failed', details: captureResult });
     }
   } catch (err) {
@@ -1807,16 +1818,16 @@ app.post('/api/payment/paypal/webhook', async (req, res) => {
               status: 'PAID',
               paidAt: new Date(),
               paypalCaptureId: webhookEvent.id
-            }).catch(() => {});
+            }).catch(() => { });
 
             const { CustomSlug } = require('./models');
             const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
             if (!existingSlug) {
-              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => {});
+              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => { });
             }
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     } else if (webhookEvent.event_type === 'PAYMENT.CAPTURE.DECLINED' ||
       webhookEvent.event_type === 'CHECKOUT.ORDER.DECLINED') {
 
@@ -2181,7 +2192,6 @@ function adminAuth(req, res, next) {
   return res.status(401).json({ error: 'Invalid credentials' });
 }
 
-
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
@@ -2193,99 +2203,42 @@ app.post('/api/admin/login', (req, res) => {
 
 app.post('/api/admin/sync-websites', adminAuth, async (req, res) => {
   console.log('[Server] POST /api/admin/sync-websites reached');
-
   try {
-    // Use lazy connection instead of checking state
-    const connected = await ensureMongoConnected();
-    if (!connected) {
-      console.log('[Admin] MongoDB not connected, returning fallback response');
-      return res.json({ success: true, synced: 0, message: 'MongoDB not connected - sync skipped', fallbackMode: true });
-    }
-
-    console.log('[Admin] Starting website sync from Cloudinary...');
-    let allResources = [];
-    let nextCursor = null;
-    do {
-      const options = {
-        type: 'upload',
-        resource_type: 'raw',
-        prefix: 'configs/',
-        max_results: 500,
-        context: true
-      };
-      if (nextCursor) options.next_cursor = nextCursor;
-      const resources = await cloudinary.api.resources(options);
-      if (resources.resources && resources.resources.length > 0) {
-        allResources.push(...resources.resources);
-      }
-      nextCursor = resources.next_cursor;
-    } while (nextCursor);
-
+    const sbWebsites = await storage.listSupabaseWebsites();
     let syncedCount = 0;
 
-    for (const resource of allResources) {
-      const id = resource.public_id.replace('configs/', '');
-
+    for (const item of sbWebsites) {
       try {
-        const existing = await Website.findOne({ id });
+        const existing = await cockroach.getRecord(item.id);
+        if (existing && existing.recipientName && existing.recipientName !== 'Unknown') continue;
 
-        // Only skip if it exists AND has valid metadata
-        if (existing && existing.eventType !== 'unknown') continue;
+        const fullData = await storage.readWebsiteConfig(item.id);
+        if (fullData) {
+          const config = fullData.config || {};
+          const meta = fullData.metadata || {};
+          const isPrem = !!(item.isPremium || fullData.isPremium || meta.isPremium);
 
-        console.log(`[Admin] Syncing/Updating website: ${id}`);
+          const metadata = {
+            id: item.id,
+            eventType: meta.eventType || config.eventType || config.category || 'unknown',
+            recipientName: meta.recipientName || config.recipientName || config.name || config.userName || 'Unknown',
+            templateName: meta.templateName || config.templateName || config.template || 'unknown',
+            features: config.activeFeatures?.map(f => f[0]) || [],
+            isPremium: isPrem
+          };
 
-        // ... (metadata logic remains same) ...
-        const ctx = resource.context?.custom || {};
-        const ctxEventType = ctx.event_type || ctx.category;
-        const ctxRecipient = ctx.recipient || ctx.recipientName;
-
-        let metadata = {
-          id,
-          eventType: ctxEventType || 'unknown',
-          recipientName: ctxRecipient || 'Imported',
-          createdAt: resource.created_at
-        };
-
-        if (metadata.eventType === 'unknown' || metadata.recipientName === 'Imported') {
-          const configRes = await fetch(resource.secure_url);
-          if (configRes.ok) {
-            const fullData = await configRes.json();
-            const config = fullData.config || {};
-            const meta = fullData.metadata || {};
-            metadata.eventType = meta.eventType || config.eventType || config.category || metadata.eventType;
-
-            if (metadata.eventType === 'unknown' && config.customData) {
-              const allText = JSON.stringify(config.customData).toLowerCase();
-              if (allText.includes('birth')) metadata.eventType = 'Birthday';
-              else if (allText.includes('anniv')) metadata.eventType = 'Anniversary';
-              else if (allText.includes('wedd') || allText.includes('marri') || allText.includes('coupl')) metadata.eventType = 'Wedding';
-              else if (allText.includes('love') || allText.includes('valen') || allText.includes('sweet')) metadata.eventType = 'Love';
-              else if (allText.includes('congrat')) metadata.eventType = 'Congratulations';
-            }
-            metadata.recipientName = meta.recipientName || config.recipientName || config.name || config.userName || metadata.recipientName;
-            metadata.templateName = meta.templateName || config.templateName || config.template;
-          }
+          await cockroach.saveRecord(item.id, metadata, isPrem);
+          syncedCount++;
         }
-
-        if (existing) {
-          await Website.updateOne({ id }, { $set: metadata }).catch(() => {});
-        } else {
-          await analytics.registerWebsite({ headers: {}, socket: {} }, metadata);
-        }
-        syncedCount++;
-      } catch (err) {
-        console.warn(`[Admin] Sync failed for ${id}:`, err.message);
+      } catch (innerErr) {
+        console.warn(`[Admin Sync] Error syncing ${item.id}:`, innerErr.message);
       }
     }
-    res.json({ success: true, synced: syncedCount, message: `Successfully synced ${syncedCount} websites` });
+
+    res.json({ success: true, synced: syncedCount, message: `Successfully verified and synced ${syncedCount} websites from Supabase Storage` });
   } catch (err) {
     console.error('Sync failed:', err);
-    // Check if it's a MongoDB connection error
-    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError' || err.message.includes('ECONNREFUSED')) {
-      res.json({ success: true, synced: 0, message: 'MongoDB connection failed - sync skipped', fallbackMode: true });
-    } else {
-      res.status(500).json({ error: 'Sync failed', details: err.message });
-    }
+    res.status(500).json({ error: 'Sync failed', details: err.message });
   }
 });
 
@@ -2293,32 +2246,6 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
   try {
     const daysQuery = req.query.days;
     const days = (daysQuery !== undefined && daysQuery !== '') ? parseInt(daysQuery) : 7;
-
-    // Use lazy connection instead of checking state
-    const connected = await ensureMongoConnected();
-    if (!connected) {
-      console.log('[Admin] MongoDB not connected, returning fallback dashboard data');
-      return res.json({
-        period: days,
-        overview: {
-          totalPageViews: 0,
-          totalWebsitesCreated: 0,
-          periodUniqueVisitors: 0,
-          todayViews: 0,
-          todayUniqueVisitors: 0,
-          todayWebsitesCreated: 0,
-          totalWebsiteViews: 0
-        },
-        charts: {
-          trendData: []
-        },
-        recentActivity: [],
-        websites: [],
-        topWebsites: [],
-        fallbackMode: true,
-        message: 'MongoDB not connected - showing fallback data'
-      });
-    }
 
     const data = await analytics.getDashboardData(days);
 
@@ -2333,108 +2260,40 @@ app.get('/api/admin/dashboard', adminAuth, async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error('Dashboard error:', err);
-    // Check if it's a MongoDB connection error
-    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError' || err.message.includes('ECONNREFUSED')) {
-      res.json({
-        period: days,
-        overview: {
-          totalPageViews: 0,
-          totalWebsitesCreated: 0,
-          periodUniqueVisitors: 0,
-          todayViews: 0,
-          todayUniqueVisitors: 0,
-          todayWebsitesCreated: 0,
-          totalWebsiteViews: 0
-        },
-        charts: {
-          trendData: []
-        },
-        recentActivity: [],
-        websites: [],
-        topWebsites: [],
-        fallbackMode: true,
-        message: 'MongoDB connection failed - showing fallback data'
-      });
-    } else {
-      res.status(500).json({ error: 'Failed to load dashboard data', details: err.message });
-    }
+    res.status(500).json({ error: 'Failed to load dashboard data', details: err.message });
   }
 });
 
 // Feedback analytics
 app.get('/api/admin/feedback-analytics', adminAuth, async (req, res) => {
   try {
-    const connected = await ensureMongoConnected();
-    if (!connected) {
-      return res.json({
-        totalFeedback: 0,
-        recentFeedback: [],
-        questionStats: {},
-        fallbackMode: true,
-        message: 'MongoDB not connected'
-      });
-    }
-
-    const totalFeedback = await Feedback.countDocuments();
     const all = req.query.all === 'true';
-    const limit = all ? 0 : 50;
-    const recentFeedback = await Feedback.find().sort({ submittedAt: -1 }).limit(limit);
-
-    // Aggregate stats for each question
-    const questionStats = {};
-    const questions = ['websiteType', 'experience', 'customization', 'feature', 'attractive', 'receiver', 'performance', 'device', 'recommend'];
-    for (const q of questions) {
-      const stats = await Feedback.aggregate([
-        { $group: { _id: `$responses.${q}`, count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]);
-      questionStats[q] = stats.reduce((acc, stat) => { acc[stat._id || 'N/A'] = stat.count; return acc; }, {});
-    }
-
-    res.json({
-      totalFeedback,
-      recentFeedback,
-      questionStats,
-      fallbackMode: false
-    });
+    const data = await cockroach.getFeedbackAnalytics(all);
+    res.json(data);
   } catch (err) {
     console.error('Feedback analytics error:', err);
     res.status(500).json({ error: 'Failed to load feedback analytics' });
   }
 });
 
-// List Cloudinary configs for direct access
+// List Supabase Storage files for direct access
 app.get('/api/admin/cloudinary-list', adminAuth, async (req, res) => {
   try {
-    let allResources = [];
-    let nextCursor = null;
-    do {
-      const options = {
-        type: 'upload',
-        resource_type: 'raw',
-        prefix: 'configs/',
-        max_results: 500,
-        context: true
-      };
-      if (nextCursor) options.next_cursor = nextCursor;
-      const result = await cloudinary.api.resources(options);
-      if (result.resources && result.resources.length > 0) {
-        allResources.push(...result.resources);
-      }
-      nextCursor = result.next_cursor;
-    } while (nextCursor);
-
-    const websites = allResources.map(r => ({
-      publicId: r.public_id,
-      url: r.secure_url,
-      createdAt: r.created_at,
-      bytes: r.bytes,
-      context: r.context?.custom || {}
-    }));
-    res.json({ websites });
+    const files = await storage.listSupabaseFilesDetailed();
+    res.json({ websites: files, files: files });
   } catch (err) {
-    console.error('Cloudinary list error:', err);
-    res.status(500).json({ error: 'Failed to list websites' });
+    console.error('File list error:', err);
+    res.status(500).json({ error: 'Failed to list files' });
+  }
+});
+
+app.get('/api/admin/supabase-list', adminAuth, async (req, res) => {
+  try {
+    const files = await storage.listSupabaseFilesDetailed();
+    res.json({ files });
+  } catch (err) {
+    console.error('Supabase list error:', err);
+    res.status(500).json({ error: 'Failed to list Supabase files' });
   }
 });
 
@@ -2448,7 +2307,6 @@ app.delete('/api/admin/website/:id', adminAuth, async (req, res) => {
       return res.status(400).json({ error: 'Website ID is required' });
     }
 
-    await ensureMongoConnected();
     const result = await analytics.deleteWebsite(websiteId, force, cloudinary);
 
     if (!result.success && result.isPremium) {
@@ -2467,7 +2325,6 @@ app.post('/api/admin/websites/bulk-delete', adminAuth, async (req, res) => {
   try {
     const { websiteIds, olderThanDays, protectPremium = true } = req.body || {};
 
-    await ensureMongoConnected();
     const result = await analytics.bulkDeleteWebsites({
       websiteIds,
       olderThanDays,
@@ -2487,67 +2344,11 @@ app.get('/api/admin/traffic-sources', adminAuth, async (req, res) => {
     const daysQuery = req.query.days;
     const days = (daysQuery !== undefined && daysQuery !== '') ? parseInt(daysQuery) : 7;
 
-    const connected = await ensureMongoConnected();
-    if (!connected) {
-      console.log('[Admin] MongoDB not connected, returning fallback data');
-      return res.json({
-        period: days,
-        kpi: {
-          totalSessions: 0,
-          organicSearch: 0,
-          directTraffic: 0,
-          socialMedia: 0,
-          referral: 0,
-          email: 0,
-          paidSearch: 0
-        },
-        charts: {
-          trafficSourceDistribution: {},
-          searchEngineDistribution: {},
-          topKeywords: {},
-          socialPlatforms: {},
-          utmCampaigns: [],
-          topReferrers: {},
-          trafficTrend: []
-        },
-        recentTraffic: [],
-        fallbackMode: true,
-        message: 'MongoDB not connected'
-      });
-    }
-
     const data = await analytics.getTrafficSourcesData(days);
     res.json(data);
   } catch (err) {
     console.error('Traffic sources analytics error:', err);
-    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError' || err.message.includes('ECONNREFUSED')) {
-      res.json({
-        period: days,
-        kpi: {
-          totalSessions: 0,
-          organicSearch: 0,
-          directTraffic: 0,
-          socialMedia: 0,
-          referral: 0,
-          email: 0,
-          paidSearch: 0
-        },
-        charts: {
-          trafficSourceDistribution: {},
-          searchEngineDistribution: {},
-          topKeywords: {},
-          socialPlatforms: {},
-          utmCampaigns: [],
-          topReferrers: {},
-          trafficTrend: []
-        },
-        recentTraffic: [],
-        fallbackMode: true,
-        message: 'MongoDB connection failed'
-      });
-    } else {
-      res.status(500).json({ error: 'Failed to load traffic sources data', details: err.message });
-    }
+    res.status(500).json({ error: 'Failed to load traffic sources data', details: err.message });
   }
 });
 
@@ -2711,19 +2512,11 @@ app.get('/api/admin/health/status', async (req, res) => {
 // Custom URL Payments Analytics
 app.get('/api/admin/custom-url-payments', adminAuth, async (req, res) => {
   try {
-    const connected = await ensureMongoConnected();
-    if (!connected) {
-      return res.status(503).json({ error: 'Database unavailable' });
-    }
+    const payments = await cockroach.getAllPayments(100);
 
-    const payments = await Payment.find({ status: 'PAID' })
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .lean();
-
-    // Enrich with website data
+    // Enrich with website data from CockroachDB
     const enrichedPayments = await Promise.all(payments.map(async (payment) => {
-      const website = await Website.findOne({ id: payment.websiteId }).lean();
+      const website = payment.websiteId ? await cockroach.getRecord(payment.websiteId) : null;
       return {
         ...payment,
         websiteRecipientName: website?.recipientName || 'Unknown',
@@ -2742,43 +2535,21 @@ app.get('/api/admin/custom-url-payments', adminAuth, async (req, res) => {
 // Personalise URL Clicks Analytics
 app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
   try {
-    const connected = await ensureMongoConnected();
-    if (!connected) {
-      return res.status(503).json({ error: 'Database unavailable' });
-    }
+    const clickData = await cockroach.getPersonaliseClicks(1000);
+    const crWebsites = await cockroach.getAllWebsites();
+    const paidPayments = await cockroach.getAllPayments(500);
 
-    console.log('[Admin] Fetching personalise URL clicks...');
-    const rawClicks = await Event.find({
-      $or: [
-        { type: 'personalise_url_click' },
-        { 'details.action': 'clicked_personalise_url_button' }
-      ]
-    })
-      .sort({ timestamp: -1 })
-      .limit(1000)
-      .lean();
+    const paidMap = new Map();
+    paidPayments.forEach(p => { if (p.websiteId) paidMap.set(p.websiteId, p); });
 
-    // Calculate unique sites clicked
-    const uniqueSiteSet = new Set();
-    rawClicks.forEach(click => {
-      const wId = click.websiteId || click.details?.websiteId;
-      if (wId) {
-        uniqueSiteSet.add(wId);
-      }
-    });
-
-    const totalWebsites = await Website.countDocuments();
-    const uniqueClickers = uniqueSiteSet.size;
-
-    console.log(`[Admin] Found ${rawClicks.length} raw click events across ${uniqueClickers} unique site clickers (Total sites: ${totalWebsites})`);
+    const websiteMap = new Map();
+    crWebsites.forEach(w => { if (w.id) websiteMap.set(w.id, w); });
 
     // Enrich all clicks with website & payment data
-    const enrichedClicks = await Promise.all(rawClicks.map(async (click) => {
+    const enrichedClicks = (clickData.clicks || []).map(click => {
       const wId = click.websiteId || click.details?.websiteId || null;
-      const [website, payment] = await Promise.all([
-        wId ? Website.findOne({ id: wId }).lean() : null,
-        wId ? Payment.findOne({ websiteId: wId, status: 'PAID' }).lean() : null
-      ]);
+      const website = wId ? websiteMap.get(wId) : null;
+      const payment = wId ? paidMap.get(wId) : null;
 
       return {
         ...click,
@@ -2787,15 +2558,15 @@ app.get('/api/admin/personalise-url-clicks', adminAuth, async (req, res) => {
         websiteEventType: website?.eventType || 'Unknown',
         websiteTemplateName: website?.templateName || 'Unknown',
         isPaid: !!payment,
-        paymentAmount: payment ? `${payment.currency || 'USD'} ${payment.amount || 0}` : null
+        paymentAmount: payment ? `${payment.currency || 'INR'} ${payment.amount || 0}` : null
       };
-    }));
+    });
 
     res.json({
       clicks: enrichedClicks,
-      totalClicks: rawClicks.length,
-      uniqueClickers,
-      totalWebsites
+      totalClicks: clickData.totalClicks || 0,
+      uniqueClickers: clickData.uniqueClickers || 0,
+      totalWebsites: crWebsites.length
     });
   } catch (err) {
     console.error('Error fetching personalise URL clicks:', err);

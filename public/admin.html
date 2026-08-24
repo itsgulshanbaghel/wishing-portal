@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta name="google-adsense-account" content="ca-pub-8043014881280685">
-      <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon_io/android-chrome-512x512.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
-    <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
-  
+  <meta name="google-adsense-account" content="ca-pub-8043014881280685">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon_io/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
+  <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
+
   <script src="assets/config.js?v=1.0.4"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard · Greeter Analytics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="assets/admin.css?v=1.0.4">
 </head>
+
 <body>
 
   <!-- LOGIN SCREEN -->
@@ -51,18 +55,18 @@
         <div class="sidebar-logo"><i class="fas fa-chart-line"></i> <span>Greeter</span></div>
         <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
       </div>
-        <nav class="sidebar-nav">
-         <a href="#" class="nav-item active" data-section="overview"><i class="fas fa-gauge-high"></i> Overview</a>
-         <a href="#" class="nav-item" data-section="traffic"><i class="fas fa-chart-area"></i> Traffic</a>
-         <a href="#" class="nav-item" data-section="traffic-sources"><i class="fas fa-route"></i> Traffic Sources</a>
-         <a href="#" class="nav-item" data-section="websites"><i class="fas fa-globe"></i> Websites</a>
-         <a href="#" class="nav-item" data-section="audience"><i class="fas fa-users"></i> Audience</a>
-         <a href="#" class="nav-item" data-section="behavior"><i class="fas fa-mouse-pointer"></i> Behavior</a>
-         <a href="#" class="nav-item" data-section="feedback"><i class="fas fa-comments"></i> Feedback</a>
-         <a href="#" class="nav-item" data-section="realtime"><i class="fas fa-bolt"></i> Real-time</a>
-         <a href="#" class="nav-item" data-section="custom-url"><i class="fas fa-link"></i> Custom URL</a>
-         <a href="#" class="nav-item" data-section="system-health"><i class="fas fa-heartbeat"></i> System Health</a>
-       </nav>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="overview"><i class="fas fa-gauge-high"></i> Overview</a>
+        <a href="#" class="nav-item" data-section="traffic"><i class="fas fa-chart-area"></i> Traffic</a>
+        <a href="#" class="nav-item" data-section="traffic-sources"><i class="fas fa-route"></i> Traffic Sources</a>
+        <a href="#" class="nav-item" data-section="websites"><i class="fas fa-globe"></i> Websites</a>
+        <a href="#" class="nav-item" data-section="audience"><i class="fas fa-users"></i> Audience</a>
+        <a href="#" class="nav-item" data-section="behavior"><i class="fas fa-mouse-pointer"></i> Behavior</a>
+        <a href="#" class="nav-item" data-section="feedback"><i class="fas fa-comments"></i> Feedback</a>
+        <a href="#" class="nav-item" data-section="realtime"><i class="fas fa-bolt"></i> Real-time</a>
+        <a href="#" class="nav-item" data-section="custom-url"><i class="fas fa-link"></i> Custom URL</a>
+        <a href="#" class="nav-item" data-section="system-health"><i class="fas fa-heartbeat"></i> System Health</a>
+      </nav>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-btn"><i class="fas fa-right-from-bracket"></i> Logout</button>
       </div>
@@ -92,13 +96,41 @@
         <!-- OVERVIEW SECTION -->
         <section id="sec-overview" class="section active">
           <div class="kpi-grid">
-            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-eye"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTotalViews">--</span><span class="kpi-label">Total Page Views</span></div></div>
-            <div class="kpi-card accent-orange"><div class="kpi-icon"><i class="fas fa-globe"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTotalWebsites">--</span><span class="kpi-label">Websites Created</span></div></div>
-            <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fas fa-users"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiWeekVisitors">--</span><span class="kpi-label">Unique Visitors (7d)</span></div></div>
-            <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fas fa-chart-line"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayViews">--</span><span class="kpi-label">Today's Views</span></div></div>
-            <div class="kpi-card accent-pink"><div class="kpi-icon"><i class="fas fa-rocket"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayWebsites">--</span><span class="kpi-label">Created Today</span></div></div>
-            <div class="kpi-card accent-red"><div class="kpi-icon"><i class="fas fa-user-check"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTodayUnique">--</span><span class="kpi-label">Unique Visitors (Today)</span></div></div>
-            <div class="kpi-card accent-gold"><div class="kpi-icon"><i class="fas fa-binoculars"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiWebsiteViews">--</span><span class="kpi-label">Website Views</span></div></div>
+            <div class="kpi-card accent-purple">
+              <div class="kpi-icon"><i class="fas fa-eye"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="kpiTotalViews">--</span><span class="kpi-label">Total
+                  Page Views</span></div>
+            </div>
+            <div class="kpi-card accent-orange">
+              <div class="kpi-icon"><i class="fas fa-globe"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="kpiTotalWebsites">--</span><span
+                  class="kpi-label">Websites Created</span></div>
+            </div>
+            <div class="kpi-card accent-cyan">
+              <div class="kpi-icon"><i class="fas fa-users"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="kpiWeekVisitors">--</span><span class="kpi-label">Unique
+                  Visitors (7d)</span></div>
+            </div>
+            <div class="kpi-card accent-green">
+              <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="kpiTodayViews">--</span><span class="kpi-label">Today's
+                  Views</span></div>
+            </div>
+            <div class="kpi-card accent-pink">
+              <div class="kpi-icon"><i class="fas fa-rocket"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="kpiTodayWebsites">--</span><span
+                  class="kpi-label">Created Today</span></div>
+            </div>
+            <div class="kpi-card accent-red">
+              <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="kpiTodayUnique">--</span><span class="kpi-label">Unique
+                  Visitors (Today)</span></div>
+            </div>
+            <div class="kpi-card accent-gold">
+              <div class="kpi-icon"><i class="fas fa-binoculars"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="kpiWebsiteViews">--</span><span
+                  class="kpi-label">Website Views</span></div>
+            </div>
           </div>
 
           <!-- Multi-Database & Storage Infrastructure Status -->
@@ -107,102 +139,229 @@
               <div class="kpi-icon"><i class="fas fa-database"></i></div>
               <div class="kpi-info">
                 <span class="kpi-value" id="kpiCockroachCount">--</span>
-                <span class="kpi-label">CockroachDB Serverless (Free: <span id="kpiCockroachFree">0</span> | Prem: <span id="kpiCockroachPrem">0</span>)</span>
+                <span class="kpi-label">CockroachDB Serverless (Free: <span id="kpiCockroachFree">0</span> | Prem: <span
+                    id="kpiCockroachPrem">0</span>)</span>
               </div>
             </div>
             <div class="kpi-card accent-cyan">
               <div class="kpi-icon"><i class="fas fa-cloud-upload-alt"></i></div>
               <div class="kpi-info">
                 <span class="kpi-value" id="kpiSupabaseCount">--</span>
-                <span class="kpi-label">Supabase Storage (Proj 1: <span id="kpiSupaFree">0</span> | Proj 2: <span id="kpiSupaPrem">0</span>)</span>
+                <span class="kpi-label">Supabase Storage (Proj 1: <span id="kpiSupaFree">0</span> | Proj 2: <span
+                    id="kpiSupaPrem">0</span>)</span>
               </div>
             </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card wide"><h3><i class="fas fa-chart-area"></i> Traffic Trend (30 Days)</h3><canvas id="trendChart"></canvas></div>
+            <div class="chart-card wide">
+              <h3><i class="fas fa-chart-area"></i> Traffic Trend (30 Days)</h3><canvas id="trendChart"></canvas>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Devices</h3><canvas id="deviceChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-compass"></i> Browsers</h3><canvas id="browserChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-desktop"></i> OS</h3><canvas id="osChart"></canvas></div>
+            <div class="chart-card">
+              <h3><i class="fas fa-mobile-alt"></i> Devices</h3><canvas id="deviceChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-compass"></i> Browsers</h3><canvas id="browserChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-desktop"></i> OS</h3><canvas id="osChart"></canvas>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-clock"></i> Hourly Activity</h3><canvas id="hourlyChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-tags"></i> Event Types</h3><canvas id="eventTypeChart"></canvas></div>
+            <div class="chart-card">
+              <h3><i class="fas fa-clock"></i> Hourly Activity</h3><canvas id="hourlyChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-tags"></i> Event Types</h3><canvas id="eventTypeChart"></canvas>
+            </div>
           </div>
           <!-- Recent Activity -->
           <div class="table-card">
             <h3><i class="fas fa-stream"></i> Recent Activity</h3>
-            <div class="table-scroll"><table id="activityTable"><thead><tr><th>Time</th><th>Type</th><th>Details</th><th>Location</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="activityTable">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Location</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- TRAFFIC SECTION -->
         <section id="sec-traffic" class="section">
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-chart-bar"></i> Page Views by Page</h3><canvas id="pageViewsChart"></canvas></div></div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-link"></i> Referrer Sources</h3><canvas id="refererChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-door-open"></i> Exit Pages</h3><canvas id="exitChart"></canvas></div>
+            <div class="chart-card wide">
+              <h3><i class="fas fa-chart-bar"></i> Page Views by Page</h3><canvas id="pageViewsChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card">
+              <h3><i class="fas fa-link"></i> Referrer Sources</h3><canvas id="refererChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-door-open"></i> Exit Pages</h3><canvas id="exitChart"></canvas>
+            </div>
           </div>
         </section>
 
         <!-- TRAFFIC SOURCES SECTION -->
         <section id="sec-traffic-sources" class="section">
           <div class="kpi-grid">
-            <div class="kpi-card accent-blue"><div class="kpi-icon"><i class="fas fa-chart-bar"></i></div><div class="kpi-info"><span class="kpi-value" id="tsTotalSessions">--</span><span class="kpi-label">Total Sessions</span></div></div>
-            <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fab fa-google"></i></div><div class="kpi-info"><span class="kpi-value" id="tsGoogleSearch">--</span><span class="kpi-label">Google Search</span></div></div>
-            <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fab fa-microsoft"></i></div><div class="kpi-info"><span class="kpi-value" id="tsBingSearch">--</span><span class="kpi-label">Bing / Other Search</span></div></div>
-            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-compass"></i></div><div class="kpi-info"><span class="kpi-value" id="tsDirectTraffic">--</span><span class="kpi-label">Direct / Typed URL</span></div></div>
-            <div class="kpi-card accent-orange"><div class="kpi-icon"><i class="fas fa-share-alt"></i></div><div class="kpi-info"><span class="kpi-value" id="tsSocialMedia">--</span><span class="kpi-label">Social & Apps</span></div></div>
-            <div class="kpi-card accent-pink"><div class="kpi-icon"><i class="fas fa-gift"></i></div><div class="kpi-info"><span class="kpi-value" id="tsSharedWebsites">--</span><span class="kpi-label">Shared Generated Links</span></div></div>
+            <div class="kpi-card accent-blue">
+              <div class="kpi-icon"><i class="fas fa-chart-bar"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="tsTotalSessions">--</span><span class="kpi-label">Total
+                  Sessions</span></div>
+            </div>
+            <div class="kpi-card accent-green">
+              <div class="kpi-icon"><i class="fab fa-google"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="tsGoogleSearch">--</span><span class="kpi-label">Google
+                  Search</span></div>
+            </div>
+            <div class="kpi-card accent-cyan">
+              <div class="kpi-icon"><i class="fab fa-microsoft"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="tsBingSearch">--</span><span class="kpi-label">Bing /
+                  Other Search</span></div>
+            </div>
+            <div class="kpi-card accent-purple">
+              <div class="kpi-icon"><i class="fas fa-compass"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="tsDirectTraffic">--</span><span class="kpi-label">Direct
+                  / Typed URL</span></div>
+            </div>
+            <div class="kpi-card accent-orange">
+              <div class="kpi-icon"><i class="fas fa-share-alt"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="tsSocialMedia">--</span><span class="kpi-label">Social &
+                  Apps</span></div>
+            </div>
+            <div class="kpi-card accent-pink">
+              <div class="kpi-icon"><i class="fas fa-gift"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="tsSharedWebsites">--</span><span
+                  class="kpi-label">Shared Generated Links</span></div>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-chart-pie"></i> Traffic Sources</h3><canvas id="trafficSourceChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-search"></i> Search Engines</h3><canvas id="searchEngineChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-hashtag"></i> Top Keywords</h3><canvas id="topKeywordsChart"></canvas></div>
+            <div class="chart-card">
+              <h3><i class="fas fa-chart-pie"></i> Traffic Sources</h3><canvas id="trafficSourceChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-search"></i> Search Engines</h3><canvas id="searchEngineChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-hashtag"></i> Top Keywords</h3><canvas id="topKeywordsChart"></canvas>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-share-nodes"></i> Social Platforms</h3><canvas id="socialPlatformsChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-bullhorn"></i> UTM Campaigns</h3><canvas id="utmCampaignsChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-link"></i> Top Referrers</h3><canvas id="topReferrersChart"></canvas></div>
+            <div class="chart-card">
+              <h3><i class="fas fa-share-nodes"></i> Social Platforms</h3><canvas id="socialPlatformsChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-bullhorn"></i> UTM Campaigns</h3><canvas id="utmCampaignsChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-link"></i> Top Referrers</h3><canvas id="topReferrersChart"></canvas>
+            </div>
           </div>
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> Traffic Sources Trend</h3><canvas id="trafficTrendChart"></canvas></div></div>
+          <div class="chart-row">
+            <div class="chart-card wide">
+              <h3><i class="fas fa-chart-line"></i> Traffic Sources Trend</h3><canvas id="trafficTrendChart"></canvas>
+            </div>
+          </div>
           <!-- Traffic Source Details Table -->
           <div class="table-card">
             <h3><i class="fas fa-table"></i> Traffic Source Breakdown</h3>
-            <div class="table-scroll"><table id="trafficSourceTable"><thead><tr><th>Source</th><th>Sessions</th><th>Percentage</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="trafficSourceTable">
+                <thead>
+                  <tr>
+                    <th>Source</th>
+                    <th>Sessions</th>
+                    <th>Percentage</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
           <!-- Search Keywords Table -->
           <div class="table-card">
             <h3><i class="fas fa-key"></i> Top Search Keywords</h3>
-            <div class="table-scroll"><table id="keywordsTable"><thead><tr><th>Keyword</th><th>Searches</th><th>Percentage</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="keywordsTable">
+                <thead>
+                  <tr>
+                    <th>Keyword</th>
+                    <th>Searches</th>
+                    <th>Percentage</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
           <!-- UTM Campaigns Table -->
           <div class="table-card">
             <h3><i class="fas fa-bullhorn"></i> UTM Campaign Performance</h3>
-            <div class="table-scroll"><table id="utmCampaignsTable"><thead><tr><th>Campaign</th><th>Source</th><th>Medium</th><th>Sessions</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="utmCampaignsTable">
+                <thead>
+                  <tr>
+                    <th>Campaign</th>
+                    <th>Source</th>
+                    <th>Medium</th>
+                    <th>Sessions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
           <!-- Recent Traffic Sessions -->
           <div class="table-card">
             <h3><i class="fas fa-stream"></i> Recent Traffic Sessions</h3>
-            <div class="table-scroll"><table id="recentTrafficTable"><thead><tr><th>Time</th><th>Source</th><th>Search Engine</th><th>Keywords</th><th>UTM Campaign</th><th>Referer</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="recentTrafficTable">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Source</th>
+                    <th>Search Engine</th>
+                    <th>Keywords</th>
+                    <th>UTM Campaign</th>
+                    <th>Referer</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- WEBSITES SECTION -->
+        <!-- WEBSITES SECTION -->
         <section id="sec-websites" class="section">
           <div class="table-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+            <div
+              style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
               <h3><i class="fas fa-globe"></i> Generated Websites</h3>
               <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="refresh-btn" id="syncWebsitesBtn"><i class="fas fa-sync"></i> Sync with Cloudinary</button>
+                <button class="refresh-btn" id="syncWebsitesBtn"><i class="fas fa-sync"></i> Sync with
+                  Supabase</button>
               </div>
             </div>
-            
+
             <!-- Enhanced Deletion & Filter Toolbar -->
-            <div class="table-toolbar" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; padding:14px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:var(--radius-sm);">
-              <input type="text" id="websiteSearch" placeholder="Search by name, ID or event type..." class="table-search" style="flex:1; min-width:200px;">
-              
+            <div class="table-toolbar"
+              style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; padding:14px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:var(--radius-sm);">
+              <input type="text" id="websiteSearch" placeholder="Search by name, ID or event type..."
+                class="table-search" style="flex:1; min-width:200px;">
+
               <select id="websiteSort" class="table-search" style="max-width:160px;">
                 <option value="date_desc">Newest First</option>
                 <option value="date_asc">Oldest First</option>
@@ -224,32 +383,46 @@
                 <option value="all">All Sites (Free & Premium)</option>
                 <option value="premium">👑 Any Premium Site</option>
                 <option value="free">Standard / Free Only</option>
-                <option value="starter">⚡ 100+ Days Plan</option>
-                <option value="pro">💎 1 Year Plan</option>
-                <option value="forever">👑 Forever / Lifetime</option>
+                <option value="starter">⚡ Starter (30+ Days)</option>
+                <option value="pro">🔥 Pro (100+ Days)</option>
+                <option value="pro_plus">💎 Pro+ (1 Year)</option>
+                <option value="forever">👑 Infinity (Lifetime)</option>
                 <option value="custom_url">🔗 Custom URL Only</option>
               </select>
 
-              <label class="toggle-container" style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer; color:var(--text-dim); background:var(--bg-surface); padding:8px 12px; border:1px solid var(--border); border-radius:8px;">
-                <input type="checkbox" id="protectPremiumToggle" checked style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer;">
+              <label class="toggle-container"
+                style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer; color:var(--text-dim); background:var(--bg-surface); padding:8px 12px; border:1px solid var(--border); border-radius:8px;">
+                <input type="checkbox" id="protectPremiumToggle" checked
+                  style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer;">
                 <span><i class="fas fa-crown" style="color:var(--gold);"></i> Protect Premium Sites</span>
               </label>
             </div>
 
             <!-- Selection Actions Bar -->
-            <div class="selection-actions-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:8px 14px; background:rgba(123,93,246,0.05); border:1px dashed var(--border); border-radius:8px; flex-wrap:wrap; gap:10px;">
+            <div class="selection-actions-bar"
+              style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:8px 14px; background:rgba(123,93,246,0.05); border:1px dashed var(--border); border-radius:8px; flex-wrap:wrap; gap:10px;">
               <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer;">
-                  <input type="checkbox" id="selectAllWebsites" style="accent-color:var(--accent); width:16px; height:16px; cursor:pointer;">
+                <label
+                  style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer;">
+                  <input type="checkbox" id="selectAllWebsites"
+                    style="accent-color:var(--accent); width:16px; height:16px; cursor:pointer;">
                   <span>Select All Visible</span>
                 </label>
-                <button type="button" class="refresh-btn small" id="selectPremiumBtn" style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-crown" style="color:var(--gold)"></i> Select Premium</button>
-                <button type="button" class="refresh-btn small" id="selectFreeBtn" style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-globe"></i> Select Free</button>
-                <button type="button" class="refresh-btn small" id="deselectAllBtn" style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-times"></i> Clear Selection</button>
+                <button type="button" class="refresh-btn small" id="selectPremiumBtn"
+                  style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-crown"
+                    style="color:var(--gold)"></i> Select Premium</button>
+                <button type="button" class="refresh-btn small" id="selectFreeBtn"
+                  style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-globe"></i> Select
+                  Free</button>
+                <button type="button" class="refresh-btn small" id="deselectAllBtn"
+                  style="margin:0; padding:3px 9px; font-size:0.75rem;"><i class="fas fa-times"></i> Clear
+                  Selection</button>
               </div>
               <div style="display:flex; gap:10px;">
-                <button class="action-btn danger" id="deleteSelectedBtn" disabled style="opacity:0.5; cursor:not-allowed; padding:6px 14px; display:flex; align-items:center; gap:6px;">
-                  <i class="fas fa-trash-alt"></i> Delete Selected &nbsp;<span id="selectedCount" style="background:rgba(255,71,87,0.2); border-radius:20px; padding:1px 8px; font-weight:700; min-width:20px; text-align:center;">0</span>
+                <button class="action-btn danger" id="deleteSelectedBtn" disabled
+                  style="opacity:0.5; cursor:not-allowed; padding:6px 14px; display:flex; align-items:center; gap:6px;">
+                  <i class="fas fa-trash-alt"></i> Delete Selected &nbsp;<span id="selectedCount"
+                    style="background:rgba(255,71,87,0.2); border-radius:20px; padding:1px 8px; font-weight:700; min-width:20px; text-align:center;">0</span>
                 </button>
               </div>
             </div>
@@ -258,16 +431,20 @@
               <!-- Cards injected here -->
               <div class="empty-state">
                 <i class="fas fa-search"></i>
-                <p>No websites found. Try syncing with Cloudinary if you have existing sites.</p>
+                <p>No websites found. Try syncing with Supabase Storage if you have existing sites.</p>
               </div>
             </div>
           </div>
           <!-- Top websites -->
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-trophy"></i> Top Websites by Views</h3><canvas id="topWebsitesChart"></canvas></div></div>
-          <!-- Cloudinary -->
+          <div class="chart-row">
+            <div class="chart-card wide">
+              <h3><i class="fas fa-trophy"></i> Top Websites by Views</h3><canvas id="topWebsitesChart"></canvas>
+            </div>
+          </div>
+          <!-- Supabase Storage -->
           <div class="table-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-              <h3><i class="fas fa-cloud"></i> Cloudinary Storage (Raw)</h3>
+              <h3><i class="fas fa-cloud"></i> Supabase Storage (Files)</h3>
               <div style="display:flex; gap:10px;">
                 <select id="cloudinarySort" class="table-search" style="font-size:0.75rem; padding:5px 10px;">
                   <option value="date_desc">Newest First</option>
@@ -275,101 +452,271 @@
                   <option value="size_desc">Largest First</option>
                   <option value="id_asc">ID (A-Z)</option>
                 </select>
-                <button class="refresh-btn small" id="loadCloudinaryBtn" style="margin:0;"><i class="fas fa-cloud-arrow-down"></i> Load</button>
+                <button class="refresh-btn small" id="loadCloudinaryBtn" style="margin:0;"><i
+                    class="fas fa-cloud-arrow-down"></i> Load</button>
               </div>
             </div>
-            <div class="table-scroll"><table id="cloudinaryTable"><thead><tr><th>Public ID</th><th>Created</th><th>Size</th><th>Actions</th></tr></thead><tbody><tr><td colspan="4" style="text-align:center;opacity:0.5;">Click "Load" to fetch</td></tr></tbody></table></div>
+            <div class="table-scroll">
+              <table id="cloudinaryTable">
+                <thead>
+                  <tr>
+                    <th>File Path</th>
+                    <th>Created</th>
+                    <th>Size</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="4" style="text-align:center;opacity:0.5;">Click "Load" to fetch</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- AUDIENCE SECTION -->
         <section id="sec-audience" class="section">
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-earth-americas"></i> Geographic Distribution (Page Views & Unique Visitors)</h3><canvas id="geoChart"></canvas></div></div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Device Breakdown</h3><canvas id="deviceChart2"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-laptop-code"></i> Operating Systems</h3><canvas id="osChart2"></canvas></div>
+            <div class="chart-card wide">
+              <h3><i class="fas fa-earth-americas"></i> Geographic Distribution (Page Views & Unique Visitors)</h3>
+              <canvas id="geoChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card">
+              <h3><i class="fas fa-mobile-alt"></i> Device Breakdown</h3><canvas id="deviceChart2"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-laptop-code"></i> Operating Systems</h3><canvas id="osChart2"></canvas>
+            </div>
           </div>
           <!-- Country Breakdown Table -->
           <div class="table-card">
             <h3><i class="fas fa-globe"></i> Country Breakdown (Page Views vs. Unique Visitors)</h3>
-            <div class="table-scroll"><table id="geoTable"><thead><tr><th>Country</th><th>Page Views</th><th>Unique Visitors</th><th>Views / Unique Visitor</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="geoTable">
+                <thead>
+                  <tr>
+                    <th>Country</th>
+                    <th>Page Views</th>
+                    <th>Unique Visitors</th>
+                    <th>Views / Unique Visitor</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- BEHAVIOR SECTION -->
         <section id="sec-behavior" class="section">
-          <div class="chart-row"><div class="chart-card wide"><h3><i class="fas fa-toggle-on"></i> Feature Usage</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-featureChart"><canvas id="featureChart"></canvas></div></div></div></div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Feature Usage by Device</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-featureDeviceChart"><canvas id="featureDeviceChart"></canvas></div></div></div>
-            <div class="chart-card"><h3><i class="fas fa-compass"></i> Feature Usage by Browser</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-featureBrowserChart"><canvas id="featureBrowserChart"></canvas></div></div></div>
+            <div class="chart-card wide">
+              <h3><i class="fas fa-toggle-on"></i> Feature Usage</h3>
+              <div class="chart-scroll-container">
+                <div class="canvas-wrapper" id="wrap-featureChart"><canvas id="featureChart"></canvas></div>
+              </div>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-fire"></i> Trending Features</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-trendingFeaturesChart"><canvas id="trendingFeaturesChart"></canvas></div></div></div>
-            <div class="chart-card"><h3><i class="fas fa-trophy"></i> Most Used Features</h3><div class="chart-scroll-container"><div class="canvas-wrapper" id="wrap-mostUsedFeaturesChart"><canvas id="mostUsedFeaturesChart"></canvas></div></div></div>
+            <div class="chart-card">
+              <h3><i class="fas fa-mobile-alt"></i> Feature Usage by Device</h3>
+              <div class="chart-scroll-container">
+                <div class="canvas-wrapper" id="wrap-featureDeviceChart"><canvas id="featureDeviceChart"></canvas></div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-compass"></i> Feature Usage by Browser</h3>
+              <div class="chart-scroll-container">
+                <div class="canvas-wrapper" id="wrap-featureBrowserChart"><canvas id="featureBrowserChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-card">
+              <h3><i class="fas fa-fire"></i> Trending Features</h3>
+              <div class="chart-scroll-container">
+                <div class="canvas-wrapper" id="wrap-trendingFeaturesChart"><canvas id="trendingFeaturesChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-trophy"></i> Most Used Features</h3>
+              <div class="chart-scroll-container">
+                <div class="canvas-wrapper" id="wrap-mostUsedFeaturesChart"><canvas id="mostUsedFeaturesChart"></canvas>
+                </div>
+              </div>
+            </div>
           </div>
           <!-- Feature Usage Table -->
           <div class="table-card">
             <h3><i class="fas fa-table"></i> Detailed Feature Analytics</h3>
-            <div class="table-scroll"><table id="featureTable"><thead><tr><th>Feature</th><th>Tried</th><th>Used (Final)</th><th>Tried Enabled</th><th>Tried Disabled</th><th>Conversion Rate</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="featureTable">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Tried</th>
+                    <th>Used (Final)</th>
+                    <th>Tried Enabled</th>
+                    <th>Tried Disabled</th>
+                    <th>Conversion Rate</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-calendar-check"></i> Websites by Category</h3><canvas id="categoryChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-arrow-trend-up"></i> Daily Website Creations</h3><canvas id="creationTrendChart"></canvas></div>
+            <div class="chart-card">
+              <h3><i class="fas fa-calendar-check"></i> Websites by Category</h3><canvas id="categoryChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-arrow-trend-up"></i> Daily Website Creations</h3><canvas
+                id="creationTrendChart"></canvas>
+            </div>
           </div>
         </section>
 
         <!-- FEEDBACK SECTION -->
         <section id="sec-feedback" class="section">
           <div class="kpi-grid">
-            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-comments"></i></div><div class="kpi-info"><span class="kpi-value" id="feedbackTotal">--</span><span class="kpi-label">Total Feedback</span></div></div>
+            <div class="kpi-card accent-purple">
+              <div class="kpi-icon"><i class="fas fa-comments"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="feedbackTotal">--</span><span class="kpi-label">Total
+                  Feedback</span></div>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-chart-pie"></i> Experience Ratings</h3><canvas id="experienceChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-star"></i> Website Types</h3><canvas id="websiteTypeChart"></canvas></div>
+            <div class="chart-card">
+              <h3><i class="fas fa-chart-pie"></i> Experience Ratings</h3><canvas id="experienceChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-star"></i> Website Types</h3><canvas id="websiteTypeChart"></canvas>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card"><h3><i class="fas fa-thumbs-up"></i> Recommendations</h3><canvas id="recommendChart"></canvas></div>
-            <div class="chart-card"><h3><i class="fas fa-mobile-alt"></i> Devices Used</h3><canvas id="deviceChartFb"></canvas></div>
+            <div class="chart-card">
+              <h3><i class="fas fa-thumbs-up"></i> Recommendations</h3><canvas id="recommendChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-mobile-alt"></i> Devices Used</h3><canvas id="deviceChartFb"></canvas>
+            </div>
           </div>
           <!-- Recent Feedback -->
           <div class="table-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
               <h3><i class="fas fa-list"></i> Recent Feedback</h3>
-              <button class="action-btn" id="viewAllFeedbackBtn"><i class="fas fa-database"></i> View All Responses</button>
+              <button class="action-btn" id="viewAllFeedbackBtn"><i class="fas fa-database"></i> View All
+                Responses</button>
             </div>
-            <div class="table-scroll"><table id="feedbackTable"><thead><tr><th>Submitted</th><th>Website Type</th><th>Experience</th><th>Recommend</th><th>Issues</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="feedbackTable">
+                <thead>
+                  <tr>
+                    <th>Submitted</th>
+                    <th>Website Type</th>
+                    <th>Experience</th>
+                    <th>Recommend</th>
+                    <th>Issues</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- REALTIME SECTION -->
         <section id="sec-realtime" class="section">
           <div class="kpi-grid">
-            <div class="kpi-card accent-green pulse"><div class="kpi-icon"><i class="fas fa-signal"></i></div><div class="kpi-info"><span class="kpi-value" id="rtTodayViews">--</span><span class="kpi-label">Views Today</span></div></div>
-            <div class="kpi-card accent-cyan pulse"><div class="kpi-icon"><i class="fas fa-user-check"></i></div><div class="kpi-info"><span class="kpi-value" id="rtTodayUnique">--</span><span class="kpi-label">Unique Today</span></div></div>
-            <div class="kpi-card accent-orange pulse"><div class="kpi-icon"><i class="fas fa-wand-magic-sparkles"></i></div><div class="kpi-info"><span class="kpi-value" id="rtTodayCreated">--</span><span class="kpi-label">Created Today</span></div></div>
+            <div class="kpi-card accent-green pulse">
+              <div class="kpi-icon"><i class="fas fa-signal"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="rtTodayViews">--</span><span class="kpi-label">Views
+                  Today</span></div>
+            </div>
+            <div class="kpi-card accent-cyan pulse">
+              <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="rtTodayUnique">--</span><span class="kpi-label">Unique
+                  Today</span></div>
+            </div>
+            <div class="kpi-card accent-orange pulse">
+              <div class="kpi-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="rtTodayCreated">--</span><span class="kpi-label">Created
+                  Today</span></div>
+            </div>
           </div>
           <div class="table-card">
             <h3><i class="fas fa-bolt"></i> Live Feed <span class="live-dot"></span></h3>
-            <div class="table-scroll"><table id="realtimeTable"><thead><tr><th>Time</th><th>Type</th><th>Details</th><th>Location</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="realtimeTable">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Location</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- CUSTOM URL SECTION -->
         <section id="sec-custom-url" class="section">
           <div class="kpi-grid">
-            <div class="kpi-card accent-purple"><div class="kpi-icon"><i class="fas fa-credit-card"></i></div><div class="kpi-info"><span class="kpi-value" id="cuTotalPayments">--</span><span class="kpi-label">Total Paid Users</span></div></div>
-            <div class="kpi-card accent-green"><div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div><div class="kpi-info"><span class="kpi-value" id="cuTotalRevenue">--</span><span class="kpi-label">Total Revenue</span></div></div>
-            <div class="kpi-card accent-cyan"><div class="kpi-icon"><i class="fas fa-mouse-pointer"></i></div><div class="kpi-info"><span class="kpi-value" id="cuTotalClicks">--</span><span class="kpi-label">Personalise Clicks</span></div></div>
-            <div class="kpi-card accent-orange"><div class="kpi-icon"><i class="fas fa-percentage"></i></div><div class="kpi-info"><span class="kpi-value" id="cuConversionRate">--</span><span class="kpi-label">Conversion Rate</span></div></div>
+            <div class="kpi-card accent-purple">
+              <div class="kpi-icon"><i class="fas fa-credit-card"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="cuTotalPayments">--</span><span class="kpi-label">Total
+                  Paid Users</span></div>
+            </div>
+            <div class="kpi-card accent-green">
+              <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="cuTotalRevenue">--</span><span class="kpi-label">Total
+                  Revenue</span></div>
+            </div>
+            <div class="kpi-card accent-cyan">
+              <div class="kpi-icon"><i class="fas fa-mouse-pointer"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="cuTotalClicks">--</span><span
+                  class="kpi-label">Personalise Clicks</span></div>
+            </div>
+            <div class="kpi-card accent-orange">
+              <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="cuConversionRate">--</span><span
+                  class="kpi-label">Conversion Rate</span></div>
+            </div>
           </div>
-          
+
           <!-- Custom URL Payments Table -->
           <div class="table-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
               <h3><i class="fas fa-credit-card"></i> Custom URL Payments</h3>
               <button class="refresh-btn" id="refreshCustomUrlBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div class="table-scroll"><table id="customUrlPaymentsTable"><thead><tr><th>Date</th><th>Order ID</th><th>Website ID</th><th>Slug</th><th>Amount</th><th>Currency</th><th>Gateway</th><th>Recipient</th><th>Event Type</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="customUrlPaymentsTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Order ID</th>
+                    <th>Website ID</th>
+                    <th>Slug</th>
+                    <th>Amount</th>
+                    <th>Currency</th>
+                    <th>Gateway</th>
+                    <th>Recipient</th>
+                    <th>Event Type</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
 
           <!-- Personalise URL Clicks Table -->
@@ -377,19 +724,49 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
               <h3><i class="fas fa-mouse-pointer"></i> "Personalise Your URL" Button Clicks (Paid & Unpaid)</h3>
             </div>
-            <div class="table-scroll"><table id="personaliseClicksTable"><thead><tr><th>Date</th><th>Website ID</th><th>Recipient</th><th>Event Type</th><th>Location</th><th>Payment Status</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="personaliseClicksTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Website ID</th>
+                    <th>Recipient</th>
+                    <th>Event Type</th>
+                    <th>Location</th>
+                    <th>Payment Status</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <!-- SYSTEM HEALTH SECTION -->
         <section id="sec-system-health" class="section">
           <div class="kpi-grid">
-            <div class="kpi-card accent-purple" id="kpiCpuCard"><div class="kpi-icon"><i class="fas fa-microchip"></i></div><div class="kpi-info"><span class="kpi-value" id="shCpuUsage">--</span><span class="kpi-label">CPU Usage</span></div></div>
-            <div class="kpi-card accent-cyan" id="kpiMemoryCard"><div class="kpi-icon"><i class="fas fa-memory"></i></div><div class="kpi-info"><span class="kpi-value" id="shMemoryUsage">--</span><span class="kpi-label">Memory Usage</span></div></div>
-            <div class="kpi-card accent-orange" id="kpiDiskCard"><div class="kpi-icon"><i class="fas fa-hdd"></i></div><div class="kpi-info"><span class="kpi-value" id="shDiskUsage">--</span><span class="kpi-label">Disk Usage</span></div></div>
-            <div class="kpi-card accent-green" id="kpiMongoCard"><div class="kpi-icon"><i class="fas fa-database"></i></div><div class="kpi-info"><span class="kpi-value" id="shMongoConnections">--</span><span class="kpi-label">MongoDB Connections</span></div></div>
+            <div class="kpi-card accent-purple" id="kpiCpuCard">
+              <div class="kpi-icon"><i class="fas fa-microchip"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="shCpuUsage">--</span><span class="kpi-label">CPU
+                  Usage</span></div>
+            </div>
+            <div class="kpi-card accent-cyan" id="kpiMemoryCard">
+              <div class="kpi-icon"><i class="fas fa-memory"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="shMemoryUsage">--</span><span class="kpi-label">Memory
+                  Usage</span></div>
+            </div>
+            <div class="kpi-card accent-orange" id="kpiDiskCard">
+              <div class="kpi-icon"><i class="fas fa-hdd"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="shDiskUsage">--</span><span class="kpi-label">Disk
+                  Usage</span></div>
+            </div>
+            <div class="kpi-card accent-green" id="kpiMongoCard">
+              <div class="kpi-icon"><i class="fas fa-database"></i></div>
+              <div class="kpi-info"><span class="kpi-value" id="shMongoConnections">--</span><span
+                  class="kpi-label">MongoDB Connections</span></div>
+            </div>
           </div>
-          
+
           <!-- Alert Status Panel -->
           <div class="table-card" id="alertPanel">
             <h3><i class="fas fa-exclamation-triangle"></i> Alert Status</h3>
@@ -400,35 +777,66 @@
             <div style="margin-top: 15px;">
               <button class="refresh-btn" id="testAlertBtn"><i class="fas fa-envelope"></i> Test Alert Email</button>
               <button class="refresh-btn" id="refreshHealthBtn"><i class="fas fa-sync-alt"></i> Refresh Now</button>
-              <button class="refresh-btn" id="collectHealthBtn"><i class="fas fa-chart-line"></i> Collect Metrics</button>
-              <button class="refresh-btn" id="cleanupMetricsBtn"><i class="fas fa-trash-alt"></i> Clean Up Old Metrics</button>
+              <button class="refresh-btn" id="collectHealthBtn"><i class="fas fa-chart-line"></i> Collect
+                Metrics</button>
+              <button class="refresh-btn" id="cleanupMetricsBtn"><i class="fas fa-trash-alt"></i> Clean Up Old
+                Metrics</button>
             </div>
             <div id="healthCollectionStatus" class="status-message" style="margin-top: 10px;"></div>
           </div>
 
           <div class="chart-row">
-            <div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> CPU Usage Trend</h3><canvas id="cpuTrendChart"></canvas></div>
+            <div class="chart-card wide">
+              <h3><i class="fas fa-chart-line"></i> CPU Usage Trend</h3><canvas id="cpuTrendChart"></canvas>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> Memory Usage Trend</h3><canvas id="memoryTrendChart"></canvas></div>
+            <div class="chart-card wide">
+              <h3><i class="fas fa-chart-line"></i> Memory Usage Trend</h3><canvas id="memoryTrendChart"></canvas>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> Disk Usage Trend</h3><canvas id="diskTrendChart"></canvas></div>
+            <div class="chart-card wide">
+              <h3><i class="fas fa-chart-line"></i> Disk Usage Trend</h3><canvas id="diskTrendChart"></canvas>
+            </div>
           </div>
           <div class="chart-row">
-            <div class="chart-card wide"><h3><i class="fas fa-chart-line"></i> MongoDB Connections Trend</h3><canvas id="mongoTrendChart"></canvas></div>
+            <div class="chart-card wide">
+              <h3><i class="fas fa-chart-line"></i> MongoDB Connections Trend</h3><canvas id="mongoTrendChart"></canvas>
+            </div>
           </div>
 
           <!-- System Info -->
           <div class="table-card">
             <h3><i class="fas fa-server"></i> System Information</h3>
-            <div class="table-scroll"><table id="systemInfoTable"><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="systemInfoTable">
+                <thead>
+                  <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
 
           <!-- Recent Alerts History -->
           <div class="table-card">
             <h3><i class="fas fa-history"></i> Recent Alerts</h3>
-            <div class="table-scroll"><table id="alertsHistoryTable"><thead><tr><th>Time</th><th>Level</th><th>Details</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-scroll">
+              <table id="alertsHistoryTable">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Level</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -494,26 +902,38 @@
       </div>
       <div class="modal-body">
         <p style="margin-bottom:14px; color:var(--text-dim); font-size:0.9rem;">
-          You are about to permanently delete websites and all their associated resources (Cloudinary JSON configs, images, views, tracking events, feedback, and custom URLs).
+          You are about to permanently delete websites and all their associated resources (Cloudinary JSON configs,
+          images, views, tracking events, feedback, and custom URLs).
         </p>
 
-        <div id="deleteModalSummary" style="background:var(--bg-surface); padding:16px; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; font-size:0.85rem; display:flex; flex-direction:column; gap:8px;">
-          <div><i class="fas fa-list-check" style="color:var(--accent);"></i> Total selected: <strong id="modalTotalSelectedCount" style="color:var(--text);">0</strong></div>
-          <div><i class="fas fa-trash" style="color:var(--red);"></i> Websites to delete: <strong id="modalDeleteCount" style="color:var(--red);">0</strong></div>
-          <div id="modalProtectedRow"><i class="fas fa-shield-alt" style="color:var(--green);"></i> Protected Premium websites: <strong id="modalProtectedCount" style="color:var(--green);">0</strong></div>
+        <div id="deleteModalSummary"
+          style="background:var(--bg-surface); padding:16px; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; font-size:0.85rem; display:flex; flex-direction:column; gap:8px;">
+          <div><i class="fas fa-list-check" style="color:var(--accent);"></i> Total selected: <strong
+              id="modalTotalSelectedCount" style="color:var(--text);">0</strong></div>
+          <div><i class="fas fa-trash" style="color:var(--red);"></i> Websites to delete: <strong id="modalDeleteCount"
+              style="color:var(--red);">0</strong></div>
+          <div id="modalProtectedRow"><i class="fas fa-shield-alt" style="color:var(--green);"></i> Protected Premium
+            websites: <strong id="modalProtectedCount" style="color:var(--green);">0</strong></div>
         </div>
 
-        <div id="modalProtectedWarning" style="display:none; background:rgba(255,159,67,0.1); border:1px solid rgba(255,159,67,0.3); padding:12px; border-radius:8px; color:var(--gold); font-size:0.82rem; margin-bottom:16px;">
-          <div style="margin-bottom:8px;"><i class="fas fa-info-circle"></i> <span id="modalWarningText">Premium websites are currently protected from deletion.</span></div>
-          <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; color:var(--gold); font-size:0.82rem; margin-top:6px;">
-            <input type="checkbox" id="modalOverrideProtectCb" style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer;">
+        <div id="modalProtectedWarning"
+          style="display:none; background:rgba(255,159,67,0.1); border:1px solid rgba(255,159,67,0.3); padding:12px; border-radius:8px; color:var(--gold); font-size:0.82rem; margin-bottom:16px;">
+          <div style="margin-bottom:8px;"><i class="fas fa-info-circle"></i> <span id="modalWarningText">Premium
+              websites are currently protected from deletion.</span></div>
+          <label
+            style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; color:var(--gold); font-size:0.82rem; margin-top:6px;">
+            <input type="checkbox" id="modalOverrideProtectCb"
+              style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer;">
             <span>Allow deleting premium websites in this batch</span>
           </label>
         </div>
 
         <div style="display:flex; flex-direction:row; gap:12px; justify-content:flex-end; margin-top:20px;">
-          <button id="cancelBulkDeleteBtn" class="refresh-btn" style="background:rgba(255,255,255,0.05); color:var(--text); border-color:var(--border);">Cancel</button>
-          <button id="confirmBulkDeleteBtn" class="action-btn danger" style="padding:10px 20px; font-size:0.9rem; font-weight:700;"><i class="fas fa-trash-alt"></i> Confirm Permanent Delete</button>
+          <button id="cancelBulkDeleteBtn" class="refresh-btn"
+            style="background:rgba(255,255,255,0.05); color:var(--text); border-color:var(--border);">Cancel</button>
+          <button id="confirmBulkDeleteBtn" class="action-btn danger"
+            style="padding:10px 20px; font-size:0.9rem; font-weight:700;"><i class="fas fa-trash-alt"></i> Confirm
+            Permanent Delete</button>
         </div>
       </div>
     </div>
@@ -521,4 +941,5 @@
 
   <script src="assets/admin.js?v=1.0.4"></script>
 </body>
+
 </html>

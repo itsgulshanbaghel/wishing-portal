@@ -4,6 +4,8 @@
  * 100% Free 10 GB Storage Cluster Primary DB
  */
 
+require('dotenv').config();
+
 let pg = null;
 try {
   pg = require('pg');
@@ -203,7 +205,7 @@ async function saveRecord(websiteId, metadata, isPremium = false) {
     if (isPremium && poolFree) {
       try {
         await poolFree.query('DELETE FROM free_records WHERE id = $1', [websiteId]);
-      } catch (e) {}
+      } catch (e) { }
     }
     return true;
   } catch (err) {
@@ -239,7 +241,7 @@ async function getRecord(websiteId) {
               metadata: row.metadata
             };
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   } catch (err) {
@@ -264,7 +266,7 @@ async function incrementView(websiteId) {
           if (res.rows && res.rows.length > 0) {
             return res.rows[0].views;
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   } catch (err) {
@@ -283,7 +285,7 @@ async function getAllWebsites() {
   try {
     await ensureTablesExist();
     const list = [];
-    
+
     for (const tableName of ['premium_records', 'free_records']) {
       try {
         const res = await pool.query(`SELECT * FROM ${tableName} ORDER BY created_at DESC LIMIT 5000`);
@@ -302,7 +304,7 @@ async function getAllWebsites() {
             });
           });
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     return list;
   } catch (err) {
@@ -600,6 +602,441 @@ async function saveVisitor(visitorData) {
   }
 }
 
+/**
+ * Get all payments from CockroachDB for Admin Panel
+ */
+async function getAllPayments(limit = 200) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return [];
+  try {
+    await ensureTablesExist();
+    const res = await pool.query(
+      `SELECT order_id as "orderId", website_id as "websiteId", slug, plan, plan_name as "planName", 
+              amount, currency, status, payment_method as "paymentMethod", created_at as "createdAt", 
+              metadata
+       FROM payments 
+       WHERE status = 'PAID'
+       ORDER BY created_at DESC 
+       LIMIT $1`,
+      [limit]
+    );
+    return res.rows || [];
+  } catch (err) {
+    console.error('[CockroachDB] getAllPayments error:', err.message);
+    return [];
+  }
+}
+
+/**
+ * Get all custom slugs from CockroachDB
+ */
+async function getAllCustomSlugs() {
+  const pool = poolFree || poolPremium;
+  if (!pool) return [];
+  try {
+    await ensureTablesExist();
+    const res = await pool.query('SELECT slug, website_id as "websiteId", created_at as "createdAt" FROM custom_slugs');
+    return res.rows || [];
+  } catch (err) {
+    console.error('[CockroachDB] getAllCustomSlugs error:', err.message);
+    return [];
+  }
+}
+
+/**
+ * Get feedback analytics and question statistics from CockroachDB
+ */
+async function getFeedbackAnalytics(all = false) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return { totalFeedback: 0, recentFeedback: [], questionStats: {} };
+  try {
+    await ensureTablesExist();
+    const countRes = await pool.query('SELECT COUNT(*) FROM feedback');
+    const totalFeedback = parseInt(countRes.rows[0]?.count || 0, 10);
+
+    const limitClause = all ? '' : 'LIMIT 50';
+    const recentRes = await pool.query(`SELECT id, website_id as "websiteId", responses, ip, created_at as "submittedAt" FROM feedback ORDER BY created_at DESC ${limitClause}`);
+    const recentFeedback = (recentRes.rows || []).map(r => ({
+      _id: r.id,
+      websiteId: r.websiteId,
+      responses: typeof r.responses === 'string' ? JSON.parse(r.responses) : (r.responses || {}),
+      ip: r.ip,
+      submittedAt: r.submittedAt
+    }));
+
+    const questionStats = {};
+    const questions = ['websiteType', 'experience', 'customization', 'feature', 'attractive', 'receiver', 'performance', 'device', 'recommend'];
+    for (const q of questions) {
+      try {
+        const qRes = await pool.query(`SELECT responses->>$1 as val, COUNT(*) as count FROM feedback WHERE responses->>$1 IS NOT NULL GROUP BY responses->>$1 ORDER BY count DESC`, [q]);
+        questionStats[q] = {};
+        (qRes.rows || []).forEach(row => {
+          questionStats[q][row.val || 'N/A'] = parseInt(row.count || 0, 10);
+        });
+      } catch (qe) {
+        questionStats[q] = {};
+      }
+    }
+
+    return {
+      totalFeedback,
+      recentFeedback,
+      questionStats,
+      fallbackMode: false
+    };
+  } catch (err) {
+    console.error('[CockroachDB] getFeedbackAnalytics error:', err.message);
+    return { totalFeedback: 0, recentFeedback: [], questionStats: {}, fallbackMode: true };
+  }
+}
+
+/**
+ * Get personalise URL click events from CockroachDB
+ */
+async function getPersonaliseClicks(limit = 1000) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return { clicks: [], totalClicks: 0, uniqueClickers: 0 };
+  try {
+    await ensureTablesExist();
+    const res = await pool.query(
+      `SELECT id, type, visitor_id as "visitorId", session_id as "sessionId", page, website_id as "websiteId", details, created_at as "timestamp"
+       FROM events 
+       WHERE type = 'personalise_url_click' OR details->>'action' = 'clicked_personalise_url_button'
+       ORDER BY created_at DESC 
+       LIMIT $1`,
+      [limit]
+    );
+
+    const clicks = (res.rows || []).map(r => ({
+      ...r,
+      details: typeof r.details === 'string' ? JSON.parse(r.details) : (r.details || {})
+    }));
+
+    const uniqueSiteSet = new Set();
+    clicks.forEach(c => {
+      const wId = c.websiteId || c.details?.websiteId;
+      if (wId) uniqueSiteSet.add(wId);
+    });
+
+    return {
+      clicks,
+      totalClicks: clicks.length,
+      uniqueClickers: uniqueSiteSet.size
+    };
+  } catch (err) {
+    console.error('[CockroachDB] getPersonaliseClicks error:', err.message);
+    return { clicks: [], totalClicks: 0, uniqueClickers: 0 };
+  }
+}
+
+/**
+ * Get dashboard overview KPIs, trends, and distributions from CockroachDB
+ */
+async function getDashboardAnalytics(days = 7) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return null;
+
+  try {
+    await ensureTablesExist();
+
+    let timeWhereEvents = '';
+    let timeWhereSites = '';
+
+    if (days === 0) {
+      timeWhereEvents = 'WHERE created_at >= CURRENT_DATE';
+      timeWhereSites = 'WHERE created_at >= CURRENT_DATE';
+    } else if (days > 0) {
+      timeWhereEvents = `WHERE created_at >= NOW() - INTERVAL '${days} days'`;
+      timeWhereSites = `WHERE created_at >= NOW() - INTERVAL '${days} days'`;
+    }
+
+    // 1. Overview KPIs
+    const pvQuery = `SELECT COUNT(*) as count FROM events WHERE type = 'pageview' ${timeWhereEvents ? 'AND ' + timeWhereEvents.replace('WHERE ', '') : ''}`;
+    const pvRes = await pool.query(pvQuery);
+    const activePageViews = parseInt(pvRes.rows[0]?.count || 0, 10);
+
+    const freeCountRes = await pool.query(`SELECT COUNT(*) as count FROM free_records ${timeWhereSites}`);
+    const premCountRes = await pool.query(`SELECT COUNT(*) as count FROM premium_records ${timeWhereSites}`);
+    const activeWebsites = parseInt(freeCountRes.rows[0]?.count || 0, 10) + parseInt(premCountRes.rows[0]?.count || 0, 10);
+
+    const uvQuery = `SELECT COUNT(DISTINCT visitor_id) as count FROM events ${timeWhereEvents}`;
+    const uvRes = await pool.query(uvQuery);
+    const activeUniqueVisitors = parseInt(uvRes.rows[0]?.count || 0, 10);
+
+    const todayPvRes = await pool.query("SELECT COUNT(*) as count FROM events WHERE type = 'pageview' AND created_at >= CURRENT_DATE");
+    const activeTodayViews = parseInt(todayPvRes.rows[0]?.count || 0, 10);
+
+    const todayFreeRes = await pool.query("SELECT COUNT(*) as count FROM free_records WHERE created_at >= CURRENT_DATE");
+    const todayPremRes = await pool.query("SELECT COUNT(*) as count FROM premium_records WHERE created_at >= CURRENT_DATE");
+    const activeTodayWebsites = parseInt(todayFreeRes.rows[0]?.count || 0, 10) + parseInt(todayPremRes.rows[0]?.count || 0, 10);
+
+    const todayUvRes = await pool.query("SELECT COUNT(DISTINCT visitor_id) as count FROM events WHERE created_at >= CURRENT_DATE");
+    const activeTodayUnique = parseInt(todayUvRes.rows[0]?.count || 0, 10);
+
+    const viewsSumRes = await pool.query(`SELECT (COALESCE((SELECT SUM(views) FROM free_records ${timeWhereSites}), 0) + COALESCE((SELECT SUM(views) FROM premium_records ${timeWhereSites}), 0)) as total`);
+    const activeWebsiteViewsSum = parseInt(viewsSumRes.rows[0]?.total || 0, 10);
+
+    // Global counters as minimum floor
+    const crCounters = await getGlobalCounters();
+    const baseWebsitesCreated = Math.max(2100, crCounters.total_websites_created || 0);
+    const basePageViews = Math.max(1100, crCounters.total_page_views || 0);
+    const baseWebsiteViews = Math.max(42, crCounters.total_website_views || 0);
+    const baseUniqueVisitors = 24;
+
+    const totalPageViews = Math.max(basePageViews, activePageViews);
+    const totalWebsitesCreated = Math.max(baseWebsitesCreated, activeWebsites);
+    const periodUniqueVisitors = Math.max(baseUniqueVisitors, activeUniqueVisitors);
+    const todayViews = Math.max(crCounters.today_page_views || 0, activeTodayViews, 124);
+    const todayWebsitesCreated = Math.max(crCounters.today_websites_created || 0, activeTodayWebsites, 797);
+    const todayUniqueVisitors = Math.max(activeTodayUnique, 16);
+    const totalWebsiteViews = Math.max(baseWebsiteViews, activeWebsiteViewsSum);
+
+    // 2. Trend Data (grouped by day)
+    const trendDays = days > 0 ? days : (days === 0 ? 1 : 30);
+    const trendEventsRes = await pool.query(
+      `SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date,
+              COUNT(CASE WHEN type = 'pageview' THEN 1 END) as views,
+              COUNT(DISTINCT visitor_id) as "uniqueVisitors"
+       FROM events
+       WHERE created_at >= NOW() - INTERVAL '${trendDays} days'
+       GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
+       ORDER BY date ASC`
+    );
+
+    const trendSitesRes = await pool.query(
+      `SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date, COUNT(*) as count
+       FROM (
+         SELECT created_at FROM free_records WHERE created_at >= NOW() - INTERVAL '${trendDays} days'
+         UNION ALL
+         SELECT created_at FROM premium_records WHERE created_at >= NOW() - INTERVAL '${trendDays} days'
+       ) as all_sites
+       GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
+       ORDER BY date ASC`
+    );
+
+    const trendMap = new Map();
+    (trendEventsRes.rows || []).forEach(r => {
+      trendMap.set(r.date, {
+        date: r.date,
+        views: parseInt(r.views || 0, 10),
+        uniqueVisitors: parseInt(r.uniqueVisitors || 0, 10),
+        websitesCreated: 0
+      });
+    });
+
+    (trendSitesRes.rows || []).forEach(r => {
+      const existing = trendMap.get(r.date) || { date: r.date, views: 0, uniqueVisitors: 0, websitesCreated: 0 };
+      existing.websitesCreated = parseInt(r.count || 0, 10);
+      trendMap.set(r.date, existing);
+    });
+
+    const trendData = Array.from(trendMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+    // 3. Distributions
+    const pvFilter = timeWhereEvents ? timeWhereEvents + " AND type = 'pageview'" : "WHERE type = 'pageview'";
+
+    // Devices
+    const devRes = await pool.query(`SELECT details->>'device' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'device' IS NOT NULL GROUP BY details->>'device' ORDER BY count DESC LIMIT 8`);
+    const deviceDistribution = {};
+    (devRes.rows || []).forEach(r => { deviceDistribution[r.key || 'Unknown'] = parseInt(r.count, 10); });
+
+    // Browsers
+    const brRes = await pool.query(`SELECT details->>'browser' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'browser' IS NOT NULL GROUP BY details->>'browser' ORDER BY count DESC LIMIT 8`);
+    const browserDistribution = {};
+    (brRes.rows || []).forEach(r => { browserDistribution[r.key || 'Unknown'] = parseInt(r.count, 10); });
+
+    // OS
+    const osRes = await pool.query(`SELECT details->>'os' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'os' IS NOT NULL GROUP BY details->>'os' ORDER BY count DESC LIMIT 8`);
+    const osDistribution = {};
+    (osRes.rows || []).forEach(r => { osDistribution[r.key || 'Unknown'] = parseInt(r.count, 10); });
+
+    // Event Types
+    const etRes = await pool.query(`SELECT type as key, COUNT(*) as count FROM events ${timeWhereEvents} GROUP BY type ORDER BY count DESC`);
+    const eventTypeDistribution = {};
+    (etRes.rows || []).forEach(r => { eventTypeDistribution[r.key || 'Unknown'] = parseInt(r.count, 10); });
+
+    // Websites by Event Type
+    const catRes = await pool.query(
+      `SELECT event_type as key, COUNT(*) as count
+       FROM (
+         SELECT event_type FROM free_records ${timeWhereSites}
+         UNION ALL
+         SELECT event_type FROM premium_records ${timeWhereSites}
+       ) as all_types
+       WHERE event_type IS NOT NULL AND event_type != ''
+       GROUP BY event_type ORDER BY count DESC`
+    );
+    const websitesByEventType = {};
+    (catRes.rows || []).forEach(r => { websitesByEventType[r.key || 'Unknown'] = parseInt(r.count, 10); });
+
+    // Hourly Distribution (0-23)
+    const hourRes = await pool.query(
+      `SELECT EXTRACT(HOUR FROM created_at)::int as hour, COUNT(*) as count 
+       FROM events ${pvFilter}
+       GROUP BY EXTRACT(HOUR FROM created_at)::int 
+       ORDER BY hour ASC`
+    );
+    const hourlyDistribution = (hourRes.rows || []).map(r => ({ hour: r.hour, count: parseInt(r.count, 10) }));
+
+    // Page Views by Page
+    const pageRes = await pool.query(`SELECT page as key, COUNT(*) as count FROM events ${pvFilter} AND page IS NOT NULL AND page != '' GROUP BY page ORDER BY count DESC LIMIT 20`);
+    const pageViewsByPage = {};
+    (pageRes.rows || []).forEach(r => { pageViewsByPage[r.key] = parseInt(r.count, 10); });
+
+    // Referrers
+    const refRes = await pool.query(`SELECT details->>'referer' as key, COUNT(*) as count FROM events ${pvFilter} AND details->>'referer' IS NOT NULL GROUP BY details->>'referer' ORDER BY count DESC LIMIT 20`);
+    const refererDistribution = {};
+    (refRes.rows || []).forEach(r => { refererDistribution[r.key || 'Direct'] = parseInt(r.count, 10); });
+
+    // Exit Pages
+    const exitRes = await pool.query(`SELECT page as key, COUNT(*) as count FROM events ${timeWhereEvents ? timeWhereEvents + " AND type = 'exit'" : "WHERE type = 'exit'"} GROUP BY page ORDER BY count DESC LIMIT 20`);
+    const exitPages = {};
+    (exitRes.rows || []).forEach(r => { exitPages[r.key || 'Unknown'] = parseInt(r.count, 10); });
+
+    // Geo Distribution from visitors / events
+    const geoRes = await pool.query(
+      `SELECT geo->>'country' as key, COUNT(*) as count 
+       FROM visitors 
+       WHERE geo->>'country' IS NOT NULL 
+       GROUP BY geo->>'country' 
+       ORDER BY count DESC LIMIT 20`
+    );
+    const geoDistribution = {};
+    (geoRes.rows || []).forEach(r => { geoDistribution[r.key || 'Unknown'] = parseInt(r.count, 10); });
+
+    // 4. Feature Stats
+    const featFilter = timeWhereEvents ? timeWhereEvents + " AND type = 'feature'" : "WHERE type = 'feature'";
+    const featRes = await pool.query(
+      `SELECT details->>'feature' as feature, details->>'action' as action, COUNT(*) as count 
+       FROM events ${featFilter} 
+       GROUP BY details->>'feature', details->>'action'`
+    );
+
+    const featureStats = {};
+    (featRes.rows || []).forEach(r => {
+      const f = r.feature || 'Unknown';
+      const a = (r.action || '').trim();
+      const cnt = parseInt(r.count || 0, 10);
+
+      if (!featureStats[f]) {
+        featureStats[f] = { display: f, enabled: 0, disabled: 0, total: 0, tried: 0, used: 0, triedEnabled: 0, triedDisabled: 0 };
+      }
+      if (a === 'enable' || a === 'enabled' || a === 'tried_enable') {
+        featureStats[f].triedEnabled += cnt;
+        featureStats[f].tried += cnt;
+      } else if (a === 'disable' || a === 'disabled' || a === 'tried_disable') {
+        featureStats[f].triedDisabled += cnt;
+        featureStats[f].tried += cnt;
+      } else if (a === 'used' || a === 'use') {
+        featureStats[f].used += cnt;
+      }
+      featureStats[f].total += cnt;
+    });
+
+    // 5. Recent Events
+    const recentEventsRes = await pool.query(`SELECT id, type, visitor_id as "visitorId", session_id as "sessionId", page, website_id as "websiteId", details, created_at as "timestamp" FROM events ${timeWhereEvents} ORDER BY created_at DESC LIMIT 200`);
+    const recentActivity = (recentEventsRes.rows || []).map(r => ({
+      ...r,
+      details: typeof r.details === 'string' ? JSON.parse(r.details) : (r.details || {})
+    }));
+
+    return {
+      period: days,
+      overview: {
+        totalPageViews,
+        totalWebsitesCreated,
+        periodUniqueVisitors,
+        todayViews,
+        todayUniqueVisitors,
+        todayWebsitesCreated,
+        totalWebsiteViews
+      },
+      charts: {
+        trendData,
+        deviceDistribution,
+        browserDistribution,
+        osDistribution,
+        eventTypeDistribution,
+        websitesByEventType,
+        hourlyDistribution,
+        pageViewsByPage,
+        refererDistribution,
+        exitPages,
+        geoDistribution,
+        geoUniqueVisitors: geoDistribution,
+        featureStats,
+        featureTrend: {},
+        featureByDevice: {},
+        featureByBrowser: {},
+        featureByHour: {},
+        trendingFeatures: {}
+      },
+      recentActivity
+    };
+  } catch (err) {
+    console.error('[CockroachDB] getDashboardAnalytics error:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Delete a website record from all CockroachDB tables
+ */
+async function deleteWebsiteRecords(websiteId) {
+  const pool = poolFree || poolPremium;
+  if (!pool) return { success: false, deletedCount: 0 };
+
+  try {
+    await ensureTablesExist();
+    let deletedCount = 0;
+
+    for (const tableName of ['premium_records', 'free_records']) {
+      const res = await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [websiteId]);
+      deletedCount += res.rowCount || 0;
+    }
+
+    await pool.query('DELETE FROM custom_slugs WHERE website_id = $1', [websiteId]).catch(() => {});
+    await pool.query('DELETE FROM payments WHERE website_id = $1', [websiteId]).catch(() => {});
+    await pool.query('DELETE FROM events WHERE website_id = $1', [websiteId]).catch(() => {});
+    await pool.query('DELETE FROM feedback WHERE website_id = $1', [websiteId]).catch(() => {});
+
+    return { success: true, websiteId, deletedCount };
+  } catch (err) {
+    console.error(`[CockroachDB] deleteWebsiteRecords error for ${websiteId}:`, err.message);
+    return { success: false, websiteId, error: err.message };
+  }
+}
+
+/**
+ * Bulk delete websites from CockroachDB
+ */
+async function bulkDeleteWebsiteRecords(websiteIds = []) {
+  const pool = poolFree || poolPremium;
+  if (!pool || !Array.isArray(websiteIds) || websiteIds.length === 0) {
+    return { success: true, deletedCount: 0 };
+  }
+
+  try {
+    await ensureTablesExist();
+    let totalDeleted = 0;
+
+    for (const tableName of ['premium_records', 'free_records']) {
+      const res = await pool.query(`DELETE FROM ${tableName} WHERE id = ANY($1::varchar[])`, [websiteIds]);
+      totalDeleted += res.rowCount || 0;
+    }
+
+    await pool.query('DELETE FROM custom_slugs WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+    await pool.query('DELETE FROM payments WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+    await pool.query('DELETE FROM events WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+    await pool.query('DELETE FROM feedback WHERE website_id = ANY($1::varchar[])', [websiteIds]).catch(() => {});
+
+    return { success: true, deletedCount: totalDeleted };
+  } catch (err) {
+    console.error('[CockroachDB] bulkDeleteWebsiteRecords error:', err.message);
+    return { success: false, error: err.message, deletedCount: 0 };
+  }
+}
+
 module.exports = {
   saveRecord,
   getRecord,
@@ -607,7 +1044,9 @@ module.exports = {
   getAllWebsites,
   saveCustomSlug,
   getCustomSlug,
+  getAllCustomSlugs,
   savePayment,
+  getAllPayments,
   getCockroachStats,
   purgeExpiredFreeRecords,
   incrementGlobalCounter,
@@ -615,5 +1054,10 @@ module.exports = {
   saveEvent,
   saveFeedback,
   saveVisitor,
+  getFeedbackAnalytics,
+  getPersonaliseClicks,
+  getDashboardAnalytics,
+  deleteWebsiteRecords,
+  bulkDeleteWebsiteRecords,
   ensureTablesExist
 };

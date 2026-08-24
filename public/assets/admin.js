@@ -31,7 +31,7 @@
   }
   setChartDefaults();
 
-  const COLORS = ['#7b5df6','#ff7a2f','#06b6d4','#22c55e','#ec4899','#f59e0b','#8b5cf6','#ef4444','#14b8a6','#f97316','#6366f1','#a855f7'];
+  const COLORS = ['#7b5df6', '#ff7a2f', '#06b6d4', '#22c55e', '#ec4899', '#f59e0b', '#8b5cf6', '#ef4444', '#14b8a6', '#f97316', '#6366f1', '#a855f7'];
   const COLORS_ALPHA = COLORS.map(c => c + '30');
 
   // ── DOM refs ──
@@ -39,11 +39,11 @@
   const dashScreen = document.getElementById('dashboardScreen');
   const loginForm = document.getElementById('loginForm');
   const loginError = document.getElementById('loginError');
-   const loadingOverlay = document.getElementById('loadingOverlay');
-   const sectionTitle = document.getElementById('sectionTitle');
-   const lastUpdated = document.getElementById('lastUpdated');
-   const allFeedbackModal = document.getElementById('allFeedbackModal');
-   const allFeedbackTableBody = document.querySelector('#allFeedbackTable tbody');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const sectionTitle = document.getElementById('sectionTitle');
+  const lastUpdated = document.getElementById('lastUpdated');
+  const allFeedbackModal = document.getElementById('allFeedbackModal');
+  const allFeedbackTableBody = document.querySelector('#allFeedbackTable tbody');
 
   // ── Auth ──
   loginForm.addEventListener('submit', async (e) => {
@@ -82,10 +82,10 @@
   async function showDashboard() {
     loginScreen.style.display = 'none';
     dashScreen.style.display = 'flex';
-    
+
     // Initial data load
     await loadDashboard();
-    
+
     // Background auto-sync and cloudinary load for accuracy
     console.log('[Admin] Auto-triggering sync and load...');
     triggerSync().catch(err => console.warn('Auto-sync suppressed:', err));
@@ -94,10 +94,10 @@
 
   // ── API calls ──
   async function apiFetch(url, options = {}) {
-    const headers = { 
+    const headers = {
       'Authorization': 'Basic ' + authToken,
       'Content-Type': 'application/json',
-      ...options.headers 
+      ...options.headers
     };
     const r = await fetch(API + url, { ...options, headers });
     console.log(`[Admin] API Request: ${url} Status: ${r.status}`);
@@ -126,10 +126,10 @@
       document.documentElement.setAttribute('data-theme', newTheme);
       localStorage.setItem('_gt_admin_theme', newTheme);
       themeToggleBtn.innerHTML = newTheme === 'dark' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
-      
+
       // Update charts for new theme
       setChartDefaults();
-      if (dashData) renderAll(); 
+      if (dashData) renderAll();
     });
     // Set initial icon
     themeToggleBtn.innerHTML = currentTheme === 'dark' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
@@ -180,7 +180,7 @@
           function mergeOverview(primary, other) {
             if (!other || !other.overview) return;
             primary.overview = primary.overview || {};
-            const keys = ['totalPageViews','totalWebsitesCreated','periodUniqueVisitors','todayViews','todayWebsitesCreated','totalWebsiteViews','todayUniqueVisitors'];
+            const keys = ['totalPageViews', 'totalWebsitesCreated', 'periodUniqueVisitors', 'todayViews', 'todayWebsitesCreated', 'totalWebsiteViews', 'todayUniqueVisitors'];
             keys.forEach(k => { primary.overview[k] = (Number(primary.overview[k] || 0) + Number(other.overview[k] || 0)); });
           }
 
@@ -193,7 +193,7 @@
               map[item.date].uniqueVisitors += Number(item.uniqueVisitors || 0);
               map[item.date].websitesCreated += Number(item.websitesCreated || 0);
             });
-            return Object.values(map).sort((a,b) => a.date.localeCompare(b.date));
+            return Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
           }
 
           function mergeDistribution(primaryObj, otherObj) {
@@ -211,14 +211,16 @@
 
           function mergeArraysByDate(primary, other, keyDate = 'timestamp') {
             const merged = (primary || []).concat(other || []);
-            merged.sort((a,b) => (b[keyDate] || '').localeCompare(a[keyDate] || ''));
+            merged.sort((a, b) => (b[keyDate] || '').localeCompare(a[keyDate] || ''));
             return merged.slice(0, 200);
           }
 
           function mergeWebsites(primaryList, otherList) {
             const map = {};
-            (primaryList || []).concat(otherList || []).forEach(w => { if (!w || !w.id) return; const prev = map[w.id]; if (!prev) map[w.id] = w; else { // keep the one with latest createdAt or higher views
-                if ((w.createdAt && prev.createdAt && new Date(w.createdAt) > new Date(prev.createdAt)) || (Number(w.views || 0) > Number(prev.views || 0))) map[w.id] = w; }
+            (primaryList || []).concat(otherList || []).forEach(w => {
+              if (!w || !w.id) return; const prev = map[w.id]; if (!prev) map[w.id] = w; else { // keep the one with latest createdAt or higher views
+                if ((w.createdAt && prev.createdAt && new Date(w.createdAt) > new Date(prev.createdAt)) || (Number(w.views || 0) > Number(prev.views || 0))) map[w.id] = w;
+              }
             });
             return Object.values(map);
           }
@@ -239,7 +241,7 @@
             dashData.charts.trendData = mergeTrend(dashData.charts.trendData || [], otherDash.charts.trendData || []);
 
             // Merge simple distributions
-            const distKeys = ['deviceDistribution','browserDistribution','osDistribution','eventTypeDistribution','refererDistribution','exitPages','geoDistribution','pageViewsByPage','websitesByEventType','featureStats'];
+            const distKeys = ['deviceDistribution', 'browserDistribution', 'osDistribution', 'eventTypeDistribution', 'refererDistribution', 'exitPages', 'geoDistribution', 'pageViewsByPage', 'websitesByEventType', 'featureStats'];
             distKeys.forEach(k => { dashData.charts[k] = mergeDistribution(dashData.charts[k] || {}, otherDash.charts[k] || {}); });
 
             // Merge hourly
@@ -252,7 +254,7 @@
               else {
                 const src = otherDash.charts.featureStats[fk];
                 const tgt = dashData.charts.featureStats[fk];
-                ['tried','used','triedEnabled','triedDisabled','triedVisitors','triedEnabledVisitors','usedVisitors','total'].forEach(nk => { tgt[nk] = (Number(tgt[nk]||0) + Number(src[nk]||0)); });
+                ['tried', 'used', 'triedEnabled', 'triedDisabled', 'triedVisitors', 'triedEnabledVisitors', 'usedVisitors', 'total'].forEach(nk => { tgt[nk] = (Number(tgt[nk] || 0) + Number(src[nk] || 0)); });
               }
             });
 
@@ -262,13 +264,13 @@
 
             // Merge topWebsites by views
             const combinedTop = (dashData.topWebsites || []).concat(otherDash.topWebsites || []);
-            dashData.topWebsites = combinedTop.sort((a,b) => (Number(b.views||0) - Number(a.views||0))).slice(0,20);
+            dashData.topWebsites = combinedTop.sort((a, b) => (Number(b.views || 0) - Number(a.views || 0))).slice(0, 20);
 
             // Merge feedback
             if (otherDash.feedback) {
-              dashData.feedback = dashData.feedback || { totalFeedback:0, recentFeedback:[], questionStats:{} };
+              dashData.feedback = dashData.feedback || { totalFeedback: 0, recentFeedback: [], questionStats: {} };
               dashData.feedback.totalFeedback = Number(dashData.feedback.totalFeedback || 0) + Number(otherDash.feedback.totalFeedback || 0);
-              dashData.feedback.recentFeedback = (dashData.feedback.recentFeedback || []).concat(otherDash.feedback.recentFeedback || []).sort((a,b) => (b.submittedAt||'').localeCompare(a.submittedAt||'')).slice(0,200);
+              dashData.feedback.recentFeedback = (dashData.feedback.recentFeedback || []).concat(otherDash.feedback.recentFeedback || []).sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || '')).slice(0, 200);
 
               // Merge questionStats (assume object maps)
               Object.keys(otherDash.feedback.questionStats || {}).forEach(qk => {
@@ -281,8 +283,8 @@
           try {
             const otherFb = await additionalFetch('/api/admin/feedback-analytics?all=true');
             if (otherFb && otherFb.recentFeedback) {
-              dashData.feedback = dashData.feedback || { totalFeedback:0, recentFeedback:[], questionStats:{} };
-              dashData.feedback.recentFeedback = (dashData.feedback.recentFeedback || []).concat(otherFb.recentFeedback || []).sort((a,b) => (b.submittedAt||'').localeCompare(a.submittedAt||'')).slice(0,500);
+              dashData.feedback = dashData.feedback || { totalFeedback: 0, recentFeedback: [], questionStats: {} };
+              dashData.feedback.recentFeedback = (dashData.feedback.recentFeedback || []).concat(otherFb.recentFeedback || []).sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || '')).slice(0, 500);
             }
           } catch (inner) {
             console.warn('Additional feedback fetch failed:', inner);
@@ -295,12 +297,12 @@
               const ts = dashData.trafficSources;
               ts.kpi = ts.kpi || {};
               otherTS.kpi = otherTS.kpi || {};
-              ['totalSessions','organicSearch','directTraffic','socialMedia','referral','email','paidSearch'].forEach(k => {
+              ['totalSessions', 'organicSearch', 'directTraffic', 'socialMedia', 'referral', 'email', 'paidSearch'].forEach(k => {
                 ts.kpi[k] = (Number(ts.kpi[k] || 0) + Number(otherTS.kpi[k] || 0));
               });
               ts.charts = ts.charts || {};
               otherTS.charts = otherTS.charts || {};
-              ['trafficSourceDistribution','searchEngineDistribution','topKeywords','socialPlatforms','topReferrers'].forEach(k => {
+              ['trafficSourceDistribution', 'searchEngineDistribution', 'topKeywords', 'socialPlatforms', 'topReferrers'].forEach(k => {
                 ts.charts[k] = mergeDistribution(ts.charts[k] || {}, otherTS.charts[k] || {});
               });
               ts.recentTraffic = mergeArraysByDate(ts.recentTraffic, otherTS.recentTraffic, 'timestamp');
@@ -358,11 +360,11 @@
       sectionTitle.textContent = item.textContent.trim();
       // Close mobile sidebar
       document.getElementById('sidebar').classList.remove('open');
-      
+
       // Force Chart.js to resize canvases when tab becomes visible
       setTimeout(() => {
         Object.values(charts).forEach(c => {
-          try { if (c && typeof c.resize === 'function') c.resize(); } catch(err){}
+          try { if (c && typeof c.resize === 'function') c.resize(); } catch (err) { }
         });
       }, 50);
 
@@ -370,7 +372,7 @@
       if (sec === 'system-health') {
         loadSystemHealth();
       }
-      
+
       // Load custom URL analytics when section is activated
       if (sec === 'custom-url') {
         loadCustomUrlAnalytics();
@@ -478,7 +480,7 @@
     const d = dashData.charts?.trendData || [];
     const period = document.getElementById('periodSelector')?.value || '7';
     const periodLabel = period === '-1' ? 'All Time' : (period === '0' ? 'Today' : `${period} Days`);
-    
+
     // Update chart title in DOM
     const chartCard = document.querySelector('#trendChart')?.closest('.chart-card');
     if (chartCard && chartCard.querySelector('h3')) {
@@ -669,10 +671,10 @@
       const cleanDisplay = getCleanName(entry.display || key || '');
 
       if (!merged[cleanDisplay]) {
-        merged[cleanDisplay] = { 
+        merged[cleanDisplay] = {
           display: cleanDisplay,
-          tried: 0, used: 0, triedEnabled: 0, triedDisabled: 0, 
-          triedVisitors: 0, triedEnabledVisitors: 0, usedVisitors: 0 
+          tried: 0, used: 0, triedEnabled: 0, triedDisabled: 0,
+          triedVisitors: 0, triedEnabledVisitors: 0, usedVisitors: 0
         };
       }
 
@@ -690,9 +692,9 @@
   function renderFeatureChart() {
     const rawFs = dashData.charts?.featureStats || {};
     const fs = _buildFeatureSummary(rawFs);
-    
+
     const features = Object.values(fs).sort((a, b) => (b.used - a.used) || (b.tried - a.tried));
-    
+
     const labels = features.map(f => f.display);
     const usedData = features.map(f => f.used);
     const triedData = features.map(f => f.tried);
@@ -726,14 +728,14 @@
     tbody.innerHTML = '';
     const rawFs = dashData.charts?.featureStats || {};
     const fs = _buildFeatureSummary(rawFs);
-    
+
     const features = Object.values(fs).sort((a, b) => (b.used - a.used) || (b.tried - a.tried));
 
     features.forEach(stats => {
       // Calculate conversion rate based on Unique Visitors where available, cap at 100%
       const triedCount = stats.triedVisitors > 0 ? stats.triedVisitors : stats.triedEnabled;
       const usedCount = stats.usedVisitors > 0 ? stats.usedVisitors : stats.used;
-      
+
       let conversionRate = null;
       if (triedCount > 0) {
         conversionRate = Math.min((usedCount / triedCount) * 100, 100);
@@ -756,7 +758,7 @@
   function renderFeatureDeviceChart() {
     const fd = dashData.charts?.featureByDevice || {};
     const devices = Object.keys(fd);
-    
+
     const rawFs = dashData.charts?.featureStats || {};
     const fs = _buildFeatureSummary(rawFs);
     const features = Object.values(fs).sort((a, b) => (b.used - a.used) || (b.tried - a.tried));
@@ -803,7 +805,7 @@
   function renderFeatureBrowserChart() {
     const fb = dashData.charts?.featureByBrowser || {};
     const browsers = Object.keys(fb);
-    
+
     const rawFs = dashData.charts?.featureStats || {};
     const fs = _buildFeatureSummary(rawFs);
     const features = Object.values(fs).sort((a, b) => (b.used - a.used) || (b.tried - a.tried));
@@ -849,7 +851,7 @@
 
   function renderTrendingFeaturesChart() {
     const tf = dashData.charts?.trendingFeatures || {};
-    
+
     // Group trending features by clean name
     const groupedTf = {};
     Object.keys(tf).forEach(key => {
@@ -891,7 +893,7 @@
         labels: data.map(d => d.feature.length > 15 ? d.feature.slice(0, 15) + '…' : d.feature),
         datasets: [{ label: 'Growth %', data: data.map(d => d.growth), backgroundColor: data.map(d => d.growth >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)'), borderColor: data.map(d => d.growth >= 0 ? '#22c55e' : '#ef4444'), borderWidth: 1, borderRadius: 4 }]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { const d = data[context.dataIndex]; return [`Growth: ${d.growth.toFixed(1)}%`, `Recent: ${d.recent}`, `Total: ${d.total}`]; } } } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Growth Rate (%)' } }, x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (context) { const d = data[context.dataIndex]; return [`Growth: ${d.growth.toFixed(1)}%`, `Recent: ${d.recent}`, `Total: ${d.total}`]; } } } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Growth Rate (%)' } }, x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } } }
     });
   }
 
@@ -1049,10 +1051,10 @@
     currentlyFilteredWebsites = list.filter(w => {
       if (filter) {
         const match = (w.id || '').toLowerCase().includes(filter) ||
-                      (w.eventType || '').toLowerCase().includes(filter) ||
-                      (w.recipientName || '').toLowerCase().includes(filter) ||
-                      (w.planName || '').toLowerCase().includes(filter) ||
-                      (w.customSlug || '').toLowerCase().includes(filter);
+          (w.eventType || '').toLowerCase().includes(filter) ||
+          (w.recipientName || '').toLowerCase().includes(filter) ||
+          (w.planName || '').toLowerCase().includes(filter) ||
+          (w.customSlug || '').toLowerCase().includes(filter);
         if (!match) return false;
       }
       if (cutoff) {
@@ -1061,9 +1063,10 @@
       }
       if (tierVal === 'premium' && !w.isPremium) return false;
       if (tierVal === 'free' && w.isPremium) return false;
-      if (tierVal === 'starter' && !(w.plan === 'starter' || (w.planName && w.planName.includes('100')))) return false;
-      if (tierVal === 'pro' && !(w.plan === 'pro' || (w.planName && w.planName.includes('1 Year')))) return false;
-      if (tierVal === 'forever' && !(w.plan === 'forever' || (w.planName && (w.planName.includes('Forever') || w.planName.includes('Lifetime'))))) return false;
+      if (tierVal === 'starter' && !(w.plan === 'starter' || (w.planName && (w.planName.includes('Starter') || w.planName.includes('30'))))) return false;
+      if (tierVal === 'pro' && !(w.plan === 'pro' || (w.planName && (w.planName.includes('Pro') && !w.planName.includes('Pro+') && w.planName.includes('100'))))) return false;
+      if (tierVal === 'pro_plus' && !(w.plan === 'pro_plus' || w.plan === 'proplus' || (w.planName && (w.planName.includes('Pro+') || w.planName.includes('1 Year'))))) return false;
+      if (tierVal === 'forever' && !(w.plan === 'forever' || w.plan === 'infinity' || (w.planName && (w.planName.includes('Forever') || w.planName.includes('Lifetime') || w.planName.includes('Infinity'))))) return false;
       if (tierVal === 'custom_url' && !(w.plan === 'custom_url' || !!w.customSlug)) return false;
       return true;
     });
@@ -1086,17 +1089,19 @@
       } else if (tierVal === 'free') {
         msg = 'No standard/free websites found.';
       } else if (tierVal === 'starter') {
-        msg = 'No websites found with 100+ Days plan.';
+        msg = 'No websites found with Starter (30+ Days) plan.';
       } else if (tierVal === 'pro') {
-        msg = 'No websites found with 1 Year plan.';
+        msg = 'No websites found with Pro (100+ Days) plan.';
+      } else if (tierVal === 'pro_plus') {
+        msg = 'No websites found with Pro+ (1 Year) plan.';
       } else if (tierVal === 'forever') {
-        msg = 'No websites found with Forever plan.';
+        msg = 'No websites found with Infinity (Lifetime) plan.';
       } else if (tierVal === 'custom_url') {
         msg = 'No websites found with Custom URL.';
       } else if (cutoff) {
         msg = `No websites found older than ${ageVal} days${filter ? ' matching your search' : ''}.`;
       } else {
-        msg = 'No websites found. Try syncing with Cloudinary.';
+        msg = 'No websites found. Try syncing with Supabase.';
       }
       grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><i class="fas fa-search"></i><p>${msg}</p></div>`;
       return;
@@ -1104,9 +1109,10 @@
 
     // Plan counters
     const premiumCount = currentlyFilteredWebsites.filter(w => w.isPremium).length;
-    const starterCount = currentlyFilteredWebsites.filter(w => w.plan === 'starter' || (w.planName && w.planName.includes('100'))).length;
-    const proCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro' || (w.planName && w.planName.includes('1 Year'))).length;
-    const foreverCount = currentlyFilteredWebsites.filter(w => w.plan === 'forever' || (w.planName && (w.planName.includes('Forever') || w.planName.includes('Lifetime')))).length;
+    const starterCount = currentlyFilteredWebsites.filter(w => w.plan === 'starter' || (w.planName && (w.planName.includes('Starter') || w.planName.includes('30')))).length;
+    const proCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro' || (w.planName && (w.planName.includes('Pro') && !w.planName.includes('Pro+') && w.planName.includes('100')))).length;
+    const proPlusCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro_plus' || w.plan === 'proplus' || (w.planName && (w.planName.includes('Pro+') || w.planName.includes('1 Year')))).length;
+    const foreverCount = currentlyFilteredWebsites.filter(w => w.plan === 'forever' || w.plan === 'infinity' || (w.planName && (w.planName.includes('Forever') || w.planName.includes('Lifetime') || w.planName.includes('Infinity')))).length;
     const customUrlCount = currentlyFilteredWebsites.filter(w => w.plan === 'custom_url' || !!w.customSlug).length;
 
     // Summary bar
@@ -1120,9 +1126,10 @@
       ${tierVal === 'free' ? `<span style="background:rgba(123,93,246,0.12); color:var(--accent); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(123,93,246,0.2);"><i class="fas fa-globe"></i> Standard Only</span>` : ''}
       ${tierVal === 'all' && premiumCount > 0 ? `
         <span style="background:rgba(255,159,67,0.12); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.2);"><i class="fas fa-crown"></i> ${premiumCount} Premium</span>
-        ${starterCount > 0 ? `<span style="background:rgba(0,194,255,0.1); color:#00c2ff; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-bolt"></i> ${starterCount} (100d+)</span>` : ''}
-        ${proCount > 0 ? `<span style="background:rgba(123,93,246,0.12); color:#a88beb; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-gem"></i> ${proCount} (1 Yr)</span>` : ''}
-        ${foreverCount > 0 ? `<span style="background:rgba(255,184,0,0.15); color:var(--gold); padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-crown"></i> ${foreverCount} (Forever)</span>` : ''}
+        ${starterCount > 0 ? `<span style="background:rgba(0,194,255,0.1); color:#00c2ff; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-bolt"></i> ${starterCount} (Starter 30d)</span>` : ''}
+        ${proCount > 0 ? `<span style="background:rgba(232,58,89,0.12); color:#ff6b81; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-fire"></i> ${proCount} (Pro 100d)</span>` : ''}
+        ${proPlusCount > 0 ? `<span style="background:rgba(16,185,129,0.12); color:#10b981; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-gem"></i> ${proPlusCount} (Pro+ 1 Yr)</span>` : ''}
+        ${foreverCount > 0 ? `<span style="background:rgba(255,184,0,0.15); color:var(--gold); padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-crown"></i> ${foreverCount} (Infinity)</span>` : ''}
         ${customUrlCount > 0 ? `<span style="background:rgba(46,213,115,0.12); color:#2ed573; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-link"></i> ${customUrlCount} (Slug)</span>` : ''}
       ` : ''}
       <span style="margin-left:auto; font-size:0.75rem;">${selectedWebsiteIds.size > 0 ? `<strong style="color:var(--accent)">${selectedWebsiteIds.size} selected</strong>` : ''}</span>
@@ -1146,12 +1153,14 @@
         const pKey = (w.plan || '').toLowerCase();
         const pName = w.planName || 'Premium';
 
-        if (pKey === 'starter' || pName.includes('100')) {
-          planBadgeHtml = `<span class="badge" style="background:rgba(0,194,255,0.18); color:#00c2ff; border:1px solid rgba(0,194,255,0.35); font-size:0.7rem; padding:3px 10px;" title="100+ Days Plan"><i class="fas fa-bolt"></i> 100+ Days</span>`;
-        } else if (pKey === 'pro' || pName.includes('1 Year')) {
-          planBadgeHtml = `<span class="badge" style="background:rgba(123,93,246,0.2); color:#a88beb; border:1px solid rgba(123,93,246,0.4); font-size:0.7rem; padding:3px 10px;" title="1 Year Plan"><i class="fas fa-gem"></i> 1 Year</span>`;
-        } else if (pKey === 'forever' || pName.includes('Forever') || pName.includes('Lifetime')) {
-          planBadgeHtml = `<span class="badge" style="background:rgba(255,184,0,0.22); color:var(--gold); border:1px solid rgba(255,184,0,0.45); font-size:0.7rem; padding:3px 10px;" title="Forever Plan"><i class="fas fa-crown"></i> Forever</span>`;
+        if (pKey === 'starter' || pName.includes('Starter') || pName.includes('30')) {
+          planBadgeHtml = `<span class="badge" style="background:rgba(0,194,255,0.18); color:#00c2ff; border:1px solid rgba(0,194,255,0.35); font-size:0.7rem; padding:3px 10px;" title="Starter Plan (30+ Days)"><i class="fas fa-bolt"></i> Starter (30d)</span>`;
+        } else if (pKey === 'pro' || (pName.includes('Pro') && !pName.includes('Pro+') && pName.includes('100'))) {
+          planBadgeHtml = `<span class="badge" style="background:rgba(232,58,89,0.18); color:#ff6b81; border:1px solid rgba(232,58,89,0.35); font-size:0.7rem; padding:3px 10px;" title="Pro Plan (100+ Days)"><i class="fas fa-fire"></i> Pro (100d)</span>`;
+        } else if (pKey === 'pro_plus' || pKey === 'proplus' || pName.includes('Pro+') || pName.includes('1 Year')) {
+          planBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.2); color:#10b981; border:1px solid rgba(16,185,129,0.4); font-size:0.7rem; padding:3px 10px;" title="Pro+ Plan (1 Year)"><i class="fas fa-gem"></i> Pro+ (1 Yr)</span>`;
+        } else if (pKey === 'forever' || pKey === 'infinity' || pName.includes('Forever') || pName.includes('Lifetime') || pName.includes('Infinity')) {
+          planBadgeHtml = `<span class="badge" style="background:rgba(255,184,0,0.22); color:var(--gold); border:1px solid rgba(255,184,0,0.45); font-size:0.7rem; padding:3px 10px;" title="Infinity Plan (Lifetime)"><i class="fas fa-crown"></i> Infinity</span>`;
         } else {
           planBadgeHtml = `<span class="badge" style="background:rgba(46,213,115,0.2); color:#2ed573; border:1px solid rgba(46,213,115,0.4); font-size:0.7rem; padding:3px 10px;" title="Custom URL / Premium"><i class="fas fa-link"></i> ${pName}</span>`;
         }
@@ -1255,14 +1264,14 @@
 
     if (search) search.addEventListener('input', renderWebsitesCards);
     if (sort) sort.addEventListener('change', renderWebsitesCards);
-    
+
     if (ageFilter) {
       ageFilter.addEventListener('change', () => {
         selectedWebsiteIds.clear();
         renderWebsitesCards();
       });
     }
-    
+
     if (tierFilter) {
       tierFilter.addEventListener('change', () => {
         selectedWebsiteIds.clear();
@@ -1347,7 +1356,7 @@
       e.preventDefault();
       if (deleteBtn.disabled) return;
       if (selectedWebsiteIds.size === 0) return;
-      
+
       const ids = Array.from(selectedWebsiteIds);
       const protectToggle = document.getElementById('protectPremiumToggle');
       const globalProtect = protectToggle?.checked ?? true;
@@ -1457,10 +1466,10 @@
     const tbody = document.querySelector('#cloudinaryTable tbody');
     const sort = document.getElementById('cloudinarySort');
     if (!tbody) return;
-    
+
     tbody.innerHTML = '';
     const sortType = sort.value;
-    
+
     const sorted = [...currentCloudinaryData].sort((a, b) => {
       if (sortType === 'date_desc') return new Date(b.createdAt) - new Date(a.createdAt);
       if (sortType === 'date_asc') return new Date(a.createdAt) - new Date(b.createdAt);
@@ -1476,16 +1485,24 @@
 
     sorted.forEach(r => {
       const tr = document.createElement('tr');
-      const id = r.publicId.replace('configs/', '');
+      const filename = r.name || r.publicId || '';
+      const cleanId = filename.replace(/^.*\//, '').replace('.json', '');
       const created = new Date(r.createdAt).toLocaleString();
       const size = (r.bytes / 1024).toFixed(1) + ' KB';
-      const viewUrl = window.location.origin + '/generated/customize.html?view=' + id;
+      const isJsonConfig = filename.endsWith('.json');
+      const customizeUrl = window.location.origin + '/generated/customize.html?view=' + cleanId;
+      const fileUrl = r.url || '#';
+
       tr.innerHTML = `
-        <td><code style="color:var(--accent)">${id}</code></td>
+        <td>
+          <code style="color:var(--accent)">${r.publicId || filename}</code>
+          ${r.project ? `<span style="font-size:0.7rem; margin-left:6px; opacity:0.7;">(${r.project})</span>` : ''}
+        </td>
         <td>${created}</td>
         <td>${size}</td>
-        <td>
-          <a href="${viewUrl}" target="_blank" class="action-btn"><i class="fas fa-eye"></i> View</a>
+        <td style="white-space:nowrap;">
+          ${isJsonConfig ? `<a href="${customizeUrl}" target="_blank" class="action-btn small"><i class="fas fa-eye"></i> View Site</a>` : ''}
+          ${fileUrl !== '#' ? `<a href="${fileUrl}" target="_blank" class="action-btn small" style="margin-left:4px;"><i class="fas fa-external-link-alt"></i> Raw File</a>` : ''}
         </td>
       `;
       tbody.appendChild(tr);
@@ -1502,10 +1519,10 @@
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
     try {
       const res = await apiFetch('/api/admin/cloudinary-list');
-      renderCloudinaryTable(res.websites || []);
+      renderCloudinaryTable(res.files || res.websites || []);
       return res;
     } catch (err) {
-      console.error('Cloudinary fetch error:', err);
+      console.error('File fetch error:', err);
       throw err;
     } finally {
       btn.disabled = false;
@@ -1771,7 +1788,7 @@
     const cleanReferrerData = {};
     Object.entries(referrerData).forEach(([ref, count]) => {
       let name = ref;
-      try { name = new URL(ref).hostname.replace(/^www\./, ''); } catch (e) {}
+      try { name = new URL(ref).hostname.replace(/^www\./, ''); } catch (e) { }
       cleanReferrerData[name] = (cleanReferrerData[name] || 0) + count;
     });
     const sortedReferrers = Object.entries(cleanReferrerData).sort((a, b) => b[1] - a[1]).slice(0, 10);
@@ -1796,7 +1813,7 @@
     const trendData = charts.trafficTrend || [];
     const sources = [...new Set(trendData.map(t => t._id?.source).filter(s => s))];
     const dates = [...new Set(trendData.map(t => t._id?.date).filter(d => d))].sort();
-    
+
     const trendDatasets = sources.map((source, idx) => ({
       label: source,
       data: dates.map(date => {
@@ -1875,7 +1892,7 @@
         const campaign = t.details?.utmCampaign || '--';
         const refererRaw = t.details?.referer || 'Direct Entry';
         const refererShort = refererRaw.length > 45 ? refererRaw.substring(0, 45) + '...' : refererRaw;
-        
+
         let badgeClass = 'badge-blue';
         if (source.includes('Google')) badgeClass = 'badge-green';
         else if (source.includes('Bing') || source.includes('Search')) badgeClass = 'badge-cyan';
@@ -1905,13 +1922,13 @@
       const current = await apiFetch('/api/admin/health/current');
       const history = await apiFetch('/api/admin/health/history?hours=24');
       const systemInfo = await apiFetch('/api/admin/health/system-info');
-      
+
       healthData = {
         current,
         history: history.metrics || [],
         systemInfo
       };
-      
+
       renderSystemHealth();
     } catch (err) {
       console.error('System health load error:', err);
@@ -1920,28 +1937,28 @@
 
   function renderSystemHealth() {
     if (!healthData || !healthData.current) return;
-    
+
     const current = healthData.current;
-    
+
     // Update KPI cards with color coding
     updateHealthKPI('shCpuUsage', current.cpuUsage, 'kpiCpuCard', 70, 90);
     updateHealthKPI('shMemoryUsage', current.memoryUsage, 'kpiMemoryCard', 80, 95);
     updateHealthKPI('shDiskUsage', current.diskUsage, 'kpiDiskCard', 80, 95);
-    
+
     // MongoDB connections
     const mongoUsage = current.mongoPoolSize > 0 ? (current.mongoConnections / current.mongoPoolSize) * 100 : 0;
     setText('shMongoConnections', `${current.mongoConnections}/${current.mongoPoolSize}`);
     updateKpiColor('kpiMongoCard', mongoUsage, 80, 95);
-    
+
     // Update alert status
     updateAlertStatus(current);
-    
+
     // Render trend charts
     renderHealthTrendCharts();
-    
+
     // Render system info table
     renderSystemInfoTable();
-    
+
     // Render alerts history
     renderAlertsHistory();
   }
@@ -1954,9 +1971,9 @@
   function updateKpiColor(cardId, value, warningThreshold, criticalThreshold) {
     const card = document.getElementById(cardId);
     if (!card) return;
-    
+
     card.classList.remove('accent-purple', 'accent-cyan', 'accent-orange', 'accent-green', 'accent-red');
-    
+
     if (value >= criticalThreshold) {
       card.classList.add('accent-red');
     } else if (value >= warningThreshold) {
@@ -1969,9 +1986,9 @@
   function updateAlertStatus(metrics) {
     const alertStatus = document.getElementById('alertStatus');
     if (!alertStatus) return;
-    
+
     alertStatus.classList.remove('normal', 'warning', 'critical');
-    
+
     if (metrics.alertLevel === 'critical') {
       alertStatus.classList.add('critical');
       alertStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Critical: ' + JSON.stringify(metrics.alertDetails || {}) + '</span>';
@@ -1986,9 +2003,9 @@
 
   function renderHealthTrendCharts() {
     const history = healthData.history || [];
-    
+
     if (history.length === 0) return;
-    
+
     const timestamps = history.map(m => new Date(m.timestamp).toLocaleString());
     const cpuData = history.map(m => m.cpuUsage || 0);
     const memoryData = history.map(m => m.memoryUsage || 0);
@@ -1997,7 +2014,7 @@
       const poolSize = m.mongoPoolSize || 100;
       return poolSize > 0 ? (m.mongoConnections / poolSize) * 100 : 0;
     });
-    
+
     // CPU Trend Chart
     makeChart('cpuTrendChart', {
       type: 'line',
@@ -2020,7 +2037,7 @@
         }
       }
     });
-    
+
     // Memory Trend Chart
     makeChart('memoryTrendChart', {
       type: 'line',
@@ -2043,7 +2060,7 @@
         }
       }
     });
-    
+
     // Disk Trend Chart
     makeChart('diskTrendChart', {
       type: 'line',
@@ -2066,7 +2083,7 @@
         }
       }
     });
-    
+
     // MongoDB Trend Chart
     makeChart('mongoTrendChart', {
       type: 'line',
@@ -2095,9 +2112,9 @@
     const info = healthData.systemInfo || {};
     const tbody = document.querySelector('#systemInfoTable tbody');
     if (!tbody) return;
-    
+
     tbody.innerHTML = '';
-    
+
     const fields = [
       { label: 'Platform', value: info.platform || '--' },
       { label: 'OS', value: info.distro || info.release || '--' },
@@ -2109,7 +2126,7 @@
       { label: 'Total Memory', value: info.totalMemory ? info.totalMemory + ' GB' : '--' },
       { label: 'Uptime', value: info.uptimeFormatted || '--' }
     ];
-    
+
     fields.forEach(field => {
       const tr = document.createElement('tr');
       tr.innerHTML = `<td>${field.label}</td><td>${field.value}</td>`;
@@ -2121,27 +2138,27 @@
     const history = healthData.history || [];
     const tbody = document.querySelector('#alertsHistoryTable tbody');
     if (!tbody) return;
-    
+
     tbody.innerHTML = '';
-    
+
     // Filter only alerts (warning or critical)
     const alerts = history.filter(m => m.alertLevel !== 'normal').slice(-20).reverse();
-    
+
     if (alerts.length === 0) {
       const tr = document.createElement('tr');
       tr.innerHTML = '<td colspan="3">No recent alerts</td>';
       tbody.appendChild(tr);
       return;
     }
-    
+
     alerts.forEach(alert => {
       const tr = document.createElement('tr');
       const time = alert.timestamp ? new Date(alert.timestamp).toLocaleString() : '--';
       const level = alert.alertLevel || 'unknown';
       const details = alert.alertDetails ? JSON.stringify(alert.alertDetails) : '--';
-      
+
       const levelClass = level === 'critical' ? 'badge-red' : (level === 'warning' ? 'badge-orange' : 'badge-green');
-      
+
       tr.innerHTML = `<td>${time}</td><td><span class="badge ${levelClass}">${level.toUpperCase()}</span></td><td>${details}</td>`;
       tbody.appendChild(tr);
     });
@@ -2168,7 +2185,7 @@
     const statusDiv = document.getElementById('healthCollectionStatus');
     statusDiv.textContent = 'Collecting...';
     statusDiv.style.color = '#06b6d4';
-    
+
     try {
       const result = await apiFetch('/api/admin/health/collect', { method: 'POST' });
       if (result.success) {
@@ -2187,7 +2204,7 @@
 
   document.getElementById('cleanupMetricsBtn')?.addEventListener('click', async () => {
     if (!confirm('This will delete metrics older than 7 days. Continue?')) return;
-    
+
     try {
       const result = await apiFetch('/api/admin/health/cleanup', { method: 'POST' });
       if (result.success) {
@@ -2214,27 +2231,27 @@
       // Fetch payments data
       const paymentsData = await apiFetch('/api/admin/custom-url-payments');
       const payments = paymentsData.payments || [];
-      
+
       // Fetch clicks data
       const clicksData = await apiFetch('/api/admin/personalise-url-clicks');
       const clicks = clicksData.clicks || [];
       const totalWebsites = clicksData.totalWebsites || dashData?.overview?.totalWebsitesCreated || dashData?.websites?.length || 0;
       const totalClicks = clicksData.totalClicks != null ? clicksData.totalClicks : clicks.length;
       const uniqueClickers = clicksData.uniqueClickers != null ? clicksData.uniqueClickers : new Set(clicks.map(c => c.websiteId || c.visitorId)).size;
-      
+
       // Update KPI cards
       document.getElementById('cuTotalPayments').textContent = payments.length;
-      
+
       const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
       const currency = payments.length > 0 ? payments[0].currency : 'USD';
       document.getElementById('cuTotalRevenue').textContent = `${currency} ${totalRevenue.toFixed(2)}`;
-      
+
       // Personalise Clicks Card: displays total clicks and unique sites ratio
       document.getElementById('cuTotalClicks').textContent = totalClicks > 0 ? `${totalClicks} (${uniqueClickers}/${totalWebsites} sites)` : `0 / ${totalWebsites}`;
-      
+
       const conversionRate = totalWebsites > 0 ? ((uniqueClickers / totalWebsites) * 100).toFixed(1) : '0.0';
       document.getElementById('cuConversionRate').textContent = `${conversionRate}%`;
-      
+
       // Render payments table
       const paymentsTbody = document.querySelector('#customUrlPaymentsTable tbody');
       if (paymentsTbody) {
@@ -2244,7 +2261,7 @@
           const date = payment.createdAt ? new Date(payment.createdAt).toLocaleString() : '--';
           const recipient = payment.websiteRecipientName || 'Unknown';
           const eventType = payment.websiteEventType || 'Unknown';
-          
+
           tr.innerHTML = `
             <td>${date}</td>
             <td>${payment.orderId || '--'}</td>
@@ -2258,14 +2275,14 @@
           `;
           paymentsTbody.appendChild(tr);
         });
-        
+
         if (payments.length === 0) {
           const tr = document.createElement('tr');
           tr.innerHTML = '<td colspan="9">No payments recorded yet</td>';
           paymentsTbody.appendChild(tr);
         }
       }
-      
+
       // Render clicks table
       const clicksTbody = document.querySelector('#personaliseClicksTable tbody');
       if (clicksTbody) {
@@ -2276,10 +2293,10 @@
           const recipient = click.websiteRecipientName || 'Unknown';
           const eventType = click.websiteEventType || 'Unknown';
           const location = click.geo ? `${click.geo.city || ''}, ${click.geo.country || ''}` : 'Unknown';
-          const statusBadge = click.isPaid 
-            ? `<span class="badge badge-green"><i class="fas fa-check-circle"></i> Paid (${click.paymentAmount || ''})</span>` 
+          const statusBadge = click.isPaid
+            ? `<span class="badge badge-green"><i class="fas fa-check-circle"></i> Paid (${click.paymentAmount || ''})</span>`
             : `<span class="badge badge-orange"><i class="fas fa-user-clock"></i> Unpaid</span>`;
-          
+
           tr.innerHTML = `
             <td>${date}</td>
             <td>${click.websiteId || '--'}</td>
@@ -2290,7 +2307,7 @@
           `;
           clicksTbody.appendChild(tr);
         });
-        
+
         if (clicks.length === 0) {
           const tr = document.createElement('tr');
           tr.innerHTML = '<td colspan="6">No clicks recorded yet</td>';
@@ -2376,12 +2393,12 @@
   function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
   function formatNum(n) { if (n == null) return '0'; if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'; if (n >= 1000) return (n / 1000).toFixed(1) + 'K'; return n.toString(); }
   function getBadge(type) {
-    const map = { 
-      pageview: ['Page View', 'badge-cyan'], 
-      pageView: ['Page View', 'badge-cyan'], 
-      event: ['Event', 'badge-orange'], 
-      'website-view': ['Website View', 'badge-blue'], 
-      websiteCreated: ['Created', 'badge-green'] 
+    const map = {
+      pageview: ['Page View', 'badge-cyan'],
+      pageView: ['Page View', 'badge-cyan'],
+      event: ['Event', 'badge-orange'],
+      'website-view': ['Website View', 'badge-blue'],
+      websiteCreated: ['Created', 'badge-green']
     };
     const [label, cls] = map[type] || [type, 'badge-purple'];
     return `<span class="badge ${cls}">${label}</span>`;

@@ -196,14 +196,14 @@ async function getSupabaseStats() {
     try {
       const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free');
       if (data) freeFileCount = data.length;
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (supabasePremium) {
     try {
       const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium');
       if (data) premiumFileCount = data.length;
-    } catch (e) {}
+    } catch (e) { }
   }
 
   return {
@@ -233,7 +233,7 @@ async function listSupabaseWebsites() {
           });
         });
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (supabasePremium) {
@@ -248,7 +248,7 @@ async function listSupabaseWebsites() {
           });
         });
       }
-    } catch (e) {}
+    } catch (e) { }
   }
   return websites;
 }
@@ -258,7 +258,7 @@ async function listSupabaseWebsites() {
  */
 async function readWebsiteConfig(id) {
   const fileName = id.endsWith('.json') ? id : `${id}.json`;
-  
+
   // Try Supabase Premium first
   if (supabasePremium) {
     try {
@@ -267,7 +267,7 @@ async function readWebsiteConfig(id) {
         const text = await data.text();
         return JSON.parse(text);
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // Try Supabase Free
@@ -278,10 +278,86 @@ async function readWebsiteConfig(id) {
         const text = await data.text();
         return JSON.parse(text);
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   return null;
+}
+
+/**
+ * List all Supabase files (configs, photos, audio) in Free and Premium buckets with detailed metadata
+ */
+async function listSupabaseFilesDetailed() {
+  const files = [];
+  if (supabaseFree) {
+    try {
+      const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } });
+      if (data) {
+        data.forEach(f => {
+          const { data: urlData } = supabaseFree.storage.from(BUCKET_NAME).getPublicUrl(`free/${f.name}`);
+          files.push({
+            publicId: `free/${f.name}`,
+            name: f.name,
+            url: urlData?.publicUrl || '',
+            createdAt: f.created_at || f.updated_at || new Date().toISOString(),
+            bytes: f.metadata?.size || f.size || 0,
+            project: 'Free (Project 1)',
+            isPremium: false
+          });
+        });
+      }
+    } catch (e) {
+      console.warn('[Storage] listSupabaseFilesDetailed free error:', e.message);
+    }
+  }
+
+  if (supabasePremium) {
+    try {
+      const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } });
+      if (data) {
+        data.forEach(f => {
+          const { data: urlData } = supabasePremium.storage.from(BUCKET_NAME).getPublicUrl(`premium/${f.name}`);
+          files.push({
+            publicId: `premium/${f.name}`,
+            name: f.name,
+            url: urlData?.publicUrl || '',
+            createdAt: f.created_at || f.updated_at || new Date().toISOString(),
+            bytes: f.metadata?.size || f.size || 0,
+            project: 'Premium (Project 2)',
+            isPremium: true
+          });
+        });
+      }
+    } catch (e) {
+      console.warn('[Storage] listSupabaseFilesDetailed premium error:', e.message);
+    }
+  }
+
+  return files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+/**
+ * Delete a website JSON config and associated media from Supabase Storage
+ */
+async function deleteWebsiteConfig(id) {
+  const fileName = id.endsWith('.json') ? id : `${id}.json`;
+  const results = { freeDeleted: false, premiumDeleted: false };
+
+  if (supabaseFree) {
+    try {
+      const { error } = await supabaseFree.storage.from(BUCKET_NAME).remove([`free/${fileName}`]);
+      if (!error) results.freeDeleted = true;
+    } catch (e) {}
+  }
+
+  if (supabasePremium) {
+    try {
+      const { error } = await supabasePremium.storage.from(BUCKET_NAME).remove([`premium/${fileName}`]);
+      if (!error) results.premiumDeleted = true;
+    } catch (e) {}
+  }
+
+  return results;
 }
 
 // Automatically run free storage purge every 6 hours (only in long-running container mode)
@@ -294,6 +370,8 @@ module.exports = {
   purgeExpiredFreeFiles,
   getSupabaseStats,
   listSupabaseWebsites,
+  listSupabaseFilesDetailed,
   readWebsiteConfig,
+  deleteWebsiteConfig,
   cloudinary
 };
