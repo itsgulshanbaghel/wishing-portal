@@ -310,14 +310,14 @@ async function getAllWebsites() {
         const query = `
           SELECT r.id, 
                  COALESCE(
-                   NULLIF(r.recipient_name, 'Unknown'), 
-                   NULLIF(r.recipient_name, 'Untitled Site'), 
+                   NULLIF(NULLIF(NULLIF(NULLIF(r.recipient_name, 'Unknown'), 'Special Recipient'), 'Untitled Site'), 'Loved One'),
                    NULLIF(r.metadata->>'recipientName', ''), 
                    NULLIF(r.metadata->>'userName', ''), 
                    NULLIF(r.metadata->>'name', ''), 
                    NULLIF(r.metadata->'config'->>'recipientName', ''), 
                    NULLIF(r.metadata->'config'->>'userName', ''), 
                    NULLIF(r.metadata->'config'->>'name', ''), 
+                   NULLIF(r.metadata->'config'->>'greetingName', ''),
                    'Special Recipient'
                  ) as recipient_name,
                  COALESCE(
@@ -1037,11 +1037,23 @@ async function getDashboardAnalytics(days = 7) {
     if (recentActivity.length < 20) {
       try {
         const recentSitesRes = await pool.query(`
-          SELECT id as "websiteId", 'website_created' as type, recipient_name, event_type, created_at as "timestamp"
+          SELECT id as "websiteId", 'website_created' as type, 
+                 COALESCE(
+                   NULLIF(NULLIF(NULLIF(NULLIF(recipient_name, 'Unknown'), 'Special Recipient'), 'Untitled Site'), 'Loved One'),
+                   NULLIF(metadata->>'recipientName', ''),
+                   NULLIF(metadata->>'userName', ''),
+                   NULLIF(metadata->>'name', ''),
+                   NULLIF(metadata->'config'->>'recipientName', ''),
+                   NULLIF(metadata->'config'->>'userName', ''),
+                   NULLIF(metadata->'config'->>'name', ''),
+                   'Special Recipient'
+                 ) as recipient_name,
+                 COALESCE(NULLIF(event_type, 'unknown'), metadata->>'eventType', metadata->'config'->>'eventType', 'birthday') as event_type,
+                 created_at as "timestamp"
           FROM (
-            SELECT id, recipient_name, event_type, created_at FROM free_records
+            SELECT id, recipient_name, event_type, metadata, created_at FROM free_records
             UNION ALL
-            SELECT id, recipient_name, event_type, created_at FROM premium_records
+            SELECT id, recipient_name, event_type, metadata, created_at FROM premium_records
           ) as all_recent
           ORDER BY created_at DESC LIMIT 50
         `);
