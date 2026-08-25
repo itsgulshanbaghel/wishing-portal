@@ -51,27 +51,77 @@
   <!-- ===== HIGH-INTENT TRANSACTIONS & SEO LANDING PAGES ===== -->
   <url>
     <loc>https://thegreeter.in/birthday-wishes-website</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://thegreeter.in/anniversary-wishes-website</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://thegreeter.in/romantic-proposal-website</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://thegreeter.in/festival-greetings-website</loc>
-    <lastmod>2026-08-06</lastmod>
+    <loc>https://thegreeter.in/valentines-day-website</loc>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/wedding-invitation-website</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/templates</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/festival-greetings-website</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- ===== PROGRAMMATIC LONG-TAIL LANDING PAGES ===== -->
+  <url>
+    <loc>https://thegreeter.in/birthday-wishes-for-best-friend</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/birthday-wishes-for-husband</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/birthday-wishes-for-wife</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/1st-anniversary-wishes-website</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/diwali-wishing-website-maker</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
 
   <!-- ===== BLOG HUB ===== -->
@@ -83,6 +133,72 @@
   </url>
 
   <!-- ===== BLOG ARTICLES ===== -->
+  <url>
+    <loc>https://thegreeter.in/blog/creative-apology-ideas-for-partner</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/digital-wedding-invitation-ideas-eco-friendly</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/long-distance-anniversary-ideas-couples</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/epic-30th-birthday-surprise-ideas</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/psychology-of-personalized-gift-giving</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/heart-touching-birthday-wishes-for-mom</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/birthday-surprise-ideas-husband-at-home</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/how-to-plan-secret-proposal-online</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/1st-anniversary-surprise-ideas-couples</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/romantic-birthday-love-letter-examples</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/blog/virtual-birthday-ideas-long-distance-relationship</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <url>
     <loc>https://thegreeter.in/blog/how-to-surprise-best-friend-online</loc>
     <lastmod>2026-08-06</lastmod>

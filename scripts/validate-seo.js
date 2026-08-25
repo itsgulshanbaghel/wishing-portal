@@ -14,11 +14,16 @@ function getHtmlFiles(dir, fileList = []) {
   for (const file of files) {
     const filePath = path.join(dir, file);
     if (fs.statSync(filePath).isDirectory()) {
-      // Exclude admin, generated, and template component snippets from indexing checks
-      if (file !== 'admin' && file !== 'generated' && file !== 'templates') {
+      // Exclude admin and generated directories from indexing checks, but scan templates
+      if (file !== 'admin' && file !== 'generated') {
         getHtmlFiles(filePath, fileList);
       }
-    } else if (file.endsWith('.html')) {
+    } else if (file.endsWith('.html') && !file.endsWith('.original.html')) {
+      // Only include templates/index.html from the templates folder
+      const relPath = path.relative(PUBLIC_DIR, filePath).replace(/\\/g, '/');
+      if (relPath.startsWith('templates/') && relPath !== 'templates/index.html') {
+        continue;
+      }
       fileList.push(filePath);
     }
   }
@@ -52,11 +57,13 @@ function validateSeo() {
     }
 
     // 2. Meta Description Check
-    const descMatch = content.match(/<meta\s+name=["']description["']\s+content=["'](.*?)["']/i);
-    if (!descMatch || !descMatch[1].trim()) {
+    const descMatch = content.match(/<meta\s+(?:[^>]*?\s+)?name=["']description["']\s+content=(?:"([^"]*)"|'([^']*)')/i) ||
+                      content.match(/<meta\s+(?:[^>]*?\s+)?content=(?:"([^"]*)"|'([^']*)')\s+name=["']description["']/i);
+    const descText = descMatch ? (descMatch[1] || descMatch[2] || '').trim() : '';
+    if (!descMatch || !descText) {
       errors.push('Missing meta description');
     } else {
-      const descLen = descMatch[1].trim().length;
+      const descLen = descText.length;
       if (descLen < 50 || descLen > 160) {
         warnings.push(`Meta description length outside 50-160 chars (${descLen} chars)`);
       }

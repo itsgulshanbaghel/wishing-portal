@@ -2817,6 +2817,8 @@ app.get('/api/debug/slug/:slug', async (req, res) => {
 });
 
 // Catch-all route for custom URL slugs - must come BEFORE static middleware
+
+
 // This handles personalized URLs like thegreeter.in/custom-name
 app.get('/:slug', async (req, res, next) => {
   const rawPath = req.params.slug;
