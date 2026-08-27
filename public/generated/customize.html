@@ -7477,6 +7477,7 @@
           const templateFile = storedTemplate.split('/').pop() || 'birthday1';
 
           const config = {
+            userData: getEventData(),
             activeFeatures: Array.from(activeFeatureStates.entries()),
             customData: Array.from(customData.entries()),
             userName: getUserName(),
@@ -7490,8 +7491,14 @@
   try {
     const config = ${JSON.stringify(config).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
     const magicRaw = "${window._magicRaw || ""}";
-        window._magicConfig = config;
+    window._magicConfig = config;
     window.__IS_GENERATED_PAGE__ = true;
+    if (config && config.userData) {
+      try {
+        localStorage.setItem('userData', JSON.stringify(config.userData));
+        sessionStorage.setItem('userData', JSON.stringify(config.userData));
+      } catch(e) {}
+    }
     const activeFeatureStates = new Map(config.activeFeatures || []);
     const customData = new Map(config.customData || []);
     const userName = config.userName || 'Loved One';
@@ -8864,10 +8871,59 @@
               storedHtml = storedHtml.replace('setTimeout(function showNudge(){', 'return; setTimeout(function showNudge(){');
             }
 
-            // Store config in a place where the reloaded page can find it
-            if (storedConfig) {
-              const configStr = typeof storedConfig === 'string' ? storedConfig : JSON.stringify(storedConfig);
+            // Parse and hydrate config on recipient device
+            let cfgObj = {};
+            try {
+              cfgObj = (typeof storedConfig === 'string') ? JSON.parse(storedConfig || '{}') : (storedConfig || {});
+            } catch(e) {}
+
+            if (cfgObj) {
+              const configStr = JSON.stringify(cfgObj);
               sessionStorage.setItem('magic_hydration_config', configStr);
+              if (cfgObj.userData) {
+                try {
+                  localStorage.setItem('userData', JSON.stringify(cfgObj.userData));
+                  sessionStorage.setItem('userData', JSON.stringify(cfgObj.userData));
+                } catch(e) {}
+              }
+              if (cfgObj.userName) {
+                try {
+                  localStorage.setItem('userDataName', cfgObj.userName);
+                  sessionStorage.setItem('userDataName', cfgObj.userName);
+                } catch(e) {}
+              }
+              if (cfgObj.template || cfgObj.templateName) {
+                try {
+                  localStorage.setItem('selectedTemplate', cfgObj.template || cfgObj.templateName);
+                } catch(e) {}
+              }
+            }
+
+            // Inject early bootstrap runtime into storedHtml before document.write
+            const bootstrapScript = `
+<script>
+(function() {
+  window.APP_CONFIG = window.APP_CONFIG || {};
+  window._magicConfig = ${JSON.stringify(cfgObj).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
+  if (window._magicConfig && window._magicConfig.userData) {
+    try {
+      localStorage.setItem('userData', JSON.stringify(window._magicConfig.userData));
+      sessionStorage.setItem('userData', JSON.stringify(window._magicConfig.userData));
+    } catch(e) {}
+  }
+  if (window._magicConfig && window._magicConfig.userName) {
+    try {
+      localStorage.setItem('userDataName', window._magicConfig.userName);
+      sessionStorage.setItem('userDataName', window._magicConfig.userName);
+    } catch(e) {}
+  }
+})();
+</` + `script>
+`;
+            if (storedHtml.includes('<head>')) {
+              storedHtml = storedHtml.replace('<head>', '<head>' + bootstrapScript);
+            } else {
+              storedHtml = bootstrapScript + storedHtml;
             }
 
             // Fully replace the document. This removes the 'box' (iframe) completely.
