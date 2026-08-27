@@ -8216,6 +8216,86 @@
         });
       }
 
+      async function saveWebsiteConfigToServer(isPremium = false, explicitId = null) {
+        try {
+          const doc = getIframeDocument();
+          if (!doc) throw new Error('Preview document not available');
+
+          const config = {
+            activeFeatures: Array.from(activeFeatureStates.entries()),
+            customData: Array.from(customData.entries()),
+            template: localStorage.getItem('selectedTemplate') || '',
+            userData: getEventData(),
+            userName: getUserName(),
+            isPremium: isPremium
+          };
+
+          const docClone = doc.cloneNode(true);
+          const editorArtifacts = docClone.querySelectorAll('.edit-overlay, .editor-ui, [data-editor-element]');
+          editorArtifacts.forEach(el => el.remove());
+
+          const rawMagic = window._rawMagicScript || '';
+          const magicRuntime = `
+<script>
+(function() {
+  window.APP_CONFIG = window.APP_CONFIG || {};
+  window._magicConfig = ${JSON.stringify(config)};
+  window._rawMagic = "${rawMagic.replace(/"/g, '\\"')}";
+  window._isStandaloneSharedView = true;
+})();
+</` + `script>
+`;
+          const runtimeEl = docClone.createElement('div');
+          runtimeEl.innerHTML = magicRuntime;
+          if (docClone.body) {
+            docClone.body.insertBefore(runtimeEl, docClone.body.firstChild);
+          }
+
+          const html = '<!DOCTYPE html>\n' + docClone.documentElement.outerHTML;
+
+          const urlParams = new URLSearchParams(window.location.search);
+          const websiteId = explicitId || urlParams.get('view') || urlParams.get('restore') || null;
+
+          const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+            ? window.APP_CONFIG.API_BASE_URL
+            : window.location.origin;
+
+          const response = await fetch(`${apiBaseUrl}/api/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              html,
+              config,
+              isPremium,
+              websiteId
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (data && data.id) {
+            try {
+              localStorage.setItem('final_magic_' + data.id, html);
+              localStorage.setItem('magic_config_' + data.id, JSON.stringify(config));
+              if (isPremium) {
+                localStorage.setItem(`premium_${data.id}`, 'true');
+                sessionStorage.setItem(`premium_${data.id}`, 'true');
+              }
+            } catch (e) {}
+
+            return { success: true, id: data.id };
+          } else {
+            throw new Error('No website ID returned from server');
+          }
+        } catch (err) {
+          console.error('[saveWebsiteConfigToServer] Failed:', err);
+          return { success: false, error: err.message };
+        }
+      }
+
       window.handleFinalPay = async function () {
         const planToValidate = (window.activePlan && window.activePlan.plan) ? window.activePlan.plan : (activePlan ? activePlan.plan : 'pro');
         if (typeof checkFeatureCompliance === 'function' && !checkFeatureCompliance(planToValidate)) return;
@@ -8229,23 +8309,33 @@
         const phone = phoneInput ? phoneInput.value.trim() : '';
 
         const urlParams = new URLSearchParams(window.location.search);
-        let websiteId = urlParams.get('view') || urlParams.get('restore') || ('site_' + Date.now());
-
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        let websiteId = urlParams.get('view') || urlParams.get('restore');
 
         try {
           if (btn) {
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing Payment...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving & Initializing...';
             btn.disabled = true;
           }
 
+          // 1. SAVE WEBSITE CONFIG TO SERVER FIRST SO IT CAN BE ACCESSED FROM ANY DEVICE / INCOGNITO
+          const saveRes = await saveWebsiteConfigToServer(true, websiteId);
+          if (saveRes && saveRes.id) {
+            websiteId = saveRes.id;
+          }
+          if (!websiteId) {
+            websiteId = 'site_' + Date.now();
+          }
+
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
           if (isLocalhost) {
             sessionStorage.setItem('isPremium', 'true');
             sessionStorage.setItem(`premium_${websiteId}`, 'true');
             sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            localStorage.setItem('isPremium', 'true');
+            localStorage.setItem(`premium_${websiteId}`, 'true');
             window.isPremium = true;
             window.isPremiumUser = true;
-            generateShareLink();
+            window.location.href = `/generated/share.html?view=${websiteId}&payment=success`;
             return;
           }
 
@@ -8301,13 +8391,13 @@
             return;
           }
 
-          generateShareLink();
+          throw new Error('No payment session or URL returned from gateway');
         } catch (error) {
           console.error('[Payment] Error:', error);
           alert('Payment Error: ' + (error.message || 'Unable to start checkout. Please try again.'));
         } finally {
           if (btn) {
-            btn.innerHTML = originalText;
+            btn.innerHTML = originalText || 'Pay Securely';
             btn.disabled = false;
           }
         }
@@ -8321,9 +8411,12 @@
 
           if (data.status === 'PAID' || data.status === 'success' || data.status === 'completed') {
             sessionStorage.setItem('isPremium', 'true');
+            localStorage.setItem('isPremium', 'true');
             if (targetWebsiteId) {
               sessionStorage.setItem(`premium_${targetWebsiteId}`, 'true');
+              localStorage.setItem(`premium_${targetWebsiteId}`, 'true');
               sessionStorage.setItem(`pro_plan_${targetWebsiteId}`, 'true');
+              localStorage.setItem(`pro_plan_${targetWebsiteId}`, 'true');
             }
             window.isPremium = true;
             window.isPremiumUser = true;
@@ -8335,13 +8428,14 @@
                   <i class="fas fa-check" style="color:white; font-size:28px;"></i>
                 </div>
                 <h3 style="font-size:20px; font-weight:800; color:#10b981; margin-bottom: 6px;">Payment Confirmed!</h3>
-                <p style="font-size:14px; color:#ccc;">Your website is now upgraded to PRO.</p>
+                <p style="font-size:14px; color:#ccc;">Your website is upgraded to PRO! Redirecting to share page...</p>
               `;
             }
 
             setTimeout(() => {
               if (overlay) overlay.style.display = 'none';
-              if (typeof showStage === 'function') showStage(2);
+              const targetId = targetWebsiteId || new URLSearchParams(window.location.search).get('view') || '';
+              window.location.href = `/generated/share.html?view=${encodeURIComponent(targetId)}&payment=success&orderId=${encodeURIComponent(orderId)}`;
             }, 1200);
           } else {
             pollCount++;

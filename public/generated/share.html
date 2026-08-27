@@ -2553,11 +2553,21 @@
         const localUserData = (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}'); } catch(e) { return {}; } })();
         const storedPlan = (localUserData.selectedPlan || localUserData.plan || localStorage.getItem(`plan_${viewId}`) || '').toLowerCase();
         const hasPaidPlan = storedPlan && storedPlan !== 'free';
+        const isPaymentSuccess = urlParams.get('payment') === 'success';
 
-        let isPremium = (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') ||
+        if (isPaymentSuccess && viewId) {
+          localStorage.setItem('isPremium', 'true');
+          localStorage.setItem(`premium_${viewId}`, 'true');
+          sessionStorage.setItem('isPremium', 'true');
+          sessionStorage.setItem(`premium_${viewId}`, 'true');
+        }
+
+        let isPremium = (viewId && (localStorage.getItem(`premium_${viewId}`) === 'true' || sessionStorage.getItem(`premium_${viewId}`) === 'true')) ||
                          localStorage.getItem('isPremium') === 'true' ||
+                         sessionStorage.getItem('isPremium') === 'true' ||
                          localUserData.isPremium === true ||
-                         hasPaidPlan;
+                         hasPaidPlan ||
+                         isPaymentSuccess;
 
         if (viewId) {
           try {
@@ -2592,6 +2602,14 @@
             fullLink = `${domain}/generated/customize.html?view=${viewId}${premiumParam}&lang=${lang}`;
             linkInput.value = fullLink;
           }
+        }
+
+        if (isPaymentSuccess) {
+          const banner = document.createElement('div');
+          banner.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#fff; padding:14px 24px; border-radius:50px; font-weight:700; font-size:15px; box-shadow:0 10px 30px rgba(16,185,129,0.4); z-index:99999; display:flex; align-items:center; gap:10px; animation:slideDown 0.4s ease;';
+          banner.innerHTML = '<span>🎉</span> <span>Payment Confirmed! Your PRO website is ready to share!</span>';
+          document.body.appendChild(banner);
+          setTimeout(() => { banner.style.opacity = '0'; banner.style.transition = 'opacity 0.5s ease'; setTimeout(() => banner.remove(), 500); }, 5000);
         }
 
         if (typeof generateQRCode === 'function') {
