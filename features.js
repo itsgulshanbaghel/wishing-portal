@@ -2150,7 +2150,8 @@
     },
     virtualCake: {
         enable(d, w, userName, customText) {
-            if (d.getElementById('magic-virtual-cake-section')) return {};
+            const existingCake = d.getElementById('magic-virtual-cake-section');
+            if (existingCake) existingCake.remove();
 
             if (!d.querySelector('meta[charset]')) {
                 const meta = d.createElement('meta');
@@ -3055,7 +3056,8 @@
 
     virtualHug: {
         enable(d, w, userName, customText) {
-            if (d.getElementById('magic-virtual-hug-section')) return {};
+            const existingHug = d.getElementById('magic-virtual-hug-section');
+            if (existingHug) existingHug.remove();
 
             // Ensure fonts
             if (!d.getElementById('magic-virtual-hug-fonts')) {
