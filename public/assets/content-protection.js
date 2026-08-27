@@ -2,6 +2,16 @@
 (function() {
     'use strict';
 
+    // Do not enable content protection inside editor, iframe previews, or when editing
+    try {
+        if (window.self !== window.top || 
+            window.location.search.includes('mode=edit') || 
+            window.location.pathname.includes('customize') ||
+            window.location.pathname.includes('admin')) {
+            return;
+        }
+    } catch (e) {}
+
     // TEMPORARILY DISABLED FOR PAYMENT DEBUGGING
     // Disable right-click context menu
     // document.addEventListener('contextmenu', function(e) {

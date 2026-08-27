@@ -1,4 +1,4 @@
-// Cloudflare Worker script handling assets and custom slug redirects to Render backend
+// Cloudflare Worker script handling assets and custom slug redirects with Edge Caching
 
 export default {
   async fetch(request, env, ctx) {
@@ -28,6 +28,7 @@ export default {
           redirect: 'manual'
         });
 
+        // 1. Handle dynamic slug redirects with Edge Caching
         if (response.status >= 300 && response.status < 400) {
           const locationHeader = response.headers.get('location');
           if (locationHeader) {
@@ -45,12 +46,15 @@ export default {
               statusText: response.statusText,
               headers: {
                 'Location': targetLocation,
-                'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0'
+                'Cache-Control': isSlugRequest
+                  ? 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400'
+                  : 'no-cache, no-store, must-revalidate, max-age=0'
               }
             });
           }
         }
 
+        // 2. Handle maintenance fallback on backend error
         if (response.status >= 502 && response.status <= 504) {
           if (!isApiRequest && env.ASSETS) {
             const maintenanceReq = new Request(new URL('/maintenance.html', request.url));
@@ -58,8 +62,18 @@ export default {
           }
         }
 
+        // 3. Forward response respecting backend Cache-Control headers
         const responseHeaders = new Headers(response.headers);
-        responseHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        const originCacheControl = response.headers.get('Cache-Control');
+
+        if (!originCacheControl) {
+          // Default: sensitive/dynamic API requests are not cached unless specified by origin
+          if (path.startsWith('/api/payment') || path.startsWith('/api/admin') || path.startsWith('/api/upload') || request.method !== 'GET') {
+            responseHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+          } else {
+            responseHeaders.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
+          }
+        }
 
         return new Response(response.body, {
           status: response.status,
@@ -88,7 +102,7 @@ export default {
       }
     }
 
-    // Serve static assets from public folder via Workers Assets binding
+    // Serve static assets from public folder via Cloudflare Workers Assets binding (0 CPU, free global CDN)
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }

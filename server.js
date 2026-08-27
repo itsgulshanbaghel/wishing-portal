@@ -785,78 +785,95 @@ const PRICING_MAP = {
   // Tier 1: High Spending Power
   US: {
     currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'United States',
-    plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.99, paypalAmount: 3.99 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+    plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
   },
   GB: {
     currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom',
-    plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.49, paypalAmount: 1.49 }, pro_plus: { amount: 2.99, paypalAmount: 2.99 }, forever: { amount: 5.99, paypalAmount: 5.99 } }
+    plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
   },
   CA: {
     currency: 'CAD', symbol: 'CA$', gateway: 'paypal', paypalCurrency: 'CAD', countryName: 'Canada',
-    plans: { starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 2.49, paypalAmount: 2.49 }, pro_plus: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 8.99, paypalAmount: 8.99 } }
+    plans: { starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 2.99, paypalAmount: 2.99 }, pro_plus: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
   },
   AU: {
     currency: 'AUD', symbol: 'A$', gateway: 'paypal', paypalCurrency: 'AUD', countryName: 'Australia',
-    plans: { starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 2.99, paypalAmount: 2.99 }, pro_plus: { amount: 5.99, paypalAmount: 5.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
+    plans: { starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 2.99, paypalAmount: 2.99 }, pro_plus: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
   },
   AE: {
     currency: 'AED', symbol: 'AED ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'UAE',
-    plans: { starter: { amount: 3.99, paypalAmount: 1.09 }, pro: { amount: 6.99, paypalAmount: 1.90 }, pro_plus: { amount: 14.99, paypalAmount: 4.08 }, forever: { amount: 25.99, paypalAmount: 7.07 } }
+    plans: { starter: { amount: 3.99, paypalAmount: 1.09 }, pro: { amount: 6.99, paypalAmount: 1.90 }, pro_plus: { amount: 12.99, paypalAmount: 3.54 }, forever: { amount: 29.99, paypalAmount: 8.16 } }
   },
 
   // Tier 2: Developing (High Volume)
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India',
-    plans: { starter: { amount: 29, paypalAmount: 29 }, pro: { amount: 49, paypalAmount: 49 }, pro_plus: { amount: 99, paypalAmount: 99 }, forever: { amount: 199, paypalAmount: 199 } }
+    plans: { starter: { amount: 29, paypalAmount: 29 }, pro: { amount: 49, paypalAmount: 49 }, pro_plus: { amount: 99, paypalAmount: 99 }, forever: { amount: 299, paypalAmount: 299 } }
   },
   PK: {
     currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',
-    plans: { starter: { amount: 99, paypalAmount: 0.35 }, pro: { amount: 149, paypalAmount: 0.53 }, pro_plus: { amount: 299, paypalAmount: 1.07 }, forever: { amount: 599, paypalAmount: 2.15 } }
+    plans: { starter: { amount: 99, paypalAmount: 0.35 }, pro: { amount: 149, paypalAmount: 0.53 }, pro_plus: { amount: 299, paypalAmount: 1.07 }, forever: { amount: 799, paypalAmount: 2.85 } }
   }
 };
 
 const EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
 const DEFAULT_PRICING = {
   currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'International', country: 'XX',
-  plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.99, paypalAmount: 3.99 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+  plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
 };
 
 function getGeoPrice(req) {
   try {
-    const geoip = require('geoip-lite');
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip = forwarded ? forwarded.split(',')[0].trim() : (req.socket && req.socket.remoteAddress) || req.ip || '127.0.0.1';
-    const cleanIP = ip.replace('::ffff:', '').replace('::1', '127.0.0.1');
-    const geo = (geoip && typeof geoip.lookup === 'function') ? geoip.lookup(cleanIP) : null;
-    const code = (geo ? geo.country : 'XX').toUpperCase();
+    // 1. Check Cloudflare country header
+    const cfCountry = req.headers['cf-ipcountry'];
+    if (cfCountry && cfCountry !== 'XX') {
+      const code = cfCountry.toUpperCase();
+      if (code === 'IN') return { ...PRICING_MAP.IN, country: code };
+      if (EUROZONE.includes(code)) {
+        return {
+          currency: 'EUR', symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', countryName: 'Eurozone', country: code,
+          plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+        };
+      }
+      if (PRICING_MAP[code]) return { ...PRICING_MAP[code], country: code };
+    }
 
-    console.log('[getGeoPrice] IP:', cleanIP, 'Country:', code, 'Geo:', geo);
+    // 2. Check IP geoip lookup
+    const forwarded = req.headers['x-forwarded-for'];
+    let ip = forwarded ? forwarded.split(',')[0].trim() : (req.socket && req.socket.remoteAddress) || req.ip || '127.0.0.1';
+    if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
+    const isLocal = !ip || ip === '127.0.0.1' || ip === '::1' || ip.includes('localhost');
+
+    if (isLocal) {
+      const acceptLang = (req.headers['accept-language'] || '').toLowerCase();
+      if (acceptLang.includes('in') || acceptLang.includes('hi') || acceptLang.includes('ta') || acceptLang.includes('te')) {
+        return { ...PRICING_MAP.IN, country: 'IN' };
+      }
+      return { ...PRICING_MAP.IN, country: 'IN' }; // Default local dev to India pricing
+    }
+
+    const geoip = require('geoip-lite');
+    const geo = (geoip && typeof geoip.lookup === 'function') ? geoip.lookup(ip) : null;
+    const code = (geo && geo.country ? geo.country : 'XX').toUpperCase();
 
     if (code === 'IN') {
-      console.log('[getGeoPrice] Using India pricing (Cashfree)');
       return { ...PRICING_MAP.IN, country: code };
     }
 
     if (EUROZONE.includes(code)) {
-      console.log('[getGeoPrice] Using Eurozone pricing (PayPal)');
       return {
         currency: 'EUR', symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', countryName: 'Eurozone', country: code,
-        plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.99, paypalAmount: 3.99 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+        plans: { starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
       };
     }
 
     if (PRICING_MAP[code]) {
-      console.log('[getGeoPrice] Using country-specific pricing for:', code);
       return { ...PRICING_MAP[code], country: code };
     }
 
     // Default other countries (including VPN/undetected locations)
-    console.log('[getGeoPrice] Using default international pricing (PayPal)');
     return { ...DEFAULT_PRICING, country: code };
   } catch (err) {
     console.error('[getGeoPrice] error:', err);
-    // Default to international pricing on error (not INR)
-    console.log('[getGeoPrice] Error - using default international pricing (PayPal)');
     return { ...DEFAULT_PRICING, country: 'XX' };
   }
 }
@@ -938,61 +955,6 @@ async function capturePayPalOrder(paypalOrderId) {
     const errText = await response.text();
     throw new Error(`Failed to capture PayPal order: ${response.status} ${errText}`);
   }
-  return await response.json();
-}
-
-const SERVER_PRICING_MAP = {
-  'IN': { currency: 'INR', amount: 29, symbol: '₹', gateway: 'cashfree', region: 'India' },
-  'US': { currency: 'USD', amount: 0.99, symbol: '$', gateway: 'paypal', region: 'United States' },
-  'GB': { currency: 'GBP', amount: 0.99, symbol: '£', gateway: 'paypal', region: 'United Kingdom' },
-  'CA': { currency: 'CAD', amount: 1.49, symbol: 'CA$', gateway: 'paypal', region: 'Canada' },
-  'AU': { currency: 'AUD', amount: 1.49, symbol: 'A$', gateway: 'paypal', region: 'Australia' },
-  'AE': { currency: 'AED', amount: 3.99, symbol: 'AED ', gateway: 'paypal', region: 'UAE' },
-  'PK': { currency: 'PKR', amount: 99, symbol: 'PKR ', gateway: 'paypal', region: 'Pakistan' },
-  'DEFAULT': { currency: 'USD', amount: 0.99, symbol: '$', gateway: 'paypal', region: 'International' }
-};
-
-const SERVER_EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
-
-function getGeoPrice(req) {
-  // Check Cloudflare country header
-  const cfCountry = req.headers['cf-ipcountry'];
-  if (cfCountry && cfCountry !== 'XX') {
-    const code = cfCountry.toUpperCase();
-    if (code === 'IN') return PRICING_MAP['IN'] || SERVER_PRICING_MAP['IN'];
-    if (SERVER_EUROZONE.includes(code)) return { currency: 'EUR', amount: 0.99, symbol: '€', gateway: 'paypal', region: 'Eurozone', plans: DEFAULT_PRICING.plans };
-    if (PRICING_MAP[code]) return PRICING_MAP[code];
-  }
-
-  // Check client IP
-  const xForwardedFor = req.headers['x-forwarded-for'];
-  let ip = xForwardedFor ? xForwardedFor.split(',')[0].trim() : (req.socket?.remoteAddress || req.ip || '');
-  if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
-
-  const isLocal = !ip || ip === '127.0.0.1' || ip === '::1' || ip.includes('localhost');
-  if (isLocal) {
-    const acceptLang = (req.headers['accept-language'] || '').toLowerCase();
-    if (acceptLang.includes('in') || acceptLang.includes('hi') || acceptLang.includes('ta') || acceptLang.includes('te')) {
-      return SERVER_PRICING_MAP['IN'];
-    }
-  }
-
-  if (ip && !isLocal) {
-    try {
-      const geoip = require('geoip-lite');
-      const geo = (geoip && typeof geoip.lookup === 'function') ? geoip.lookup(ip) : null;
-      if (geo && geo.country) {
-        const code = geo.country.toUpperCase();
-        if (code === 'IN') return SERVER_PRICING_MAP['IN'];
-        if (SERVER_EUROZONE.includes(code)) return { currency: 'EUR', amount: 0.99, symbol: '€', gateway: 'paypal', region: 'Eurozone' };
-        if (SERVER_PRICING_MAP[code]) return SERVER_PRICING_MAP[code];
-      }
-    } catch (e) {
-      console.warn('geoip lookup warning:', e.message);
-    }
-  }
-
-  return SERVER_PRICING_MAP['DEFAULT'];
 }
 
 // GET /api/payment/detect-price – returns server-computed price for the caller's location
@@ -1026,19 +988,22 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
 
 function getPlanMeta(pType, isFreeClaim = false) {
   const norm = (pType || '').toString().toLowerCase().trim();
-  if (norm === 'starter' || norm === '100_days' || norm === '100days' || norm.includes('100')) {
-    return { plan: 'starter', planName: '100+ Days', planDays: 100 };
+  if (norm === 'starter' || norm === '7_days' || norm === '7days' || norm.includes('7')) {
+    return { plan: 'starter', planName: '7 Days', planDays: 7 };
   }
-  if (norm === 'pro' || norm === '1_year' || norm === '1year' || norm.includes('year')) {
-    return { plan: 'pro', planName: '1 Year', planDays: 365 };
+  if (norm === 'pro' || norm === '30_days' || norm === '30days' || norm.includes('30') || norm.includes('month')) {
+    return { plan: 'pro', planName: '30 Days', planDays: 30 };
   }
-  if (norm === 'forever' || norm === 'lifetime' || norm.includes('forev') || norm.includes('life')) {
-    return { plan: 'forever', planName: 'Forever', planDays: 99999 };
+  if (norm === 'pro_plus' || norm === 'proplus' || norm === '100_days' || norm === '100days' || norm.includes('100')) {
+    return { plan: 'pro_plus', planName: '100 Days', planDays: 100 };
+  }
+  if (norm === 'forever' || norm === 'infinity' || norm === 'lifetime' || norm.includes('forev') || norm.includes('life') || norm.includes('inf')) {
+    return { plan: 'forever', planName: 'Lifetime', planDays: 99999 };
   }
   if (norm === 'custom_url' || norm === 'custom') {
-    return { plan: 'custom_url', planName: 'Custom URL', planDays: 365 };
+    return { plan: 'custom_url', planName: 'Custom URL', planDays: 30 };
   }
-  return { plan: norm || 'pro', planName: '1 Year', planDays: 365 };
+  return { plan: norm || 'pro', planName: '30 Days', planDays: 30 };
 }
 
 // POST /api/payment/create-order
@@ -1246,26 +1211,20 @@ app.post('/api/payment/create-order', async (req, res) => {
       });
     }
 
-    // Price determined server-side from geo-IP or validated request
+    // Price determined server-side from geo-IP (single source of truth, never trust client)
     const geoPricing = getGeoPrice(req);
     const { currency, gateway, paypalCurrency, plans } = geoPricing;
 
-    // Normalize plan key (default to starter for custom URL claims)
-    const rawPlan = (req.body.plan || 'starter').toString().toLowerCase();
-    let normPlan = 'pro';
-    if (rawPlan === 'starter' || rawPlan.includes('start')) normPlan = 'starter';
-    else if (rawPlan === 'pro_plus' || rawPlan === 'proplus' || rawPlan.includes('plus')) normPlan = 'pro_plus';
-    else if (rawPlan === 'forever' || rawPlan.includes('forev') || rawPlan.includes('life')) normPlan = 'forever';
-    else normPlan = 'pro';
-
+    // Normalize plan key
+    const planMeta = getPlanMeta(req.body.plan, false);
+    const normPlan = planMeta.plan;
     const defaultPlans = DEFAULT_PRICING.plans;
     const planData = (plans && plans[normPlan]) ? plans[normPlan] : (defaultPlans[normPlan] || defaultPlans.pro);
 
-    let amount = (typeof req.body.amount === 'number' && req.body.amount > 0) ? req.body.amount : planData.amount;
-    let paypalAmount = planData.paypalAmount || amount;
-    if (typeof req.body.amount === 'number' && req.body.amount > 0) {
-      paypalAmount = req.body.amount;
-    }
+    // IMMUTABLE SERVER PRICING - Overwrite and enforce server-side prices strictly (reject client tampering)
+    const amount = Number(planData.amount);
+    const paypalAmount = Number(planData.paypalAmount || planData.amount);
+    const orderAmount = amount;
 
     // Upload QR center photo to Supabase Storage if provided as base64
     let finalPhotoUrl = qrCenterPhotoUrl || '';
@@ -1278,12 +1237,11 @@ app.post('/api/payment/create-order', async (req, res) => {
     }
 
     const orderId = `ORD_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const customer = customerDetails && customerDetails.customer_phone !== '9999999999'
-      ? customerDetails
-      : (customerDetails || { customer_name: 'Guest', customer_email: 'guest@thegreeter.in', customer_phone: '9999999999' });
-    const orderAmount = amount;
-
-    const planMeta = getPlanMeta(req.body.plan, false);
+    const customer = {
+      customer_name: (customerDetails && customerDetails.customer_name) || 'Guest',
+      customer_email: (customerDetails && customerDetails.customer_email) || email || req.body.email || 'guest@thegreeter.in',
+      customer_phone: (customerDetails && customerDetails.customer_phone) || phone || req.body.phone || '9999999999'
+    };
 
     // Save payment to CockroachDB Primary DB
     await cockroach.savePayment({
@@ -1292,6 +1250,9 @@ app.post('/api/payment/create-order', async (req, res) => {
       slug: sanitizedSlug,
       plan: planMeta.plan,
       planName: planMeta.planName,
+      planDays: planMeta.planDays,
+      customerEmail: customer.customer_email,
+      customerPhone: customer.customer_phone,
       amount,
       currency,
       status: 'PENDING',
@@ -1313,6 +1274,7 @@ app.post('/api/payment/create-order', async (req, res) => {
           plan: planMeta.plan,
           planName: planMeta.planName,
           planDays: planMeta.planDays,
+          customerDetails: customer,
           qrCenterType: qrCenterType || 'none',
           qrCenterText: qrCenterText || '',
           qrCenterPhotoUrl: finalPhotoUrl || '',
@@ -1324,9 +1286,8 @@ app.post('/api/payment/create-order', async (req, res) => {
     // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
     if (gateway === 'paypal') {
       try {
-        const targetPage = req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html';
-        const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}?action=payment-success&orderId=${orderId}&view=${websiteId}`;
-        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${targetPage}?view=${websiteId}`;
+        const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId=${orderId}&view=${websiteId}`;
+        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?view=${websiteId}`;
 
         console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${paypalCurrency}`);
         const paypalOrder = await createPayPalOrder(paypalAmount, paypalCurrency, returnUrl, cancelUrl);
@@ -1348,6 +1309,9 @@ app.post('/api/payment/create-order', async (req, res) => {
           paymentSessionId: null,
           amount: paypalAmount,
           currency: paypalCurrency,
+          plan: planMeta.plan,
+          planName: planMeta.planName,
+          planDays: planMeta.planDays,
           slug: sanitizedSlug,
           gateway: 'paypal'
         });
@@ -1378,7 +1342,7 @@ app.post('/api/payment/create-order', async (req, res) => {
         customer_phone: customer.customer_phone || '9999999999'
       },
       order_meta: {
-        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}${req.body.plan ? '/generated/preview.html' : '/generated/custom-url.html'}?action=payment-success&orderId={order_id}&view=${websiteId}`,
+        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId={order_id}&view=${websiteId}`,
         notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal-phi.vercel.app'}/api/payment/webhook`,
         payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
       }
@@ -1931,11 +1895,15 @@ app.post('/api/payment/paypal/webhook', async (req, res) => {
   }
 });
 
+let cachedMagicBase64 = null;
 app.get('/api/magic', (req, res) => {
   try {
-    const features = fs.readFileSync(path.join(__dirname, 'features.js'), 'utf8');
-    const encoded = Buffer.from(features).toString('base64');
-    res.json({ magic: encoded });
+    if (!cachedMagicBase64) {
+      const features = fs.readFileSync(path.join(__dirname, 'features.js'), 'utf8');
+      cachedMagicBase64 = Buffer.from(features).toString('base64');
+    }
+    res.set('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
+    res.json({ magic: cachedMagicBase64 });
   } catch (err) {
     console.error("Error reading features:", err);
     res.status(500).json({ error: "Magic not found" });
@@ -2604,16 +2572,22 @@ app.get('/api/admin/health/status', async (req, res) => {
   }
 });
 
-// Custom URL Payments Analytics
+// Custom URL & Plan Payments Analytics
 app.get('/api/admin/custom-url-payments', adminAuth, async (req, res) => {
   try {
     const payments = await cockroach.getAllPayments(100);
 
-    // Enrich with website data from CockroachDB
+    // Enrich with website data and plan metadata from CockroachDB
     const enrichedPayments = await Promise.all(payments.map(async (payment) => {
       const website = payment.websiteId ? await cockroach.getRecord(payment.websiteId) : null;
+      const pPlanMeta = getPlanMeta(payment.plan);
       return {
         ...payment,
+        plan: payment.plan || pPlanMeta.plan,
+        planName: payment.planName || pPlanMeta.planName,
+        planDays: payment.planDays || pPlanMeta.planDays,
+        customerEmail: payment.customerEmail || payment.customerDetails?.customer_email || '--',
+        customerPhone: payment.customerPhone || payment.customerDetails?.customer_phone || '--',
         websiteRecipientName: website?.recipientName || 'Unknown',
         websiteEventType: website?.eventType || 'Unknown',
         websiteTemplateName: website?.templateName || 'Unknown'
@@ -2622,7 +2596,7 @@ app.get('/api/admin/custom-url-payments', adminAuth, async (req, res) => {
 
     res.json({ payments: enrichedPayments });
   } catch (err) {
-    console.error('Error fetching custom URL payments:', err);
+    console.error('Error fetching payments:', err);
     res.status(500).json({ error: 'Failed to fetch payment data' });
   }
 });
@@ -2816,8 +2790,7 @@ app.get('/api/debug/slug/:slug', async (req, res) => {
   res.json(results);
 });
 
-// Catch-all route for custom URL slugs - must come BEFORE static middleware
-
+const slugResolutionCache = new Map();
 
 // This handles personalized URLs like thegreeter.in/custom-name
 app.get('/:slug', async (req, res, next) => {
@@ -2833,6 +2806,15 @@ app.get('/:slug', async (req, res, next) => {
   const slug = rawPath.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 
   if (!slug) return next();
+
+  // Fast memory cache check (<0.1ms)
+  const cached = slugResolutionCache.get(slug);
+  if (cached && (Date.now() - cached.time < 10 * 60 * 1000)) {
+    if (cached.websiteId) {
+      res.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
+      return res.redirect(`/generated/customize.html?view=${cached.websiteId}&_v=c`);
+    }
+  }
 
   try {
     // 1. Try CockroachDB Primary DB lookup first
@@ -2854,10 +2836,10 @@ app.get('/:slug', async (req, res, next) => {
     }
 
     if (entry && entry.websiteId) {
-      console.log(`[CustomURL] Redirecting slug "${slug}" to websiteId "${entry.websiteId}"`);
+      if (slugResolutionCache.size > 2000) slugResolutionCache.clear();
+      slugResolutionCache.set(slug, { websiteId: entry.websiteId, time: Date.now() });
+      res.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
       return res.redirect(`/generated/customize.html?view=${entry.websiteId}&_v=c`);
-    } else {
-      console.log(`[CustomURL] Slug "${slug}" not found in DB`);
     }
   } catch (dbErr) {
     console.error('[CustomURL] lookup failed:', dbErr);

@@ -1143,11 +1143,11 @@
       } else if (tierVal === 'free') {
         msg = 'No standard/free websites found.';
       } else if (tierVal === 'starter') {
-        msg = 'No websites found with Starter (30+ Days) plan.';
+        msg = 'No websites found with Starter (7 Days) plan.';
       } else if (tierVal === 'pro') {
-        msg = 'No websites found with Pro (100+ Days) plan.';
+        msg = 'No websites found with Pro (30 Days) plan.';
       } else if (tierVal === 'pro_plus') {
-        msg = 'No websites found with Pro+ (1 Year) plan.';
+        msg = 'No websites found with Pro+ (100 Days) plan.';
       } else if (tierVal === 'forever') {
         msg = 'No websites found with Infinity (Lifetime) plan.';
       } else if (tierVal === 'custom_url') {
@@ -1163,9 +1163,9 @@
 
     // Plan counters
     const premiumCount = currentlyFilteredWebsites.filter(w => w.isPremium).length;
-    const starterCount = currentlyFilteredWebsites.filter(w => w.plan === 'starter' || (w.planName && (w.planName.includes('Starter') || w.planName.includes('30')))).length;
-    const proCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro' || (w.planName && (w.planName.includes('Pro') && !w.planName.includes('Pro+') && w.planName.includes('100')))).length;
-    const proPlusCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro_plus' || w.plan === 'proplus' || (w.planName && (w.planName.includes('Pro+') || w.planName.includes('1 Year')))).length;
+    const starterCount = currentlyFilteredWebsites.filter(w => w.plan === 'starter' || (w.planName && (w.planName.includes('Starter') || w.planName.includes('7')))).length;
+    const proCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro' || (w.planName && (w.planName.includes('Pro') && !w.planName.includes('Pro+') && (w.planName.includes('30') || w.planName.includes('100'))))).length;
+    const proPlusCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro_plus' || w.plan === 'proplus' || (w.planName && (w.planName.includes('Pro+') || w.planName.includes('100 Days')))).length;
     const foreverCount = currentlyFilteredWebsites.filter(w => w.plan === 'forever' || w.plan === 'infinity' || (w.planName && (w.planName.includes('Forever') || w.planName.includes('Lifetime') || w.planName.includes('Infinity')))).length;
     const customUrlCount = currentlyFilteredWebsites.filter(w => w.plan === 'custom_url' || !!w.customSlug).length;
 
@@ -1180,9 +1180,9 @@
       ${tierVal === 'free' ? `<span style="background:rgba(123,93,246,0.12); color:var(--accent); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(123,93,246,0.2);"><i class="fas fa-globe"></i> Standard Only</span>` : ''}
       ${tierVal === 'all' && premiumCount > 0 ? `
         <span style="background:rgba(255,159,67,0.12); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.2);"><i class="fas fa-crown"></i> ${premiumCount} Premium</span>
-        ${starterCount > 0 ? `<span style="background:rgba(0,194,255,0.1); color:#00c2ff; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-bolt"></i> ${starterCount} (Starter 30d)</span>` : ''}
-        ${proCount > 0 ? `<span style="background:rgba(232,58,89,0.12); color:#ff6b81; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-fire"></i> ${proCount} (Pro 100d)</span>` : ''}
-        ${proPlusCount > 0 ? `<span style="background:rgba(16,185,129,0.12); color:#10b981; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-gem"></i> ${proPlusCount} (Pro+ 1 Yr)</span>` : ''}
+        ${starterCount > 0 ? `<span style="background:rgba(0,194,255,0.1); color:#00c2ff; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-bolt"></i> ${starterCount} (Starter 7d)</span>` : ''}
+        ${proCount > 0 ? `<span style="background:rgba(232,58,89,0.12); color:#ff6b81; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-fire"></i> ${proCount} (Pro 30d)</span>` : ''}
+        ${proPlusCount > 0 ? `<span style="background:rgba(16,185,129,0.12); color:#10b981; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-gem"></i> ${proPlusCount} (Pro+ 100d)</span>` : ''}
         ${foreverCount > 0 ? `<span style="background:rgba(255,184,0,0.15); color:var(--gold); padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-crown"></i> ${foreverCount} (Infinity)</span>` : ''}
         ${customUrlCount > 0 ? `<span style="background:rgba(46,213,115,0.12); color:#2ed573; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-link"></i> ${customUrlCount} (Slug)</span>` : ''}
       ` : ''}
@@ -1209,12 +1209,12 @@
         const pKey = (w.plan || '').toLowerCase();
         const pName = w.planName || 'Premium';
 
-        if (pKey === 'starter' || pName.includes('Starter') || pName.includes('30')) {
-          planBadgeHtml = `<span class="badge" style="background:rgba(0,194,255,0.18); color:#00c2ff; border:1px solid rgba(0,194,255,0.35); font-size:0.7rem; padding:3px 10px;" title="Starter Plan (30+ Days)"><i class="fas fa-bolt"></i> Starter (30d)</span>`;
-        } else if (pKey === 'pro' || (pName.includes('Pro') && !pName.includes('Pro+') && pName.includes('100'))) {
-          planBadgeHtml = `<span class="badge" style="background:rgba(232,58,89,0.18); color:#ff6b81; border:1px solid rgba(232,58,89,0.35); font-size:0.7rem; padding:3px 10px;" title="Pro Plan (100+ Days)"><i class="fas fa-fire"></i> Pro (100d)</span>`;
-        } else if (pKey === 'pro_plus' || pKey === 'proplus' || pName.includes('Pro+') || pName.includes('1 Year')) {
-          planBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.2); color:#10b981; border:1px solid rgba(16,185,129,0.4); font-size:0.7rem; padding:3px 10px;" title="Pro+ Plan (1 Year)"><i class="fas fa-gem"></i> Pro+ (1 Yr)</span>`;
+        if (pKey === 'starter' || pName.includes('Starter') || pName.includes('7')) {
+          planBadgeHtml = `<span class="badge" style="background:rgba(0,194,255,0.18); color:#00c2ff; border:1px solid rgba(0,194,255,0.35); font-size:0.7rem; padding:3px 10px;" title="Starter Plan (7 Days)"><i class="fas fa-bolt"></i> Starter (7d)</span>`;
+        } else if (pKey === 'pro' || (pName.includes('Pro') && !pName.includes('Pro+') && (pName.includes('30') || pName.includes('100')))) {
+          planBadgeHtml = `<span class="badge" style="background:rgba(232,58,89,0.18); color:#ff6b81; border:1px solid rgba(232,58,89,0.35); font-size:0.7rem; padding:3px 10px;" title="Pro Plan (30 Days)"><i class="fas fa-fire"></i> Pro (30d)</span>`;
+        } else if (pKey === 'pro_plus' || pKey === 'proplus' || pName.includes('Pro+') || pName.includes('100 Days')) {
+          planBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.2); color:#10b981; border:1px solid rgba(16,185,129,0.4); font-size:0.7rem; padding:3px 10px;" title="Pro+ Plan (100 Days)"><i class="fas fa-gem"></i> Pro+ (100d)</span>`;
         } else if (pKey === 'forever' || pKey === 'infinity' || pName.includes('Forever') || pName.includes('Lifetime') || pName.includes('Infinity')) {
           planBadgeHtml = `<span class="badge" style="background:rgba(255,184,0,0.22); color:var(--gold); border:1px solid rgba(255,184,0,0.45); font-size:0.7rem; padding:3px 10px;" title="Infinity Plan (Lifetime)"><i class="fas fa-crown"></i> Infinity</span>`;
         } else {
@@ -2341,26 +2341,39 @@
         payments.forEach(payment => {
           const tr = document.createElement('tr');
           const date = payment.createdAt ? new Date(payment.createdAt).toLocaleString() : '--';
-          const recipient = payment.websiteRecipientName || 'Unknown';
-          const eventType = payment.websiteEventType || 'Unknown';
+          const pName = (payment.planName || payment.plan || 'Pro').toUpperCase();
+          const pDays = payment.planDays ? (payment.planDays > 9000 ? 'Lifetime' : `${payment.planDays} Days`) : '30 Days';
+          const amount = payment.amount != null ? `${payment.currency || 'INR'} ${payment.amount}` : '--';
+          const customerInfo = payment.customerEmail ? `${payment.customerEmail}${payment.customerPhone && payment.customerPhone !== '9999999999' ? `<br><small style="color:var(--text-secondary);">${payment.customerPhone}</small>` : ''}` : '--';
+
+          let planBadge = `<span class="badge badge-purple">${pName}</span>`;
+          if (pName.includes('PLUS') || pName.includes('PRO+')) planBadge = `<span class="badge badge-cyan">PRO+</span>`;
+          else if (pName.includes('FOREVER') || pName.includes('INFINITY') || pName.includes('LIFE')) planBadge = `<span class="badge badge-gold">INFINITY</span>`;
+          else if (pName.includes('STARTER') || pName.includes('7')) planBadge = `<span class="badge badge-orange">STARTER</span>`;
+
+          const status = (payment.status || 'PAID').toUpperCase();
+          const statusBadge = status === 'PAID'
+            ? `<span class="badge badge-green"><i class="fas fa-check-circle"></i> PAID</span>`
+            : (status === 'FAILED' ? `<span class="badge badge-red">FAILED</span>` : `<span class="badge badge-orange">${status}</span>`);
 
           tr.innerHTML = `
             <td>${date}</td>
-            <td>${payment.orderId || '--'}</td>
-            <td>${payment.websiteId || '--'}</td>
+            <td><code>${payment.orderId || '--'}</code></td>
+            <td>${planBadge}</td>
+            <td><small>${pDays}</small></td>
+            <td><strong>${amount}</strong></td>
+            <td><span class="badge badge-purple">${payment.gateway || payment.paymentMethod || 'cashfree'}</span></td>
+            <td><small>${customerInfo}</small></td>
+            <td><a href="/generated/customize.html?view=${payment.websiteId}" target="_blank" style="color:var(--accent-cyan); font-size:12px;">${payment.websiteId || '--'}</a></td>
             <td><strong>${payment.slug || '--'}</strong></td>
-            <td>${payment.amount || '--'}</td>
-            <td>${payment.currency || '--'}</td>
-            <td>${payment.gateway || '--'}</td>
-            <td>${recipient}</td>
-            <td>${eventType}</td>
+            <td>${statusBadge}</td>
           `;
           paymentsTbody.appendChild(tr);
         });
 
         if (payments.length === 0) {
           const tr = document.createElement('tr');
-          tr.innerHTML = '<td colspan="9">No payments recorded yet</td>';
+          tr.innerHTML = '<td colspan="10" style="text-align:center; padding:20px; color:var(--text-secondary);">No payments recorded yet</td>';
           paymentsTbody.appendChild(tr);
         }
       }

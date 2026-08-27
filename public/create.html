@@ -1883,27 +1883,27 @@
 
               <!-- 4-tier pill switcher -->
               <div class="plan-switcher" id="planSwitcher">
-                <button class="plan-pill" data-price="29" data-days="30" data-label="30+ Days" data-plan="starter">
+                <button class="plan-pill" data-price="29" data-days="7" data-label="7 Days" data-plan="starter">
                   <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Starter</span>
-                  <span class="pill-period">30+ Days</span>
+                  <span class="pill-period">7 Days</span>
                   <span class="pill-price"></span>
                 </button>
 
-                <button class="plan-pill sel" data-price="49" data-days="100" data-label="100+ Days" data-plan="pro">
+                <button class="plan-pill sel" data-price="49" data-days="30" data-label="30 Days" data-plan="pro">
                   <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
                   <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro</span>
-                  <span class="pill-period">100+ Days</span>
+                  <span class="pill-period">30 Days</span>
                   <span class="pill-price"></span>
                 </button>
 
-                <button class="plan-pill" data-price="99" data-days="365" data-label="1 Year" data-plan="pro_plus">
+                <button class="plan-pill" data-price="99" data-days="100" data-label="100 Days" data-plan="pro_plus">
                   <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #10b981, #059669); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">BEST VALUE</span>
                   <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro+</span>
-                  <span class="pill-period">1 Year</span>
+                  <span class="pill-period">100 Days</span>
                   <span class="pill-price"></span>
                 </button>
 
-                <button class="plan-pill" data-price="199" data-days="99999" data-label="Lifetime" data-plan="forever">
+                <button class="plan-pill" data-price="299" data-days="99999" data-label="Lifetime" data-plan="forever">
                   <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Infinity</span>
                   <span class="pill-period">Lifetime</span>
                   <span class="pill-price"></span>
@@ -1980,6 +1980,20 @@
                     <div class="feat-exclusion-note" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
                       <i class="fas fa-lock"></i> (Requires Pro / Pro+ / Infinity)
                     </div>
+                  </div>
+                </li>
+
+                <li class="feat-item star" id="featVirtualHug" style="align-items: flex-start;">
+                  <i class="fas fa-check-circle fi-yes" style="color: #7b5df6; margin-top: 2px;"></i>
+                  <div style="flex: 1;">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                      <span>🤗 Virtual Hug with Rose Petal Heart Animation</span>
+                      <i class="fas fa-info-circle info-icon" data-tooltip="Send a warm virtual hug with glowing rose petals forming a heart!"></i>
+                    </div>
+                    <div class="feat-exclusion-note" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
+                      <i class="fas fa-lock"></i> (Requires Pro / Pro+ / Infinity)
+                    </div>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -3112,7 +3126,7 @@
             if (event === 'proposal') {
               const proposalFor = document.getElementById('proposalForSelect')?.value;
               const proposalMessages = {
-                'girlfriend': "CRITICAL: You are the USER proposing to make this person your GIRLFRIEND. Create a direct relationship proposal asking 'Will you be my girlfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
+'girlfriend': "CRITICAL: You are the USER proposing to make this person your GIRLFRIEND. Create a direct relationship proposal asking 'Will you be my girlfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
                 'boyfriend': "CRITICAL: You are the USER proposing to make this person your BOYFRIEND. Create a direct relationship proposal asking 'Will you be my boyfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
                 'wife': "CRITICAL: You are the USER proposing MARRIAGE to this person (to make them your WIFE). Create a direct marriage proposal asking 'Will you marry me?' or similar. Express deep love and desire to spend life together. This must be a marriage proposal FROM you TO them.",
                 'husband': "CRITICAL: You are the USER proposing MARRIAGE to this person (to make them your HUSBAND). Create a direct marriage proposal asking 'Will you marry me?' or similar. Express deep love and desire to spend life together. This must be a marriage proposal FROM you TO them.",
@@ -3270,8 +3284,6 @@
           // For festivals, use user name and create general wishes
           const userName = nameInput.value.trim();
           const festivalName = festivalInput.value.trim();
-          const emojis = getSimpleEmojis(mood);
-
           if (lang === 'hi') {
             return `${userName} द्वारा ${festivalName} के अवसर पर सभी अपनों को भेजने के लिए दिल को छू लेने वाली 3-4 सुंदर शुभकामनाओं की सूची बनाएं। मूड: ${mood}। संदेश सभी के साथ साझा करने योग्य होना चाहिए। ${userName} के रूप में लिखें। **शुभकामनाओं में "${userName}" का नाम स्वाभाविक रूप से शामिल करें।** बुलेट पॉइंट्स (•) का प्रयोग करें। भाषा अत्यंत सरल, स्वाभाविक और व्हाट्सएप संदेश की तरह सहज होनी चाहिए। इमोजी: ${emojis}। **केवल शुभकामनाओं की बुलेट सूची दें, कोई अतिरिक्त वाक्य या <think> टैग न लिखें।**`;
           } else {
@@ -3534,11 +3546,11 @@
           starterPrice = 29;
           proPrice = 49;
           proPlusPrice = 99;
-          foreverPrice = 199;
+          foreverPrice = 299;
         } else if (selectedCurrency === 'USD') {
           starterPrice = 0.99;
           proPrice = 1.99;
-          proPlusPrice = 3.99;
+          proPlusPrice = 3.49;
           foreverPrice = 6.99;
         } else if (selectedCurrency === 'GBP') {
           starterPrice = 0.99;
@@ -3548,33 +3560,33 @@
         } else if (selectedCurrency === 'CAD') {
           starterPrice = 1.49;
           proPrice = 2.49;
-          proPlusPrice = 4.99;
+          proPlusPrice = 4.49;
           foreverPrice = 8.99;
         } else if (selectedCurrency === 'AUD') {
           starterPrice = 1.49;
           proPrice = 2.99;
-          proPlusPrice = 5.99;
+          proPlusPrice = 4.99;
           foreverPrice = 9.99;
         } else if (selectedCurrency === 'AED') {
           starterPrice = 3.99;
           proPrice = 6.99;
-          proPlusPrice = 14.99;
-          foreverPrice = 25.99;
+          proPlusPrice = 12.99;
+          foreverPrice = 29.99;
         } else if (selectedCurrency === 'PKR') {
           starterPrice = 99;
           proPrice = 149;
           proPlusPrice = 299;
-          foreverPrice = 599;
+          foreverPrice = 799;
         } else if (selectedCurrency === 'EUR') {
           starterPrice = 0.99;
           proPrice = 1.99;
-          proPlusPrice = 3.99;
+          proPlusPrice = 3.49;
           foreverPrice = 6.99;
         } else {
           // Default international USD
           starterPrice = 0.99;
           proPrice = 1.99;
-          proPlusPrice = 3.99;
+          proPlusPrice = 3.49;
           foreverPrice = 6.99;
         }
 
@@ -3603,8 +3615,8 @@
         activePlan = {
           plan: 'pro',
           price: proPrice,
-          days: 100,
-          label: 'Pro (100+ Days)'
+          days: 30,
+          label: 'Pro (30 Days)'
         };
 
         // Update UI elements safely
@@ -3612,10 +3624,10 @@
         if (priceBigEl) priceBigEl.textContent = `${symbol}${activePlan.price}`;
 
         const pricePeriodEl = document.getElementById('pricePeriod');
-        if (pricePeriodEl) pricePeriodEl.textContent = `for 100+ Days`;
+        if (pricePeriodEl) pricePeriodEl.textContent = `for 30 Days`;
 
         const validityChipEl = document.getElementById('validityChip');
-        if (validityChipEl) validityChipEl.innerHTML = `<i class="fas fa-shield-alt"></i> Active 100+ Days · Ad-Free`;
+        if (validityChipEl) validityChipEl.innerHTML = `<i class="fas fa-shield-alt"></i> Active 30 Days · Ad-Free`;
 
         const unifiedBtnPriceEl = document.getElementById('unifiedBtnPrice');
         if (unifiedBtnPriceEl) unifiedBtnPriceEl.textContent = `${symbol}${activePlan.price}`;
@@ -3630,9 +3642,10 @@
       function updatePlanFeaturesUI(planKey) {
         const customUrlRow = document.getElementById('featCustomUrl');
         const virtualCakeRow = document.getElementById('featVirtualCake');
+        const virtualHugRow = document.getElementById('featVirtualHug');
         const prioritySupportRow = document.getElementById('featPrioritySupport');
 
-        // Priority Customer Support is included in ALL paid plans (Basic, Pro, Pro+, Infinity)
+        // Priority Customer Support is included in ALL paid plans (Starter, Pro, Pro+, Infinity)
         if (prioritySupportRow) {
           const icon = prioritySupportRow.querySelector('.fa-check-circle, .fa-times-circle');
           if (icon) icon.className = 'fas fa-check-circle fi-yes';
@@ -3641,7 +3654,7 @@
         }
 
         if (planKey === 'starter') {
-          // Basic Plan: Exclude Custom URL & Exclude Virtual Cake
+          // Starter Plan: Exclude Custom URL, Virtual Cake & Virtual Hug
           if (customUrlRow) {
             const icon = customUrlRow.querySelector('.fa-check-circle, .fa-times-circle');
             if (icon) icon.className = 'fas fa-times-circle fi-no';
@@ -3654,8 +3667,14 @@
             const note = virtualCakeRow.querySelector('.feat-exclusion-note');
             if (note) note.style.display = 'block';
           }
+          if (virtualHugRow) {
+            const icon = virtualHugRow.querySelector('.fa-check-circle, .fa-times-circle');
+            if (icon) icon.className = 'fas fa-times-circle fi-no';
+            const note = virtualHugRow.querySelector('.feat-exclusion-note');
+            if (note) note.style.display = 'block';
+          }
         } else {
-          // Pro, Pro+, and Infinity: INCLUDE Custom URL & Virtual Cake
+          // Pro, Pro+, and Infinity: INCLUDE Custom URL, Virtual Cake & Virtual Hug
           if (customUrlRow) {
             const icon = customUrlRow.querySelector('.fa-check-circle, .fa-times-circle');
             if (icon) icon.className = 'fas fa-check-circle fi-yes';
@@ -3666,6 +3685,12 @@
             const icon = virtualCakeRow.querySelector('.fa-check-circle, .fa-times-circle');
             if (icon) icon.className = 'fas fa-check-circle fi-yes';
             const note = virtualCakeRow.querySelector('.feat-exclusion-note');
+            if (note) note.style.display = 'none';
+          }
+          if (virtualHugRow) {
+            const icon = virtualHugRow.querySelector('.fa-check-circle, .fa-times-circle');
+            if (icon) icon.className = 'fas fa-check-circle fi-yes';
+            const note = virtualHugRow.querySelector('.feat-exclusion-note');
             if (note) note.style.display = 'none';
           }
         }
@@ -3707,12 +3732,12 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // Submit → go to plan selection
+      // Submit → go to preview.html
       document.getElementById('submitBtn').addEventListener('click', (e) => {
         e.preventDefault();
         if (!showFirstValidationError()) return;
         localStorage.setItem('userData', JSON.stringify(collectFormData()));
-        goToStep2();
+        window.location.href = 'generated/preview.html';
       });
 
       // Back button
@@ -3737,11 +3762,11 @@
             if (planKey === 'starter') calculatedPrice = 29;
             else if (planKey === 'pro') calculatedPrice = 49;
             else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 99;
-            else if (planKey === 'forever') calculatedPrice = 199;
+            else if (planKey === 'forever') calculatedPrice = 299;
           } else if (selectedCurrency === 'USD') {
             if (planKey === 'starter') calculatedPrice = 0.99;
             else if (planKey === 'pro') calculatedPrice = 1.99;
-            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.49;
             else if (planKey === 'forever') calculatedPrice = 6.99;
           } else if (selectedCurrency === 'GBP') {
             if (planKey === 'starter') calculatedPrice = 0.99;
@@ -3751,33 +3776,33 @@
           } else if (selectedCurrency === 'CAD') {
             if (planKey === 'starter') calculatedPrice = 1.49;
             else if (planKey === 'pro') calculatedPrice = 2.49;
-            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 4.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 4.49;
             else if (planKey === 'forever') calculatedPrice = 8.99;
           } else if (selectedCurrency === 'AUD') {
             if (planKey === 'starter') calculatedPrice = 1.49;
             else if (planKey === 'pro') calculatedPrice = 2.99;
-            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 5.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 4.99;
             else if (planKey === 'forever') calculatedPrice = 9.99;
           } else if (selectedCurrency === 'AED') {
             if (planKey === 'starter') calculatedPrice = 3.99;
             else if (planKey === 'pro') calculatedPrice = 6.99;
-            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 14.99;
-            else if (planKey === 'forever') calculatedPrice = 25.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 12.99;
+            else if (planKey === 'forever') calculatedPrice = 29.99;
           } else if (selectedCurrency === 'PKR') {
             if (planKey === 'starter') calculatedPrice = 99;
             else if (planKey === 'pro') calculatedPrice = 149;
             else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 299;
-            else if (planKey === 'forever') calculatedPrice = 599;
+            else if (planKey === 'forever') calculatedPrice = 799;
           } else if (selectedCurrency === 'EUR') {
             if (planKey === 'starter') calculatedPrice = 0.99;
             else if (planKey === 'pro') calculatedPrice = 1.99;
-            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.49;
             else if (planKey === 'forever') calculatedPrice = 6.99;
           } else {
             // Default international USD
             if (planKey === 'starter') calculatedPrice = 0.99;
             else if (planKey === 'pro') calculatedPrice = 1.99;
-            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.99;
+            else if (planKey === 'pro_plus' || planKey === 'proPlus') calculatedPrice = 3.49;
             else if (planKey === 'forever') calculatedPrice = 6.99;
           }
 
