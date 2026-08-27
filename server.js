@@ -1896,6 +1896,16 @@ app.post('/api/payment/paypal/webhook', async (req, res) => {
 });
 
 let cachedMagicBase64 = null;
+app.get(['/features.js', '/assets/features.js'], (req, res) => {
+  try {
+    res.set('Content-Type', 'application/javascript; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
+    res.sendFile(path.join(__dirname, 'features.js'));
+  } catch (err) {
+    res.status(404).send('// features not found');
+  }
+});
+
 app.get('/api/magic', (req, res) => {
   try {
     if (!cachedMagicBase64) {

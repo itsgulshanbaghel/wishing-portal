@@ -7345,7 +7345,7 @@
     <p class="greeter-cta-desc" data-en="Surprise your loved ones with a personalized website just like this one. No coding required!" data-hi="बिल्कुल इसी तरह की वेबसाइट से अपने प्रियजनों को सरप्राइज़ दें। कोई कोडिंग जरूरी नहीं!">Surprise your loved ones with a personalized website just like this one. No coding required!</p>
     <a href="/index.html" target="_blank" class="greeter-cta-btn" data-en="Press this red button to create your own website in minutes" data-hi="मिनटों में अपनी वेबसाइट बनाने के लिए यह लाल बटन दबाएं">Press this red button to create your own website in minutes</a>
 </div>
-   <script>
+   <scr` + `ipt>
 (function(){
   var urlLang = new URLSearchParams(window.location.search).get("lang");
   var lang = (urlLang==="hi"||urlLang==="en") ? urlLang : "${currentLang}";
@@ -7486,7 +7486,7 @@
           };
 
           const magicRuntime = `
-<script>
+<scr` + `ipt>
 (function(){
   try {
     const config = ${JSON.stringify(config).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
@@ -7503,10 +7503,23 @@
     const customData = new Map(config.customData || []);
     const userName = config.userName || 'Loved One';
 
+    function decodeMagic(raw) {
+      if (!raw) return "";
+      try {
+        return new TextDecoder('utf-8').decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0)));
+      } catch(e) {
+        try {
+          return decodeURIComponent(escape(atob(raw)));
+        } catch(e2) {
+          return atob(raw);
+        }
+      }
+    }
+
     // Ensure FEATURE_MAP is available before proceeding
     if (!window.FEATURE_MAP && magicRaw) {
       try {
-        const decoded = atob(magicRaw);
+        const decoded = decodeMagic(magicRaw);
         window.FEATURE_MAP = new Function('return ' + decoded)();
       } catch(e) {
         console.error("Failed to decode magicRaw:", e);
@@ -7773,29 +7786,31 @@
     };
     function initMagic() {
       isLocked = false;
-      if (magicRaw) {
+      if (magicRaw && !window.FEATURE_MAP) {
         try {
-          const decoded = atob(magicRaw);
+          const decoded = decodeMagic(magicRaw);
           window.FEATURE_MAP = new Function('return ' + decoded)();
           window._magicReady = true;
-          window.refreshAll();
         } catch(e) {
           console.error("Magic init failed", e);
-          // Fallback: try to load features from API
-          fetch((API_BASE || window.location.origin) + '/api/magic')
-            .then(r => r.json())
-            .then(data => {
-              try {
-                const decoded = atob(data.magic);
-                window.FEATURE_MAP = new Function('return ' + decoded)();
-                window._magicReady = true;
-                window.refreshAll();
-              } catch(e2) { console.error("Fallback magic init failed", e2); }
-            })
-            .catch(e2 => console.error("Fallback API failed", e2));
         }
+      }
+      if (window.FEATURE_MAP) {
+        window._magicReady = true;
+        window.refreshAll();
       } else {
-        console.warn('No magicRaw provided, features may not work');
+        // Fallback: try to load features from API or /features.js
+        fetch((window.APP_CONFIG?.API_BASE_URL || window.location.origin) + '/api/magic')
+          .then(r => r.json())
+          .then(data => {
+            try {
+              const decoded = decodeMagic(data.magic);
+              window.FEATURE_MAP = new Function('return ' + decoded)();
+              window._magicReady = true;
+              window.refreshAll();
+            } catch(e2) { console.error("Fallback magic init failed", e2); }
+          })
+          .catch(e2 => console.error("Fallback API failed", e2));
       }
     }
     // Ensure features are applied immediately to prevent content visibility before lock/curtain
@@ -8237,18 +8252,116 @@
             isPremium: isPremium
           };
 
+          // Temporarily disable active features on doc to get clean DOM snapshot
+          for (let [id, active] of activeFeatureStates.entries()) {
+            if (active && FEATURE_MAP[id] && FEATURE_MAP[id].disable) {
+              try { FEATURE_MAP[id].disable(doc); } catch (e) {}
+            }
+          }
+
           const docClone = doc.cloneNode(true);
           const editorArtifacts = docClone.querySelectorAll('.edit-overlay, .editor-ui, [data-editor-element]');
           editorArtifacts.forEach(el => el.remove());
 
-          const rawMagic = window._rawMagicScript || '';
+          // Re-enable features in preview iframe
+          debouncedRefreshAll();
+
+          const magicRaw = window._magicRaw || '';
           const magicRuntime = `
-<script>
+<scr` + `ipt src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></scr` + `ipt>
+<scr` + `ipt src="/features.js"></scr` + `ipt>
+<scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
-  window._magicConfig = ${JSON.stringify(config)};
-  window._rawMagic = "${rawMagic.replace(/"/g, '\\"')}";
-  window._isStandaloneSharedView = true;
+  const config = ${JSON.stringify(config).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
+  const magicRaw = "${magicRaw}";
+  window._magicConfig = config;
+  window.__IS_GENERATED_PAGE__ = true;
+  if (config && config.userData) {
+    try {
+      localStorage.setItem('userData', JSON.stringify(config.userData));
+      sessionStorage.setItem('userData', JSON.stringify(config.userData));
+    } catch(e) {}
+  }
+  if (config && config.userName) {
+    try {
+      localStorage.setItem('userDataName', config.userName);
+      sessionStorage.setItem('userDataName', config.userName);
+    } catch(e) {}
+  }
+
+  function decodeMagic(raw) {
+    if (!raw) return "";
+    try {
+      return new TextDecoder('utf-8').decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0)));
+    } catch(e) {
+      try {
+        return decodeURIComponent(escape(atob(raw)));
+      } catch(e2) {
+        return atob(raw);
+      }
+    }
+  }
+
+  function initGeneratedPage() {
+    const activeFeatures = new Map(config.activeFeatures || []);
+    const customData = new Map(config.customData || []);
+    const userName = config.userName || 'Loved One';
+
+    function runAll() {
+      if (!window.FEATURE_MAP) return;
+      window._magicReady = true;
+
+      for (const [id, active] of activeFeatures.entries()) {
+        if (active && window.FEATURE_MAP[id] && typeof window.FEATURE_MAP[id].enable === 'function') {
+          try {
+            const data = customData.get(id) || {};
+            if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
+              window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
+            } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
+              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
+            } else if (id === "magicMusic" || id === "voiceNote") {
+              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
+            } else if (id === "addMusicSection") {
+              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+            } else {
+              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "");
+            }
+          } catch(err) {
+            console.error("Error activating feature " + id, err);
+          }
+        }
+      }
+    }
+
+    if (window.FEATURE_MAP) {
+      runAll();
+    } else if (magicRaw) {
+      try {
+        const decoded = decodeMagic(magicRaw);
+        window.FEATURE_MAP = new Function('return ' + decoded)();
+        runAll();
+      } catch(e) {
+        fetch('/api/magic').then(r => r.json()).then(data => {
+          const decoded = decodeMagic(data.magic);
+          window.FEATURE_MAP = new Function('return ' + decoded)();
+          runAll();
+        }).catch(() => {});
+      }
+    } else {
+      fetch('/api/magic').then(r => r.json()).then(data => {
+        const decoded = decodeMagic(data.magic);
+        window.FEATURE_MAP = new Function('return ' + decoded)();
+        runAll();
+      }).catch(() => {});
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGeneratedPage);
+  } else {
+    setTimeout(initGeneratedPage, 0);
+  }
 })();
 </` + `script>
 `;
@@ -8901,21 +9014,91 @@
 
             // Inject early bootstrap runtime into storedHtml before document.write
             const bootstrapScript = `
-<script>
+<scr` + `ipt src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></scr` + `ipt>
+<scr` + `ipt src="/features.js"></scr` + `ipt>
+<scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
-  window._magicConfig = ${JSON.stringify(cfgObj).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
-  if (window._magicConfig && window._magicConfig.userData) {
+  const config = ${JSON.stringify(cfgObj).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
+  window._magicConfig = config;
+  window.__IS_GENERATED_PAGE__ = true;
+  if (config && config.userData) {
     try {
-      localStorage.setItem('userData', JSON.stringify(window._magicConfig.userData));
-      sessionStorage.setItem('userData', JSON.stringify(window._magicConfig.userData));
+      localStorage.setItem('userData', JSON.stringify(config.userData));
+      sessionStorage.setItem('userData', JSON.stringify(config.userData));
     } catch(e) {}
   }
-  if (window._magicConfig && window._magicConfig.userName) {
+  if (config && config.userName) {
     try {
-      localStorage.setItem('userDataName', window._magicConfig.userName);
-      sessionStorage.setItem('userDataName', window._magicConfig.userName);
+      localStorage.setItem('userDataName', config.userName);
+      sessionStorage.setItem('userDataName', config.userName);
     } catch(e) {}
+  }
+
+  function decodeMagic(raw) {
+    if (!raw) return "";
+    try {
+      return new TextDecoder('utf-8').decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0)));
+    } catch(e) {
+      try {
+        return decodeURIComponent(escape(atob(raw)));
+      } catch(e2) {
+        return atob(raw);
+      }
+    }
+  }
+
+  function initSharedPageFeatures() {
+    const activeFeatures = new Map(config.activeFeatures || []);
+    const customData = new Map(config.customData || []);
+    const uData = config.userData || {};
+    const userName = config.userName || uData.recipientName || uData.name || 'Loved One';
+
+    function executeAllFeatures() {
+      if (!window.FEATURE_MAP) return;
+      window._magicReady = true;
+
+      for (const [id, active] of activeFeatures.entries()) {
+        if (active && window.FEATURE_MAP[id] && typeof window.FEATURE_MAP[id].enable === 'function') {
+          try {
+            const data = customData.get(id) || {};
+            if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
+              window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
+            } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
+              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
+            } else if (id === "magicMusic" || id === "voiceNote") {
+              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
+            } else if (id === "addMusicSection") {
+              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+            } else {
+              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "");
+            }
+          } catch(err) {
+            console.error("Error activating feature " + id, err);
+          }
+        }
+      }
+    }
+
+    if (window.FEATURE_MAP) {
+      executeAllFeatures();
+    } else {
+      fetch('/api/magic').then(r => r.json()).then(data => {
+        try {
+          const decoded = decodeMagic(data.magic);
+          window.FEATURE_MAP = new Function('return ' + decoded)();
+          executeAllFeatures();
+        } catch(e) {
+          console.error("Fallback feature map error:", e);
+        }
+      }).catch(() => {});
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSharedPageFeatures);
+  } else {
+    setTimeout(initSharedPageFeatures, 0);
   }
 })();
 </` + `script>

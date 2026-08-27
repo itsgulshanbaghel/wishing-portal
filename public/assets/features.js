@@ -1,4 +1,264 @@
-({
+(function() {
+    // Helper to ensure confetti library is loaded
+    function ensureConfetti(cb) {
+        const cfn = (typeof window !== 'undefined' && (window.confetti || window.canvasConfetti));
+        if (cfn) {
+            if (cb) cb(cfn);
+            return;
+        }
+        if (typeof document !== 'undefined') {
+            let sc = document.getElementById('greeter-canvas-confetti');
+            if (!sc) {
+                sc = document.createElement('script');
+                sc.id = 'greeter-canvas-confetti';
+                sc.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
+                sc.onload = () => {
+                    const c = window.confetti || window.canvasConfetti;
+                    if (cb && c) cb(c);
+                };
+                document.head.appendChild(sc);
+            } else if (cb) {
+                sc.addEventListener('load', () => {
+                    const c = window.confetti || window.canvasConfetti;
+                    if (c) cb(c);
+                });
+            }
+        }
+    }
+
+    // Global runner for Virtual Cake blowout and cutting
+    function triggerBlowAndCutCake(sectionEl) {
+        const d = typeof document !== 'undefined' ? document : null;
+        const w = typeof window !== 'undefined' ? window : null;
+        if (!d) return;
+        const section = sectionEl || d.getElementById('magic-virtual-cake-section');
+        if (!section) return;
+
+        const btn = section.querySelector('#vc-blow-btn');
+        const stage = section.querySelector('#vc-cake-stage');
+        const knife = section.querySelector('#vc-knife-wrap');
+        const cutLine = section.querySelector('#vc-cut-line');
+        const card = section.querySelector('#vc-wish-card');
+        const slicesWrap = section.querySelector('#vc-slices-wrapper');
+        const audio = section.querySelector('#vc-audio');
+
+        if (section.dataset.cakeDone === 'true' || (btn && btn.classList.contains('done'))) return;
+        section.dataset.cakeDone = 'true';
+
+        ensureConfetti();
+
+        /* PHASE 1: Light off / blow out ALL 5 candles FIRST (0ms - 450ms) */
+        [0, 1, 2, 3, 4].forEach((i, idx) => {
+            setTimeout(() => {
+                const flame = section.querySelector(`#vc-flame-${i}`);
+                const smoke = section.querySelector(`#vc-smoke-${i}`);
+                if (flame) flame.classList.add('out');
+                if (smoke) smoke.classList.add('puffing');
+            }, idx * 90);
+        });
+
+        /* PHASE 2: Knife Slicing (at 600ms) */
+        setTimeout(() => {
+            if (knife) knife.classList.add('slicing');
+            if (cutLine) cutLine.classList.add('slicing');
+        }, 600);
+
+        /* PHASE 3: Knife reaches bottom -> Split cake halves & play sound (at 1250ms) */
+        setTimeout(() => {
+            const midCandle = section.querySelector('#vc-candle-2');
+            if (midCandle) {
+                midCandle.style.opacity = '0';
+                midCandle.style.transform = 'scale(0) translateY(-20px)';
+            }
+            if (stage) stage.classList.add('is-cut');
+            if (cutLine) cutLine.classList.add('flash');
+            if (knife) knife.style.opacity = '0';
+
+            if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
+        }, 1250);
+
+        /* PHASE 4: Confetti bursts, Wish Card & Slices Showcase reveal (1350ms - 1700ms) */
+        ensureConfetti((cfn) => {
+            if (!cfn) return;
+            const burst = (opts) => cfn({ zIndex: 99999, ...opts });
+            setTimeout(() => burst({ particleCount: 160, spread: 100, origin: { x: 0.5, y: 0.55 } }), 1350);
+            setTimeout(() => burst({ particleCount: 110, spread: 85, origin: { x: 0.25, y: 0.5 }, angle: 60 }), 1550);
+            setTimeout(() => burst({ particleCount: 110, spread: 85, origin: { x: 0.75, y: 0.5 }, angle: 120 }), 1700);
+            setTimeout(() => burst({ particleCount: 220, spread: 130, origin: { x: 0.5, y: 0.4 },
+                colors: ['#FFD700','#FF9100','#FF4D8F','#7B5DF6','#ffffff'] }), 1900);
+        });
+
+        setTimeout(() => {
+            if (card) card.style.display = 'block';
+            if (slicesWrap) slicesWrap.style.display = 'block';
+            if (btn) {
+                btn.classList.add('done');
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Wish Granted &amp; Cake Cut!</span>';
+            }
+        }, 1600);
+    }
+
+    // Global runner for Cake Slice Tapping
+    function triggerCakeSliceTap(cardEl) {
+        if (!cardEl) return;
+        const toast = cardEl.querySelector('.vc-slice-toast');
+        if (toast) {
+            toast.classList.remove('pop');
+            void toast.offsetWidth;
+            toast.classList.add('pop');
+        }
+        ensureConfetti((cfn) => {
+            if (!cfn) return;
+            const rect = cardEl.getBoundingClientRect();
+            const winW = (typeof window !== 'undefined' ? window.innerWidth : 360) || 360;
+            const winH = (typeof window !== 'undefined' ? window.innerHeight : 640) || 640;
+            const x = (rect.left + rect.width / 2) / winW;
+            const y = (rect.top + rect.height / 2) / winH;
+            cfn({ particleCount: 35, spread: 60, origin: { x, y: Math.max(0.2, y) }, zIndex: 99999 });
+        });
+    }
+
+    // Global runner for Virtual Hug Animation
+    function triggerVirtualHug(sectionEl) {
+        const d = typeof document !== 'undefined' ? document : null;
+        const w = typeof window !== 'undefined' ? window : null;
+        if (!d) return;
+        const section = sectionEl || d.getElementById('magic-virtual-hug-section');
+
+        let overlay = d.getElementById('magic-vh-overlay');
+        if (!overlay) {
+            overlay = d.createElement('div');
+            overlay.id = 'magic-vh-overlay';
+            overlay.className = 'vh-heart-overlay';
+            d.body.appendChild(overlay);
+        }
+
+        const btn = section ? section.querySelector('#vhBtn') : d.getElementById('vhBtn');
+        if (section && section.dataset.hugAnimating === 'true') return;
+        if (section) section.dataset.hugAnimating = 'true';
+
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-heart" style="color: #fff; animation: vhHugPulse 1s infinite;"></i> <span id="vhBtnText">Hug Received with Love! 💖</span>';
+        }
+
+        const petalCount = 50;
+        const heartPath = [];
+        const winWidth = (w && w.innerWidth) || (d.documentElement && d.documentElement.clientWidth) || 360;
+        const winHeight = (w && w.innerHeight) || (d.documentElement && d.documentElement.clientHeight) || 640;
+        const centerX = winWidth / 2;
+        const centerY = winHeight / 2;
+        const scale = Math.min(centerX, centerY) * 0.75;
+
+        overlay.classList.add('show');
+
+        const hugEmoji = d.createElement('div');
+        hugEmoji.innerHTML = '&#129303;';
+        const isMobile = winWidth <= 480;
+        const emojiSize = isMobile ? '90px' : '120px';
+        hugEmoji.style.cssText = `
+            position: fixed;
+            font-size: ${emojiSize};
+            z-index: 10001;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.35));
+            left: ${centerX}px;
+            top: ${centerY}px;
+        `;
+        d.body.appendChild(hugEmoji);
+
+        for (let i = 0; i < petalCount; i++) {
+            const t = (i / petalCount) * Math.PI * 2;
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+
+            heartPath.push({
+                x: centerX + (x / 16) * scale,
+                y: centerY + (y / 16) * scale,
+                delay: i * 30
+            });
+        }
+
+        heartPath.forEach((point, index) => {
+            const petal = d.createElement('div');
+            petal.style.cssText = `
+                position: fixed;
+                width: 22px;
+                height: 22px;
+                background-image: url('../assets/rose petal.png'), url('/assets/rose petal.png');
+                background-size: contain;
+                background-repeat: no-repeat;
+                pointer-events: none;
+                z-index: 10000;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0) rotate(${Math.random() * 360}deg);
+                transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                left: ${Math.random() < 0.5 ? -50 : winWidth + 50}px;
+                top: ${Math.random() * winHeight}px;
+            `;
+
+            d.body.appendChild(petal);
+
+            setTimeout(() => {
+                petal.style.opacity = '1';
+                petal.style.left = point.x + 'px';
+                petal.style.top = point.y + 'px';
+                petal.style.transform = `translate(-50%, -50%) scale(1) rotate(${Math.random() * 360}deg)`;
+            }, point.delay);
+
+            setTimeout(() => {
+                petal.style.opacity = '0';
+                petal.style.transform = `translate(-50%, -50%) scale(0) rotate(${Math.random() * 360}deg)`;
+            }, (petalCount * 30) + 3000);
+
+            setTimeout(() => {
+                petal.remove();
+            }, (petalCount * 30) + 4000);
+        });
+
+        setTimeout(() => {
+            hugEmoji.style.opacity = '1';
+            hugEmoji.style.transform = 'translate(-50%, -50%) scale(1)';
+        }, (petalCount * 30) + 200);
+
+        let pulseCount = 0;
+        const pulseInterval = setInterval(() => {
+            if (pulseCount < 6) {
+                hugEmoji.style.transform = `translate(-50%, -50%) scale(${1.1 + (pulseCount % 2) * 0.1})`;
+                pulseCount++;
+            } else {
+                clearInterval(pulseInterval);
+            }
+        }, 500);
+
+        ensureConfetti((cfn) => {
+            if (!cfn) return;
+            setTimeout(() => {
+                cfn({ particleCount: 80, spread: 80, origin: { x: 0.5, y: 0.5 }, colors: ['#ff69b4', '#ff1493', '#ff85a2', '#ffffff'] });
+            }, (petalCount * 30) + 400);
+        });
+
+        setTimeout(() => {
+            hugEmoji.style.opacity = '0';
+            hugEmoji.style.transform = 'translate(-50%, -50%) scale(0)';
+        }, (petalCount * 30) + 2800);
+
+        setTimeout(() => {
+            hugEmoji.remove();
+            overlay.classList.remove('show');
+            if (section) section.dataset.hugAnimating = 'false';
+        }, (petalCount * 30) + 3800);
+    }
+
+    if (typeof window !== 'undefined') {
+        window.triggerBlowAndCutCake = triggerBlowAndCutCake;
+        window.triggerCakeSliceTap = triggerCakeSliceTap;
+        window.triggerVirtualHug = triggerVirtualHug;
+    }
+
+    const featureMap = {
     lock: {
         enable(d, w, userName, customText) {
             if (d.getElementById("lock-overlay")) return {};
@@ -2150,7 +2410,8 @@
     },
     virtualCake: {
         enable(d, w, userName, customText) {
-            if (d.getElementById('magic-virtual-cake-section')) return {};
+            const existingCake = d.getElementById('magic-virtual-cake-section');
+            if (existingCake) existingCake.remove();
 
             if (!d.querySelector('meta[charset]')) {
                 const meta = d.createElement('meta');
@@ -3055,7 +3316,8 @@
 
     virtualHug: {
         enable(d, w, userName, customText) {
-            if (d.getElementById('magic-virtual-hug-section')) return {};
+            const existingHug = d.getElementById('magic-virtual-hug-section');
+            if (existingHug) existingHug.remove();
 
             // Ensure fonts
             if (!d.getElementById('magic-virtual-hug-fonts')) {
@@ -3363,7 +3625,56 @@
             d?.getElementById('magic-vh-overlay')?.remove();
         }
     }
+};
 
-})
+    // Global Event Delegation: Guarantees 100% button interactivity on generated & shared websites
+    if (typeof document !== 'undefined') {
+        const handleGlobalInteraction = function(e) {
+            const target = e.target;
+            if (!target) return;
+
+            // 1. Virtual Cake: "Blow Candles & Cut Cake!" Button or Cake Stage
+            const blowBtn = target.closest ? (target.closest('#vc-blow-btn') || target.closest('.vc-btn')) : null;
+            const cakeStage = target.closest ? target.closest('#vc-cake-stage') : null;
+            if (blowBtn || cakeStage) {
+                const section = (blowBtn || cakeStage).closest('#magic-virtual-cake-section') || document.getElementById('magic-virtual-cake-section');
+                if (section) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    triggerBlowAndCutCake(section);
+                    return;
+                }
+            }
+
+            // 2. Interactive Cake Slice Tapping
+            const sliceCard = target.closest ? target.closest('.vc-slice-card') : null;
+            if (sliceCard) {
+                e.stopPropagation();
+                triggerCakeSliceTap(sliceCard);
+                return;
+            }
+
+            // 3. Virtual Hug: "Hug For You 🤗" Button
+            const hugBtn = target.closest ? (target.closest('#vhBtn') || target.closest('.vh-btn')) : null;
+            if (hugBtn) {
+                const section = hugBtn.closest('#magic-virtual-hug-section') || document.getElementById('magic-virtual-hug-section');
+                e.preventDefault();
+                e.stopPropagation();
+                triggerVirtualHug(section || document);
+                return;
+            }
+        };
+
+        // Attach capture-phase listener to catch clicks anywhere in DOM
+        document.addEventListener('click', handleGlobalInteraction, true);
+    }
+
+    if (typeof window !== 'undefined') {
+        window.FEATURE_MAP = featureMap;
+    }
+
+    return featureMap;
+})();
+
 
 
