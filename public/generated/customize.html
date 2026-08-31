@@ -5710,11 +5710,13 @@
           }
         };
         FEATURE_MAP.addTextBox = FEATURE_MAP.resizableText;
-        // Set default iframe src to share.html if not already set
+        // Set default iframe src to template HTML if not already set
         const frame = document.getElementById('frame');
-        if (!frame.src) {
+        if (!frame.src || frame.src.includes('share.html')) {
           isFrameLoaded = false;
-          frame.src = './share.html';
+          const selectedTp = localStorage.getItem('selectedTemplate') || 'birthday1';
+          const cleanTp = selectedTp.replace(/^\/?templates\//, '').replace(/\.html$/, '');
+          frame.src = `/templates/${cleanTp}.html?v=${Date.now()}&mode=edit&lang=${localStorage.getItem('greeter_lang') || 'en'}`;
         }
       }).catch(e => console.error("Magic API error", e));
 
@@ -8230,6 +8232,10 @@
         try {
           const doc = getIframeDocument();
           if (!doc) throw new Error('Preview document not available');
+          const docUrl = doc.location ? doc.location.href : '';
+          if (docUrl.includes('share.html') || (doc.body && doc.body.innerHTML.includes('Your Website is Ready'))) {
+            throw new Error('Preview iframe is showing share page instead of template');
+          }
 
           const config = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
@@ -8987,21 +8993,30 @@
           frame.style.width = '100vw';
         }
 
-        function applySharedView(storedHtml, storedConfig) {
+        async function applySharedView(storedHtml, storedConfig) {
+          let cfgObj = {};
+          try {
+            cfgObj = (typeof storedConfig === 'string') ? JSON.parse(storedConfig || '{}') : (storedConfig || {});
+          } catch(e) {}
+
+          const isCorruptShareHtml = typeof storedHtml === 'string' && (storedHtml.includes('Your Website is Ready') || storedHtml.includes('share.html') || storedHtml.includes('unpaidLockOverlay'));
+
+          if (isCorruptShareHtml || !storedHtml) {
+            console.warn('[applySharedView] Stored HTML contains share UI artifact. Auto-recovering template...');
+            const templateName = cfgObj.template || cfgObj.templateName || localStorage.getItem('selectedTemplate') || 'birthday1';
+            const cleanTp = String(templateName).replace(/^\/?templates\//, '').replace(/\.html$/, '');
+            try {
+              const tpRes = await fetch(`/templates/${cleanTp}.html`);
+              if (tpRes.ok) {
+                storedHtml = await tpRes.text();
+              }
+            } catch(e) {
+              console.error('Template recovery fetch failed:', e);
+            }
+          }
+
           if (!storedHtml) {
             document.body.innerHTML = '<div style="text-align:center; margin-top:15vh; font-family:Inter,sans-serif;"><h1 style="font-size:clamp(2rem,5vw,3rem); font-weight:700; margin-bottom:16px;">❌ Invalid or expired link</h1><p style="margin-top:12px; color:#666; font-size:clamp(1rem,2.5vw,1.15rem); max-width:560px; margin:0 auto 30px; line-height:1.7;">The magic has faded. Please ask the sender for a new link.</p><button id="createNowBtn" style="margin-top:20px; padding:16px 40px; background:linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); color:white; border:none; border-radius:50px; font-size:18px; font-weight:700; cursor:pointer; font-family:Inter,sans-serif; box-shadow:0 8px 25px rgba(123,93,246,0.4); transition:all 0.3s ease; text-transform:uppercase; letter-spacing:1px; position:relative; overflow:hidden;"><span style="position:relative; z-index:1;">✨ Create Now ✨</span></button><div class="support-section" style="padding: 40px 24px 20px; display: flex; justify-content: center;"><div class="support-card" style="background:rgba(255,255,255,0.75); backdrop-filter:blur(20px); border:1px solid rgba(0,0,0,0.05); border-radius:32px; padding:48px 40px; max-width:720px; width:100%; box-shadow:0 25px 40px -12px rgba(0,0,0,0.12); text-align:center; position:relative; overflow:hidden;"><div class="support-message" style="font-size:clamp(1rem,2.5vw,1.15rem); color:#4a3b66; line-height:1.7; max-width:560px; margin:0 auto 36px; position:relative; z-index:1;">If You Are Facing Any Issue On Our website Contact Us --</div><div class="support-buttons" style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; position:relative; z-index:1;"><a href="https://t.me/TheGreeter" target="_blank" style="display:inline-flex; align-items:center; gap:14px; padding:16px 28px; border-radius:20px; text-decoration:none; font-weight:600; transition:all 0.3s; border:1px solid transparent; min-width:220px; justify-content:center; background:rgba(0,136,204,0.1); border-color:rgba(0,136,204,0.25); color:#0088cc;"><span style="width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; color:white; background:#0088cc; flex-shrink:0;"><i class="fab fa-telegram-plane"></i></span><span style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;"><span style="font-size:0.85rem; font-weight:500; opacity:0.9;">Telegram</span><span style="font-size:1rem; font-weight:700; letter-spacing:-0.02em;">@TheGreeter</span></span></a><a href="https://instagram.com/thegreeter.in" target="_blank" style="display:inline-flex; align-items:center; gap:14px; padding:16px 28px; border-radius:20px; text-decoration:none; font-weight:600; transition:all 0.3s; border:1px solid transparent; min-width:220px; justify-content:center; background:rgba(225,48,108,0.1); border-color:rgba(225,48,108,0.25); color:#e1306c;"><span style="width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; color:white; background:radial-gradient(circle at 30% 110%, #ffdb70, #e4405f, #833ab4); flex-shrink:0;"><i class="fab fa-instagram"></i></span><span style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;"><span style="font-size:0.85rem; font-weight:500; opacity:0.9;">Instagram</span><span style="font-size:1rem; font-weight:700; letter-spacing:-0.02em;">@thegreeter.in</span></span></a><a href="mailto:greeterindia@gmail.com" target="_blank" style="display:inline-flex; align-items:center; gap:14px; padding:16px 28px; border-radius:20px; text-decoration:none; font-weight:600; transition:all 0.3s; border:1px solid transparent; min-width:220px; justify-content:center; background:rgba(123,93,246,0.1); border-color:rgba(123,93,246,0.25); color:#7b5df6;"><span style="width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; color:white; background:#7b5df6; flex-shrink:0;"><i class="fas fa-envelope"></i></span><span style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;"><span style="font-size:0.85rem; font-weight:500; opacity:0.9;">Email</span><span style="font-size:1rem; font-weight:700; letter-spacing:-0.02em;">greeterindia@gmail.com</span></span></a></div></div></div>';
-            const createNowBtn = document.getElementById('createNowBtn');
-            createNowBtn.addEventListener('click', () => {
-              window.location.href = '/';
-            });
-            createNowBtn.addEventListener('mouseenter', () => {
-              createNowBtn.style.transform = 'translateY(-3px) scale(1.05)';
-              createNowBtn.style.boxShadow = '0 12px 35px rgba(123,93,246,0.6)';
-            });
-            createNowBtn.addEventListener('mouseleave', () => {
-              createNowBtn.style.transform = 'translateY(0) scale(1)';
-              createNowBtn.style.boxShadow = '0 8px 25px rgba(123,93,246,0.4)';
-            });
             return;
           }
 
@@ -9060,7 +9075,7 @@
 <scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
-  const config = ${JSON.stringify(cfgObj).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
+  const config = ${JSON.stringify(cfgObj).replace(/`/g, '\\`').replace(/\${/g, '\\\${')};
   window._magicConfig = config;
   window.__IS_GENERATED_PAGE__ = true;
   if (config && config.userData) {
@@ -9190,11 +9205,12 @@
         }
 
         const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : window.location.origin;
 
         // Try server first, fall back to sessionStorage
-        fetch((API_BASE || window.location.origin) + '/api/config/' + encodeURIComponent(viewId))
+        fetch(apiBaseUrl + '/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
-          .then(data => {
+          .then(async data => {
             const urlParams = new URLSearchParams(window.location.search);
             const isPaidView = isLocalHost || urlParams.get('action') === 'payment-success' || (data && (data.isPremium || (data.metadata && (data.metadata.isPremium || data.metadata.paymentStatus === 'paid'))));
 
@@ -9205,16 +9221,16 @@
               sessionStorage.setItem(`pro_plan_${viewId}`, 'true');
               const plan = (data && (data.plan || (data.metadata && data.metadata.plan))) || 'pro';
               sessionStorage.setItem(`user_plan_${viewId}`, plan);
-              applySharedView(data.html, data.config);
+              await applySharedView(data.html, data.config);
             } else {
               renderUnpaidLockOverlay(viewId);
             }
           })
-          .catch(() => {
+          .catch(async () => {
             if (isLocalHost) {
               const storedHtml = localStorage.getItem('final_magic_' + viewId) || sessionStorage.getItem('final_magic_' + viewId);
               const storedConfig = localStorage.getItem('magic_config_' + viewId) || sessionStorage.getItem('magic_config_' + viewId);
-              applySharedView(storedHtml, storedConfig);
+              await applySharedView(storedHtml, storedConfig);
             } else {
               renderUnpaidLockOverlay(viewId);
             }
