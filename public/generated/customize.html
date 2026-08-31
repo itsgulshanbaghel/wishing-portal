@@ -8573,17 +8573,40 @@
             }, 1200);
           } else {
             pollCount++;
-            if (pollCount < 30) {
+            if (pollCount < 5) {
               setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 2000);
             } else {
               const overlay = document.getElementById('paymentVerificationOverlay');
               if (overlay) overlay.style.display = 'none';
-              alert('Payment confirmation is taking longer than usual. If amount was deducted, your website will be upgraded shortly.');
+              const targetId = targetWebsiteId || new URLSearchParams(window.location.search).get('view') || new URLSearchParams(window.location.search).get('restore') || '';
+              const cleanUrl = new URL(window.location);
+              cleanUrl.searchParams.delete('action');
+              cleanUrl.searchParams.delete('orderId');
+              cleanUrl.searchParams.delete('view');
+              if (targetId) cleanUrl.searchParams.set('restore', targetId);
+              cleanUrl.searchParams.set('payment', 'cancelled');
+              window.history.replaceState({}, '', cleanUrl);
+              alert('Payment Notice: Checkout was not completed. Your website draft is safely saved. Complete payment whenever you are ready to publish and activate your share link!');
             }
           }
         } catch (e) {
           console.error('Payment status check error:', e);
-          setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 3000);
+          pollCount++;
+          if (pollCount < 5) {
+            setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 3000);
+          } else {
+            const overlay = document.getElementById('paymentVerificationOverlay');
+            if (overlay) overlay.style.display = 'none';
+            const targetId = targetWebsiteId || new URLSearchParams(window.location.search).get('view') || '';
+            const cleanUrl = new URL(window.location);
+            cleanUrl.searchParams.delete('action');
+            cleanUrl.searchParams.delete('orderId');
+            cleanUrl.searchParams.delete('view');
+            if (targetId) cleanUrl.searchParams.set('restore', targetId);
+            cleanUrl.searchParams.set('payment', 'cancelled');
+            window.history.replaceState({}, '', cleanUrl);
+            alert('Payment Notice: Checkout was not completed. Your website draft is safely saved.');
+          }
         }
       }
 
@@ -8608,6 +8631,10 @@
           }
           overlay.style.display = 'flex';
           pollPaymentStatus(orderId, viewId);
+        } else if (urlParams.get('payment') === 'cancelled') {
+          setTimeout(() => {
+            alert('Payment Notice: Checkout was cancelled. Your website draft is safely saved. Complete payment whenever you are ready to publish and activate your share link!');
+          }, 600);
         }
       }
 

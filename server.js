@@ -1372,7 +1372,7 @@ app.post('/api/payment/create-order', async (req, res) => {
     if (effectiveGateway === 'paypal') {
       try {
         const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId=${orderId}&view=${websiteId}`;
-        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?view=${websiteId}`;
+        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?restore=${websiteId}&payment=cancelled`;
 
         console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${targetCurrency}`);
         const paypalOrder = await createPayPalOrder(paypalAmount, targetCurrency, returnUrl, cancelUrl);
