@@ -1116,10 +1116,11 @@
         if (!createdAt || createdAt >= cutoff) return false;
       }
       if (tierVal === 'premium' && !w.isPremium) return false;
-      if (tierVal === 'free' && w.isPremium) return false;
-      if (tierVal === 'starter' && !(w.plan === 'starter' || (w.planName && (w.planName.includes('Starter') || w.planName.includes('30'))))) return false;
-      if (tierVal === 'pro' && !(w.plan === 'pro' || (w.planName && (w.planName.includes('Pro') && !w.planName.includes('Pro+') && w.planName.includes('100'))))) return false;
-      if (tierVal === 'pro_plus' && !(w.plan === 'pro_plus' || w.plan === 'proplus' || (w.planName && (w.planName.includes('Pro+') || w.planName.includes('1 Year'))))) return false;
+      if (tierVal === 'pending' && (!w.isPendingPayment && w.paymentStatus !== 'pending')) return false;
+      if (tierVal === 'free' && (w.isPremium || w.isPendingPayment)) return false;
+      if (tierVal === 'starter' && !(w.plan === 'starter' || (w.planName && (w.planName.includes('Starter') || w.planName.includes('7'))))) return false;
+      if (tierVal === 'pro' && !(w.plan === 'pro' || (w.planName && (w.planName.includes('Pro') && !w.planName.includes('Pro+') && (w.planName.includes('30') || w.planName.includes('100')))))) return false;
+      if (tierVal === 'pro_plus' && !(w.plan === 'pro_plus' || w.plan === 'proplus' || (w.planName && (w.planName.includes('Pro+') || w.planName.includes('100'))))) return false;
       if (tierVal === 'forever' && !(w.plan === 'forever' || w.plan === 'infinity' || (w.planName && (w.planName.includes('Forever') || w.planName.includes('Lifetime') || w.planName.includes('Infinity'))))) return false;
       if (tierVal === 'custom_url' && !(w.plan === 'custom_url' || !!w.customSlug)) return false;
       return true;
@@ -1140,6 +1141,8 @@
       let msg = 'No websites found matching criteria.';
       if (tierVal === 'premium') {
         msg = 'No premium websites found.';
+      } else if (tierVal === 'pending') {
+        msg = 'No payment pending websites found.';
       } else if (tierVal === 'free') {
         msg = 'No standard/free websites found.';
       } else if (tierVal === 'starter') {
@@ -1163,6 +1166,7 @@
 
     // Plan counters
     const premiumCount = currentlyFilteredWebsites.filter(w => w.isPremium).length;
+    const pendingCount = currentlyFilteredWebsites.filter(w => w.isPendingPayment || w.paymentStatus === 'pending').length;
     const starterCount = currentlyFilteredWebsites.filter(w => w.plan === 'starter' || (w.planName && (w.planName.includes('Starter') || w.planName.includes('7')))).length;
     const proCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro' || (w.planName && (w.planName.includes('Pro') && !w.planName.includes('Pro+') && (w.planName.includes('30') || w.planName.includes('100'))))).length;
     const proPlusCount = currentlyFilteredWebsites.filter(w => w.plan === 'pro_plus' || w.plan === 'proplus' || (w.planName && (w.planName.includes('Pro+') || w.planName.includes('100 Days')))).length;
@@ -1177,9 +1181,11 @@
       <strong style="color:var(--text)">${currentlyFilteredWebsites.length}</strong> website${currentlyFilteredWebsites.length !== 1 ? 's' : ''} shown
       ${cutoff ? `<span style="background:rgba(239,68,68,0.12); color:var(--red); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(239,68,68,0.2);"><i class="fas fa-clock"></i> Age filter active</span>` : ''}
       ${tierVal === 'premium' ? `<span style="background:rgba(255,184,0,0.18); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,184,0,0.4);"><i class="fas fa-crown"></i> Premium Only</span>` : ''}
+      ${tierVal === 'pending' ? `<span style="background:rgba(255,159,67,0.18); color:#ff9f43; padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.4);"><i class="fas fa-hourglass-half"></i> Pending Only</span>` : ''}
       ${tierVal === 'free' ? `<span style="background:rgba(123,93,246,0.12); color:var(--accent); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(123,93,246,0.2);"><i class="fas fa-globe"></i> Standard Only</span>` : ''}
-      ${tierVal === 'all' && premiumCount > 0 ? `
-        <span style="background:rgba(255,159,67,0.12); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.2);"><i class="fas fa-crown"></i> ${premiumCount} Premium</span>
+      ${tierVal === 'all' ? `
+        ${premiumCount > 0 ? `<span style="background:rgba(255,184,0,0.15); color:var(--gold); padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,184,0,0.3);"><i class="fas fa-crown"></i> ${premiumCount} Paid</span>` : ''}
+        ${pendingCount > 0 ? `<span style="background:rgba(255,159,67,0.15); color:#ff9f43; padding:2px 10px; border-radius:20px; font-weight:600; font-size:0.75rem; border:1px solid rgba(255,159,67,0.3);"><i class="fas fa-hourglass-half"></i> ${pendingCount} Pending</span>` : ''}
         ${starterCount > 0 ? `<span style="background:rgba(0,194,255,0.1); color:#00c2ff; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-bolt"></i> ${starterCount} (Starter 7d)</span>` : ''}
         ${proCount > 0 ? `<span style="background:rgba(232,58,89,0.12); color:#ff6b81; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-fire"></i> ${proCount} (Pro 30d)</span>` : ''}
         ${proPlusCount > 0 ? `<span style="background:rgba(16,185,129,0.12); color:#10b981; padding:2px 8px; border-radius:20px; font-size:0.73rem;"><i class="fas fa-gem"></i> ${proPlusCount} (Pro+ 100d)</span>` : ''}
@@ -1220,6 +1226,8 @@
         } else {
           planBadgeHtml = `<span class="badge" style="background:rgba(46,213,115,0.2); color:#2ed573; border:1px solid rgba(46,213,115,0.4); font-size:0.7rem; padding:3px 10px;" title="Custom URL / Premium"><i class="fas fa-link"></i> ${pName}</span>`;
         }
+      } else if (w.isPendingPayment || w.paymentStatus === 'pending') {
+        planBadgeHtml = `<span class="badge" style="background:rgba(255,159,67,0.18); color:#ff9f43; border:1px solid rgba(255,159,67,0.4); font-size:0.7rem; padding:3px 10px;" title="Payment Pending"><i class="fas fa-hourglass-half"></i> Pending (${w.planName || 'Pro'})</span>`;
       }
 
       const ageBadgeHtml = `<span class="badge" style="background:rgba(123,93,246,0.1); color:var(--text-muted); border:1px solid var(--border); font-size:0.67rem; padding:2px 7px;"><i class="fas fa-clock"></i> ${ageInDays}d</span>`;
@@ -1227,7 +1235,7 @@
       // Paid details row
       const paidInfoRow = w.isPremium
         ? `<div class="info-row" style="color:var(--gold); font-size:0.78rem;"><i class="fas fa-receipt"></i> Plan: <strong>${w.planName || 'Premium'}</strong> ${w.paidAmount ? `(${w.currency === 'USD' ? '$' : '₹'}${w.paidAmount})` : ''} ${w.customSlug ? `· /${w.customSlug}` : ''}</div>`
-        : '';
+        : ((w.isPendingPayment || w.paymentStatus === 'pending') ? `<div class="info-row" style="color:#ff9f43; font-size:0.78rem;"><i class="fas fa-hourglass-half"></i> Status: <strong>⏳ Payment Pending</strong> (${w.planName || 'Pro'}) ${w.paidAmount ? `(${w.currency === 'USD' ? '$' : '₹'}${w.paidAmount})` : ''}</div>` : '');
 
       const displayTitle = (w.recipientName && w.recipientName !== 'Special Recipient' && w.recipientName !== 'Unknown' && w.recipientName !== 'Untitled Site')
         ? w.recipientName

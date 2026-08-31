@@ -492,13 +492,17 @@ class AnalyticsStore {
       const allUnifiedWebsites = Array.from(combinedMap.values());
 
       // 3. Enrich websites with payment & custom slug info from CockroachDB
-      const paidPayments = await cockroach.getAllPayments(500).catch(() => []);
+      const allPaymentRecords = await cockroach.getAllPayments(1000, null).catch(() => []);
       const customSlugs = await cockroach.getAllCustomSlugs().catch(() => []);
 
-      const paidMap = new Map();
-      paidPayments.forEach(p => {
-        if (p.websiteId && !paidMap.has(p.websiteId)) {
-          paidMap.set(p.websiteId, p);
+      const paymentMap = new Map();
+      allPaymentRecords.forEach(p => {
+        if (p.websiteId) {
+          const existing = paymentMap.get(p.websiteId);
+          // Prioritize PAID payments over PENDING payments
+          if (!existing || p.status === 'PAID' || p.status === 'COMPLETED') {
+            paymentMap.set(p.websiteId, p);
+          }
         }
       });
 
@@ -510,30 +514,31 @@ class AnalyticsStore {
       });
 
       const websites = allUnifiedWebsites.map(w => {
-        const payment = paidMap.get(w.id);
+        const payment = paymentMap.get(w.id);
         const slug = slugMap.get(w.id) || w.slug;
         const isPremium = !!(w.isPremium || (payment && (payment.status === 'PAID' || payment.status === 'COMPLETED')) || slug);
+        const isPendingPayment = !isPremium && (payment && (payment.status === 'PENDING' || payment.status === 'pending_payment') || w.paymentStatus === 'pending_payment');
 
-        let plan = payment?.plan || null;
+        let plan = payment?.plan || w.plan || w.metadata?.plan || w.metadata?.config?.plan || null;
         let planName = payment?.planName || null;
         let planDays = payment?.planDays || null;
         let amount = payment?.amount ?? null;
         let currency = payment?.currency || 'INR';
 
-        if (payment?.plan) {
-          const p = payment.plan.toLowerCase();
+        if (plan) {
+          const p = String(plan).toLowerCase();
           if (p === 'starter') {
             plan = 'starter';
-            planName = planName || 'Starter (30+ Days)';
-            planDays = planDays || 30;
+            planName = planName || 'Starter (7 Days)';
+            planDays = planDays || 7;
           } else if (p === 'pro') {
             plan = 'pro';
-            planName = planName || 'Pro (100+ Days)';
-            planDays = planDays || 100;
+            planName = planName || 'Pro (30 Days)';
+            planDays = planDays || 30;
           } else if (p === 'pro_plus' || p === 'proplus') {
             plan = 'pro_plus';
-            planName = planName || 'Pro+ (1 Year)';
-            planDays = planDays || 365;
+            planName = planName || 'Pro+ (100 Days)';
+            planDays = planDays || 100;
           } else if (p === 'forever' || p === 'infinity') {
             plan = 'forever';
             planName = planName || 'Infinity (Lifetime)';
@@ -550,16 +555,16 @@ class AnalyticsStore {
             const amt = Number(payment.amount);
             if (amt === 29 || amt === 0.99) {
               plan = 'starter';
-              planName = 'Starter (30+ Days)';
-              planDays = 30;
+              planName = 'Starter (7 Days)';
+              planDays = 7;
             } else if (amt === 49 || amt === 1.99) {
               plan = 'pro';
-              planName = 'Pro (100+ Days)';
-              planDays = 100;
+              planName = 'Pro (30 Days)';
+              planDays = 30;
             } else if (amt === 99 || amt === 3.99 || amt === 4.99) {
               plan = 'pro_plus';
-              planName = 'Pro+ (1 Year)';
-              planDays = 365;
+              planName = 'Pro+ (100 Days)';
+              planDays = 100;
             } else if (amt === 199 || amt === 9.99) {
               plan = 'forever';
               planName = 'Infinity (Lifetime)';
@@ -581,7 +586,7 @@ class AnalyticsStore {
         }
 
         const defaultPlan = isPremium ? (slug ? 'custom_url' : 'premium') : 'free';
-        const defaultPlanName = isPremium ? (slug ? 'Custom URL' : '👑 Premium') : 'Free';
+        const defaultPlanName = isPremium ? (slug ? 'Custom URL' : '👑 Premium') : (isPendingPayment ? 'Payment Pending' : 'Free');
 
         const m = w.metadata || {};
         const c = m.config || {};
@@ -615,6 +620,8 @@ class AnalyticsStore {
           templateName,
           creatorGeo,
           isPremium,
+          isPendingPayment,
+          paymentStatus: isPremium ? 'paid' : (isPendingPayment ? 'pending' : 'unpaid'),
           plan: plan || defaultPlan,
           planName: planName || defaultPlanName,
           planDays: isPremium ? (planDays || 365) : 0,

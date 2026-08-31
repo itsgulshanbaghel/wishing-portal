@@ -678,21 +678,23 @@ async function saveVisitor(visitorData) {
 /**
  * Get all payments from CockroachDB for Admin Panel
  */
-async function getAllPayments(limit = 200) {
+async function getAllPayments(limit = 500, statusFilter = null) {
   const pool = poolFree || poolPremium;
   if (!pool) return [];
   try {
     await ensureTablesExist();
-    const res = await pool.query(
-      `SELECT order_id as "orderId", website_id as "websiteId", slug, plan, plan_name as "planName", 
-              amount, currency, status, payment_method as "paymentMethod", created_at as "createdAt", 
-              metadata
-       FROM payments 
-       WHERE status = 'PAID'
-       ORDER BY created_at DESC 
-       LIMIT $1`,
-      [limit]
-    );
+    let query = `SELECT order_id as "orderId", website_id as "websiteId", slug, plan, plan_name as "planName", 
+                        amount, currency, status, payment_method as "paymentMethod", created_at as "createdAt", 
+                        metadata
+                 FROM payments `;
+    const params = [limit];
+    if (statusFilter) {
+      query += `WHERE status = $2 ORDER BY created_at DESC LIMIT $1`;
+      params.unshift(statusFilter);
+    } else {
+      query += `ORDER BY created_at DESC LIMIT $1`;
+    }
+    const res = await pool.query(query, params);
     return res.rows || [];
   } catch (err) {
     console.error('[CockroachDB] getAllPayments error:', err.message);

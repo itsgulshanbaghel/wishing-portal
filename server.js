@@ -933,40 +933,65 @@ function getGeoPrice(req) {
 }
 
 // PayPal API settings
-const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
-const PAYPAL_ENV = process.env.PAYPAL_ENV || 'sandbox'; // sandbox or production
-const PAYPAL_API_BASE = PAYPAL_ENV === 'production' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+async function getPayPalAuthAndApiBase() {
+  const rawClientId = (process.env.PAYPAL_CLIENT_ID || '').trim().replace(/^["']|["']$/g, '');
+  const rawSecret = (process.env.PAYPAL_CLIENT_SECRET || '').trim().replace(/^["']|["']$/g, '');
+  const userEnv = (process.env.PAYPAL_ENV || '').toLowerCase().trim();
 
-async function getPayPalAccessToken() {
-  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-    throw new Error('PayPal credentials missing: PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET environment variable is not configured');
+  if (!rawClientId || !rawSecret) {
+    throw new Error('PayPal credentials missing: Please configure PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in Vercel environment variables.');
   }
-  const authHeader = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
-  const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${authHeader}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: 'grant_type=client_credentials'
-  });
-  if (!response.ok) {
-    const errText = await response.text();
-    console.error(`[PayPal Auth Error] ${response.status}:`, errText);
-    throw new Error(`PayPal OAuth Failed (${response.status}): ${errText}`);
+
+  const authHeader = Buffer.from(`${rawClientId}:${rawSecret}`).toString('base64');
+
+  // Determine endpoints to test: if user explicitly set PAYPAL_ENV=sandbox, test sandbox first; otherwise test production first
+  const primaryBase = userEnv === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
+  const fallbackBase = userEnv === 'sandbox' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+
+  const tryAuth = async (apiBase) => {
+    const response = await fetch(`${apiBase}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'grant_type=client_credentials'
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      return { ok: false, status: response.status, error: errText };
+    }
+    const data = await response.json();
+    return { ok: true, token: data.access_token, apiBase };
+  };
+
+  // Try primary endpoint (Production / Live API by default)
+  let res = await tryAuth(primaryBase);
+  if (res.ok) {
+    console.log(`[PayPal OAuth] Successfully authenticated on ${primaryBase.includes('sandbox') ? 'Sandbox' : 'Production'} API`);
+    return { token: res.token, apiBase: primaryBase };
   }
-  const data = await response.json();
-  return data.access_token;
+
+  console.warn(`[PayPal OAuth Warning] Primary endpoint (${primaryBase}) returned ${res.status}. Attempting auto-detection fallback...`);
+
+  // Try fallback endpoint (auto-detect Sandbox vs Live matching credentials)
+  let fallbackRes = await tryAuth(fallbackBase);
+  if (fallbackRes.ok) {
+    console.log(`[PayPal OAuth] Auto-detected matching environment on ${fallbackBase.includes('sandbox') ? 'Sandbox' : 'Production'} API`);
+    return { token: fallbackRes.token, apiBase: fallbackBase };
+  }
+
+  // If both fail, throw descriptive error
+  throw new Error(`PayPal OAuth Failed (${res.status}): ${res.error}. Please verify your Client ID and Client Secret in PayPal Developer Dashboard.`);
 }
 
 async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
-  const token = await getPayPalAccessToken();
+  const { token, apiBase } = await getPayPalAuthAndApiBase();
   const paypalCurr = (currency || 'USD').toUpperCase();
   const paypalVal = Number(amount || 1.99).toFixed(2);
 
-  console.log(`[PayPal API] Posting order: ${paypalVal} ${paypalCurr}`);
-  const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+  console.log(`[PayPal API] Posting order to ${apiBase}: ${paypalVal} ${paypalCurr}`);
+  const response = await fetch(`${apiBase}/v2/checkout/orders`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
