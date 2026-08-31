@@ -8466,7 +8466,9 @@
             websiteId,
             plan: planToValidate,
             email,
-            phone
+            phone,
+            gateway: window.selectedGateway || undefined,
+            currency: window.selectedCurrency || undefined
           };
 
           const response = await fetch(`${apiBaseUrl}/api/payment/create-order`, {

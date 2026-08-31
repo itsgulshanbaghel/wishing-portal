@@ -940,7 +940,7 @@ const PAYPAL_API_BASE = PAYPAL_ENV === 'production' ? 'https://api-m.paypal.com'
 
 async function getPayPalAccessToken() {
   if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-    throw new Error('PayPal client ID or secret not configured in env variables');
+    throw new Error('PayPal credentials missing: PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET environment variable is not configured');
   }
   const authHeader = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
   const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
@@ -953,7 +953,8 @@ async function getPayPalAccessToken() {
   });
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Failed to get PayPal access token: ${response.status} ${errText}`);
+    console.error(`[PayPal Auth Error] ${response.status}:`, errText);
+    throw new Error(`PayPal OAuth Failed (${response.status}): ${errText}`);
   }
   const data = await response.json();
   return data.access_token;
@@ -961,6 +962,10 @@ async function getPayPalAccessToken() {
 
 async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
   const token = await getPayPalAccessToken();
+  const paypalCurr = (currency || 'USD').toUpperCase();
+  const paypalVal = Number(amount || 1.99).toFixed(2);
+
+  console.log(`[PayPal API] Posting order: ${paypalVal} ${paypalCurr}`);
   const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
     method: 'POST',
     headers: {
@@ -971,15 +976,15 @@ async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
       intent: 'CAPTURE',
       purchase_units: [{
         amount: {
-          currency_code: currency,
-          value: amount.toFixed(2)
+          currency_code: paypalCurr,
+          value: paypalVal
         },
         description: 'Personalized Custom URL Activation'
       }],
       application_context: {
-        brand_name: 'The Greeter Custom URL',
+        brand_name: 'The Greeter',
         locale: 'en-US',
-        landing_page: 'BILLING',
+        landing_page: 'NO_PREFERENCE',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'PAY_NOW',
         return_url: returnUrl,
@@ -989,7 +994,8 @@ async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
   });
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Failed to create PayPal order: ${response.status} ${errText}`);
+    console.error(`[PayPal Order Error] ${response.status}:`, errText);
+    throw new Error(`PayPal API (${response.status}): ${errText}`);
   }
   return await response.json();
 }
@@ -1331,14 +1337,20 @@ app.post('/api/payment/create-order', async (req, res) => {
       }
     } catch (e) { }
 
-    // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA (WITH FALLBACK) ──
-    if (gateway === 'paypal') {
+    // Determine effective gateway: respect explicit client gateway/currency or geo-IP detection
+    const reqGateway = (req.body.gateway || '').toLowerCase().trim();
+    const reqCurrency = (req.body.currency || '').toUpperCase().trim();
+    const effectiveGateway = (reqGateway === 'paypal' || (reqCurrency && reqCurrency !== 'INR') || (currency && currency !== 'INR')) ? 'paypal' : gateway;
+    const targetCurrency = paypalCurrency || (reqCurrency && reqCurrency !== 'INR' ? reqCurrency : 'USD');
+
+    // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
+    if (effectiveGateway === 'paypal') {
       try {
         const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId=${orderId}&view=${websiteId}`;
         const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?view=${websiteId}`;
 
-        console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${paypalCurrency}`);
-        const paypalOrder = await createPayPalOrder(paypalAmount, paypalCurrency, returnUrl, cancelUrl);
+        console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${targetCurrency}`);
+        const paypalOrder = await createPayPalOrder(paypalAmount, targetCurrency, returnUrl, cancelUrl);
         const approveLink = paypalOrder.links?.find(link => link.rel === 'approve')?.href;
 
         if (approveLink) {
@@ -1352,16 +1364,23 @@ app.post('/api/payment/create-order', async (req, res) => {
             paymentLink: approveLink,
             paymentSessionId: null,
             amount: paypalAmount,
-            currency: paypalCurrency,
+            currency: targetCurrency,
             plan: planMeta.plan,
             planName: planMeta.planName,
             planDays: planMeta.planDays,
             slug: sanitizedSlug,
             gateway: 'paypal'
           });
+        } else {
+          throw new Error('PayPal order created but no approval link was returned by PayPal');
         }
       } catch (ppErr) {
-        console.warn('[PayPal Fallback] PayPal initiation failed:', ppErr.message, '- Falling back to Cashfree gateway.');
+        console.error('[PayPal Error]:', ppErr.message);
+        return res.status(400).json({
+          success: false,
+          error: `International PayPal payment error: ${ppErr.message}`,
+          orderId
+        });
       }
     }
 
