@@ -2,12 +2,16 @@
 (function() {
     'use strict';
 
-    // Do not enable content protection inside editor, iframe previews, or when editing
+    // Do not enable content protection inside editor, iframe previews, customize, share, or generated pages
     try {
+        const path = window.location.pathname.toLowerCase();
         if (window.self !== window.top || 
             window.location.search.includes('mode=edit') || 
-            window.location.pathname.includes('customize') ||
-            window.location.pathname.includes('admin')) {
+            path.includes('customize') ||
+            path.includes('share') ||
+            path.includes('preview') ||
+            path.includes('generated') ||
+            path.includes('admin')) {
             return;
         }
     } catch (e) {}
