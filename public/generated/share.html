@@ -2550,9 +2550,7 @@
       
       // Server-side premium verification
       async function initShareLink() {
-        const localUserData = (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}'); } catch(e) { return {}; } })();
-        const storedPlan = (localUserData.selectedPlan || localUserData.plan || localStorage.getItem(`plan_${viewId}`) || '').toLowerCase();
-        const hasPaidPlan = storedPlan && storedPlan !== 'free';
+        const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const isPaymentSuccess = urlParams.get('payment') === 'success';
 
         if (isPaymentSuccess && viewId) {
@@ -2562,32 +2560,40 @@
           sessionStorage.setItem(`premium_${viewId}`, 'true');
         }
 
-        let isPremium = (viewId && (localStorage.getItem(`premium_${viewId}`) === 'true' || sessionStorage.getItem(`premium_${viewId}`) === 'true')) ||
-                         localStorage.getItem('isPremium') === 'true' ||
-                         sessionStorage.getItem('isPremium') === 'true' ||
-                         localUserData.isPremium === true ||
-                         hasPaidPlan ||
-                         isPaymentSuccess;
+        let isPremium = isLocalHost || isPaymentSuccess || (viewId && (localStorage.getItem(`premium_${viewId}`) === 'true' || sessionStorage.getItem(`premium_${viewId}`) === 'true'));
 
-        if (viewId) {
+        if (viewId && !isLocalHost) {
           try {
             const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
             const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
             if (premiumRes.ok) {
               const premiumData = await premiumRes.json();
-              if (premiumData.isPremium) {
-                isPremium = true;
-                localStorage.setItem('isPremium', 'true');
+              isPremium = !!premiumData.isPremium;
+              if (isPremium) {
                 localStorage.setItem(`premium_${viewId}`, 'true');
+              } else {
+                localStorage.removeItem(`premium_${viewId}`);
               }
             }
           } catch (err) {
             console.error('Premium check failed:', err);
           }
         }
-        
+
         if (!viewId) {
           linkInput.value = '❌ No link found. Please generate first.';
+        } else if (!isPremium) {
+          linkInput.value = '🔒 Payment Pending — Complete payment to activate your share link';
+          fullLink = '';
+
+          const unpaidBanner = document.createElement('div');
+          unpaidBanner.id = 'unpaidShareBanner';
+          unpaidBanner.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color:#fff; padding:14px 24px; border-radius:50px; font-weight:700; font-size:14px; box-shadow:0 10px 30px rgba(239,68,68,0.4); z-index:99999; display:flex; align-items:center; gap:12px; cursor:pointer;';
+          unpaidBanner.innerHTML = '<span>🔒</span> <span>Payment Pending! Complete payment to activate your share link.</span> <span style="background:white; color:#dc2626; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:800;">Pay Now</span>';
+          document.body.appendChild(unpaidBanner);
+          unpaidBanner.onclick = () => {
+            window.location.href = `/generated/customize.html?view=${viewId}&pay=1`;
+          };
         } else {
           const storedCustomUrl = localStorage.getItem(`customUrl_${viewId}`);
           if (storedCustomUrl) {
@@ -2595,11 +2601,10 @@
             linkInput.value = storedCustomUrl;
           } else {
             const lang = localStorage.getItem('greeter_lang') || 'en';
-            const premiumParam = isPremium ? '&_v=c' : '';
             const domain = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
               ? window.location.origin
               : 'https://thegreeter.in';
-            fullLink = `${domain}/generated/customize.html?view=${viewId}${premiumParam}&lang=${lang}`;
+            fullLink = `${domain}/generated/customize.html?view=${viewId}&_v=c&lang=${lang}`;
             linkInput.value = fullLink;
           }
         }

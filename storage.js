@@ -72,21 +72,19 @@ async function uploadMedia(fileContent, fileName, mimeType = 'image/jpeg', isPre
       throw new Error('Invalid file content provided for upload');
     }
 
-    // Compress image using Sharp ONLY for Free Plan users (isPremium === false)
-    if (!isPremium && sharp && mimeType && mimeType.startsWith('image/') && !mimeType.includes('svg')) {
+    // Smart image compression using Sharp for all image uploads (max 1920px, high quality WebP)
+    if (sharp && mimeType && mimeType.startsWith('image/') && !mimeType.includes('svg')) {
       try {
         const compressed = await sharp(buffer)
-          .resize({ width: 1200, fit: 'inside', withoutEnlargement: true })
-          .webp({ quality: 80 })
+          .resize({ width: 1920, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 85 })
           .toBuffer();
         buffer = compressed;
         mimeType = 'image/webp';
-        console.log(`[Storage] Compressed free plan image "${fileName}" to WebP (80% quality)`);
+        console.log(`[Storage] Compressed image "${fileName}" to WebP (1920px max, 85% quality)`);
       } catch (compressErr) {
         console.warn('[Storage] Sharp image compression warning:', compressErr.message);
       }
-    } else if (isPremium) {
-      console.log(`[Storage] Uploading uncompressed original file for Premium user: "${fileName}"`);
     }
 
     await ensureBucketPublic(client);

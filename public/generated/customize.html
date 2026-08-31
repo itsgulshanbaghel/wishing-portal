@@ -4361,7 +4361,7 @@
       let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null, isFrameLoaded = false, isPageInitializing = true;
 
       // ---------- CLIENT-SIDE SMART IMAGE OPTIMIZATION ----------
-      async function compressImageIfNeeded(file, isPremium = false, maxWidth = 1600, maxHeight = 1600, quality = 0.82) {
+      async function compressImageIfNeeded(file, isPremium = false, maxWidth = 1920, maxHeight = 1920, quality = 0.85) {
         if (!file || !file.type || !file.type.startsWith('image/')) {
           return file;
         }
@@ -4413,11 +4413,12 @@
 
             ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
+            const mimeType = 'image/jpeg';
             canvas.toBlob((blob) => {
               if (blob && (blob.size < file.size || targetWidth < originalWidth)) {
                 const optimizedFileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
                 const optimizedFile = new File([blob], optimizedFileName, {
-                  type: 'image/jpeg',
+                  type: mimeType,
                   lastModified: Date.now()
                 });
                 console.log(`[ImageOptimizer] Optimized "${file.name}": ${(file.size / 1024).toFixed(1)}KB -> ${(optimizedFile.size / 1024).toFixed(1)}KB (${Math.round((1 - optimizedFile.size / file.size) * 100)}% saved)`);
@@ -4425,7 +4426,7 @@
               } else {
                 resolve(file);
               }
-            }, 'image/jpeg', quality);
+            }, mimeType, quality);
           };
 
           img.onerror = () => {
@@ -4534,52 +4535,12 @@
       }
 
       async function uploadAudioToCloudinary(file, onProgress) {
-        return new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          const apiBase = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
-            ? window.APP_CONFIG.API_BASE_URL
-            : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')
-              ? ''
-              : 'https://wishing-portal-phi.vercel.app');
-          xhr.open('POST', `${apiBase}/api/upload-audio`);
-
-          xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable && onProgress) {
-              const percentComplete = Math.round((e.loaded / e.total) * 100);
-              onProgress(percentComplete);
-            }
-          };
-
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                const data = JSON.parse(xhr.responseText);
-                if (data && data.secure_url) {
-                  resolve(data.secure_url);
-                } else {
-                  reject(new Error((data && data.error) || 'Invalid response format from server'));
-                }
-              } catch (err) {
-                console.error("Audio upload response parse error:", xhr.responseText);
-                reject(new Error('Invalid response from server'));
-              }
-            } else {
-              try {
-                const data = JSON.parse(xhr.responseText);
-                reject(new Error(data.error || `Audio upload failed with status ${xhr.status}`));
-              } catch (err) {
-                reject(new Error(`Audio upload failed (${xhr.status})`));
-              }
-            }
-          };
-
-          xhr.onerror = () => {
-            reject(new Error('Network error during upload'));
-          };
-
-          const formData = new FormData();
-          formData.append('file', file);
-          xhr.send(formData);
+        return new Promise((resolve) => {
+          window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+          const blobUrl = URL.createObjectURL(file);
+          window._pendingLocalFiles.set(blobUrl, file);
+          if (typeof onProgress === 'function') onProgress(100);
+          resolve(blobUrl);
         });
       }
 
@@ -5991,31 +5952,23 @@
                 try {
                   const processedFiles = await Promise.all(files.map(f => compressImageIfNeeded(f, isPremium)));
 
-                  const promises = processedFiles.map((f, idx) => {
-                    const formData = new FormData();
-                    formData.append('file', f);
-                    formData.append('isPremium', isPremium ? 'true' : 'false');
-                    return fetch('/api/upload-photo', {
-                      method: 'POST',
-                      body: formData
-                    }).then(res => res.json()).then(data => {
-                      const finalUrl = data.secure_url || data.url;
-                      if (finalUrl) {
-                        const items = previewDiv.querySelectorAll('.image-preview-item');
-                        const item = items[items.length - files.length + idx];
-                        const img = item.querySelector('img');
-                        img.src = finalUrl;
+                  window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+                  const urls = processedFiles.map((f, idx) => {
+                    const blobUrl = URL.createObjectURL(f);
+                    window._pendingLocalFiles.set(blobUrl, f);
+
+                    const items = previewDiv.querySelectorAll('.image-preview-item');
+                    const item = items[items.length - files.length + idx];
+                    if (item) {
+                      const img = item.querySelector('img');
+                      if (img) {
+                        img.src = blobUrl;
                         img.onload = () => item.classList.add('loaded');
                         if (img.complete) item.classList.add('loaded');
-                        return finalUrl;
-                      } else {
-                        console.error('Upload failed', data);
-                        throw new Error('Upload failed');
                       }
-                    });
+                    }
+                    return blobUrl;
                   });
-
-                  const urls = await Promise.all(promises);
                   const existing = customData.get(id) || {};
                   existing.images = (id === "imageExplosion") ? urls : [...(existing.images || []), ...urls];
                   if (textarea) existing.text = textarea.value;
@@ -6970,24 +6923,12 @@
 
             try {
               const files = await Promise.all(rawFiles.map(f => compressImageIfNeeded(f, isPremium)));
-              const promises = files.map(f => {
-                const formData = new FormData();
-                formData.append('file', f);
-                formData.append('isPremium', isPremium ? 'true' : 'false');
-                return fetch('/api/upload-photo', {
-                  method: 'POST',
-                  body: formData
-                }).then(res => res.json()).then(data => {
-                  const finalUrl = data.secure_url || data.url;
-                  if (finalUrl) {
-                    return finalUrl;
-                  } else {
-                    console.error('Upload failed', data);
-                    throw new Error('Upload failed');
-                  }
-                });
+              window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+              const urls = files.map(f => {
+                const blobUrl = URL.createObjectURL(f);
+                window._pendingLocalFiles.set(blobUrl, f);
+                return blobUrl;
               });
-              const urls = await Promise.all(promises);
               window.parent.postMessage({ type: 'droppedImages', images: urls }, '*');
             } catch (err) {
               console.error('Image upload error:', err);
@@ -8238,6 +8179,53 @@
         });
       }
 
+      window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+
+      async function uploadPendingLocalMedia(html, config, isPremium) {
+        let updatedHtml = html;
+        let configStr = JSON.stringify(config);
+
+        if (window._pendingLocalFiles && window._pendingLocalFiles.size > 0) {
+          const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+            ? window.APP_CONFIG.API_BASE_URL
+            : window.location.origin;
+
+          const entries = Array.from(window._pendingLocalFiles.entries());
+          for (const [blobUrl, file] of entries) {
+            try {
+              const formData = new FormData();
+              formData.append('file', file);
+              formData.append('isPremium', isPremium ? 'true' : 'false');
+
+              const res = await fetch(`${apiBaseUrl}/api/upload-media`, {
+                method: 'POST',
+                body: formData
+              });
+
+              if (res.ok) {
+                const data = await res.json();
+                const cloudUrl = data.secure_url || data.url;
+                if (cloudUrl) {
+                  updatedHtml = updatedHtml.split(blobUrl).join(cloudUrl);
+                  configStr = configStr.split(blobUrl).join(cloudUrl);
+                  try { URL.revokeObjectURL(blobUrl); } catch (e) {}
+                  window._pendingLocalFiles.delete(blobUrl);
+                }
+              }
+            } catch (err) {
+              console.error('Error uploading local media on payment start:', err);
+            }
+          }
+        }
+
+        let parsedConfig = config;
+        try {
+          parsedConfig = JSON.parse(configStr);
+        } catch (e) {}
+
+        return { html: updatedHtml, config: parsedConfig };
+      }
+
       async function saveWebsiteConfigToServer(isPremium = false, explicitId = null) {
         try {
           const doc = getIframeDocument();
@@ -8371,7 +8359,7 @@
             docClone.body.insertBefore(runtimeEl, docClone.body.firstChild);
           }
 
-          const html = '<!DOCTYPE html>\n' + docClone.documentElement.outerHTML;
+          let html = '<!DOCTYPE html>\n' + docClone.documentElement.outerHTML;
 
           const urlParams = new URLSearchParams(window.location.search);
           const websiteId = explicitId || urlParams.get('view') || urlParams.get('restore') || null;
@@ -8380,13 +8368,19 @@
             ? window.APP_CONFIG.API_BASE_URL
             : window.location.origin;
 
+          // Batch upload any local blob media before committing config to server
+          const uploaded = await uploadPendingLocalMedia(html, config, isPremium);
+          html = uploaded.html;
+          const finalConfig = uploaded.config;
+
           const response = await fetch(`${apiBaseUrl}/api/config`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               html,
-              config,
+              config: finalConfig,
               isPremium,
+              paymentStatus: isPremium ? 'paid' : 'pending_payment',
               websiteId
             })
           });
@@ -8433,17 +8427,25 @@
 
         try {
           if (btn) {
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving & Initializing...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Website & Media...';
             btn.disabled = true;
           }
 
-          // 1. SAVE WEBSITE CONFIG TO SERVER FIRST SO IT CAN BE ACCESSED FROM ANY DEVICE / INCOGNITO
+          // 1. STRICT SAVE VERIFICATION FIRST: DO NOT REDIRECT OR OPEN PAYMENT UNTIL WEBSITE IS SAVED PROPERLY
           const saveRes = await saveWebsiteConfigToServer(true, websiteId);
-          if (saveRes && saveRes.id) {
-            websiteId = saveRes.id;
+          if (!saveRes || !saveRes.success || !saveRes.id) {
+            alert('Website Error: Could not save website draft to server before payment. Payment checkout has been aborted. Please check your internet connection and try again.');
+            if (btn) {
+              btn.innerHTML = originalText || 'Pay Securely';
+              btn.disabled = false;
+            }
+            return; // ABORT PAYMENT COMPLETELY
           }
-          if (!websiteId) {
-            websiteId = 'site_' + Date.now();
+
+          websiteId = saveRes.id;
+
+          if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening Payment Gateway...';
           }
 
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -8540,6 +8542,16 @@
             }
             window.isPremium = true;
             window.isPremiumUser = true;
+
+            // Re-confirm & save finalized website config with isPremium = true & paymentStatus = 'paid'
+            try {
+              const targetId = targetWebsiteId || data.websiteId || new URLSearchParams(window.location.search).get('view');
+              if (targetId) {
+                await saveWebsiteConfigToServer(true, targetId);
+              }
+            } catch (saveErr) {
+              console.warn('[PaymentVerification] Website re-save warning:', saveErr);
+            }
 
             const overlay = document.getElementById('paymentVerificationOverlay');
             if (overlay) {
@@ -9120,12 +9132,43 @@
           }
         }
 
+        // Function to render unpaid lock overlay
+        function renderUnpaidLockOverlay(targetId) {
+          const overlay = document.createElement('div');
+          overlay.id = 'unpaidLockOverlay';
+          overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,10,30,0.96); backdrop-filter:blur(15px); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; color:#fff; font-family:Inter,sans-serif;';
+          overlay.innerHTML = `
+            <div style="width:80px; height:80px; background:rgba(239,68,68,0.15); border:2px solid #ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:20px; color:#ef4444; font-size:32px;">
+              <i class="fas fa-lock"></i>
+            </div>
+            <h2 style="font-size:24px; font-weight:800; margin-bottom:10px;">Payment Required to View Website</h2>
+            <p style="font-size:15px; color:#cbd5e1; max-width:440px; margin-bottom:24px; line-height:1.6;">
+              Payment for this generated website has not been completed. Please complete payment to unlock full website access and activate your share link!
+            </p>
+            <button id="unpaidLockPayBtn" style="background:linear-gradient(135deg,#7b5df6,#5b36f5); color:#fff; border:none; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 10px 25px rgba(123,93,246,0.4);">
+              <i class="fas fa-credit-card" style="margin-right:8px;"></i> Complete Payment Now
+            </button>
+          `;
+          document.body.appendChild(overlay);
+          const btn = document.getElementById('unpaidLockPayBtn');
+          if (btn) {
+            btn.onclick = function () {
+              const modal = document.getElementById('pricingModal');
+              if (modal) modal.style.display = 'flex';
+              else if (typeof window.handleFinalPay === 'function') window.handleFinalPay();
+            };
+          }
+        }
+
+        const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
         // Try server first, fall back to sessionStorage
         fetch((API_BASE || window.location.origin) + '/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
           .then(data => {
             const urlParams = new URLSearchParams(window.location.search);
-            const isPaidView = urlParams.get('_v') === 'c' || urlParams.get('action') === 'payment-success' || (data && (data.isPremium || (data.metadata && data.metadata.isPremium)));
+            const isPaidView = isLocalHost || urlParams.get('action') === 'payment-success' || (data && (data.isPremium || (data.metadata && (data.metadata.isPremium || data.metadata.paymentStatus === 'paid'))));
+
             if (isPaidView) {
               window.isPremium = true;
               window.isPremiumUser = true;
@@ -9133,13 +9176,19 @@
               sessionStorage.setItem(`pro_plan_${viewId}`, 'true');
               const plan = (data && (data.plan || (data.metadata && data.metadata.plan))) || 'pro';
               sessionStorage.setItem(`user_plan_${viewId}`, plan);
+              applySharedView(data.html, data.config);
+            } else {
+              renderUnpaidLockOverlay(viewId);
             }
-            applySharedView(data.html, data.config);
           })
           .catch(() => {
-            const storedHtml = localStorage.getItem('final_magic_' + viewId) || sessionStorage.getItem('final_magic_' + viewId);
-            const storedConfig = localStorage.getItem('magic_config_' + viewId) || sessionStorage.getItem('magic_config_' + viewId);
-            applySharedView(storedHtml, storedConfig);
+            if (isLocalHost) {
+              const storedHtml = localStorage.getItem('final_magic_' + viewId) || sessionStorage.getItem('final_magic_' + viewId);
+              const storedConfig = localStorage.getItem('magic_config_' + viewId) || sessionStorage.getItem('magic_config_' + viewId);
+              applySharedView(storedHtml, storedConfig);
+            } else {
+              renderUnpaidLockOverlay(viewId);
+            }
           });
       })();
 

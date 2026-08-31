@@ -701,6 +701,45 @@ async function getAllPayments(limit = 200) {
 }
 
 /**
+ * Get a single PAID payment record by websiteId (fast indexed lookup)
+ */
+async function getPaymentByWebsiteId(websiteId) {
+  const pool = poolFree || poolPremium;
+  if (!pool || !websiteId) return null;
+  try {
+    await ensureTablesExist();
+    const res = await pool.query(
+      `SELECT order_id as "orderId", website_id as "websiteId", slug, plan, plan_name as "planName",
+              amount, currency, status, payment_method as "paymentMethod", created_at as "createdAt"
+       FROM payments
+       WHERE website_id = $1 AND status = 'PAID'
+       LIMIT 1`,
+      [websiteId]
+    );
+    return (res.rows && res.rows.length > 0) ? res.rows[0] : null;
+  } catch (err) {
+    console.error('[CockroachDB] getPaymentByWebsiteId error:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Get custom slug by websiteId (reverse lookup)
+ */
+async function getCustomSlugByWebsiteId(websiteId) {
+  const pool = poolFree || poolPremium;
+  if (!pool || !websiteId) return null;
+  try {
+    await ensureTablesExist();
+    const res = await pool.query(`SELECT slug, website_id as "websiteId", created_at as "createdAt" FROM custom_slugs WHERE website_id = $1 LIMIT 1`, [websiteId]);
+    return (res.rows && res.rows.length > 0) ? res.rows[0] : null;
+  } catch (err) {
+    console.error('[CockroachDB] getCustomSlugByWebsiteId error:', err.message);
+    return null;
+  }
+}
+
+/**
  * Get all custom slugs from CockroachDB
  */
 async function getAllCustomSlugs() {
@@ -1181,9 +1220,11 @@ module.exports = {
   getAllWebsites,
   saveCustomSlug,
   getCustomSlug,
+  getCustomSlugByWebsiteId,
   getAllCustomSlugs,
   savePayment,
   getAllPayments,
+  getPaymentByWebsiteId,
   getCockroachStats,
   purgeExpiredFreeRecords,
   incrementGlobalCounter,

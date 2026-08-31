@@ -334,7 +334,7 @@ app.post('/api/config', async (req, res) => {
     const country = countryHeader === 'IN' || countryHeader === 'India' ? 'India' : countryHeader;
     const creatorGeo = { city, country };
 
-    // Extract metadata for analytics
+    // Extract metadata for analytics and payment tracking
     const metadata = {
       id,
       eventType: config?.eventType || config?.category || req.body.eventType || 'birthday',
@@ -342,6 +342,8 @@ app.post('/api/config', async (req, res) => {
       recipientName: config?.recipientName || config?.name || config?.userName || req.body.recipientName || 'Special Recipient',
       features: config?.activeFeatures?.map(f => f[0]) || [],
       isPremium: effectiveIsPremium,
+      paymentStatus: req.body.paymentStatus || (effectiveIsPremium ? 'paid' : 'pending_payment'),
+      createdAt: new Date().toISOString(),
       creatorGeo
     };
 
@@ -407,11 +409,73 @@ app.post('/api/config', async (req, res) => {
   }
 });
 
-// Retrieve shared config + HTML
+// Server-Side Payment Verification Helper (fast targeted lookups, no full-table scans)
+async function verifyWebsitePaymentStatus(id) {
+  if (!id) return false;
+  const safeId = String(id).replace(/[^a-z0-9]/gi, '');
+  if (!safeId) return false;
+
+  // 1. Check CockroachDB Payments table (targeted indexed query by websiteId)
+  try {
+    const crPayment = await cockroach.getPaymentByWebsiteId(safeId);
+    if (crPayment) return true;
+  } catch (e) { }
+
+  // 2. Check CockroachDB Record (isPremium flag)
+  try {
+    const crRecord = await cockroach.getRecord(safeId);
+    if (crRecord && (crRecord.isPremium || crRecord.is_premium || crRecord.payment_status === 'paid')) {
+      return true;
+    }
+  } catch (e) { }
+
+  // 3. Check CockroachDB Custom Slugs by websiteId (reverse lookup)
+  try {
+    const crSlug = await cockroach.getCustomSlugByWebsiteId(safeId);
+    if (crSlug) return true;
+  } catch (e) { }
+
+  // 4. Check MongoDB Payments collection
+  try {
+    const mongoReady = await ensureMongoConnected();
+    if (mongoReady) {
+      const paidCheck = await Payment.findOne({ websiteId: safeId, status: 'PAID' }).lean();
+      if (paidCheck) return true;
+    }
+  } catch (e) { }
+
+  // 5. Check Supabase JSON payload metadata
+  try {
+    const sbConfig = await storage.readWebsiteConfig(safeId);
+    if (sbConfig && (sbConfig.isPremium || (sbConfig.metadata && (sbConfig.metadata.isPremium || sbConfig.metadata.paymentStatus === 'paid')))) {
+      return true;
+    }
+  } catch (e) { }
+
+  return false;
+}
+
+// Retrieve shared config + HTML (Payment Verified Server-Side)
 app.get('/api/config/:id', async (req, res) => {
   try {
     const safeName = req.params.id.replace(/[^a-z0-9]/gi, '');
     if (!safeName) return res.status(400).json({ error: 'Invalid ID' });
+
+    const host = req.headers.host || req.headers['x-forwarded-host'] || '';
+    const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+
+    // STRICT SERVER-SIDE PAYMENT VERIFICATION
+    const isPaid = isLocalhost || (await verifyWebsitePaymentStatus(safeName));
+
+    if (!isPaid) {
+      return res.status(402).json({
+        error: 'Payment Required',
+        paymentRequired: true,
+        isPremium: false,
+        websiteId: safeName,
+        message: 'Payment for this generated website has not been completed. Please complete payment to unlock full website access.'
+      });
+    }
 
     // 1. Fetch full JSON payload from Supabase Storage (Single Source of Truth)
     let sbConfig = null;
@@ -421,53 +485,42 @@ app.get('/api/config/:id', async (req, res) => {
       console.warn('[Server] Supabase config fetch warning:', sbErr.message);
     }
 
-    // 2. Check CockroachDB Primary DB for premium status and lightweight metadata
-    let isPremiumRecord = false;
-    let crRecord = null;
-    try {
-      crRecord = await cockroach.getRecord(safeName);
-      if (crRecord) {
-        isPremiumRecord = !!(crRecord.isPremium || crRecord.is_premium);
-      }
-    } catch (crErr) { }
-
-    // If Supabase Storage returned the complete JSON config (HTML + config)
     if (sbConfig && sbConfig.html) {
-      if (isPremiumRecord || sbConfig.isPremium || (sbConfig.metadata && sbConfig.metadata.isPremium)) {
-        sbConfig.isPremium = true;
-        if (typeof sbConfig.metadata === 'object' && sbConfig.metadata !== null) {
-          sbConfig.metadata.isPremium = true;
-        }
+      sbConfig.isPremium = true;
+      if (typeof sbConfig.metadata === 'object' && sbConfig.metadata !== null) {
+        sbConfig.metadata.isPremium = true;
       }
       return res.json(sbConfig);
     }
 
-    // 3. Fallback: If record was saved in CockroachDB metadata column (legacy/recovery fallback)
+    // 2. Check CockroachDB Primary DB
+    let crRecord = null;
+    try {
+      crRecord = await cockroach.getRecord(safeName);
+    } catch (crErr) { }
+
     if (crRecord && crRecord.metadata && crRecord.metadata.html) {
       const resObj = Object.assign({}, crRecord.metadata);
-      if (isPremiumRecord) {
-        resObj.isPremium = true;
-        if (typeof resObj.metadata === 'object' && resObj.metadata !== null) {
-          resObj.metadata.isPremium = true;
-        }
-      }
+      resObj.isPremium = true;
       return res.json(resObj);
     }
 
-    // 3. Try fetching from MongoDB Website collection (Read-Only Fallback for legacy websites)
+    // 3. Try fetching from MongoDB Website collection
     try {
       const mongoReady = await ensureMongoConnected();
       if (mongoReady) {
         const doc = await Website.findOne({ id: safeName }).lean();
         if (doc && doc.metadata && doc.metadata.html) {
-          return res.json(doc.metadata);
+          const resObj = Object.assign({}, doc.metadata);
+          resObj.isPremium = true;
+          return res.json(resObj);
         }
       }
     } catch (dbErr) {
       console.warn('[Server] DB config fetch warning:', dbErr.message);
     }
 
-    // 3. Try Cloudinary fallback (legacy links)
+    // 4. Try Cloudinary fallback (legacy links)
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     if (cloudName) {
       const url = `https://res.cloudinary.com/${cloudName}/raw/upload/configs/${safeName}`;
@@ -476,6 +529,7 @@ app.get('/api/config/:id', async (req, res) => {
         const data = await response.text();
         try {
           const json = JSON.parse(data);
+          json.isPremium = true;
           return res.json(json);
         } catch (err) { }
       }
@@ -888,9 +942,7 @@ async function getPayPalAccessToken() {
   if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
     throw new Error('PayPal client ID or secret not configured in env variables');
   }
-  const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:	ext{ }PAYPAL_CLIENT_SECRET`.replace(':text: ', ':') + `${PAYPAL_CLIENT_SECRET}`).toString('base64');
-  // Safer construct
-  const authHeader = Buffer.from(PAYPAL_CLIENT_ID + ':' + PAYPAL_CLIENT_SECRET).toString('base64');
+  const authHeader = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
   const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
@@ -967,19 +1019,15 @@ app.get('/api/payment/detect-price', (req, res) => {
 app.get('/api/premium/check/:websiteId', async (req, res) => {
   const { websiteId } = req.params;
   try {
-    const mongoReady = await ensureMongoConnected();
-    if (!mongoReady) return res.json({ isPremium: false, plan: 'free', canClaimFreeCustomUrl: false });
+    const host = req.headers.host || req.headers['x-forwarded-host'] || '';
+    const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
 
-    const payment = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
-    if (!payment) return res.json({ isPremium: false, plan: 'free', canClaimFreeCustomUrl: false });
-
-    const plan = (payment.plan || 'pro').toLowerCase();
-    const canClaimFreeCustomUrl = plan !== 'starter' && plan !== 'free';
+    const isPaid = isLocalhost || (await verifyWebsitePaymentStatus(websiteId));
 
     res.json({
-      isPremium: true,
-      plan: payment.plan,
-      canClaimFreeCustomUrl
+      isPremium: isPaid,
+      plan: isPaid ? 'pro' : 'free',
+      canClaimFreeCustomUrl: isPaid
     });
   } catch (e) {
     res.json({ isPremium: false, plan: 'free', canClaimFreeCustomUrl: false });
@@ -1283,7 +1331,7 @@ app.post('/api/payment/create-order', async (req, res) => {
       }
     } catch (e) { }
 
-    // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
+    // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA (WITH FALLBACK) ──
     if (gateway === 'paypal') {
       try {
         const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId=${orderId}&view=${websiteId}`;
@@ -1291,37 +1339,29 @@ app.post('/api/payment/create-order', async (req, res) => {
 
         console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${paypalCurrency}`);
         const paypalOrder = await createPayPalOrder(paypalAmount, paypalCurrency, returnUrl, cancelUrl);
-        const approveLink = paypalOrder.links.find(link => link.rel === 'approve')?.href;
+        const approveLink = paypalOrder.links?.find(link => link.rel === 'approve')?.href;
 
-        if (!approveLink) {
-          throw new Error('PayPal order created but no approval link returned');
+        if (approveLink) {
+          try {
+            await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink: approveLink, paypalOrderId: paypalOrder.id } }).catch(() => { });
+          } catch (e) { }
+
+          return res.json({
+            success: true,
+            orderId,
+            paymentLink: approveLink,
+            paymentSessionId: null,
+            amount: paypalAmount,
+            currency: paypalCurrency,
+            plan: planMeta.plan,
+            planName: planMeta.planName,
+            planDays: planMeta.planDays,
+            slug: sanitizedSlug,
+            gateway: 'paypal'
+          });
         }
-
-        // Update payment with paypal details and approval link
-        try {
-          await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink: approveLink, paypalOrderId: paypalOrder.id } }).catch(() => { });
-        } catch (e) { }
-
-        return res.json({
-          success: true,
-          orderId,
-          paymentLink: approveLink,
-          paymentSessionId: null,
-          amount: paypalAmount,
-          currency: paypalCurrency,
-          plan: planMeta.plan,
-          planName: planMeta.planName,
-          planDays: planMeta.planDays,
-          slug: sanitizedSlug,
-          gateway: 'paypal'
-        });
       } catch (ppErr) {
-        console.error('[PayPal Order Create Error]:', ppErr);
-        return res.status(400).json({
-          success: false,
-          error: 'Failed to initiate international payment. Please try again later or contact support.',
-          orderId
-        });
+        console.warn('[PayPal Fallback] PayPal initiation failed:', ppErr.message, '- Falling back to Cashfree gateway.');
       }
     }
 
@@ -1331,10 +1371,13 @@ app.post('/api/payment/create-order', async (req, res) => {
     const cfAppId = (process.env.CASHFREE_APP_ID || CF_APP_ID || '').trim();
     const cfSecretKey = (process.env.CASHFREE_SECRET_KEY || CF_SECRET_KEY || '').trim();
 
+    const cfOrderCurrency = (currency === 'INR' || currency === 'USD') ? currency : 'INR';
+    const cfOrderAmount = (cfOrderCurrency === 'INR' && currency !== 'INR') ? Math.max(29, Math.round((paypalAmount || orderAmount) * 88)) : orderAmount;
+
     const orderPayload = {
       order_id: orderId,
-      order_amount: orderAmount.toFixed(2),
-      order_currency: currency,
+      order_amount: Number(cfOrderAmount).toFixed(2),
+      order_currency: cfOrderCurrency,
       customer_details: {
         customer_id: websiteId,
         customer_name: customer.customer_name || 'Guest',
