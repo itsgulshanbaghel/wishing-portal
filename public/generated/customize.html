@@ -141,7 +141,7 @@
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(8px);
-      z-index: 10001;
+      z-index: 1100000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -153,6 +153,12 @@
     .custom-modal.show {
       visibility: visible;
       opacity: 1;
+    }
+
+    /* Hide floating preview-action buttons when any modal is open */
+    body:has(.custom-modal.show) .preview-actions {
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .modal-card {
@@ -3976,11 +3982,29 @@
       const musicResults = document.getElementById('musicResults');
       const musicStatus = document.getElementById('musicStatus');
 
-      window.closeMusicModal = () => {
-        musicModal.classList.remove('show');
-        musicResults.innerHTML = '';
-        musicStatus.textContent = '';
+      window.openMusicModal = () => {
+        const toggleRow = document.getElementById('toggle-addMusicSection');
+        if (toggleRow && !toggleRow.classList.contains('active')) {
+          toggleRow.click();
+        }
+        if (musicSearchInput) musicSearchInput.value = '';
+        if (musicLinkInput) musicLinkInput.value = '';
+        if (musicResults) musicResults.innerHTML = '';
+        if (musicStatus) musicStatus.textContent = '';
+        if (musicModal) musicModal.classList.add('show');
       };
+
+      window.closeMusicModal = () => {
+        if (musicModal) musicModal.classList.remove('show');
+        if (musicResults) musicResults.innerHTML = '';
+        if (musicStatus) musicStatus.textContent = '';
+      };
+
+      window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'openMusicModal') {
+          if (typeof window.openMusicModal === 'function') window.openMusicModal();
+        }
+      });
       document.querySelector('#musicModal .modal-close').addEventListener('click', window.closeMusicModal);
       const musicCancelBtn = document.getElementById('musicModalCancelBtn');
       if (musicCancelBtn) {
@@ -4875,7 +4899,17 @@
         adjustIframePadding(activeFeatureStates);
       }
       function insertSectionBeforeFinal(doc, sectionElement) {
-        const container = doc.getElementById('sections-container') || doc.body;
+        const sectionsCont = doc.getElementById('sections-container');
+        if (sectionsCont) {
+          sectionsCont.style.cssText = "width: 100%; max-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; margin: 0 auto;";
+        }
+        if (sectionElement && sectionElement.style) {
+          sectionElement.style.marginLeft = 'auto';
+          sectionElement.style.marginRight = 'auto';
+          sectionElement.style.alignSelf = 'center';
+          sectionElement.style.boxSizing = 'border-box';
+        }
+        const container = sectionsCont || doc.body;
         const finalMessage = doc.getElementById('magic-final-surprise-section');
         const cta = doc.getElementById('magic-cta-section');
 
@@ -5812,15 +5846,7 @@
               plusIcon.style.cursor = "pointer";
               plusIcon.onclick = (e) => {
                 e.stopPropagation();
-                const parentRow = plusIcon.closest('.toggle-row');
-                if (!parentRow.classList.contains('active')) {
-                  parentRow.click();
-                }
-                musicSearchInput.value = '';
-                musicLinkInput.value = '';
-                musicResults.innerHTML = '';
-                musicStatus.textContent = '';
-                musicModal.classList.add('show');
+                window.openMusicModal();
               };
               toggleRow.appendChild(plusIcon);
             } else if (chevron) {
@@ -7263,6 +7289,69 @@
     .btn, .greeter-cta-btn { width: 100% !important; padding: 16px 20px !important; font-size: 1.1rem !important; }
     img, video, iframe, canvas { max-width: 100% !important; height: auto !important; }
   }
+  /* Harmonious Universal Scaling matching greeting card aesthetic */
+  #sections-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+  }
+  section[id^="magic-"],
+  .vh-section,
+  .vc-section {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    align-self: center !important;
+    box-sizing: border-box !important;
+  }
+  #magic-music-section {
+    max-width: 580px !important;
+    width: 92% !important;
+    padding: clamp(22px, 3vw, 32px) clamp(16px, 2.5vw, 24px) !important;
+  }
+  #magic-music-section #magic-music-embed {
+    max-width: 480px !important;
+    width: 100% !important;
+    margin: 16px auto !important;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.14) !important;
+    border-radius: 18px !important;
+  }
+  .vc-section {
+    max-width: 600px !important;
+    width: 92% !important;
+    padding: clamp(26px, 3.5vw, 40px) clamp(16px, 3vw, 30px) !important;
+  }
+  .vh-section {
+    max-width: 560px !important;
+    width: 92% !important;
+    padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 26px) !important;
+  }
+  .vh-lbl {
+    font-size: clamp(1.2rem, 2.4vw, 1.5rem) !important;
+  }
+  .vh-desc {
+    font-size: clamp(0.95rem, 1.4vw, 1.08rem) !important;
+    max-width: 460px !important;
+  }
+  #magic-voice-note-section,
+  #magic-gift-section,
+  #magic-scratch-section,
+  #magic-hug-section,
+  #magic-final-surprise-section {
+    max-width: 560px !important;
+    width: 92% !important;
+  }
+  #magic-timeline-section,
+  #magic-polaroids-section,
+  #magic-image-explosion-section,
+  #magic-fireworks-section {
+    max-width: 680px !important;
+    width: 92% !important;
+  }
 </style>
 `;
           const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";localStorage.setItem("greeter_lang",lang);localStorage.setItem("customizer_lang",lang);var urlParams=new URLSearchParams(window.location.search);if(urlParams.get("_v")==="c"){var st=document.createElement("style");st.textContent="#magic-cta-section, .greeter-cta-section, .festival-cta-section { display: none !important; }";document.head.appendChild(st);}if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);window.history.replaceState({},"",newUrl);}function applyCTA(){if(urlParams.get("_v")==="c") return;document.querySelectorAll(".greeter-cta-section [data-en],.festival-cta-section [data-en]").forEach(function(el){var en=el.getAttribute("data-en"),hi=el.getAttribute("data-hi");if(lang==="hi"&&hi)el.textContent=hi;else if(en)el.textContent=en;});var ov=document.getElementById("namePopupOverlay");if(ov){ov.querySelectorAll("[data-en]").forEach(function(el){var en=el.getAttribute("data-en"),hi=el.getAttribute("data-hi");if(lang==="hi"&&hi)el.textContent=hi;else if(en)el.textContent=en;});var inp=document.getElementById("recipientNameInput");if(inp){var phe=inp.getAttribute("data-placeholder-en"),phh=inp.getAttribute("data-placeholder-hi");if(lang==="hi"&&phh)inp.placeholder=phh;else if(phe)inp.placeholder=phe;}}}applyCTA();window.addEventListener("load",applyCTA);})();</scr' + 'ipt>';
@@ -7521,7 +7610,17 @@
     window.scrollToElement = function() {};
     window.insertSectionBeforeFinal = function(doc, sectionElement) {
       if (!doc) return;
-      const container = doc.getElementById('sections-container') || doc.body;
+      const sectionsCont = doc.getElementById('sections-container');
+      if (sectionsCont) {
+        sectionsCont.style.cssText = "width: 100%; max-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; margin: 0 auto;";
+      }
+      if (sectionElement && sectionElement.style) {
+        sectionElement.style.marginLeft = 'auto';
+        sectionElement.style.marginRight = 'auto';
+        sectionElement.style.alignSelf = 'center';
+        sectionElement.style.boxSizing = 'border-box';
+      }
+      const container = sectionsCont || doc.body;
       if (!container) return;
       const finalMessage = doc.getElementById('magic-final-surprise-section');
       const cta = doc.getElementById('magic-cta-section');
@@ -7821,10 +7920,15 @@
           const currentViewId = urlParams.get('view') || urlParams.get('restore') || (typeof userDataObj !== 'undefined' ? userDataObj?.websiteId : null);
           const isPremium = (currentViewId && sessionStorage.getItem(`premium_${currentViewId}`) === 'true') || sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' || urlParams.get('_v') === 'c' || urlParams.get('action') === 'payment-success';
 
-          fetch((API_BASE || '') + '/api/config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html, config, isPremium, websiteId: currentViewId })
+          uploadPendingLocalMedia(html, config, isPremium).then(uploaded => {
+            const finalHtml = uploaded.html || html;
+            const finalConfig = uploaded.config || config;
+
+            return fetch((API_BASE || '') + '/api/config', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ html: finalHtml, config: finalConfig, isPremium, websiteId: currentViewId })
+            });
           })
             .then(r => {
               if (!r.ok) {
@@ -8237,7 +8341,7 @@
             throw new Error('Preview iframe is showing share page instead of template');
           }
 
-          const config = {
+          let initialConfig = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
             customData: Array.from(customData.entries()),
             template: localStorage.getItem('selectedTemplate') || '',
@@ -8245,6 +8349,10 @@
             userName: getUserName(),
             isPremium: isPremium
           };
+
+          // 1. Upload any pending local blob media FIRST to convert blob URLs into permanent cloud URLs
+          const uploadedMedia = await uploadPendingLocalMedia('', initialConfig, isPremium);
+          const finalConfig = uploadedMedia.config || initialConfig;
 
           // Temporarily disable active features on doc to get clean DOM snapshot
           for (let [id, active] of activeFeatureStates.entries()) {
@@ -8267,7 +8375,7 @@
 <scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
-  const config = ${JSON.stringify(config).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
+  const config = ${JSON.stringify(finalConfig).replace(/`/g, '\\`').replace(/\${/g, '\\${')};
   const magicRaw = "${magicRaw}";
   window._magicConfig = config;
   window.__IS_GENERATED_PAGE__ = true;
@@ -8330,31 +8438,37 @@
 
     if (window.FEATURE_MAP) {
       runAll();
-    } else if (magicRaw) {
-      try {
-        const decoded = decodeMagic(magicRaw);
-        window.FEATURE_MAP = new Function('return ' + decoded)();
-        runAll();
-      } catch(e) {
-        fetch('/api/magic').then(r => r.json()).then(data => {
-          const decoded = decodeMagic(data.magic);
-          window.FEATURE_MAP = new Function('return ' + decoded)();
-          runAll();
-        }).catch(() => {});
-      }
     } else {
-      fetch('/api/magic').then(r => r.json()).then(data => {
-        const decoded = decodeMagic(data.magic);
-        window.FEATURE_MAP = new Function('return ' + decoded)();
-        runAll();
-      }).catch(() => {});
+      let attempts = 0;
+      const poll = setInterval(() => {
+        attempts++;
+        if (window.FEATURE_MAP) {
+          clearInterval(poll);
+          runAll();
+        } else if (attempts > 30) {
+          clearInterval(poll);
+          if (magicRaw) {
+            try {
+              const decoded = decodeMagic(magicRaw);
+              window.FEATURE_MAP = new Function('return ' + decoded)();
+              runAll();
+            } catch(e) {}
+          } else {
+            fetch('/api/magic').then(r => r.json()).then(data => {
+              const decoded = decodeMagic(data.magic);
+              window.FEATURE_MAP = new Function('return ' + decoded)();
+              runAll();
+            }).catch(() => {});
+          }
+        }
+      }, 50);
     }
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initGeneratedPage);
   } else {
-    setTimeout(initGeneratedPage, 0);
+    setTimeout(initGeneratedPage, 50);
   }
 })();
 </` + `script>
@@ -8373,11 +8487,6 @@
           const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
             ? window.APP_CONFIG.API_BASE_URL
             : window.location.origin;
-
-          // Batch upload any local blob media before committing config to server
-          const uploaded = await uploadPendingLocalMedia(html, config, isPremium);
-          html = uploaded.html;
-          const finalConfig = uploaded.config;
 
           const response = await fetch(`${apiBaseUrl}/api/config`, {
             method: 'POST',
@@ -9139,22 +9248,32 @@
     if (window.FEATURE_MAP) {
       executeAllFeatures();
     } else {
-      fetch('/api/magic').then(r => r.json()).then(data => {
-        try {
-          const decoded = decodeMagic(data.magic);
-          window.FEATURE_MAP = new Function('return ' + decoded)();
+      let attempts = 0;
+      const poll = setInterval(() => {
+        attempts++;
+        if (window.FEATURE_MAP) {
+          clearInterval(poll);
           executeAllFeatures();
-        } catch(e) {
-          console.error("Fallback feature map error:", e);
+        } else if (attempts > 30) {
+          clearInterval(poll);
+          fetch('/api/magic').then(r => r.json()).then(data => {
+            try {
+              const decoded = decodeMagic(data.magic);
+              window.FEATURE_MAP = new Function('return ' + decoded)();
+              executeAllFeatures();
+            } catch(e) {
+              console.error("Fallback feature map error:", e);
+            }
+          }).catch(() => {});
         }
-      }).catch(() => {});
+      }, 50);
     }
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSharedPageFeatures);
   } else {
-    setTimeout(initSharedPageFeatures, 0);
+    setTimeout(initSharedPageFeatures, 50);
   }
 })();
 </` + `script>

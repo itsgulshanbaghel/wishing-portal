@@ -1983,11 +1983,15 @@ app.post('/api/payment/paypal/webhook', async (req, res) => {
 });
 
 let cachedMagicBase64 = null;
+let lastFeaturesMtime = 0;
 app.get(['/features.js', '/assets/features.js'], (req, res) => {
   try {
     res.set('Content-Type', 'application/javascript; charset=utf-8');
-    res.set('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
-    res.sendFile(path.join(__dirname, 'features.js'));
+    res.set('Cache-Control', 'no-cache');
+    const targetPath = fs.existsSync(path.join(__dirname, 'public', 'features.js'))
+      ? path.join(__dirname, 'public', 'features.js')
+      : path.join(__dirname, 'features.js');
+    res.sendFile(targetPath);
   } catch (err) {
     res.status(404).send('// features not found');
   }
@@ -1995,11 +1999,16 @@ app.get(['/features.js', '/assets/features.js'], (req, res) => {
 
 app.get('/api/magic', (req, res) => {
   try {
-    if (!cachedMagicBase64) {
-      const features = fs.readFileSync(path.join(__dirname, 'features.js'), 'utf8');
+    const targetPath = fs.existsSync(path.join(__dirname, 'public', 'features.js'))
+      ? path.join(__dirname, 'public', 'features.js')
+      : path.join(__dirname, 'features.js');
+    const mtime = fs.statSync(targetPath).mtimeMs;
+    if (!cachedMagicBase64 || mtime > lastFeaturesMtime || process.env.NODE_ENV !== 'production') {
+      const features = fs.readFileSync(targetPath, 'utf8');
       cachedMagicBase64 = Buffer.from(features).toString('base64');
+      lastFeaturesMtime = mtime;
     }
-    res.set('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
+    res.set('Cache-Control', 'no-cache');
     res.json({ magic: cachedMagicBase64 });
   } catch (err) {
     console.error("Error reading features:", err);

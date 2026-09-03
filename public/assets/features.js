@@ -1,4 +1,82 @@
 (function() {
+    // Helper to safely insert feature section before Final Surprise or CTA
+    function insertSectionBeforeFinal(doc, sectionElement) {
+        if (!doc || !sectionElement) return;
+        if (typeof window !== 'undefined' && typeof window.insertSectionBeforeFinal === 'function' && window.insertSectionBeforeFinal !== insertSectionBeforeFinal) {
+            try { window.insertSectionBeforeFinal(doc, sectionElement); return; } catch(e) {}
+        }
+        const sectionsCont = doc.getElementById('sections-container');
+        if (sectionsCont) {
+            sectionsCont.style.cssText = "width: 100%; max-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; margin: 0 auto;";
+        }
+        if (sectionElement && sectionElement.style) {
+            sectionElement.style.marginLeft = 'auto';
+            sectionElement.style.marginRight = 'auto';
+            sectionElement.style.alignSelf = 'center';
+            sectionElement.style.boxSizing = 'border-box';
+        }
+
+        const container = sectionsCont || doc.body;
+        if (!container) return;
+        const finalMessage = doc.getElementById('magic-final-surprise-section');
+        const cta = doc.getElementById('magic-cta-section') || doc.querySelector('.greeter-cta-section, .festival-cta-section');
+
+        if (sectionElement.id === 'magic-final-surprise-section') {
+            if (cta && cta.parentNode === container) {
+                container.insertBefore(sectionElement, cta);
+            } else {
+                container.appendChild(sectionElement);
+            }
+        } else {
+            const anchor = finalMessage || cta;
+            if (anchor && anchor.parentNode === container) {
+                container.insertBefore(sectionElement, anchor);
+            } else {
+                container.appendChild(sectionElement);
+            }
+        }
+    }
+
+    // Helper to safely scroll to element or no-op in standalone view
+    function scrollToElement(doc, element) {
+        if (!doc || !element) return;
+        if (typeof window !== 'undefined' && typeof window.scrollToElement === 'function' && window.scrollToElement !== scrollToElement) {
+            try { window.scrollToElement(doc, element); return; } catch(e) {}
+        }
+    }
+
+    // Helper to inject Google Fonts if needed
+    function injectFontsIfNeeded(doc) {
+        if (!doc) return;
+        if (!doc.getElementById('magic-custom-fonts')) {
+            const link = doc.createElement('link');
+            link.id = 'magic-custom-fonts';
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@700&family=Caveat:wght@700&family=Poppins:wght@400;600;700&family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap';
+            if (doc.head) doc.head.appendChild(link);
+        }
+    }
+
+    // Helper to safely escape HTML strings
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[m] || m));
+    }
+
+    // Expose helpers globally if not already present
+    if (typeof window !== 'undefined') {
+        if (!window.escapeHtml) window.escapeHtml = escapeHtml;
+        if (!window.insertSectionBeforeFinal) window.insertSectionBeforeFinal = insertSectionBeforeFinal;
+        if (!window.scrollToElement) window.scrollToElement = scrollToElement;
+        if (!window.injectFontsIfNeeded) window.injectFontsIfNeeded = injectFontsIfNeeded;
+    }
+
     // Helper to ensure confetti library is loaded
     function ensureConfetti(cb) {
         const cfn = (typeof window !== 'undefined' && (window.confetti || window.canvasConfetti));
@@ -390,7 +468,7 @@
                 window.dispatchEvent(new CustomEvent('curtainOpened'));
                 setTimeout(() => cd?.remove(), 3500);
             };
-            btn.onclick = openCurtains;
+            if (btn) btn.onclick = openCurtains;
             // Fail-safe: Auto open curtains after 10s if user doesn't tap
             setTimeout(() => { if (!opened) openCurtains(); }, 10000);
             return {};
@@ -417,17 +495,18 @@
 
                     /* Global Responsive Styles for Magic Features */
                     [id^="magic-"][id$="-section"] {
-                        margin: 2rem 1.5rem !important;
-                        padding: 2.5rem 1.5rem !important;
-                        border-radius: 40px !important;
+                        margin-left: auto !important;
+                        margin-right: auto !important;
+                        align-self: center !important;
                         transition: all 0.3s ease;
                     }
 
                     @media (max-width: 768px) {
                         [id^="magic-"][id$="-section"] {
-                            margin: 1.5rem 1rem !important;
-                            padding: 2rem 1rem !important;
-                            border-radius: 32px !important;
+                            margin-top: 1.2rem !important;
+                            margin-bottom: 1.2rem !important;
+                            margin-left: auto !important;
+                            margin-right: auto !important;
                         }
                         #magic-fireworks-canvas { height: 300px !important; }
                         #gift-box-emoji { font-size: 5rem !important; }
@@ -436,9 +515,10 @@
 
                     @media (max-width: 480px) {
                         [id^="magic-"][id$="-section"] {
-                            margin: 1rem 0.5rem !important;
-                            padding: 1.5rem 0.8rem !important;
-                            border-radius: 24px !important;
+                            margin-top: 0.8rem !important;
+                            margin-bottom: 0.8rem !important;
+                            margin-left: auto !important;
+                            margin-right: auto !important;
                         }
                         #magic-fireworks-canvas { height: 250px !important; }
                         #gift-box-emoji { font-size: 4rem !important; }
@@ -512,7 +592,7 @@
                     // Start typing text independently of audio canplay event
                     let idx = 0;
                     const iv = setInterval(() => {
-                        if (idx < msgText.length) {
+                        if (msgPara && idx < msgText.length) {
                             msgPara.innerHTML += msgText[idx];
                             idx++;
                         } else {
@@ -556,16 +636,16 @@
             if (typeof injectFontsIfNeeded === 'function') injectFontsIfNeeded(d);
             const section = d.createElement("section");
             section.id = "magic-fireworks-section";
-            section.style.cssText = "padding: 2.5rem 1rem; text-align: center; background: rgba(0,0,0,0.08); border-radius: 48px; margin: 2rem 1.5rem; min-height: 450px; border: 1px solid rgba(255,255,255,0.1);";
+            section.style.cssText = "padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 24px); text-align: center; background: rgba(0,0,0,0.08); border-radius: clamp(24px, 3vw, 36px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 680px; box-sizing: border-box; align-self: center; min-height: 400px; border: 1px solid rgba(255,255,255,0.1);";
             const title = d.createElement("h2");
             const lang = window.currentLang || 'en';
             const trans = (window.translations && window.translations[lang]) ? window.translations[lang] : {};
             title.innerText = (lang === 'hi' ? "\u0906\u0924\u093f\u0936\u092c\u093e\u091c\u0940 \u091f\u0947\u0915\u094d\u0938\u094d\u091f" : "Fireworks Text");
-            title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "2.2rem"; title.style.color = "#ff7a2f";
+            title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "clamp(2.2rem, 4vw, 3.2rem)"; title.style.color = "#ff7a2f";
             section.appendChild(title);
             const canvas = d.createElement("canvas");
             canvas.id = "magic-fireworks-canvas";
-            canvas.style.cssText = "width:100%; height:350px; display:block; margin-top:20px; border-radius:24px; background:#000;";
+            canvas.style.cssText = "width:100%; height:clamp(350px, 45vh, 500px); display:block; margin-top:20px; border-radius:24px; background:#000;";
             canvas.width = 1000; canvas.height = 350;
             section.appendChild(canvas);
             insertSectionBeforeFinal(d, section);
@@ -946,8 +1026,8 @@
     giftBoxOpen: {
         enable(d, w, userName, customText, images) {
             if (d.getElementById("magic-gift-section")) return;
-            const section = d.createElement("section"); section.id = "magic-gift-section"; section.style.cssText = "padding: 2rem 1rem; text-align: center; background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(255,100,0,0.05)); border-radius: 40px; margin: 2rem 1.5rem;";
-            const title = d.createElement("h2"); title.innerText = "\uD83C\uDF81 " + (window.currentLang === 'hi' ? "\u0916\u093e\u0938 \u0924\u094b\u0939\u092b\u093e" : "Special Gift"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "2.2rem"; title.style.color = "#ffd700";
+            const section = d.createElement("section"); section.id = "magic-gift-section"; section.style.cssText = "padding: clamp(20px, 3vw, 32px) clamp(16px, 2.5vw, 24px); text-align: center; background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(255,100,0,0.05)); border-radius: clamp(20px, 2.5vw, 32px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center;";
+            const title = d.createElement("h2"); title.innerText = "\uD83C\uDF81 " + (window.currentLang === 'hi' ? "\u0916\u093e\u0938 \u0924\u094b\u0939\u092b\u093e" : "Special Gift"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "clamp(1.8rem, 3vw, 2.4rem)"; title.style.color = "#ffd700";
             section.appendChild(title);
             const giftContainer = d.createElement("div"); giftContainer.id = "gift-container"; giftContainer.style.cursor = "pointer";
             giftContainer.innerHTML = `<div id="gift-box-emoji" style="font-size: 7rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">\uD83C\uDF81</div><p style="margin-top: 15px; font-weight:bold; color:#ffd700;">\u2728 Click to unlock the magic \u2728</p>`;
@@ -1014,8 +1094,8 @@
     scratchReveal: {
         enable(d, w, userName, customText, images) {
             if (d.getElementById("magic-scratch-section")) return;
-            const section = d.createElement("section"); section.id = "magic-scratch-section"; section.style.cssText = "padding: 2rem 1rem; background: rgba(0,0,0,0.05); border-radius: 40px; margin: 2rem 1.5rem;";
-            const title = d.createElement("h2"); title.innerText = "\uD83C\uDFAB " + (window.currentLang === 'hi' ? "\u0938\u094d\u0915\u094d\u0930\u0948\u091a \u0915\u093e\u0930\u094d\u0921" : "Scratch Cards"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "2.2rem"; title.style.textAlign = "center"; title.style.color = "#ffa500";
+            const section = d.createElement("section"); section.id = "magic-scratch-section"; section.style.cssText = "padding: clamp(20px, 3vw, 32px) clamp(16px, 2.5vw, 24px); background: rgba(0,0,0,0.05); border-radius: clamp(20px, 2.5vw, 32px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center;";
+            const title = d.createElement("h2"); title.innerText = "\uD83C\uDFAB " + (window.currentLang === 'hi' ? "\u0938\u094d\u0915\u094d\u0930\u0948\u091a \u0915\u093e\u0930\u094d\u0921" : "Scratch Cards"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "clamp(1.8rem, 3vw, 2.4rem)"; title.style.textAlign = "center"; title.style.color = "#ffa500";
             const lang = window.currentLang || 'en';
             const trans = (window.translations && window.translations[lang]) ? window.translations[lang] : {};
             const evData = window.getEventData ? window.getEventData() : { event: 'birthday' };
@@ -1030,7 +1110,7 @@
             contentItems.forEach((item, idx) => {
                 const cardDiv = d.createElement("div");
                 cardDiv.className = "magic-scratch-card";
-                cardDiv.style.cssText = "width: 250px; height: 250px; background: #1a1025; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; transition: width 0.3s, height 0.3s;";
+                cardDiv.style.cssText = "width: clamp(240px, 26vw, 300px); height: clamp(240px, 26vw, 300px); background: #1a1025; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; transition: width 0.3s, height 0.3s;";
                 const canvas = d.createElement("canvas"); canvas.width = 500; canvas.height = 500; canvas.style.cssText = "width:100%; height:100%; cursor: pointer; display: block; position:absolute; top:0; left:0; z-index:2;";
                 const bgContent = d.createElement("div"); bgContent.style.cssText = "position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center; background:#1a1025; padding:15px; text-align:center; overflow:hidden;";
                 if (hasImages) { const img = d.createElement("img"); img.src = item; img.style.cssText = "width:100%; height:100%; object-fit:cover; border-radius:10px;"; bgContent.appendChild(img); }
@@ -1075,8 +1155,8 @@
             const section = d.createElement("section");
             section.id = "magic-timeline-section";
             section.className = "magic-timeline-section";
-            section.style.cssText = "padding: 2.5rem 0; background: rgba(0,0,0,0.03); border-radius: 48px; margin: 2rem 1.5rem; overflow: visible; position: relative;";
-            const title = d.createElement("h2"); title.innerText = "\uD83D\uDCDC " + (window.currentLang === 'hi' ? "\u092f\u093e\u0926\u094b\u0902 \u0915\u0940 \u091f\u093e\u0907\u092e\u0932\u093e\u0907\u0928" : "Memory Timeline"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "2.2rem"; title.style.textAlign = "center"; title.style.color = "#c0a080";
+            section.style.cssText = "padding: clamp(2rem, 3.5vw, 3rem) 0; background: rgba(0,0,0,0.03); border-radius: clamp(24px, 3vw, 36px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 680px; box-sizing: border-box; align-self: center; overflow: visible; position: relative;";
+            const title = d.createElement("h2"); title.innerText = "\uD83D\uDCDC " + (window.currentLang === 'hi' ? "\u092f\u093e\u0926\u094b\u0902 \u0915\u0940 \u091f\u093e\u0907\u092e\u0932\u093e\u0907\u0928" : "Memory Timeline"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "clamp(1.8rem, 3vw, 2.5rem)"; title.style.textAlign = "center"; title.style.color = "#c0a080";
             const lang = window.currentLang || 'en';
             const trans = (window.translations && window.translations[lang]) ? window.translations[lang] : {};
             const evData = window.getEventData ? window.getEventData() : { event: 'birthday' };
@@ -1130,9 +1210,9 @@
             milestones.forEach((m, i) => {
                 const card = d.createElement("div");
                 card.className = "magic-timeline-card";
-                card.style.cssText = "min-width: 260px; flex-shrink: 0; background: linear-gradient(145deg,#fffbf0,#ffe0c0); border-radius: 32px; padding: 25px; text-align: center; scroll-snap-align: center; color: #5a2e1e; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s;";
+                card.style.cssText = "min-width: clamp(240px, 24vw, 320px); flex-shrink: 0; background: linear-gradient(145deg,#fffbf0,#ffe0c0); border-radius: 32px; padding: clamp(20px, 2.5vw, 32px); text-align: center; scroll-snap-align: center; color: #5a2e1e; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s;";
                 card.innerHTML = `<strong style="font-size:1.3rem; display:block; margin-bottom:8px;">\u2728 ${m} \u2728</strong><span style="font-size:0.95rem; opacity:0.8;">\u2764\uFE0F ${escapeHtml(userName)}</span>`;
-                if (images?.[i]) { const img = d.createElement("img"); img.src = images[i]; img.style.cssText = "width: 100%; height: 160px; object-fit: cover; border-radius: 20px; margin-top: 15px; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"; card.appendChild(img); }
+                if (images?.[i]) { const img = d.createElement("img"); img.src = images[i]; img.style.cssText = "width: 100%; height: clamp(160px, 18vw, 220px); object-fit: cover; border-radius: 20px; margin-top: 15px; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"; card.appendChild(img); }
                 wrap.appendChild(card);
             }); return {};
         },
@@ -1246,8 +1326,8 @@
             const lang = window.currentLang || 'en';
             const trans = window.translations?.[lang] || {};
             const evData = window.getEventData ? window.getEventData() : { event: 'birthday' };
-            const section = d.createElement("section"); section.id = "magic-hug-section"; section.style.cssText = "padding: 2.5rem 1rem; text-align: center; background: linear-gradient(145deg, rgba(255,182,193,0.15), rgba(255,105,180,0.08)); border-radius: 48px; margin: 2rem 1.5rem;";
-            const title = d.createElement("h2"); title.innerText = "\uD83E\uDD17 " + (typeof trans.hugTitle === 'function' ? trans.hugTitle(evData.event) : "Hug + Sky Letter"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "2.2rem"; title.style.color = "#ff69b4";
+            const section = d.createElement("section"); section.id = "magic-hug-section"; section.style.cssText = "padding: clamp(20px, 3vw, 32px) clamp(16px, 2.5vw, 24px); text-align: center; background: linear-gradient(145deg, rgba(255,182,193,0.15), rgba(255,105,180,0.08)); border-radius: clamp(20px, 2.5vw, 32px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; max-width: 560px; width: 92%; box-sizing: border-box; align-self: center;";
+            const title = d.createElement("h2"); title.innerText = "\uD83E\uDD17 " + (typeof trans.hugTitle === 'function' ? trans.hugTitle(evData.event) : "Hug + Sky Letter"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "clamp(1.8rem, 3vw, 2.4rem)"; title.style.color = "#ff69b4";
             section.appendChild(title); const container = d.createElement("div"); container.style.cssText = "position: relative; min-height: 320px; margin: 25px 0; background: rgba(255,255,255,0.05); border-radius:30px;";
             const av1 = d.createElement("div");
             av1.className = "magic-hug-avatar";
@@ -1286,16 +1366,10 @@
                     </div>
                 `;
                 d.body.appendChild(skyOverlay);
-                // Add fade-in animation
-                const style = d.createElement("style");
-                style.textContent = "@keyframes skyFadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }";
-                d.head.appendChild(style);
-                // Remove after 5 seconds
-                setTimeout(() => { skyOverlay.style.animation = "skyFadeOut 1s ease-in forwards"; setTimeout(() => skyOverlay.remove(), 1000); }, 5000);
-                // Add fade-out animation
                 const outStyle = d.createElement("style");
-                outStyle.textContent = "@keyframes skyFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.8); } }";
+                outStyle.textContent = "@keyframes skyFadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } } @keyframes skyFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.8); } }";
                 d.head.appendChild(outStyle);
+                setTimeout(() => { skyOverlay.style.animation = "skyFadeOut 1s ease-in forwards"; setTimeout(() => skyOverlay.remove(), 1000); }, 5000);
             };
             return { listeners: [{ target: btn, type: "click", handler: btn.onclick }] };
         },
@@ -1308,16 +1382,16 @@
             const lang = window.currentLang || 'en';
             const trans = window.translations?.[lang] || {};
             const evData = window.getEventData ? window.getEventData() : { event: 'birthday' };
-            const section = d.createElement("section"); section.id = "magic-polaroids-section"; section.style.cssText = "padding: 3rem 1rem; position: relative; background: linear-gradient(145deg, rgba(255,215,0,0.05), rgba(255,100,0,0.03)); border-radius: 48px; margin: 2rem 1.5rem; overflow: hidden; min-height: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.1);";
-            const title = d.createElement("h2"); title.innerText = "\uD83D\uDCF7 " + (typeof trans.polaroidTitle === 'function' ? trans.polaroidTitle(evData.event) : "Floating Memories"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "2.4rem"; title.style.textAlign = "center"; title.style.color = "#c0a080"; section.appendChild(title);
+            const section = d.createElement("section"); section.id = "magic-polaroids-section"; section.style.cssText = "padding: clamp(2.5rem, 4vw, 3.5rem) 1rem; position: relative; background: linear-gradient(145deg, rgba(255,215,0,0.05), rgba(255,100,0,0.03)); border-radius: clamp(24px, 3vw, 36px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 680px; box-sizing: border-box; align-self: center; overflow: hidden; min-height: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.1);";
+            const title = d.createElement("h2"); title.innerText = "\uD83D\uDCF7 " + (typeof trans.polaroidTitle === 'function' ? trans.polaroidTitle(evData.event) : "Floating Memories"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "clamp(1.8rem, 3vw, 2.5rem)"; title.style.textAlign = "center"; title.style.color = "#c0a080"; section.appendChild(title);
             const canvas = d.createElement("div"); canvas.style.cssText = "position: absolute; inset: 0; pointer-events: none;"; section.appendChild(canvas);
             insertSectionBeforeFinal(d, section); scrollToElement(d, section);
             const imgs = (images && images.length) ? images : ["https://placehold.co/400x400/FFF9F0/5D4037?text=Upload+any+photo+here", "https://placehold.co/400x400/FFF9F0/5D4037?text=Upload+your+photo"];
             const iv = setInterval(() => {
                 if (!section.isConnected) return;
                 const p = d.createElement("div"); const src = imgs[Math.floor(Math.random() * imgs.length)];
-                p.style.cssText = `position:absolute; left:${Math.random() * 75 + 5}%; bottom:-280px; width:170px; background:#fff; padding:12px 12px 40px 12px; box-shadow:0 25px 50px rgba(0,0,0,0.3); transform:rotate(${Math.random() * 20 - 10}deg); animation:magicPolaroidUp ${12 + Math.random() * 4}s linear forwards; border: 1px solid #eee; pointer-events: auto;`;
-                p.innerHTML = `<img src="${src}" style="width:100%; height:150px; object-fit:cover; display:block; border-radius:2px;"><div style="font-family:'Caveat',cursive; text-align:center; margin-top:12px; font-size:1.2rem; color:#555;">\u2728 ${customText || userName} \u2728</div>`;
+                p.style.cssText = `position:absolute; left:${Math.random() * 75 + 5}%; bottom:-280px; width:clamp(140px, 14vw, 180px); background:#fff; padding:10px 10px 36px 10px; box-shadow:0 20px 40px rgba(0,0,0,0.25); transform:rotate(${Math.random() * 20 - 10}deg); animation:magicPolaroidUp ${12 + Math.random() * 4}s linear forwards; border: 1px solid #eee; pointer-events: auto;`;
+                p.innerHTML = `<img src="${src}" style="width:100%; height:clamp(120px, 12vw, 150px); object-fit:cover; display:block; border-radius:2px;"><div style="font-family:'Caveat',cursive; text-align:center; margin-top:10px; font-size:clamp(1rem, 1.3vw, 1.25rem); color:#555;">\u2728 ${customText || userName} \u2728</div>`;
                 canvas.appendChild(p); setTimeout(() => p.remove(), 20000);
             }, 5500);
             if (!d.querySelector("#magic-polaroid-style")) { const s = d.createElement("style"); s.id = "magic-polaroid-style"; s.textContent = `@keyframes magicPolaroidUp{0%{opacity:0; transform:translateY(0);} 10%{opacity:1;} 90%{opacity:1;} 100%{transform:translateY(-150vh); opacity: 0;}}`; d.head.appendChild(s); }
@@ -1329,6 +1403,7 @@
     finalSurprise: {
         enable(d, w, userName, customText) {
             if (d.getElementById("magic-final-surprise-section")) return;
+            const section = d.createElement("section"); section.id = "magic-final-surprise-section"; section.style.cssText = "padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 24px); text-align: center; margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center;";
             const audio = d.createElement('audio');
             audio.id = 'finalSurpriseAudio';
             audio.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
@@ -1336,7 +1411,6 @@
             audio.volume = 0.7;
             audio.style.display = 'none';
             d.body.appendChild(audio);
-            const section = d.createElement("section"); section.id = "magic-final-surprise-section"; section.style.cssText = "padding: 3rem 1rem; text-align: center; margin: 2rem 1.5rem;";
             const btn = d.createElement("button"); btn.innerText = "\u2728 Final Message \u2728";
             btn.style.cssText = "background:linear-gradient(135deg, #ffd700, #ff8c00); color:white; border:none; padding:20px 45px; border-radius:80px; font-weight:bold; font-size:1.4rem; cursor:pointer; box-shadow:0 15px 35px rgba(255,140,0,0.4); transition:0.3s; text-transform:uppercase; letter-spacing:1px;";
             btn.onmouseenter = () => { btn.style.transform = "scale(1.08) translateY(-5px)"; btn.style.boxShadow = "0 20px 45px rgba(255,140,0,0.6)"; };
@@ -1644,24 +1718,23 @@
 
             const section = d.createElement("section");
             section.id = "magic-voice-note-section";
-            section.style.cssText = "padding: 2.2rem 1.8rem; text-align: center; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 32px; margin: 2.5rem 1.5rem; border: 1px solid rgba(255, 255, 255, 0.6); display: flex; flex-direction: column; align-items: center; gap: 18px; box-shadow: 0 20px 50px rgba(123, 93, 246, 0.1), 0 10px 20px rgba(0,0,0,0.03); transition: all 0.4s ease;";
-
+            section.style.cssText = "padding: clamp(20px, 3vw, 32px) clamp(16px, 2.5vw, 24px); text-align: center; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: clamp(20px, 2.5vw, 32px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center; border: 1px solid rgba(255, 255, 255, 0.6); display: flex; flex-direction: column; align-items: center; gap: clamp(14px, 2vw, 20px); box-shadow: 0 20px 50px rgba(123, 93, 246, 0.1), 0 10px 20px rgba(0,0,0,0.03); transition: all 0.4s ease;";
 
             const title = d.createElement("h2");
-            title.style.cssText = "font-family: 'Great Vibes', cursive; font-size: 2.3rem; color: #ff7a2f; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;";
+            title.style.cssText = "font-family: 'Great Vibes', cursive; font-size: clamp(1.8rem, 3vw, 2.4rem); color: #ff7a2f; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;";
             title.innerHTML = '<i class="fas fa-microphone-alt" style="font-size: 1.8rem; background: linear-gradient(135deg, #ff7a2f, #7b5df6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i> ' + (w.currentLang === 'hi' ? 'आपके लिए एक वॉइस नोट' : 'Voice Note For You');
             section.appendChild(title);
 
             // Container supporting waveform + advanced audio controls
             const playerContainer = d.createElement("div");
-            playerContainer.style.cssText = "display: flex; flex-direction: column; gap: 14px; background: rgba(255, 255, 255, 0.9); padding: 16px 22px; border-radius: 30px; border: 1.5px solid rgba(255, 255, 255, 0.8); box-shadow: 0 10px 30px rgba(123, 93, 246, 0.05); width: min(100%, 390px); box-sizing: border-box;";
+            playerContainer.style.cssText = "display: flex; flex-direction: column; gap: 14px; background: rgba(255, 255, 255, 0.9); padding: clamp(14px, 2vw, 20px) clamp(16px, 2vw, 24px); border-radius: 30px; border: 1.5px solid rgba(255, 255, 255, 0.8); box-shadow: 0 10px 30px rgba(123, 93, 246, 0.05); width: min(100%, 420px); box-sizing: border-box;";
 
             // Row 1: Play, Waveform, Elapsed Time
             const mainRow = d.createElement("div");
             mainRow.style.cssText = "display: flex; align-items: center; gap: 12px; width: 100%;";
 
             const playBtn = d.createElement("button");
-            playBtn.style.cssText = "background: linear-gradient(135deg, #ff7a2f, #ff9e67); color: white; border: none; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s; box-shadow: 0 4px 12px rgba(255, 122, 47, 0.3); flex-shrink: 0; outline: none; position: relative;";
+            playBtn.style.cssText = "background: linear-gradient(135deg, #ff7a2f, #ff9e67); color: white; border: none; width: clamp(46px, 4vw, 56px); height: clamp(46px, 4vw, 56px); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: clamp(1.1rem, 1.6vw, 1.35rem); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s; box-shadow: 0 4px 12px rgba(255, 122, 47, 0.3); flex-shrink: 0; outline: none; position: relative;";
             playBtn.innerHTML = '<i class="fas fa-play" style="margin-left: 2px;"></i>';
             
             playBtn.onmouseenter = () => { playBtn.style.transform = 'scale(1.06)'; };
@@ -2089,12 +2162,12 @@
             if (!section) {
                 section = d.createElement("section");
                 section.id = "magic-music-section";
-                section.style.cssText = "padding: 2.5rem 1rem; text-align: center; background: linear-gradient(145deg, rgba(123,93,246,0.08), rgba(255,122,47,0.06)); border-radius: 48px; margin: 2rem 1.5rem;";
+                section.style.cssText = "padding: clamp(20px, 3vw, 32px) clamp(16px, 2.5vw, 24px); text-align: center; background: linear-gradient(145deg, rgba(123,93,246,0.08), rgba(255,122,47,0.06)); border-radius: clamp(24px, 3vw, 36px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 580px; box-sizing: border-box; align-self: center;";
 
                 const title = d.createElement("h2");
                 title.innerText = "\uD83C\uDFB5 " + (window.currentLang === 'hi' ? "\u0917\u093E\u0928\u093E" : "Music For You");
                 title.style.fontFamily = "'Great Vibes', cursive";
-                title.style.fontSize = "2.2rem";
+                title.style.fontSize = "clamp(1.8rem, 3vw, 2.4rem)";
                 title.style.color = "#7b5df6";
                 section.appendChild(title);
 
@@ -2105,9 +2178,58 @@
             const embedWrap = d.createElement("div");
             embedWrap.id = "magic-music-embed";
             if (isInstagram) {
-                embedWrap.style.cssText = "max-width: 470px; margin: 24px auto; border-radius: 12px; overflow: visible; box-shadow: 0 20px 50px rgba(0,0,0,0.18); aspect-ratio: 9 / 16;";
+                embedWrap.style.cssText = "width: 100%; max-width: 360px; margin: 16px auto; border-radius: 12px; overflow: visible; box-shadow: 0 12px 32px rgba(0,0,0,0.14); aspect-ratio: 9 / 16; position: relative;";
             } else {
-                embedWrap.style.cssText = "max-width: 640px; margin: 24px auto; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.18); aspect-ratio: 16 / 9;";
+                embedWrap.style.cssText = "width: 100%; max-width: 480px; margin: 16px auto; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.14); aspect-ratio: 16 / 9; position: relative;";
+            }
+
+            const isHindi = (window.currentLang === 'hi' || (w && w.currentLang === 'hi') || (w && w.parent && w.parent.currentLang === 'hi'));
+
+            function triggerMusicSelection(e) {
+                if (e) {
+                    try { if (typeof e.preventDefault === 'function') e.preventDefault(); } catch (_) {}
+                    try { if (typeof e.stopPropagation === 'function') e.stopPropagation(); } catch (_) {}
+                }
+                if (w && w.parent && typeof w.parent.openMusicModal === 'function') {
+                    w.parent.openMusicModal();
+                    return;
+                }
+                if (w && typeof w.openMusicModal === 'function') {
+                    w.openMusicModal();
+                    return;
+                }
+                try {
+                    const parentDoc = (w && w.parent) ? w.parent.document : null;
+                    if (parentDoc) {
+                        const plusBtn = parentDoc.querySelector('#toggle-addMusicSection .plus-icon') || parentDoc.querySelector('.toggle-row#toggle-addMusicSection .plus-icon');
+                        if (plusBtn) {
+                            plusBtn.click();
+                            return;
+                        }
+                        const musicModal = parentDoc.getElementById('musicModal');
+                        if (musicModal) {
+                            const toggleRow = parentDoc.getElementById('toggle-addMusicSection');
+                            if (toggleRow && !toggleRow.classList.contains('active')) {
+                                toggleRow.click();
+                            }
+                            const sInput = parentDoc.getElementById('musicSearchInput');
+                            const lInput = parentDoc.getElementById('musicLinkInput');
+                            const rBox = parentDoc.getElementById('musicResults');
+                            const stBox = parentDoc.getElementById('musicStatus');
+                            if (sInput) sInput.value = '';
+                            if (lInput) lInput.value = '';
+                            if (rBox) rBox.innerHTML = '';
+                            if (stBox) stBox.textContent = '';
+                            musicModal.classList.add('show');
+                            return;
+                        }
+                    }
+                } catch (err) {}
+                try {
+                    if (w && w.parent && w.parent !== w) {
+                        w.parent.postMessage({ type: 'openMusicModal' }, '*');
+                    }
+                } catch (err) {}
             }
 
             if (embedUrl) {
@@ -2118,16 +2240,66 @@
                 iframe.setAttribute("allowfullscreen", "");
                 iframe.loading = "lazy";
                 embedWrap.appendChild(iframe);
+
+                const isEditMode = !w.__IS_GENERATED_PAGE__ && (!w.parent || !w.parent.__IS_GENERATED_PAGE__) && (w.location.search.includes("mode=edit") || d.body.classList.contains("edit-mode") || (w.parent && w.parent !== w));
+                if (isEditMode) {
+                    const changeBtn = d.createElement("button");
+                    changeBtn.className = "magic-music-change-btn";
+                    changeBtn.type = "button";
+                    changeBtn.innerHTML = isHindi ? '<span style="font-size:1rem;">🎵</span> गाना बदलें' : '<span style="font-size:1rem;">🎵</span> Change Music';
+                    changeBtn.style.cssText = "position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(20,20,35,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50px; padding: 7px 16px; font-size: 0.85rem; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.35); transition: all 0.2s ease; pointer-events: auto;";
+                    changeBtn.onmouseover = () => { changeBtn.style.transform = "scale(1.05)"; changeBtn.style.background = "linear-gradient(135deg, #7b5df6, #ff7a2f)"; };
+                    changeBtn.onmouseout = () => { changeBtn.style.transform = "scale(1)"; changeBtn.style.background = "rgba(20,20,35,0.85)"; };
+                    changeBtn.onclick = (e) => triggerMusicSelection(e);
+                    embedWrap.appendChild(changeBtn);
+                }
             } else {
                 const placeholder = d.createElement("div");
-                placeholder.style.cssText = "display:flex; align-items:center; justify-content:center; height:100%; background:rgba(123,93,246,0.06); color:var(--text-secondary,#4a3b66); font-size:1.1rem; border-radius:24px; border:2px dashed rgba(123,93,246,0.25);";
-                placeholder.innerText = window.currentLang === 'hi' ? "\u0915\u0943\u092A\u092F\u093E \u0907\u0938 \u0905\u0902\u0927\u0930 \u092E\u0947\u0902 \u0917\u093E\u0928\u093E \u091C\u094B\u095C\u0947\u0902" : "Please add music from the customizer";
+                placeholder.className = "magic-music-placeholder";
+                placeholder.style.cssText = "display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 220px; background: linear-gradient(135deg, rgba(123,93,246,0.06), rgba(255,122,47,0.05)); color: var(--text-secondary,#4a3b66); font-size: 1.05rem; border-radius: 24px; border: 2px dashed rgba(123,93,246,0.3); padding: 32px 20px; box-sizing: border-box; text-align: center; gap: 16px; position: relative; cursor: pointer; transition: all 0.25s ease;";
+
+                const msgPara = d.createElement("p");
+                msgPara.style.cssText = "margin: 0; font-size: 1.05rem; font-weight: 500; color: var(--text-secondary,#5d4e75); font-family: 'Outfit', sans-serif; pointer-events: none;";
+                msgPara.innerText = isHindi ? "कृपया कस्टमर या नीचे दिए गए बटन से गाना जोड़ें" : "Please add music from the customizer";
+
+                const selectBtn = d.createElement("button");
+                selectBtn.className = "magic-music-select-btn";
+                selectBtn.type = "button";
+                selectBtn.innerHTML = isHindi ? '<span style="font-size:1.15rem;">➕</span> 🎵 गाना चुनें (Select Music)' : '<span style="font-size:1.15rem;">➕</span> 🎵 Select Music';
+                selectBtn.style.cssText = "background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); color: #ffffff; border: none; border-radius: 50px; padding: 12px 28px; font-size: 1rem; font-weight: 700; font-family: 'Outfit', sans-serif; cursor: pointer; box-shadow: 0 8px 24px rgba(123,93,246,0.35); display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease; pointer-events: auto;";
+
+                selectBtn.onmouseover = () => {
+                    selectBtn.style.transform = "scale(1.06) translateY(-2px)";
+                    selectBtn.style.boxShadow = "0 12px 28px rgba(123,93,246,0.55)";
+                };
+                selectBtn.onmouseout = () => {
+                    selectBtn.style.transform = "scale(1) translateY(0)";
+                    selectBtn.style.boxShadow = "0 8px 24px rgba(123,93,246,0.35)";
+                };
+                placeholder.onmouseover = () => {
+                    placeholder.style.borderColor = "#7b5df6";
+                    placeholder.style.background = "linear-gradient(135deg, rgba(123,93,246,0.1), rgba(255,122,47,0.08))";
+                };
+                placeholder.onmouseout = () => {
+                    placeholder.style.borderColor = "rgba(123,93,246,0.3)";
+                    placeholder.style.background = "linear-gradient(135deg, rgba(123,93,246,0.06), rgba(255,122,47,0.05))";
+                };
+
+                selectBtn.onclick = (e) => triggerMusicSelection(e);
+                placeholder.onclick = (e) => triggerMusicSelection(e);
+
+                placeholder.appendChild(msgPara);
+                placeholder.appendChild(selectBtn);
                 embedWrap.appendChild(placeholder);
             }
 
             const oldEmbed = section.querySelector("div[id='magic-music-embed']");
             if (oldEmbed) {
-                oldEmbed.replaceWith(embedWrap);
+                if (typeof oldEmbed.replaceWith === 'function') {
+                    oldEmbed.replaceWith(embedWrap);
+                } else if (oldEmbed.parentNode) {
+                    oldEmbed.parentNode.replaceChild(embedWrap, oldEmbed);
+                }
             } else {
                 section.appendChild(embedWrap);
             }
@@ -2190,12 +2362,12 @@
 
             section = d.createElement("section");
             section.id = "magic-image-explosion-section";
-            section.style.cssText = "padding: 3rem 1.5rem; text-align: center; background: radial-gradient(circle at center, rgba(255,122,47,0.05), transparent); border-radius: 48px; margin: 2rem 1.5rem; min-height: 500px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center;";
+            section.style.cssText = "padding: clamp(24px, 3.5vw, 40px) clamp(16px, 2.5vw, 28px); text-align: center; background: radial-gradient(circle at center, rgba(255,122,47,0.05), transparent); border-radius: clamp(24px, 3vw, 36px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 680px; box-sizing: border-box; align-self: center; min-height: 450px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center;";
 
             const title = d.createElement("h2");
             title.innerText = "\u2728 " + (window.currentLang === 'hi' ? "\u092e\u0948\u091c\u093f\u0915 \u092b\u094b\u091f\u094b" : "Magic Photo") + " \u2728";
             title.style.fontFamily = "'Great Vibes', cursive";
-            title.style.fontSize = "2.6rem";
+            title.style.fontSize = "clamp(2.4rem, 4.5vw, 3.4rem)";
             title.style.color = "#ff7a2f";
             title.style.marginBottom = "30px";
             title.style.textShadow = "0 0 15px rgba(255,122,47,0.3)";
@@ -2447,9 +2619,14 @@
                 }
                 .vc-section {
                     position: relative;
-                    width: 100%;
-                    margin: clamp(24px,5vw,48px) 0;
-                    padding: clamp(32px,6vw,64px) clamp(16px,4vw,40px);
+                    width: 92%;
+                    max-width: 600px;
+                    margin: clamp(20px, 3.5vw, 36px) auto !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    align-self: center;
+                    box-sizing: border-box;
+                    padding: clamp(26px, 3.5vw, 40px) clamp(16px, 3vw, 30px);
                     background: radial-gradient(ellipse at 30% 20%, rgba(123,93,246,0.35) 0%, transparent 65%),
                                 radial-gradient(ellipse at 75% 80%, rgba(255,145,0,0.28) 0%, transparent 65%),
                                 linear-gradient(145deg, rgba(20, 10, 38, 0.88) 0%, rgba(35, 12, 50, 0.82) 100%);
@@ -2704,12 +2881,12 @@
                     box-shadow: 0 clamp(6px,2vw,12px) clamp(20px,4vw,32px) rgba(0,0,0,0.4);
                 }
                 .vc-top-body {
-                    width: clamp(130px,32vw,190px);
-                    height: clamp(58px,12vw,82px);
+                    width: clamp(130px, 22vw, 175px);
+                    height: clamp(56px, 9vw, 76px);
                 }
                 .vc-bottom-body {
-                    width: clamp(185px,46vw,265px);
-                    height: clamp(72px,15vw,100px);
+                    width: clamp(180px, 30vw, 245px);
+                    height: clamp(70px, 11vw, 92px);
                     margin-top: -3px;
                 }
 
@@ -2837,8 +3014,8 @@
 
                 /* --- Plate --- */
                 .vc-plate {
-                    width: clamp(210px,52vw,300px);
-                    height: clamp(14px,3vw,22px);
+                    width: clamp(210px, 35vw, 280px);
+                    height: clamp(14px, 2.2vw, 20px);
                     background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #d0d0d0 60%, #9e9e9e 100%);
                     border-radius: 50%;
                     margin-top: -4px;
@@ -2856,8 +3033,8 @@
                     background: linear-gradient(135deg, #FFD700 0%, #FF9100 55%, #FF4D8F 100%);
                     color: #1a0628;
                     border: none;
-                    padding: clamp(13px,3vw,18px) clamp(26px,6vw,44px);
-                    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+                    padding: clamp(13px, 2vw, 18px) clamp(28px, 4vw, 50px);
+                    font-size: clamp(0.95rem, 1.8vw, 1.2rem);
                     font-weight: 800;
                     font-family: 'Outfit', sans-serif;
                     border-radius: 50px;
@@ -3304,8 +3481,8 @@
                 }, 1600);
             };
 
-            btn.addEventListener('click', blowAndCutCake);
-            stage.addEventListener('click', blowAndCutCake);
+            if (btn) btn.addEventListener('click', blowAndCutCake);
+            if (stage) stage.addEventListener('click', blowAndCutCake);
 
             return { cleanup: () => section.remove() };
         },
@@ -3344,17 +3521,20 @@
                 s.textContent = `
                 .vh-section {
                     position: relative;
-                    padding: clamp(30px, 5vw, 45px) 20px;
+                    padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 26px);
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
                     text-align: center;
                     overflow: hidden;
-                    border-radius: 28px;
-                    margin: 25px auto;
-                    max-width: 620px;
+                    border-radius: clamp(20px, 2.5vw, 30px);
+                    margin: clamp(18px, 2.5vw, 28px) auto !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    max-width: 560px;
                     width: 92%;
+                    align-self: center;
                     background: linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 240, 245, 0.96) 100%);
                     border: 2px solid rgba(255, 105, 180, 0.3);
                     box-shadow: 0 15px 35px rgba(255, 105, 180, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
@@ -3363,8 +3543,8 @@
                     z-index: 10;
                 }
                 .vh-anim {
-                    font-size: 3.5rem;
-                    margin-bottom: 12px;
+                    font-size: clamp(3rem, 4.5vw, 3.8rem);
+                    margin-bottom: 10px;
                     animation: vhHugPulse 2s ease-in-out infinite;
                     display: inline-block;
                     filter: drop-shadow(0 4px 12px rgba(255, 105, 180, 0.3));
@@ -3375,28 +3555,28 @@
                 }
                 .vh-lbl {
                     font-family: 'Cinzel', serif;
-                    font-size: clamp(1.25rem, 5vw, 1.6rem);
+                    font-size: clamp(1.3rem, 3vw, 2.2rem);
                     font-weight: 800;
                     color: #8b1a5c;
-                    margin-bottom: 10px;
+                    margin-bottom: 12px;
                     letter-spacing: 0.5px;
                 }
                 .vh-desc {
                     font-family: 'Lora', serif;
-                    font-size: 0.94rem;
-                    line-height: 1.6;
+                    font-size: clamp(1.02rem, 1.6vw, 1.25rem);
+                    line-height: 1.8;
                     color: #6b4c5a;
                     font-style: italic;
-                    margin-bottom: 20px;
-                    max-width: 480px;
+                    margin-bottom: 24px;
+                    max-width: 680px;
                 }
                 .vh-btn {
                     background: linear-gradient(135deg, #ff69b4, #e83a59);
                     color: white;
                     border: none;
-                    padding: 14px 30px;
+                    padding: clamp(14px, 2vw, 18px) clamp(28px, 3.5vw, 48px);
                     border-radius: 50px;
-                    font-size: 1rem;
+                    font-size: clamp(1.02rem, 1.5vw, 1.22rem);
                     font-weight: 700;
                     font-family: 'Quicksand', sans-serif;
                     cursor: pointer;
@@ -3611,7 +3791,7 @@
                 }, (petalCount * 30) + 3800);
             };
 
-            btn.addEventListener('click', createRosePetalHeart);
+            if (btn) btn.addEventListener('click', createRosePetalHeart);
 
             return {
                 cleanup: () => {
