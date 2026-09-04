@@ -53,7 +53,7 @@
             link.id = 'magic-custom-fonts';
             link.rel = 'stylesheet';
             link.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@700&family=Caveat:wght@700&family=Poppins:wght@400;600;700&family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap';
-            if (doc.head) doc.head.appendChild(link);
+            (doc.head || doc.body)?.appendChild(link);
         }
     }
 
@@ -94,7 +94,7 @@
                     const c = window.confetti || window.canvasConfetti;
                     if (cb && c) cb(c);
                 };
-                document.head.appendChild(sc);
+                (document.head || document.body)?.appendChild(sc);
             } else if (cb) {
                 sc.addEventListener('load', () => {
                     const c = window.confetti || window.canvasConfetti;
@@ -347,12 +347,12 @@
                 faLink.id = 'greeter-font-awesome';
                 faLink.rel = 'stylesheet';
                 faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
-                d.head.appendChild(faLink);
+                (d.head || d.body)?.appendChild(faLink);
             }
             const password = customText || "";
             const overlay = d.createElement("div");
             overlay.id = "lock-overlay";
-            overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(135deg, rgba(26, 16, 37, 0.95) 0%, rgba(123, 93, 246, 0.8) 50%, rgba(255, 122, 47, 0.8) 100%); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Inter', sans-serif; color:white; backdrop-filter:blur(15px); opacity:0; transition:opacity 0.8s ease-in-out;";
+            overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(135deg, rgba(26, 16, 37, 0.95) 0%, rgba(123, 93, 246, 0.8) 50%, rgba(255, 122, 47, 0.8) 100%); z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Inter', sans-serif; color:white; backdrop-filter:blur(15px); opacity:0; transition:opacity 0.8s ease-in-out;";
             // Preload unlock audio
             const unlockAudio = d.createElement('audio');
             unlockAudio.src = 'https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1';
@@ -373,7 +373,7 @@
                 const style = d.createElement('style');
                 style.id = 'lock-styles';
                 style.textContent = `@keyframes floatParticle{0%,100%{transform:translateY(0px) rotate(0deg); opacity:0.6;} 50%{transform:translateY(-20px) rotate(180deg); opacity:1;}} @keyframes pulse{0%,100%{transform:scale(1); opacity:0.8;} 50%{transform:scale(1.1); opacity:1;}} @keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);}} #lock-overlay input::placeholder{color:rgba(255,255,255,0.7);}`;
-                d.head.appendChild(style);
+                (d.head || d.body)?.appendChild(style);
             }
             const icon = d.createElement('div');
             icon.innerHTML = '<i class="fas fa-lock" style="font-size:120px; color:#ffffff; margin-bottom:20px; text-shadow:0 0 30px rgba(255,255,255,0.5); animation:pulse 2s infinite;"></i>';
@@ -410,6 +410,8 @@
                     // Play unlock sound
                     unlockAudio.currentTime = 0;
                     unlockAudio.play().catch(e => console.log('Unlock audio failed:', e));
+                    try { const bgAudio = d.getElementById('magic-bg-audio'); if (bgAudio && bgAudio.paused) bgAudio.play().catch(() => {}); } catch(e) {}
+                    try { const bgAudio = d.getElementById('magic-bg-audio'); if (bgAudio && bgAudio.paused) bgAudio.play().catch(() => {}); } catch(e) {}
                     overlay.style.opacity = '0';
                     setTimeout(() => {
                         overlay.remove();
@@ -435,26 +437,47 @@
             return { cleanup: () => overlay.remove() };
         },
         disable(d) { d?.getElementById("lock-overlay")?.remove(); }
-    },
-
-    curtainReveal: {
+    },    curtainReveal: {
         enable(d, w) {
             if (d.getElementById("magic-curtain-reveal-root")) return;
             const cd = d.createElement("div");
             cd.id = "magic-curtain-reveal-root";
-            cd.style.cssText = "position:fixed; inset:0; z-index:2147483647; display:flex; pointer-events:auto; overflow:hidden;";
+            cd.style.cssText = "position:fixed; inset:0; z-index:2147483647; display:flex; pointer-events:auto; overflow:hidden; visibility:visible !important; opacity:1 !important;";
+            
+            // Inject pulse animation for button if not present
+            if (!d.getElementById("magic-curtain-style")) {
+                const cs = d.createElement("style");
+                cs.id = "magic-curtain-style";
+                cs.textContent = `
+                    @keyframes magicCurtainPulse {
+                        0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 8px 25px rgba(123, 93, 246, 0.5), 0 0 15px rgba(255, 122, 47, 0.3); }
+                        50% { transform: translate(-50%, -50%) scale(1.06); box-shadow: 0 14px 35px rgba(255, 122, 47, 0.7), 0 0 25px rgba(123, 93, 246, 0.6); }
+                    }
+                `;
+                (d.head || d.body)?.appendChild(cs);
+            }
+
             cd.innerHTML = `
-                <div class="left" style="flex:1; background:repeating-linear-gradient(90deg,#5a0000 0,#8a0000 40px,#5a0000 80px); transition:transform 3.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin:left; box-shadow: 10px 0 30px rgba(0,0,0,0.5); border-right: 2px solid gold;"></div>
-                <div class="right" style="flex:1; background:repeating-linear-gradient(90deg,#5a0000 0,#8a0000 40px,#5a0000 80px); transition:transform 3.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin:right; box-shadow: -10px 0 30px rgba(0,0,0,0.5); border-left: 2px solid gold;"></div>
-                <button id="curtain-open-btn" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%); color:white; border:none; padding:15px 30px; border-radius:50px; font-size:18px; font-weight:bold; cursor:pointer; box-shadow:0 8px 20px rgba(123, 93, 246, 0.4); transition:0.3s; pointer-events:auto; z-index:2147483648;">&#x2728; Open Curtains &#x2728;</button>
+                <div class="left" style="flex:1; background:repeating-linear-gradient(90deg,#5a0000 0,#8a0000 40px,#5a0000 80px); transition:transform 3.2s cubic-bezier(0.4, 0, 0.2, 1); transform-origin:left; box-shadow: 10px 0 30px rgba(0,0,0,0.5); border-right: 2px solid gold;"></div>
+                <div class="right" style="flex:1; background:repeating-linear-gradient(90deg,#5a0000 0,#8a0000 40px,#5a0000 80px); transition:transform 3.2s cubic-bezier(0.4, 0, 0.2, 1); transform-origin:right; box-shadow: -10px 0 30px rgba(0,0,0,0.5); border-left: 2px solid gold;"></div>
+                <button id="curtain-open-btn" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%); color:white; border:none; padding:16px 34px; border-radius:50px; font-size:19px; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(123, 93, 246, 0.4); pointer-events:auto; z-index:2147483648; animation:magicCurtainPulse 2s infinite ease-in-out; letter-spacing:0.5px;">✨ Open Curtains ✨</button>
             `;
-            d.body.appendChild(cd);
+
+            if (d.body) {
+                cd._prevOverflow = d.body.style.overflow;
+                d.body.style.overflow = "hidden";
+                d.body.appendChild(cd);
+            } else {
+                d.documentElement.appendChild(cd);
+            }
+
             const btn = cd.querySelector("#curtain-open-btn");
             let opened = false;
             const openCurtains = () => {
                 if (opened) return;
                 opened = true;
                 cd.style.pointerEvents = "none";
+                if (d.body) d.body.style.overflow = cd._prevOverflow || "";
                 const l = cd.querySelector(".left");
                 const r = cd.querySelector(".right");
                 if (l) l.style.transform = "translateX(-100%)";
@@ -465,15 +488,29 @@
                         w.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 } catch (err) {}
-                window.dispatchEvent(new CustomEvent('curtainOpened'));
+                
+                // Dispatch event across all potential listeners
+                try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('curtainOpened')); } catch(e){}
+                try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('curtainOpened')); } catch(e){}
+                try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('curtainOpened')); } catch(e){}
+
                 setTimeout(() => cd?.remove(), 3500);
             };
+
             if (btn) btn.onclick = openCurtains;
-            // Fail-safe: Auto open curtains after 10s if user doesn't tap
-            setTimeout(() => { if (!opened) openCurtains(); }, 10000);
-            return {};
+            // Fail-safe: Auto open curtains after 25s if user doesn't tap
+            const autoTimer = setTimeout(() => { if (!opened) openCurtains(); }, 25000);
+            return {
+                cleanups: [() => { clearTimeout(autoTimer); if (d.body) d.body.style.overflow = cd._prevOverflow || ""; }]
+            };
         },
-        disable(d) { d?.getElementById("magic-curtain-reveal-root")?.remove(); }
+        disable(d) {
+            const el = d?.getElementById("magic-curtain-reveal-root");
+            if (el) {
+                if (d.body && el._prevOverflow !== undefined) d.body.style.overflow = el._prevOverflow || "";
+                el.remove();
+            }
+        }
     },
 
     welcomeTyping: {
@@ -1048,9 +1085,32 @@
             const handleOpen = () => {
                 giftAudio.currentTime = 0; giftAudio.play().catch(e => console.log('Gift audio failed:', e)); setTimeout(() => { giftContainer.style.display = "none"; revealDiv.style.display = "block"; revealDiv.style.animation = "giftRevealPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)"; }, 100);
                 if (!d.getElementById('gift-reveal-key')) { const s = d.createElement('style'); s.id = 'gift-reveal-key'; s.textContent = '@keyframes giftRevealPop{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}'; d.head.appendChild(s); }
-                if (images && images.length > 0) {
+                const fallbackGiftPhotos = [
+                    "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80",
+                    "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=80"
+                ];
+                let validGiftImgs = [];
+                if (images && Array.isArray(images) && images.length > 0) {
+                    const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
+                    if (cleaned.length > 0) {
+                        validGiftImgs = cleaned;
+                    } else if (typeof window !== 'undefined' && !window.__IS_GENERATED_PAGE__) {
+                        validGiftImgs = images.filter(src => !!src);
+                    }
+                }
+                if (images && images.length > 0 && validGiftImgs.length === 0) {
+                    validGiftImgs = fallbackGiftPhotos;
+                }
+
+                if (validGiftImgs && validGiftImgs.length > 0) {
                     const gallery = d.createElement("div"); gallery.style.cssText = "display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;";
-                    images.forEach(src => { const img = d.createElement("img"); img.src = src; img.style.cssText = "max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 20px; border: 4px solid gold; box-shadow:0 10px 20px rgba(0,0,0,0.2);"; gallery.appendChild(img); });
+                    validGiftImgs.forEach((src, gIdx) => {
+                        const img = d.createElement("img");
+                        img.src = src;
+                        img.style.cssText = "max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 20px; border: 4px solid gold; box-shadow:0 10px 20px rgba(0,0,0,0.2);";
+                        img.onerror = () => { img.onerror = null; img.src = fallbackGiftPhotos[gIdx % fallbackGiftPhotos.length]; };
+                        gallery.appendChild(img);
+                    });
                     revealDiv.appendChild(gallery);
                 } else {
                     const msg = d.createElement("p"); msg.innerText = customText || (window.currentLang === 'hi' ? window.translations.hi.defaultGiftBoxOpen : window.translations.en.defaultGiftBoxOpen); msg.style.fontSize = "1.8rem"; msg.style.color = "#ffb347"; msg.style.fontFamily = "'Great Vibes', cursive"; revealDiv.appendChild(msg);
@@ -1101,19 +1161,42 @@
             const evData = window.getEventData ? window.getEventData() : { event: 'birthday' };
             section.appendChild(title); const grid = d.createElement("div"); grid.style.cssText = "display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; margin-top: 20px;";
             section.appendChild(grid); insertSectionBeforeFinal(d, section); scrollToElement(d, section);
-            const hasImages = images && images.length > 0;
+            const fallbackScratchPhotos = [
+                "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80",
+                "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=500&auto=format&fit=crop&q=80"
+            ];
+            let validScratchImages = [];
+            if (images && Array.isArray(images) && images.length > 0) {
+                const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
+                if (cleaned.length > 0) {
+                    validScratchImages = cleaned;
+                } else if (typeof window !== 'undefined' && !window.__IS_GENERATED_PAGE__) {
+                    validScratchImages = images.filter(src => !!src);
+                }
+            }
+            if (images && images.length > 0 && validScratchImages.length === 0) {
+                validScratchImages = fallbackScratchPhotos;
+            }
+
+            const hasImages = validScratchImages && validScratchImages.length > 0;
             const getDef = () => {
                 const def = trans.defaultScratchReveal;
                 return typeof def === 'function' ? def(evData.event) : (def || "You're a Star!");
             };
-            const contentItems = hasImages ? images : [customText || getDef()];
+            const contentItems = hasImages ? validScratchImages : [customText || getDef()];
             contentItems.forEach((item, idx) => {
                 const cardDiv = d.createElement("div");
                 cardDiv.className = "magic-scratch-card";
                 cardDiv.style.cssText = "width: clamp(240px, 26vw, 300px); height: clamp(240px, 26vw, 300px); background: #1a1025; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; transition: width 0.3s, height 0.3s;";
                 const canvas = d.createElement("canvas"); canvas.width = 500; canvas.height = 500; canvas.style.cssText = "width:100%; height:100%; cursor: pointer; display: block; position:absolute; top:0; left:0; z-index:2;";
                 const bgContent = d.createElement("div"); bgContent.style.cssText = "position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center; background:#1a1025; padding:15px; text-align:center; overflow:hidden;";
-                if (hasImages) { const img = d.createElement("img"); img.src = item; img.style.cssText = "width:100%; height:100%; object-fit:cover; border-radius:10px;"; bgContent.appendChild(img); }
+                if (hasImages) {
+                    const img = d.createElement("img");
+                    img.src = item;
+                    img.onerror = () => { img.onerror = null; img.src = fallbackScratchPhotos[idx % fallbackScratchPhotos.length]; };
+                    img.style.cssText = "width:100%; height:100%; object-fit:cover; border-radius:10px;";
+                    bgContent.appendChild(img);
+                }
                 else { const p = d.createElement("p"); p.innerText = item; p.style.cssText = "color:#fff; font-size:18px; font-weight:bold; font-family:'Poppins', sans-serif;"; bgContent.appendChild(p); }
                 cardDiv.appendChild(bgContent); cardDiv.appendChild(canvas);
                 const audio = d.createElement('audio'); audio.src = 'https://www.dropbox.com/scl/fi/wb10jz9mqsy44buyqwrfw/Scratch.mp3?rlkey=ugmhbv0hav9shkxkmik7bcdvs&st=7zi6cnpj&dl=1'; audio.loop = true; audio.volume = 0.3; cardDiv.appendChild(audio);
@@ -1199,7 +1282,7 @@
                         }
                     }
                 `;
-                d.head.appendChild(scrollbarStyle);
+                (d.head || d.body)?.appendChild(scrollbarStyle);
             }
             section.appendChild(title); section.appendChild(wrap); insertSectionBeforeFinal(d, section); scrollToElement(d, section);
             const getDef = () => {
@@ -1207,12 +1290,29 @@
                 return typeof def === 'function' ? def(evData.event) : (def || "Memories");
             };
             const milestones = customText ? customText.split(',') : getDef().split(',');
+            const fallbackTimelinePhotos = [
+                "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80",
+                "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=500&auto=format&fit=crop&q=80",
+                "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&auto=format&fit=crop&q=80",
+                "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80"
+            ];
             milestones.forEach((m, i) => {
                 const card = d.createElement("div");
                 card.className = "magic-timeline-card";
                 card.style.cssText = "min-width: clamp(240px, 24vw, 320px); flex-shrink: 0; background: linear-gradient(145deg,#fffbf0,#ffe0c0); border-radius: 32px; padding: clamp(20px, 2.5vw, 32px); text-align: center; scroll-snap-align: center; color: #5a2e1e; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s;";
-                card.innerHTML = `<strong style="font-size:1.3rem; display:block; margin-bottom:8px;">\u2728 ${m} \u2728</strong><span style="font-size:0.95rem; opacity:0.8;">\u2764\uFE0F ${escapeHtml(userName)}</span>`;
-                if (images?.[i]) { const img = d.createElement("img"); img.src = images[i]; img.style.cssText = "width: 100%; height: clamp(160px, 18vw, 220px); object-fit: cover; border-radius: 20px; margin-top: 15px; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"; card.appendChild(img); }
+                card.innerHTML = `<strong style="font-size:1.3rem; display:block; margin-bottom:8px;">✨ ${escapeHtml(m)} ✨</strong><span style="font-size:0.95rem; opacity:0.8;">❤️ ${escapeHtml(userName)}</span>`;
+                
+                let rawSrc = images?.[i];
+                if (rawSrc && typeof rawSrc === 'string' && rawSrc.startsWith('blob:') && typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) {
+                    rawSrc = fallbackTimelinePhotos[i % fallbackTimelinePhotos.length];
+                }
+                if (rawSrc) {
+                    const img = d.createElement("img");
+                    img.src = rawSrc;
+                    img.onerror = () => { img.onerror = null; img.src = fallbackTimelinePhotos[i % fallbackTimelinePhotos.length]; };
+                    img.style.cssText = "width: 100%; height: clamp(160px, 18vw, 220px); object-fit: cover; border-radius: 20px; margin-top: 15px; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1);";
+                    card.appendChild(img);
+                }
                 wrap.appendChild(card);
             }); return {};
         },
@@ -1368,7 +1468,7 @@
                 d.body.appendChild(skyOverlay);
                 const outStyle = d.createElement("style");
                 outStyle.textContent = "@keyframes skyFadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } } @keyframes skyFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.8); } }";
-                d.head.appendChild(outStyle);
+                (d.head || d.body)?.appendChild(outStyle);
                 setTimeout(() => { skyOverlay.style.animation = "skyFadeOut 1s ease-in forwards"; setTimeout(() => skyOverlay.remove(), 1000); }, 5000);
             };
             return { listeners: [{ target: btn, type: "click", handler: btn.onclick }] };
@@ -1382,19 +1482,116 @@
             const lang = window.currentLang || 'en';
             const trans = window.translations?.[lang] || {};
             const evData = window.getEventData ? window.getEventData() : { event: 'birthday' };
-            const section = d.createElement("section"); section.id = "magic-polaroids-section"; section.style.cssText = "padding: clamp(2.5rem, 4vw, 3.5rem) 1rem; position: relative; background: linear-gradient(145deg, rgba(255,215,0,0.05), rgba(255,100,0,0.03)); border-radius: clamp(24px, 3vw, 36px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 680px; box-sizing: border-box; align-self: center; overflow: hidden; min-height: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.1);";
-            const title = d.createElement("h2"); title.innerText = "\uD83D\uDCF7 " + (typeof trans.polaroidTitle === 'function' ? trans.polaroidTitle(evData.event) : "Floating Memories"); title.style.fontFamily = "'Great Vibes', cursive"; title.style.fontSize = "clamp(1.8rem, 3vw, 2.5rem)"; title.style.textAlign = "center"; title.style.color = "#c0a080"; section.appendChild(title);
-            const canvas = d.createElement("div"); canvas.style.cssText = "position: absolute; inset: 0; pointer-events: none;"; section.appendChild(canvas);
-            insertSectionBeforeFinal(d, section); scrollToElement(d, section);
-            const imgs = (images && images.length) ? images : ["https://placehold.co/400x400/FFF9F0/5D4037?text=Upload+any+photo+here", "https://placehold.co/400x400/FFF9F0/5D4037?text=Upload+your+photo"];
-            const iv = setInterval(() => {
+            const section = d.createElement("section"); 
+            section.id = "magic-polaroids-section"; 
+            section.style.cssText = "padding: clamp(2.5rem, 4vw, 3.5rem) 1rem; position: relative; background: linear-gradient(145deg, rgba(255,215,0,0.05), rgba(255,100,0,0.03)); border-radius: clamp(24px, 3vw, 36px); margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 680px; box-sizing: border-box; align-self: center; overflow: hidden; min-height: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.1);";
+            
+            const title = d.createElement("h2"); 
+            title.innerText = "📷 " + (typeof trans.polaroidTitle === 'function' ? trans.polaroidTitle(evData.event) : "Floating Memories"); 
+            title.style.fontFamily = "'Great Vibes', cursive"; 
+            title.style.fontSize = "clamp(1.8rem, 3vw, 2.5rem)"; 
+            title.style.textAlign = "center"; 
+            title.style.color = "#c0a080"; 
+            section.appendChild(title);
+            
+            const canvas = d.createElement("div"); 
+            canvas.style.cssText = "position: absolute; inset: 0; pointer-events: none; overflow: hidden;"; 
+            section.appendChild(canvas);
+            
+            insertSectionBeforeFinal(d, section); 
+            scrollToElement(d, section);
+
+            const fallbackPhotos = [
+                "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80",
+                "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=500&auto=format&fit=crop&q=80",
+                "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&auto=format&fit=crop&q=80",
+                "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80"
+            ];
+
+            // Robust filtering: strip dead/local blob: URLs on shared devices to avoid broken images
+            let validImgs = [];
+            if (images && Array.isArray(images) && images.length > 0) {
+                const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
+                if (cleaned.length > 0) {
+                    validImgs = cleaned;
+                } else if (typeof window !== 'undefined' && !window.__IS_GENERATED_PAGE__) {
+                    // In editor mode with freshly selected local files, blob URLs are valid
+                    validImgs = images.filter(src => !!src);
+                }
+            }
+            if (validImgs.length === 0) {
+                validImgs = fallbackPhotos;
+            }
+
+            if (!d.querySelector("#magic-polaroid-style")) { 
+                const s = d.createElement("style"); 
+                s.id = "magic-polaroid-style"; 
+                s.textContent = `
+                    @keyframes magicPolaroidFloat {
+                        0% { opacity: 0; transform: translateY(0) rotate(var(--rot, 0deg)); }
+                        8% { opacity: 1; }
+                        92% { opacity: 1; }
+                        100% { transform: translateY(-700px) rotate(var(--rot, 0deg)); opacity: 0; }
+                    }
+                    .magic-polaroid-card {
+                        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease !important;
+                    }
+                    .magic-polaroid-card:hover {
+                        transform: scale(1.08) rotate(0deg) !important;
+                        z-index: 100 !important;
+                        box-shadow: 0 25px 50px rgba(0,0,0,0.35) !important;
+                    }
+                `; 
+                (d.head || d.body)?.appendChild(s); 
+            }
+
+            let photoIdx = 0;
+            const spawnCard = (initialBottomPercent = null) => {
                 if (!section.isConnected) return;
-                const p = d.createElement("div"); const src = imgs[Math.floor(Math.random() * imgs.length)];
-                p.style.cssText = `position:absolute; left:${Math.random() * 75 + 5}%; bottom:-280px; width:clamp(140px, 14vw, 180px); background:#fff; padding:10px 10px 36px 10px; box-shadow:0 20px 40px rgba(0,0,0,0.25); transform:rotate(${Math.random() * 20 - 10}deg); animation:magicPolaroidUp ${12 + Math.random() * 4}s linear forwards; border: 1px solid #eee; pointer-events: auto;`;
-                p.innerHTML = `<img src="${src}" style="width:100%; height:clamp(120px, 12vw, 150px); object-fit:cover; display:block; border-radius:2px;"><div style="font-family:'Caveat',cursive; text-align:center; margin-top:10px; font-size:clamp(1rem, 1.3vw, 1.25rem); color:#555;">\u2728 ${customText || userName} \u2728</div>`;
-                canvas.appendChild(p); setTimeout(() => p.remove(), 20000);
-            }, 5500);
-            if (!d.querySelector("#magic-polaroid-style")) { const s = d.createElement("style"); s.id = "magic-polaroid-style"; s.textContent = `@keyframes magicPolaroidUp{0%{opacity:0; transform:translateY(0);} 10%{opacity:1;} 90%{opacity:1;} 100%{transform:translateY(-150vh); opacity: 0;}}`; d.head.appendChild(s); }
+                const p = d.createElement("div");
+                p.className = "magic-polaroid-card";
+                const src = validImgs[photoIdx % validImgs.length];
+                photoIdx++;
+
+                const leftPos = Math.random() * 65 + 8; // 8% to 73%
+                const rot = Math.round(Math.random() * 18 - 9); // -9deg to +9deg
+                const duration = 10 + Math.random() * 4; // 10s to 14s
+
+                p.style.setProperty('--rot', `${rot}deg`);
+                p.style.cssText = `
+                    position: absolute;
+                    left: ${leftPos}%;
+                    bottom: ${initialBottomPercent !== null ? initialBottomPercent + '%' : '-30px'};
+                    width: clamp(140px, 15vw, 175px);
+                    background: #ffffff;
+                    padding: 8px 8px 26px 8px;
+                    box-shadow: 0 16px 36px rgba(0,0,0,0.22);
+                    border: 1px solid rgba(0,0,0,0.08);
+                    border-radius: 4px;
+                    pointer-events: auto;
+                    cursor: pointer;
+                    animation: magicPolaroidFloat ${duration}s linear forwards;
+                    z-index: 10;
+                `;
+
+                const fallbackSrc = fallbackPhotos[photoIdx % fallbackPhotos.length];
+                p.innerHTML = `
+                    <img src="${src}" alt="Memory" style="width:100%; height:clamp(115px, 12vw, 140px); object-fit:cover; display:block; border-radius:2px; background:#f4f0ec;" loading="lazy" onerror="this.onerror=null; this.src='${fallbackSrc}';">
+                    <div style="font-family:'Caveat',cursive; text-align:center; margin-top:8px; font-size:clamp(0.95rem, 1.3vw, 1.18rem); color:#444; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:bold;">✨ ${customText || userName} ✨</div>
+                `;
+
+                canvas.appendChild(p);
+                setTimeout(() => { if (p.parentNode) p.remove(); }, duration * 1000 + 500);
+            };
+
+            // Spawn 3 INITIAL photos immediately at visible staggered heights so user sees them instantly
+            setTimeout(() => spawnCard(15), 100);
+            setTimeout(() => spawnCard(45), 500);
+            setTimeout(() => spawnCard(70), 1000);
+
+            // Regular continuous interval (every 2.8s)
+            const iv = setInterval(() => spawnCard(null), 2800);
+
             return { intervals: [iv] };
         },
         disable(d) { d?.getElementById("magic-polaroids-section")?.remove(); }
@@ -1703,7 +1900,11 @@
 
     voiceNote: {
         enable(d, w, userName, customText, audio) {
-            const srcUrl = audio || customText || "https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1";
+            const defaultVoiceSample = "https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1";
+            let srcUrl = audio || customText || defaultVoiceSample;
+            if (typeof srcUrl === 'string' && srcUrl.startsWith('blob:') && typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) {
+                srcUrl = defaultVoiceSample;
+            }
             if (!srcUrl) return {};
             if (d.getElementById("magic-voice-note-section")) return {};
 
@@ -1818,6 +2019,12 @@
             const audioObj = d.createElement("audio");
             audioObj.src = srcUrl;
             audioObj.preload = "metadata";
+            audioObj.onerror = () => {
+                if (audioObj.src !== defaultVoiceSample) {
+                    audioObj.src = defaultVoiceSample;
+                    audioObj.load();
+                }
+            };
             section.appendChild(audioObj);
 
             let isPlaying = false;
@@ -2157,7 +2364,8 @@
             if (typeof injectFontsIfNeeded === 'function') injectFontsIfNeeded(d);
 
             let section = d.getElementById("magic-music-section");
-            const embedUrl = spotifyEmbedUrl || youtubeEmbedUrl || instagramEmbedUrl || "";
+            const fallbackMusicTrack = "https://www.youtube.com/embed/nl62hhiBMOM?autoplay=0";
+            const embedUrl = spotifyEmbedUrl || youtubeEmbedUrl || instagramEmbedUrl || (typeof window !== "undefined" && window.__IS_GENERATED_PAGE__ ? fallbackMusicTrack : "");
 
             if (!section) {
                 section = d.createElement("section");
@@ -2437,6 +2645,11 @@
             fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    if (file.size > 6 * 1024 * 1024) {
+                        alert("Image exceeds 6 MB limit. Please select an image under 6 MB.");
+                        fileInput.value = "";
+                        return;
+                    }
                     uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
                     uploadBtn.disabled = true;
 
@@ -2603,7 +2816,7 @@
                 fl.id = 'greeter-cake-fonts';
                 fl.rel = 'stylesheet';
                 fl.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Outfit:wght@500;700;800;900&family=Poppins:wght@400;500;600;700&display=swap';
-                d.head.appendChild(fl);
+                (d.head || d.body)?.appendChild(fl);
             }
 
             if (!d.getElementById('vc-styles')) {
@@ -3502,7 +3715,7 @@
                 link.id = 'magic-virtual-hug-fonts';
                 link.rel = 'stylesheet';
                 link.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Lora:ital,wght@0,500;1,400&family=Quicksand:wght@600;700&family=Outfit:wght@600;700;800&display=swap';
-                d.head.appendChild(link);
+                (d.head || d.body)?.appendChild(link);
             }
 
             // Ensure FontAwesome
@@ -3601,7 +3814,7 @@
                     background: rgba(0, 0, 0, 0.45);
                     backdrop-filter: blur(4px);
                     -webkit-backdrop-filter: blur(4px);
-                    z-index: 9999;
+                    z-index: 2147483647;
                     opacity: 0;
                     pointer-events: none;
                     transition: opacity 0.5s ease;

@@ -4384,13 +4384,26 @@
       }
       let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null, isFrameLoaded = false, isPageInitializing = true;
 
+      function getTotalPhotoCount(excludeFeatureId = null) {
+        let count = 0;
+        const photoFeatures = ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion"];
+        photoFeatures.forEach(featId => {
+          if (featId === excludeFeatureId) return;
+          const feat = customData.get(featId);
+          if (feat && Array.isArray(feat.images)) {
+            count += feat.images.length;
+          }
+        });
+        return count;
+      }
+
       // ---------- CLIENT-SIDE SMART IMAGE OPTIMIZATION ----------
       async function compressImageIfNeeded(file, isPremium = false, maxWidth = 1920, maxHeight = 1920, quality = 0.85) {
         if (!file || !file.type || !file.type.startsWith('image/')) {
           return file;
         }
 
-        // SVG and small GIF animations shouldn't be flattened to JPEG
+        // SVG and small GIF animations shouldn't be flattened
         if (file.type === 'image/svg+xml' || (file.type === 'image/gif' && file.size < 500 * 1024)) {
           return file;
         }
@@ -4425,32 +4438,44 @@
             const canvas = document.createElement('canvas');
             canvas.width = targetWidth;
             canvas.height = targetHeight;
-            const ctx = canvas.getContext('2d', { alpha: false });
+            const ctx = canvas.getContext('2d');
             if (!ctx) return resolve(file);
 
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
 
-            // Fill white background for transparent images converted to JPEG
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, targetWidth, targetHeight);
-
             ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-            const mimeType = 'image/jpeg';
-            canvas.toBlob((blob) => {
-              if (blob && (blob.size < file.size || targetWidth < originalWidth)) {
-                const optimizedFileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
-                const optimizedFile = new File([blob], optimizedFileName, {
-                  type: mimeType,
-                  lastModified: Date.now()
-                });
-                console.log(`[ImageOptimizer] Optimized "${file.name}": ${(file.size / 1024).toFixed(1)}KB -> ${(optimizedFile.size / 1024).toFixed(1)}KB (${Math.round((1 - optimizedFile.size / file.size) * 100)}% saved)`);
-                resolve(optimizedFile);
-              } else {
-                resolve(file);
-              }
-            }, mimeType, quality);
+            // Export as WebP for optimal compression, falling back to JPEG if needed
+            const tryWebp = () => {
+              canvas.toBlob((blob) => {
+                if (blob && (blob.size < file.size || targetWidth < originalWidth)) {
+                  const optimizedFileName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+                  const optimizedFile = new File([blob], optimizedFileName, {
+                    type: 'image/webp',
+                    lastModified: Date.now()
+                  });
+                  console.log(`[ImageOptimizer] Compressed "${file.name}": ${(file.size / 1024).toFixed(1)}KB -> ${(optimizedFile.size / 1024).toFixed(1)}KB (${Math.round((1 - optimizedFile.size / file.size) * 100)}% saved)`);
+                  resolve(optimizedFile);
+                } else {
+                  // Fallback to JPEG
+                  canvas.toBlob((jpgBlob) => {
+                    if (jpgBlob && jpgBlob.size < file.size) {
+                      const optName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+                      resolve(new File([jpgBlob], optName, { type: 'image/jpeg', lastModified: Date.now() }));
+                    } else {
+                      resolve(file);
+                    }
+                  }, 'image/jpeg', quality);
+                }
+              }, 'image/webp', quality);
+            };
+
+            try {
+              tryWebp();
+            } catch (e) {
+              resolve(file);
+            }
           };
 
           img.onerror = () => {
@@ -4519,9 +4544,11 @@
       }
 
       async function compressAudioIfNeeded(file, isPremium) {
-        if (isPremium) return file;
-        const MAX_SIZE = 6 * 1024 * 1024;
-        if (file.size <= MAX_SIZE) return file;
+        const MAX_SIZE = 6 * 1024 * 1024; // 6MB limit
+        if (file.size > MAX_SIZE) {
+          throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया 6MB से छोटी ऑडियो फाइल चुनें।" : "Audio file exceeds 6 MB limit. Please choose a file under 6 MB.");
+        }
+        if (file.size <= MAX_SIZE && isPremium) return file;
         try {
           const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
           const arrayBuffer = await file.arrayBuffer();
@@ -4542,9 +4569,12 @@
             type: 'audio/wav',
             lastModified: Date.now()
           });
-          if (compressedFile.size < file.size) return compressedFile;
+          if (compressedFile.size <= MAX_SIZE) return compressedFile;
         } catch (err) {
-          console.error('Audio compression failed, uploading original', err);
+          console.error('Audio compression failed', err);
+        }
+        if (file.size > MAX_SIZE) {
+          throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया 6MB से छोटी ऑडियो फाइल चुनें।" : "Audio file exceeds 6 MB limit. Please use an audio file under 6 MB.");
         }
         return file;
       }
@@ -5920,15 +5950,17 @@
                 autoSaveState();
               });
             }
-            if (hasCustom && ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids"].includes(id)) {
+            if (hasCustom && ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion"].includes(id)) {
               const uploadDiv = document.createElement("div"); uploadDiv.className = "image-upload";
               const label = document.createElement("label"); label.innerText = t.uploadImages; label.setAttribute('data-upload-label', 'true');
               const fileInput = document.createElement("input"); fileInput.type = "file";
-              fileInput.multiple = true;
+              fileInput.multiple = (id !== "imageExplosion");
               fileInput.accept = "image/*";
               label.appendChild(fileInput); uploadDiv.appendChild(label);
+
               previewDiv = document.createElement("div"); previewDiv.className = "image-preview";
               customPanel.appendChild(uploadDiv); customPanel.appendChild(previewDiv);
+
               const updatePreview = () => {
                 previewDiv.innerHTML = "";
                 const images = customData.get(id)?.images || [];
@@ -5944,6 +5976,7 @@
                     existing.images = existing.images.filter((_, i) => i !== idx);
                     customData.set(id, existing);
                     updatePreview();
+                    autoSaveState();
                     if (textarea) existing.text = textarea.value;
                     if (emojiInput) existing.emoji = emojiInput.value;
                     const nameVal = getUserName();
@@ -5952,8 +5985,57 @@
                   item.appendChild(img); item.appendChild(removeBtn); previewDiv.appendChild(item);
                 });
               };
+
               fileInput.onchange = async (e) => {
-                const files = Array.from(e.target.files);
+                const rawFiles = Array.from(e.target.files);
+                if (!rawFiles || rawFiles.length === 0) return;
+
+                const MAX_PHOTO_SIZE = 6 * 1024 * 1024; // 6MB limit
+                const MAX_TOTAL_PHOTOS = 9;
+
+                // 1. File size validation (< 6MB)
+                const oversizedFiles = rawFiles.filter(f => f.size > MAX_PHOTO_SIZE);
+                const sizeValidFiles = rawFiles.filter(f => f.size <= MAX_PHOTO_SIZE);
+
+                if (oversizedFiles.length > 0) {
+                  const fileNames = oversizedFiles.map(f => `"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)} MB)`).join(', ');
+                  const msg = currentLang === 'hi'
+                    ? `कुछ फोटो 6MB से बड़ी हैं और जोड़ी नहीं जा सकीं: ${fileNames}। कृपया 6MB से छोटी फोटो चुनें।`
+                    : `The following file(s) exceed the 6 MB limit and were skipped: ${fileNames}. Photos must be under 6 MB each.`;
+                  showModal(msg);
+                }
+
+                if (sizeValidFiles.length === 0) {
+                  fileInput.value = "";
+                  return;
+                }
+
+                // 2. Total photo quota validation (max 9 photos across all features)
+                const otherPhotosCount = getTotalPhotoCount(id);
+                const thisFeatureCurrentCount = id === "imageExplosion" ? 0 : (customData.get(id)?.images || []).length;
+                const totalExisting = otherPhotosCount + thisFeatureCurrentCount;
+                const remainingSlots = Math.max(0, MAX_TOTAL_PHOTOS - totalExisting);
+
+                if (remainingSlots <= 0) {
+                  const limitMsg = currentLang === 'hi'
+                    ? `फोटो सीमा समाप्त! आप अपनी वेबसाइट में कुल 9 फोटो तक ही उपयोग कर सकते हैं।`
+                    : `Photo limit reached! You can use only up to 9 photos across your website. You currently have 9 photos.`;
+                  showModal(limitMsg);
+                  fileInput.value = "";
+                  return;
+                }
+
+                let filesToProcess = sizeValidFiles;
+                if (id === "imageExplosion") {
+                  filesToProcess = [filesToProcess[0]];
+                } else if (filesToProcess.length > remainingSlots) {
+                  const overflowMsg = currentLang === 'hi'
+                    ? `फोटो सीमा: आप अधिकतम 9 फोटो उपयोग कर सकते हैं। केवल पहली ${remainingSlots} फोटो जोड़ी गईं।`
+                    : `Photo limit notice: You can use only up to 9 photos total. Only the first ${remainingSlots} photo(s) were added.`;
+                  showModal(overflowMsg);
+                  filesToProcess = filesToProcess.slice(0, remainingSlots);
+                }
+
                 const urlParams = new URLSearchParams(window.location.search);
                 const viewId = urlParams.get('view') || urlParams.get('restore') || (typeof currentViewId !== 'undefined' ? currentViewId : '');
                 const isPremium = !!(
@@ -5969,8 +6051,12 @@
                   window.isPremium = true;
                 }
 
-                // Create placeholders
-                files.forEach(() => {
+                if (id === "imageExplosion") {
+                  previewDiv.innerHTML = "";
+                }
+
+                // Create placeholders for new items
+                filesToProcess.forEach(() => {
                   const item = document.createElement("div"); item.className = "image-preview-item";
                   const img = document.createElement("img");
                   const removeBtn = document.createElement("span"); removeBtn.className = "remove-image"; removeBtn.innerHTML = "×";
@@ -5978,7 +6064,7 @@
                 });
 
                 try {
-                  const processedFiles = await Promise.all(files.map(f => compressImageIfNeeded(f, isPremium)));
+                  const processedFiles = await Promise.all(filesToProcess.map(f => compressImageIfNeeded(f, isPremium)));
 
                   window._pendingLocalFiles = window._pendingLocalFiles || new Map();
                   const urls = processedFiles.map((f, idx) => {
@@ -5986,7 +6072,7 @@
                     window._pendingLocalFiles.set(blobUrl, f);
 
                     const items = previewDiv.querySelectorAll('.image-preview-item');
-                    const item = items[items.length - files.length + idx];
+                    const item = items[items.length - filesToProcess.length + idx];
                     if (item) {
                       const img = item.querySelector('img');
                       if (img) {
@@ -6029,7 +6115,7 @@
                   fileInput.value = "";
                 } catch (err) {
                   console.error('Image upload error:', err);
-                  showModal(currentLang === 'hi' ? 'इमेज अपलोड फेल हो गया। कृपया Cloudinary कॉन्फिग चेक करें और दोबारा कोशिश करें।' : 'Image upload failed. Please check your Cloudinary configuration and try again.');
+                  showModal(currentLang === 'hi' ? 'इमेज प्रोसेस विफल रही। कृपया दोबारा कोशिश करें।' : 'Image processing failed. Please try again.');
                   updatePreview();
                 }
               };
@@ -6119,6 +6205,16 @@
                 const file = e.target.files[0];
                 if (!file) return;
 
+                const MAX_AUDIO_SIZE = 6 * 1024 * 1024; // 6MB limit
+                if (file.size > MAX_AUDIO_SIZE) {
+                  const errMsg = currentLang === 'hi'
+                    ? `ऑडियो फाइल 6MB से बड़ी है (${(file.size / (1024 * 1024)).toFixed(1)} MB)। कृपया 6MB से छोटी ऑडियो फाइल चुनें।`
+                    : `Audio file "${file.name}" exceeds the 6 MB limit (${(file.size / (1024 * 1024)).toFixed(1)} MB). Please choose a file under 6 MB.`;
+                  showModal(errMsg);
+                  audioInput.value = "";
+                  return;
+                }
+
                 audioNameDiv.innerText = currentLang === 'hi' ? "अपलोड हो रहा है..." : "Uploading...";
                 uploadBox.style.display = "none";
                 deleteBtn.style.display = "none";
@@ -6134,8 +6230,8 @@
                   );
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
-                  if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
-                    throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल यूज़ करें।" : "Audio file exceeds 6MB. Please use a smaller file.");
+                  if (processedFile.size > MAX_AUDIO_SIZE) {
+                    throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल चुनें।" : "Audio file exceeds 6 MB limit. Please use a smaller file.");
                   }
 
                   // Only upload to Cloudinary for premium users
@@ -6166,6 +6262,7 @@
                   showModal(err.message || (currentLang === 'hi' ? 'ऑडियो अपलोड विफल रहा।' : 'Audio upload failed.'));
                   audioNameDiv.innerText = "";
                   uploadBox.style.display = "block";
+                  audioInput.value = "";
                 }
               };
             }
@@ -6189,7 +6286,8 @@
               recordContent.id = "tab-record";
               recordContent.style.cssText = "display:block; text-align:center; padding:15px 0;";
               recordContent.innerHTML = `
-                <div class="record-timer" style="font-size:1.5rem; font-weight:700; color:var(--text-primary); margin-bottom:10px; font-family:'Outfit', sans-serif;">00:00</div>
+                <div class="record-timer" style="font-size:1.5rem; font-weight:700; color:var(--text-primary); margin-bottom:4px; font-family:'Outfit', sans-serif;">00:00 / 01:30</div>
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:12px;">${currentLang === 'hi' ? 'अधिकतम अवधि: 90 सेकंड' : 'Maximum duration: 90 seconds'}</div>
                 <div class="record-wave" style="display:none; justify-content:center; gap:4px; height:20px; margin-bottom:15px; align-items:center;">
                   <span class="wave-bar" style="width:3px; height:100%; background:#ff7a2f; border-radius:3px; animation: wave-pulse 1s infinite ease-in-out;"></span>
                   <span class="wave-bar" style="width:3px; height:60%; background:#ff7a2f; border-radius:3px; animation: wave-pulse 0.8s infinite ease-in-out; animation-delay:0.2s;"></span>
@@ -6197,7 +6295,7 @@
                   <span class="wave-bar" style="width:3px; height:40%; background:#ff7a2f; border-radius:3px; animation: wave-pulse 0.9s infinite ease-in-out; animation-delay:0.1s;"></span>
                 </div>
                 <button class="btn-record-action btn-outline" style="background:var(--accent-solid); color:white; border:none; border-radius:50px; padding:12px 25px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(123, 93, 246, 0.3); font-family:inherit;">
-                  <i class="fas fa-microphone"></i> Start Recording
+                  <i class="fas fa-microphone"></i> ${currentLang === 'hi' ? 'रिकॉर्डिंग शुरू करें' : 'Start Recording'}
                 </button>
               `;
               mainContainer.appendChild(recordContent);
@@ -6262,6 +6360,7 @@
               let audioChunks = [];
               let recordTimerInterval = null;
               let recordStartTime = 0;
+              const MAX_RECORD_SECONDS = 90; // 90 seconds max duration
               const timerEl = recordContent.querySelector(".record-timer");
               const waveEl = recordContent.querySelector(".record-wave");
               const recordBtn = recordContent.querySelector(".btn-record-action");
@@ -6270,9 +6369,27 @@
 
               const updateRecordTimer = () => {
                 const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+                const remaining = Math.max(0, MAX_RECORD_SECONDS - elapsed);
                 const m = Math.floor(elapsed / 60);
                 const s = elapsed % 60;
-                timerEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                timerEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} / 01:30`;
+
+                if (remaining <= 10) {
+                  timerEl.style.color = '#ff3366';
+                } else {
+                  timerEl.style.color = 'var(--text-primary)';
+                }
+
+                if (elapsed >= MAX_RECORD_SECONDS) {
+                  if (mediaRecorder && mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                    clearInterval(recordTimerInterval);
+                    waveEl.style.display = "none";
+                    recordBtn.innerHTML = `<i class="fas fa-microphone"></i> ${currentLang === 'hi' ? 'रिकॉर्डिंग शुरू करें' : 'Start Recording'}`;
+                    recordBtn.style.background = "var(--accent-solid)";
+                    showModal(currentLang === 'hi' ? 'अधिकतम 90 सेकंड की रिकॉर्डिंग सीमा पूरी हो गई। वॉइस नोट सेव किया जा रहा है...' : 'Maximum 90-second recording duration reached. Saving voice note...');
+                  }
+                }
               };
 
               recordBtn.onclick = async () => {
@@ -6280,7 +6397,7 @@
                   mediaRecorder.stop();
                   clearInterval(recordTimerInterval);
                   waveEl.style.display = "none";
-                  recordBtn.innerHTML = `<i class="fas fa-microphone"></i> Start Recording`;
+                  recordBtn.innerHTML = `<i class="fas fa-microphone"></i> ${currentLang === 'hi' ? 'रिकॉर्डिंग शुरू करें' : 'Start Recording'}`;
                   recordBtn.style.background = "var(--accent-solid)";
                   return;
                 }
@@ -6296,6 +6413,15 @@
 
                   mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    if (audioBlob.size > 6 * 1024 * 1024) {
+                      showModal(currentLang === 'hi' ? 'रिकॉर्डेड ऑडियो 6MB से बड़ा है।' : 'Recorded voice note exceeds 6 MB.');
+                      tabs.style.display = "flex";
+                      recordContent.style.display = "block";
+                      timerEl.innerText = "00:00 / 01:30";
+                      timerEl.style.color = "var(--text-primary)";
+                      return;
+                    }
+
                     const file = new File([audioBlob], "voice_note.wav", { type: "audio/wav" });
 
                     timerEl.innerText = currentLang === 'hi' ? "अपलोड हो रहा है..." : "Uploading Voice Note...";
@@ -6339,16 +6465,18 @@
                       showModal(err.message || (currentLang === 'hi' ? 'वॉइस नोट अपलोड विफल रहा।' : 'Voice Note upload failed.'));
                       tabs.style.display = "flex";
                       recordContent.style.display = "block";
-                      timerEl.innerText = "00:00";
+                      timerEl.innerText = "00:00 / 01:30";
+                      timerEl.style.color = "var(--text-primary)";
                     }
                   };
 
                   mediaRecorder.start();
                   recordStartTime = Date.now();
-                  timerEl.innerText = "00:00";
+                  timerEl.innerText = "00:00 / 01:30";
+                  timerEl.style.color = "var(--text-primary)";
                   recordTimerInterval = setInterval(updateRecordTimer, 1000);
                   waveEl.style.cssText = "display:flex; justify-content:center; gap:4px; height:20px; margin-bottom:15px; align-items:center;";
-                  recordBtn.innerHTML = `<i class="fas fa-stop"></i> Stop Recording`;
+                  recordBtn.innerHTML = `<i class="fas fa-stop"></i> ${currentLang === 'hi' ? 'रिकॉर्डिंग रोकें' : 'Stop Recording'}`;
                   recordBtn.style.background = "#ff3366";
                 } catch (err) {
                   console.error(err);
@@ -6359,6 +6487,16 @@
               voiceFileInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
+
+                const MAX_AUDIO_SIZE = 6 * 1024 * 1024; // 6MB limit
+                if (file.size > MAX_AUDIO_SIZE) {
+                  const errMsg = currentLang === 'hi'
+                    ? `ऑडियो फाइल 6MB से बड़ी है (${(file.size / (1024 * 1024)).toFixed(1)} MB)। कृपया 6MB से छोटी फाइल चुनें।`
+                    : `Audio file "${file.name}" exceeds 6 MB limit (${(file.size / (1024 * 1024)).toFixed(1)} MB). Please choose a file under 6 MB.`;
+                  showModal(errMsg);
+                  voiceFileInput.value = "";
+                  return;
+                }
 
                 tabs.style.display = "none";
                 uploadContent.style.display = "none";
@@ -6382,7 +6520,7 @@
                   );
 
                   const processedFile = await compressAudioIfNeeded(file, isPremium);
-                  if (!isPremium && processedFile.size > 6 * 1024 * 1024) {
+                  if (processedFile.size > MAX_AUDIO_SIZE) {
                     throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल यूज़ करें।" : "Audio file exceeds 6MB. Please use a smaller file.");
                   }
 
@@ -6417,6 +6555,7 @@
                   previewContainer.style.display = "none";
                   tabs.style.display = "flex";
                   uploadContent.style.display = "block";
+                  voiceFileInput.value = "";
                 }
               };
 
@@ -6427,7 +6566,8 @@
                 tabs.style.display = "flex";
                 recordContent.style.display = "block";
                 uploadContent.style.display = "none";
-                timerEl.innerText = "00:00";
+                timerEl.innerText = "00:00 / 01:30";
+                timerEl.style.color = "var(--text-primary)";
                 tabBtns[0].click();
 
                 const nameVal = getUserName();
@@ -6934,6 +7074,38 @@
             e.preventDefault();
             const rawFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
             if (rawFiles.length === 0) return;
+
+            const MAX_PHOTO_SIZE = 6 * 1024 * 1024;
+            const MAX_TOTAL_PHOTOS = 9;
+
+            const oversized = rawFiles.filter(f => f.size > MAX_PHOTO_SIZE);
+            if (oversized.length > 0) {
+              const names = oversized.map(f => `"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)} MB)`).join(', ');
+              showModal(currentLang === 'hi'
+                ? `कुछ फोटो 6MB से बड़ी हैं और छोड़ी गईं: ${names}`
+                : `The following file(s) exceed 6 MB and were skipped: ${names}`);
+            }
+
+            const sizeValid = rawFiles.filter(f => f.size <= MAX_PHOTO_SIZE);
+            if (sizeValid.length === 0) return;
+
+            const currentTotal = getTotalPhotoCount();
+            const remaining = Math.max(0, MAX_TOTAL_PHOTOS - currentTotal);
+            if (remaining <= 0) {
+              showModal(currentLang === 'hi'
+                ? 'फोटो सीमा समाप्त! आप कुल 9 फोटो तक ही उपयोग कर सकते हैं।'
+                : 'Photo limit reached! You can use only up to 9 photos across all features.');
+              return;
+            }
+
+            let filesToProcess = sizeValid;
+            if (filesToProcess.length > remaining) {
+              showModal(currentLang === 'hi'
+                ? `फोटो सीमा: केवल पहली ${remaining} फोटो स्वीकार की गईं (अधिकतम 9 फोटो)।`
+                : `Photo limit notice: Only ${remaining} photo(s) accepted (maximum 9 photos total).`);
+              filesToProcess = filesToProcess.slice(0, remaining);
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const viewId = urlParams.get('view') || urlParams.get('restore') || (typeof currentViewId !== 'undefined' ? currentViewId : '');
             const isPremium = !!(
@@ -6950,7 +7122,7 @@
             }
 
             try {
-              const files = await Promise.all(rawFiles.map(f => compressImageIfNeeded(f, isPremium)));
+              const files = await Promise.all(filesToProcess.map(f => compressImageIfNeeded(f, isPremium)));
               window._pendingLocalFiles = window._pendingLocalFiles || new Map();
               const urls = files.map(f => {
                 const blobUrl = URL.createObjectURL(f);

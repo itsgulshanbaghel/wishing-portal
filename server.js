@@ -130,13 +130,13 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://cdn.cashfree.com", "https://sdk.cashfree.com", "https://www.paypal.com", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://pagead2.googlesyndication.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://cdn.cashfree.com", "https://sdk.cashfree.com", "https://www.paypal.com", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://pagead2.googlesyndication.com", "https://www.instagram.com", "https://platform.instagram.com", "https://www.youtube.com", "https://s.ytimg.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       mediaSrc: ["'self'", "https:", "data:", "blob:"],
       connectSrc: ["'self'", "https:", "wss:", "blob:"],
-      frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com", "https://open.spotify.com", "https://checkout.razorpay.com", "https://www.paypal.com", "https://sandbox.cashfree.com", "https://api.cashfree.com", "https://payments.cashfree.com", "https://sdk.cashfree.com"],
+      frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com", "https://open.spotify.com", "https://www.instagram.com", "https://instagram.com", "https://checkout.razorpay.com", "https://www.paypal.com", "https://sandbox.cashfree.com", "https://api.cashfree.com", "https://payments.cashfree.com", "https://sdk.cashfree.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: []
     }
@@ -214,9 +214,31 @@ app.use('/api/analytics/event', (req, res, next) => {
 const uploadMediaMulter = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 25 * 1024 * 1024 // 25MB limit
+    fileSize: 7 * 1024 * 1024 // 7MB limit (allows 6MB binary + multipart overhead)
+  },
+  fileFilter: (req, file, cb) => {
+    const mime = (file.mimetype || '').toLowerCase();
+    const isImage = mime.startsWith('image/') || ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'].includes(mime);
+    const isAudio = mime.startsWith('audio/') || ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/ogg', 'audio/webm', 'audio/aac', 'audio/m4a', 'audio/x-m4a'].includes(mime);
+    if (isImage || isAudio) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only image and audio files are allowed.'));
+    }
   }
 });
+
+const uploadMediaMiddleware = (req, res, next) => {
+  uploadMediaMulter.single('file')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'File too large. Maximum allowed file size is 6 MB.' });
+      }
+      return res.status(400).json({ error: err.message || 'File upload error' });
+    }
+    next();
+  });
+};
 
 const handleMediaUpload = async (req, res) => {
   try {
@@ -235,9 +257,9 @@ const handleMediaUpload = async (req, res) => {
   }
 };
 
-app.post('/api/upload-audio', uploadMediaMulter.single('file'), handleMediaUpload);
-app.post('/api/upload-photo', uploadMediaMulter.single('file'), handleMediaUpload);
-app.post('/api/upload-media', uploadMediaMulter.single('file'), handleMediaUpload);
+app.post('/api/upload-audio', uploadMediaMiddleware, handleMediaUpload);
+app.post('/api/upload-photo', uploadMediaMiddleware, handleMediaUpload);
+app.post('/api/upload-media', uploadMediaMiddleware, handleMediaUpload);
 
 app.use(express.json({ limit: '10mb' })); // Reduced from 100mb to 10mb
 
@@ -307,8 +329,22 @@ app.get(['/health', '/api/health'], (req, res) => {
 app.post('/api/config', async (req, res) => {
   try {
     const { html, config, isPremium, websiteId } = req.body;
-    if (!html) return res.status(400).json({ error: 'HTML is required' });
-    const id = websiteId || req.body.id || Math.random().toString(36).substring(2, 12);
+    const rawId = websiteId || req.body.id || Math.random().toString(36).substring(2, 12);
+    const id = String(rawId).replace(/[^a-z0-9]/gi, '') || Math.random().toString(36).substring(2, 12);
+
+    // Validate photo limits on server: max 9 photos across interactive features
+    if (config && config.customData && typeof config.customData === 'object') {
+      let totalPhotos = 0;
+      const photoFeatures = ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion"];
+      for (const [featId, featVal] of Object.entries(config.customData)) {
+        if (photoFeatures.includes(featId) && featVal && Array.isArray(featVal.images)) {
+          totalPhotos += featVal.images.length;
+        }
+      }
+      if (totalPhotos > 9) {
+        return res.status(400).json({ error: 'Photo limit exceeded. You can use only up to 9 photos.' });
+      }
+    }
 
     // Auto-verify payment status from DB to ensure premium state is only granted for verified payments
     let effectiveIsPremium = false;
@@ -2836,22 +2872,77 @@ app.get('/api/search-spotify', async (req, res) => {
   }
 });
 
-// Search YouTube
+// Helper to extract YouTube video ID from URL or raw ID
+function extractYouTubeVideoId(input) {
+  if (!input || typeof input !== 'string') return null;
+  const str = input.trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(str)) return str;
+  const match = str.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/)|music\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/i);
+  return match ? match[1] : null;
+}
+
+// Search YouTube or resolve YouTube URL/ID
 app.get('/api/search-youtube', async (req, res) => {
   try {
     const query = (req.query.q || '').trim();
     if (!query) return res.json({ results: [] });
 
+    // 1. Direct YouTube link or 11-char video ID detection
+    const directVideoId = extractYouTubeVideoId(query);
+    if (directVideoId) {
+      try {
+        const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent('https://www.youtube.com/watch?v=' + directVideoId)}&format=json`;
+        const oembedRes = await fetch(oembedUrl);
+        if (oembedRes.ok) {
+          const oembedData = await oembedRes.json();
+          return res.json({
+            results: [{
+              id: directVideoId,
+              name: oembedData.title || `YouTube Track (${directVideoId})`,
+              artist: oembedData.author_name || 'YouTube',
+              album: '',
+              image: oembedData.thumbnail_url || `https://img.youtube.com/vi/${directVideoId}/hqdefault.jpg`,
+              url: `https://www.youtube.com/watch?v=${directVideoId}`,
+              type: 'youtube',
+            }]
+          });
+        }
+      } catch (oembedErr) {
+        console.warn('[YouTube oEmbed] direct lookup notice:', oembedErr.message);
+      }
+
+      // Fallback if oEmbed is unavailable
+      return res.json({
+        results: [{
+          id: directVideoId,
+          name: `YouTube Track (${directVideoId})`,
+          artist: 'YouTube',
+          album: '',
+          image: `https://img.youtube.com/vi/${directVideoId}/hqdefault.jpg`,
+          url: `https://www.youtube.com/watch?v=${directVideoId}`,
+          type: 'youtube',
+        }]
+      });
+    }
+
+    // 2. Search query via Google YouTube Data API v3
     const apiKey = process.env.YOUTUBE_API_KEY;
     if (!apiKey) {
-      throw new Error('YouTube API key not configured');
+      return res.json({
+        results: [],
+        warning: 'YouTube API key not configured. You can paste a direct YouTube video link or ID.'
+      });
     }
 
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=8&key=${apiKey}`;
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`YouTube search failed: ${response.status}`);
+      console.warn(`YouTube search API returned status: ${response.status}`);
+      return res.json({
+        results: [],
+        warning: `YouTube search unavailable (status ${response.status}). You can paste a direct YouTube video link or ID.`
+      });
     }
 
     const data = await response.json();
