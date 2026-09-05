@@ -869,51 +869,76 @@ class AnalyticsStore {
       const cockroach = require('./cockroach');
       const storage = require('./storage');
       const { Website, Event, Feedback, CustomSlug, Payment } = require('./models');
+      const mongoose = require('mongoose');
 
-      // 1. Check if website is Premium / Paid in CockroachDB
-      const record = await cockroach.getRecord(websiteId);
-      const isPremium = !!(record && (record.isPremium || record.is_premium));
+      const cleanId = String(websiteId).replace(/\.json$/i, '').trim();
+
+      // 1. Check if website is Premium / Paid in CockroachDB or Supabase
+      const record = await cockroach.getRecord(cleanId).catch(() => null);
+      let isPremium = !!(record && (record.isPremium || record.is_premium));
+
+      // Also check Supabase Storage config if record wasn't in CockroachDB
+      if (!isPremium) {
+        try {
+          const sbConfig = await storage.readWebsiteConfig(cleanId);
+          if (sbConfig && (sbConfig.isPremium || (sbConfig.metadata && (sbConfig.metadata.isPremium || sbConfig.metadata.paymentStatus === 'paid')))) {
+            isPremium = true;
+          }
+        } catch (e) {}
+      }
 
       if (isPremium && !force) {
         return {
           success: false,
           isPremium: true,
-          message: `Website "${websiteId}" is a Premium / Paid website. Set force=true to override and delete.`
+          message: `Website "${cleanId}" is a Premium / Paid website. Set force=true to override and delete.`
         };
       }
 
       // 2. Delete from CockroachDB tables
-      const crDeleteRes = await cockroach.deleteWebsiteRecords(websiteId);
+      const crDeleteRes = await cockroach.deleteWebsiteRecords(cleanId).catch(() => ({ success: false, deletedCount: 0 }));
 
-      // 3. Delete from Supabase Storage
-      const sbDeleteRes = await storage.deleteWebsiteConfig(websiteId);
+      // 3. Delete from Supabase Storage (JSON configs + associated media)
+      const sbDeleteRes = await storage.deleteWebsiteConfig(cleanId);
 
       // 4. Delete Cloudinary Raw Config & Image Assets (legacy safety)
       const cloud = cloudinaryRef || require('cloudinary').v2;
       let cloudinaryDeleted = false;
       try {
-        await this._deleteCloudinaryWebsiteAssets(cloud, websiteId);
+        await this._deleteCloudinaryWebsiteAssets(cloud, cleanId);
         cloudinaryDeleted = true;
       } catch (cErr) {}
 
-      // 5. Non-blocking MongoDB cleanup (swallows errors)
+      // 5. Clean up local configs/ folder if present
       try {
-        await Promise.allSettled([
-          Website.deleteOne({ id: websiteId }),
-          Event.deleteMany({ websiteId }),
-          Feedback.deleteMany({ websiteId }),
-          CustomSlug.deleteMany({ websiteId }),
-          Payment.deleteMany({ websiteId })
-        ]);
-      } catch (mErr) {}
+        const fs = require('fs');
+        const path = require('path');
+        const localPath = path.join(__dirname, 'configs', `${cleanId}.json`);
+        if (fs.existsSync(localPath)) {
+          fs.unlinkSync(localPath);
+        }
+      } catch (fsErr) {}
 
-      console.log(`[Analytics] Deleted website ${websiteId}: cockroach=${crDeleteRes.deletedCount}, supabaseFree=${sbDeleteRes.freeDeleted}, supabasePrem=${sbDeleteRes.premiumDeleted}`);
+      // 6. Safe non-blocking MongoDB cleanup (only if connected, prevents 10s command buffering timeout)
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        try {
+          await Promise.allSettled([
+            Website.deleteOne({ id: cleanId }),
+            Event.deleteMany({ websiteId: cleanId }),
+            Feedback.deleteMany({ websiteId: cleanId }),
+            CustomSlug.deleteMany({ websiteId: cleanId }),
+            Payment.deleteMany({ websiteId: cleanId })
+          ]);
+        } catch (mErr) {}
+      }
+
+      console.log(`[Analytics] Deleted website ${cleanId}: cockroach=${crDeleteRes?.deletedCount || 0}, supabaseFree=${sbDeleteRes.freeDeleted}, supabasePrem=${sbDeleteRes.premiumDeleted}`);
 
       return {
         success: true,
-        websiteId,
+        websiteId: cleanId,
         isPremium,
-        cockroachDeleted: crDeleteRes.deletedCount,
+        cockroachDeleted: crDeleteRes?.deletedCount || 0,
         supabaseDeleted: sbDeleteRes,
         cloudinaryDeleted
       };
@@ -929,24 +954,33 @@ class AnalyticsStore {
       const cockroach = require('./cockroach');
       const storage = require('./storage');
       const { Website, Event, Feedback, CustomSlug, Payment } = require('./models');
+      const mongoose = require('mongoose');
 
       // 1. Determine candidate website IDs from CockroachDB & Supabase
       let candidateIds = new Set();
 
       if (Array.isArray(websiteIds) && websiteIds.length > 0) {
         websiteIds.forEach(id => {
-          if (id && typeof id === 'string') candidateIds.add(id.trim());
+          if (id && typeof id === 'string') candidateIds.add(id.replace(/\.json$/i, '').trim());
         });
       }
 
       if (olderThanDays !== null && olderThanDays !== undefined && !isNaN(olderThanDays)) {
         const daysNum = parseInt(olderThanDays);
         if (daysNum >= 0) {
-          const allWebsites = await cockroach.getAllWebsites();
+          const allWebsites = await cockroach.getAllWebsites().catch(() => []);
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - daysNum);
 
           allWebsites.forEach(w => {
+            if (w.createdAt && new Date(w.createdAt) < cutoffDate) {
+              candidateIds.add(w.id);
+            }
+          });
+
+          // Also check Supabase Storage websites for age filtering
+          const sbWebsites = await storage.listSupabaseWebsites().catch(() => []);
+          sbWebsites.forEach(w => {
             if (w.createdAt && new Date(w.createdAt) < cutoffDate) {
               candidateIds.add(w.id);
             }
@@ -960,8 +994,8 @@ class AnalyticsStore {
       }
 
       // 2. Identify Premium / Paid Websites from CockroachDB
-      const allPayments = await cockroach.getAllPayments(1000);
-      const allSlugs = await cockroach.getAllCustomSlugs();
+      const allPayments = await cockroach.getAllPayments(1000).catch(() => []);
+      const allSlugs = await cockroach.getAllCustomSlugs().catch(() => []);
       const paidWebsiteIds = new Set(allPayments.map(p => p.websiteId));
       const slugWebsiteIds = new Set(allSlugs.map(s => s.websiteId));
 
@@ -983,8 +1017,8 @@ class AnalyticsStore {
 
       if (idsToDelete.length > 0) {
         // Bulk delete from CockroachDB
-        const crRes = await cockroach.bulkDeleteWebsiteRecords(idsToDelete);
-        totalDeletedCount = crRes.deletedCount || idsToDelete.length;
+        const crRes = await cockroach.bulkDeleteWebsiteRecords(idsToDelete).catch(() => ({ deletedCount: 0 }));
+        totalDeletedCount = crRes?.deletedCount || idsToDelete.length;
 
         // Delete from Supabase Storage concurrently in batches
         const chunkSize = 10;
@@ -993,16 +1027,30 @@ class AnalyticsStore {
           await Promise.allSettled(chunk.map(id => storage.deleteWebsiteConfig(id)));
         }
 
-        // Non-blocking MongoDB cleanup
+        // Clean local configs/ files if present
         try {
-          await Promise.allSettled([
-            Website.deleteMany({ id: { $in: idsToDelete } }),
-            Event.deleteMany({ websiteId: { $in: idsToDelete } }),
-            Feedback.deleteMany({ websiteId: { $in: idsToDelete } }),
-            CustomSlug.deleteMany({ websiteId: { $in: idsToDelete } }),
-            Payment.deleteMany({ websiteId: { $in: idsToDelete } })
-          ]);
-        } catch (mErr) {}
+          const fs = require('fs');
+          const path = require('path');
+          idsToDelete.forEach(id => {
+            const localPath = path.join(__dirname, 'configs', `${id}.json`);
+            if (fs.existsSync(localPath)) {
+              try { fs.unlinkSync(localPath); } catch (_) {}
+            }
+          });
+        } catch (_) {}
+
+        // Safe MongoDB cleanup (only if connected)
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+          try {
+            await Promise.allSettled([
+              Website.deleteMany({ id: { $in: idsToDelete } }),
+              Event.deleteMany({ websiteId: { $in: idsToDelete } }),
+              Feedback.deleteMany({ websiteId: { $in: idsToDelete } }),
+              CustomSlug.deleteMany({ websiteId: { $in: idsToDelete } }),
+              Payment.deleteMany({ websiteId: { $in: idsToDelete } })
+            ]);
+          } catch (mErr) {}
+        }
 
         // Destroy Cloudinary configs & image assets concurrently in batches
         const cloud = cloudinaryRef || require('cloudinary').v2;

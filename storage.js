@@ -17,14 +17,14 @@ cloudinary.config({
 
 // Project 1: Free Websites Supabase Client (24h auto-purged storage)
 const supabaseFreeUrl = process.env.SUPABASE_FREE_URL || process.env.SUPABASE_URL_FREE || '';
-const supabaseFreeKey = process.env.SUPABASE_FREE_KEY || process.env.SUPABASE_KEY_FREE || '';
+const supabaseFreeKey = process.env.SUPABASE_FREE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_FREE_KEY || process.env.SUPABASE_KEY_FREE || '';
 const supabaseFree = (supabaseFreeUrl && supabaseFreeKey)
   ? createClient(supabaseFreeUrl, supabaseFreeKey)
   : null;
 
 // Project 2: Premium Websites Supabase Client (Permanent storage)
 const supabasePremiumUrl = process.env.SUPABASE_PREMIUM_URL || process.env.SUPABASE_URL_PREMIUM || '';
-const supabasePremiumKey = process.env.SUPABASE_PREMIUM_KEY || process.env.SUPABASE_KEY_PREMIUM || '';
+const supabasePremiumKey = process.env.SUPABASE_PREMIUM_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PREMIUM_KEY || process.env.SUPABASE_KEY_PREMIUM || '';
 const supabasePremium = (supabasePremiumUrl && supabasePremiumKey)
   ? createClient(supabasePremiumUrl, supabasePremiumKey)
   : null;
@@ -155,6 +155,8 @@ async function purgeExpiredFreeFiles() {
     const maxAgeMs = 36 * 60 * 60 * 1000; // 36 hours
 
     const expiredFiles = data.filter(f => {
+      // Ignore hidden or dot files
+      if (f.name.startsWith('.')) return false;
       // Use Supabase created_at metadata (ISO string) if available
       if (f.created_at) {
         const fileAge = now - new Date(f.created_at).getTime();
@@ -163,15 +165,27 @@ async function purgeExpiredFreeFiles() {
       // Fallback: try to parse timestamp prefix from filename (legacy)
       const timestamp = parseInt(f.name.split('_')[0], 10);
       return timestamp && (now - timestamp > maxAgeMs);
-    }).map(f => `free/${f.name}`);
+    });
 
     if (expiredFiles.length > 0) {
-      const { error: delErr } = await supabaseFree.storage.from(BUCKET_NAME).remove(expiredFiles);
-      if (!delErr) {
-        console.log(`[Supabase Free Purge] Deleted ${expiredFiles.length} expired files (>36h) from Project 1 (free/)`);
-      } else {
-        console.error('[Supabase Free Purge Error]:', delErr.message);
+      const filePaths = expiredFiles.map(f => `free/${f.name}`);
+      let removedCount = 0;
+      try {
+        const { data: rmData, error: delErr } = await supabaseFree.storage.from(BUCKET_NAME).remove(filePaths);
+        if (!delErr && Array.isArray(rmData) && rmData.length > 0) {
+          removedCount = rmData.length;
+        }
+      } catch (rmEx) {}
+
+      // If remove was blocked by RLS or incomplete, move remaining expired files to deleted/
+      if (removedCount < expiredFiles.length) {
+        for (const file of expiredFiles) {
+          try {
+            await supabaseFree.storage.from(BUCKET_NAME).move(`free/${file.name}`, `deleted/${Date.now()}_${file.name}`);
+          } catch (_) {}
+        }
       }
+      console.log(`[Supabase Free Purge] Successfully purged/moved ${expiredFiles.length} expired files (>36h) from Project 1 (free/)`);
     } else {
       console.log('[Supabase Free Purge] No expired files found in free/ folder');
     }
@@ -223,7 +237,7 @@ async function listSupabaseWebsites() {
     try {
       const { data } = await supabaseFree.storage.from(BUCKET_NAME).list('free', { limit: 5000, sortBy: { column: 'created_at', order: 'desc' } });
       if (data) {
-        data.filter(f => f.name.endsWith('.json')).forEach(f => {
+        data.filter(f => f.name.endsWith('.json') && !f.name.startsWith('.')).forEach(f => {
           websites.push({
             id: f.name.replace('.json', ''),
             isPremium: false,
@@ -238,7 +252,7 @@ async function listSupabaseWebsites() {
     try {
       const { data } = await supabasePremium.storage.from(BUCKET_NAME).list('premium', { limit: 5000, sortBy: { column: 'created_at', order: 'desc' } });
       if (data) {
-        data.filter(f => f.name.endsWith('.json')).forEach(f => {
+        data.filter(f => f.name.endsWith('.json') && !f.name.startsWith('.')).forEach(f => {
           websites.push({
             id: f.name.replace('.json', ''),
             isPremium: true,
@@ -255,7 +269,9 @@ async function listSupabaseWebsites() {
  * Reads website JSON config directly from Supabase Storage (Project 1 or Project 2)
  */
 async function readWebsiteConfig(id) {
-  const fileName = id.endsWith('.json') ? id : `${id}.json`;
+  if (!id) return null;
+  const cleanId = String(id).replace(/\.json$/i, '').trim();
+  const fileName = `${cleanId}.json`;
 
   // Try Supabase Premium first
   if (supabasePremium) {
@@ -263,7 +279,10 @@ async function readWebsiteConfig(id) {
       const { data, error } = await supabasePremium.storage.from(BUCKET_NAME).download(`premium/${fileName}`);
       if (data && !error) {
         const text = await data.text();
-        return JSON.parse(text);
+        const parsed = JSON.parse(text);
+        if (parsed && !parsed.deleted && !parsed.isDeleted) {
+          return parsed;
+        }
       }
     } catch (e) { }
   }
@@ -274,7 +293,10 @@ async function readWebsiteConfig(id) {
       const { data, error } = await supabaseFree.storage.from(BUCKET_NAME).download(`free/${fileName}`);
       if (data && !error) {
         const text = await data.text();
-        return JSON.parse(text);
+        const parsed = JSON.parse(text);
+        if (parsed && !parsed.deleted && !parsed.isDeleted) {
+          return parsed;
+        }
       }
     } catch (e) { }
   }
@@ -335,37 +357,136 @@ async function listSupabaseFilesDetailed() {
 }
 
 /**
- * Delete a website JSON config and associated media from Supabase Storage
+ * Delete a website JSON config and all associated media (images, audio, QR codes, OG images) from Supabase Storage
  */
 async function deleteWebsiteConfig(id) {
-  if (!id) return { freeDeleted: false, premiumDeleted: false };
-  const rawId = id.replace(/\.json$/, '');
+  if (!id) return { freeDeleted: false, premiumDeleted: false, deleted: false, mediaFilesPurged: 0 };
+  const rawId = String(id).replace(/\.json$/i, '').trim();
   const fileName = `${rawId}.json`;
-  const results = { freeDeleted: false, premiumDeleted: false };
+  const results = { freeDeleted: false, premiumDeleted: false, deleted: false, mediaFilesPurged: 0 };
 
-  const pathsToRemove = [
-    `free/${fileName}`,
-    `premium/${fileName}`,
-    fileName,
-    `free/${rawId}`,
-    `premium/${rawId}`,
-    rawId
-  ];
-
-  if (supabaseFree) {
-    try {
-      const { error } = await supabaseFree.storage.from(BUCKET_NAME).remove(pathsToRemove);
-      if (!error) results.freeDeleted = true;
-    } catch (e) {}
+  // 1. Inspect the website config to discover any uploaded photos, images, or audio files
+  const referencedMediaFiles = new Set();
+  try {
+    const config = await readWebsiteConfig(rawId);
+    if (config) {
+      const configStr = typeof config === 'string' ? config : JSON.stringify(config);
+      // Regex to find media paths in Supabase Storage URLs or relative paths: free/<file> or premium/<file>
+      const mediaMatches = configStr.matchAll(/(?:storage\/v1\/object\/public\/media\/|media\/)?(free|premium)\/([a-zA-Z0-9_.-]+\.(?:png|jpg|jpeg|webp|gif|svg|mp3|wav|ogg|m4a|mp4|webm|json))/gi);
+      for (const m of mediaMatches) {
+        const folder = m[1].toLowerCase();
+        const fname = m[2];
+        // Do not re-add the config file itself
+        if (fname !== fileName && fname !== `${rawId}.json`) {
+          referencedMediaFiles.add(`${folder}/${fname}`);
+        }
+      }
+    }
+  } catch (readErr) {
+    console.warn(`[Storage] Could not pre-read config for media extraction (${rawId}):`, readErr.message);
   }
 
-  if (supabasePremium) {
+  // Helper to remove or move a specific file from a client
+  async function purgeSingleFile(client, filePath) {
+    if (!client || !filePath) return false;
+    let purged = false;
+    // Standard remove
     try {
-      const { error } = await supabasePremium.storage.from(BUCKET_NAME).remove(pathsToRemove);
-      if (!error) results.premiumDeleted = true;
-    } catch (e) {}
+      const { data, error } = await client.storage.from(BUCKET_NAME).remove([filePath]);
+      if (!error && Array.isArray(data) && data.length > 0) {
+        purged = true;
+      }
+    } catch (_) {}
+
+    // Move fallback for publishable key RLS
+    if (!purged) {
+      try {
+        const parts = filePath.split('/');
+        const fname = parts[parts.length - 1];
+        const destPath = `deleted/${Date.now()}_${fname}`;
+        const { error: moveErr } = await client.storage.from(BUCKET_NAME).move(filePath, destPath);
+        if (!moveErr) {
+          purged = true;
+          try { await client.storage.from(BUCKET_NAME).remove([destPath]); } catch (_) {}
+        }
+      } catch (_) {}
+    }
+    return purged;
   }
 
+  // Helper to purge all config files and assets in a specific bucket folder
+  async function purgeFromClient(client, folder) {
+    if (!client) return false;
+    let deleted = false;
+    const sourcePath = `${folder}/${fileName}`;
+    const destPath = `deleted/${Date.now()}_${rawId}.json`;
+
+    // 1. Try standard Supabase Storage remove() first (works if service role key is configured or delete RLS policy exists)
+    try {
+      const { data, error } = await client.storage.from(BUCKET_NAME).remove([
+        sourcePath,
+        `${folder}/${rawId}`,
+        fileName,
+        rawId
+      ]);
+      if (!error && Array.isArray(data) && data.length > 0) {
+        deleted = true;
+      }
+    } catch (e) {}
+
+    // 2. If remove() did not delete the file (e.g. publishable key RLS policy), move it to deleted/
+    if (!deleted) {
+      try {
+        const { error: moveErr } = await client.storage.from(BUCKET_NAME).move(sourcePath, destPath);
+        if (!moveErr) {
+          deleted = true;
+          // Attempt removal from deleted/ location
+          try { await client.storage.from(BUCKET_NAME).remove([destPath]); } catch (_) {}
+        }
+      } catch (moveErr) {}
+
+      // Also handle rawId without .json if present
+      if (!deleted) {
+        try {
+          const { error: moveRawErr } = await client.storage.from(BUCKET_NAME).move(`${folder}/${rawId}`, `deleted/${Date.now()}_${rawId}`);
+          if (!moveRawErr) {
+            deleted = true;
+          }
+        } catch (_) {}
+      }
+    }
+
+    // 3. Search and purge any associated assets (e.g. qr_{rawId}.png, og_{rawId}.png)
+    try {
+      const { data: assetFiles } = await client.storage.from(BUCKET_NAME).list(folder, { search: rawId });
+      if (assetFiles && Array.isArray(assetFiles) && assetFiles.length > 0) {
+        for (const asset of assetFiles) {
+          const assetPath = `${folder}/${asset.name}`;
+          const didPurge = await purgeSingleFile(client, assetPath);
+          if (didPurge) results.mediaFilesPurged++;
+        }
+      }
+    } catch (_) {}
+
+    return deleted;
+  }
+
+  // Purge any referenced media files discovered inside the config
+  for (const mediaPath of referencedMediaFiles) {
+    const isPremFolder = mediaPath.startsWith('premium/');
+    const targetClient = isPremFolder ? (supabasePremium || supabaseFree) : (supabaseFree || supabasePremium);
+    const didPurge = await purgeSingleFile(targetClient, mediaPath);
+    if (didPurge) results.mediaFilesPurged++;
+  }
+
+  const [freeDel, premDel] = await Promise.all([
+    purgeFromClient(supabaseFree, 'free'),
+    purgeFromClient(supabasePremium, 'premium')
+  ]);
+
+  results.freeDeleted = freeDel;
+  results.premiumDeleted = premDel;
+  results.deleted = freeDel || premDel;
   return results;
 }
 

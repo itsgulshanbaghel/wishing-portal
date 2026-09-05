@@ -3977,7 +3977,9 @@
             amount: activePlan.price,
             currency: selectedCurrency,
             email: finalEmail,
-            phone: finalPhone
+            phone: finalPhone,
+            returnUrl: `${window.location.origin}/create.html?action=payment-success&orderId={order_id}&view=${websiteId}`,
+            cancelUrl: `${window.location.origin}/create.html?restore=${websiteId}&payment=cancelled`
           };
           console.log('[Payment] Request body:', requestBody);
 

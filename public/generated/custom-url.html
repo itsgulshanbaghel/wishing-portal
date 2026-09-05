@@ -2591,7 +2591,9 @@
           amount: selectedAmount,
           currency: selectedCurrency,
           customerDetails,
-          qrCenterType: qrType
+          qrCenterType: qrType,
+          returnUrl: `${window.location.origin}/generated/custom-url.html?action=payment-success&orderId={order_id}&view=${websiteId}`,
+          cancelUrl: `${window.location.origin}/generated/custom-url.html?restore=${websiteId}&payment=cancelled`
         };
 
         if (qrType === 'text') {

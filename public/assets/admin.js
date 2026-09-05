@@ -1289,7 +1289,7 @@
         const siteId = w.id;
         const isPrem = w.isPremium;
 
-        let confirmMsg = `Are you sure you want to permanently delete website "${siteId}"?\n\nThis action will delete tracking events, feedback, custom slugs, and stored Cloudinary JSON configuration.`;
+        let confirmMsg = `Are you sure you want to permanently delete website "${siteId}"?\n\nThis action will delete tracking events, feedback, custom slugs, and stored Supabase & Cloudinary configurations.`;
         if (isPrem) {
           confirmMsg = `⚠️ WARNING: Website "${siteId}" is a PREMIUM / PAID website!\n\nDeleting it will destroy paid records, custom URL mappings, and all analytics.\n\nAre you ABSOLUTELY sure you want to FORCE delete this site?`;
         }
@@ -1298,13 +1298,20 @@
           try {
             deleteBtn.disabled = true;
             deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const res = await apiFetch(`/api/admin/website/${siteId}${isPrem ? '?force=true' : ''}`, { method: 'DELETE' });
+            const res = await apiFetch(`/api/admin/website/${encodeURIComponent(siteId)}${isPrem ? '?force=true' : ''}`, { method: 'DELETE' });
             if (res && res.success) {
               card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
               card.style.opacity = '0';
               card.style.transform = 'scale(0.92) translateY(-4px)';
               setTimeout(async () => {
                 selectedWebsiteIds.delete(siteId);
+                if (dashData && Array.isArray(dashData.websites)) {
+                  dashData.websites = dashData.websites.filter(item => item.id !== siteId);
+                }
+                if (Array.isArray(currentlyFilteredWebsites)) {
+                  currentlyFilteredWebsites = currentlyFilteredWebsites.filter(item => item.id !== siteId);
+                }
+                card.remove();
                 await loadDashboard();
               }, 320);
             } else {
@@ -1511,6 +1518,10 @@
           if (res && res.success) {
             alert(`Bulk deletion complete!\n\n• Deleted: ${res.deletedCount} website(s)\n• Skipped Protected: ${res.protectedCount ?? res.skippedProtectedCount ?? 0} website(s)`);
             if (bulkDeleteModal) bulkDeleteModal.style.display = 'none';
+            if (pendingBulkAction.websiteIds && Array.isArray(pendingBulkAction.websiteIds) && dashData && Array.isArray(dashData.websites)) {
+              const deletedSet = new Set(pendingBulkAction.websiteIds);
+              dashData.websites = dashData.websites.filter(w => !deletedSet.has(w.id));
+            }
             selectedWebsiteIds.clear();
             pendingBulkAction = null;
             await loadDashboard();

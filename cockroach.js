@@ -447,6 +447,9 @@ async function savePayment(paymentData) {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, $10)
       ON CONFLICT (order_id) DO UPDATE SET
         status = EXCLUDED.status,
+        website_id = COALESCE(NULLIF(EXCLUDED.website_id, ''), payments.website_id),
+        slug = COALESCE(NULLIF(EXCLUDED.slug, ''), payments.slug),
+        payment_method = COALESCE(NULLIF(EXCLUDED.payment_method, ''), payments.payment_method),
         metadata = EXCLUDED.metadata;
     `;
     await pool.query(query, [
@@ -721,6 +724,30 @@ async function getPaymentByWebsiteId(websiteId) {
     return (res.rows && res.rows.length > 0) ? res.rows[0] : null;
   } catch (err) {
     console.error('[CockroachDB] getPaymentByWebsiteId error:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Get a single payment record by orderId or paypalOrderId
+ */
+async function getPaymentByOrderId(orderId) {
+  const pool = poolFree || poolPremium;
+  if (!pool || !orderId) return null;
+  try {
+    await ensureTablesExist();
+    const res = await pool.query(
+      `SELECT order_id as "orderId", website_id as "websiteId", slug, plan, plan_name as "planName",
+              amount, currency, status, payment_method as "paymentMethod", created_at as "createdAt",
+              metadata
+       FROM payments
+       WHERE order_id = $1 OR metadata->>'paypalOrderId' = $1
+       LIMIT 1`,
+      [orderId]
+    );
+    return (res.rows && res.rows.length > 0) ? res.rows[0] : null;
+  } catch (err) {
+    console.error('[CockroachDB] getPaymentByOrderId error:', err.message);
     return null;
   }
 }
@@ -1227,6 +1254,7 @@ module.exports = {
   savePayment,
   getAllPayments,
   getPaymentByWebsiteId,
+  getPaymentByOrderId,
   getCockroachStats,
   purgeExpiredFreeRecords,
   incrementGlobalCounter,

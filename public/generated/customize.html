@@ -5404,9 +5404,13 @@
             const overlay = doc.getElementById('lock-overlay');
             if (overlay) overlay.remove();
             window.lockUnlocked = false;
-            editModeActive = editModeBeforeLock;
-            doc.body.contentEditable = editModeBeforeLock;
-            editToggleBtn.classList.toggle('active', editModeBeforeLock);
+            if (editModeBeforeLock && editModeActive) {
+              doc.body.contentEditable = true;
+              editToggleBtn.classList.add('active');
+            } else {
+              doc.body.contentEditable = false;
+              editToggleBtn.classList.remove('active');
+            }
             // Clean up any inline styles that might have been applied to prevent color traces
             doc.body.style = '';
             // Remove any lock-related styles from head
@@ -7184,6 +7188,51 @@
       // Text editing mode
       let editModeActive = false;
       let editModeBeforeLock = false;
+
+      function cleanupEditModeArtifacts(targetDoc) {
+        if (!targetDoc) return;
+        try {
+          if (targetDoc.body) {
+            targetDoc.body.contentEditable = 'false';
+            targetDoc.body.removeAttribute('contenteditable');
+          }
+          if (targetDoc.designMode && targetDoc.designMode !== 'off') {
+            targetDoc.designMode = 'off';
+          }
+          const editStyles = targetDoc.querySelectorAll('#greeter-inline-edit-style');
+          editStyles.forEach(s => s.remove());
+          const editables = targetDoc.querySelectorAll('[contenteditable]');
+          editables.forEach(el => {
+            el.contentEditable = 'false';
+            el.removeAttribute('contenteditable');
+            el.removeAttribute('spellcheck');
+          });
+          if (targetDoc.defaultView && targetDoc.defaultView.getSelection) {
+            try {
+              targetDoc.defaultView.getSelection()?.removeAllRanges();
+            } catch (e) {}
+          }
+          if (targetDoc.activeElement && typeof targetDoc.activeElement.blur === 'function') {
+            try {
+              targetDoc.activeElement.blur();
+            } catch (e) {}
+          }
+        } catch (err) {
+          console.warn('cleanupEditModeArtifacts error:', err);
+        }
+      }
+
+      window.disableEditMode = function (targetDoc) {
+        editModeActive = false;
+        editModeBeforeLock = false;
+        const btn = document.getElementById('editToggleBtn');
+        if (btn) btn.classList.remove('active');
+        const d = targetDoc || getIframeDocument();
+        if (d) {
+          cleanupEditModeArtifacts(d);
+        }
+      };
+
       window.toggleEditMode = (e, forceState) => {
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
         const doc = getIframeDocument();
@@ -7198,16 +7247,16 @@
         }
 
         if (doc) {
-          try {
-            if (doc.body) {
-              doc.body.contentEditable = editModeActive ? 'true' : 'false';
-            }
-            doc.designMode = editModeActive ? 'on' : 'off';
-          } catch (err) {}
-
-          // Inject styling for text editing outlines & text cursors
-          let editStyle = doc.getElementById('greeter-inline-edit-style');
           if (editModeActive) {
+            try {
+              if (doc.body) {
+                doc.body.contentEditable = 'true';
+              }
+              doc.designMode = 'on';
+            } catch (err) {}
+
+            // Inject styling for text editing outlines & text cursors
+            let editStyle = doc.getElementById('greeter-inline-edit-style');
             if (!editStyle) {
               editStyle = doc.createElement('style');
               editStyle.id = 'greeter-inline-edit-style';
@@ -7245,11 +7294,7 @@
               el.setAttribute('spellcheck', 'false');
             });
           } else {
-            if (editStyle) editStyle.remove();
-            const editables = doc.querySelectorAll('[contenteditable="true"]');
-            editables.forEach(el => {
-              el.contentEditable = 'false';
-            });
+            cleanupEditModeArtifacts(doc);
           }
         }
 
@@ -7335,12 +7380,11 @@
 
         // Feature compliance is validated during Stage 3 Plan Selection (checkFeatureCompliance)
 
-        const doc = getIframeDocument();
-        if (doc) {
-          doc.body.contentEditable = false;
+        if (typeof window.disableEditMode === 'function') {
+          window.disableEditMode();
+        } else if (typeof window.toggleEditMode === 'function') {
+          window.toggleEditMode(null, false);
         }
-        editModeActive = false;
-        editToggleBtn.classList.remove('active');
 
         const btn = document.getElementById("generateLinkBtn");
         if (btn) {
@@ -7413,11 +7457,26 @@
             return;
           }
 
+          // Auto-disable pencil editing tool before DOM snapshot
+          if (typeof window.disableEditMode === 'function') {
+            window.disableEditMode(doc);
+          } else if (typeof window.toggleEditMode === 'function') {
+            window.toggleEditMode(null, false);
+          }
+          if (typeof cleanupEditModeArtifacts === 'function') {
+            cleanupEditModeArtifacts(doc);
+          }
+
           // Temporarily disable all features to get clean DOM snapshot
           for (let [id, active] of activeFeatureStates.entries()) {
             if (active && FEATURE_MAP[id] && FEATURE_MAP[id].disable) {
               try { FEATURE_MAP[id].disable(doc); } catch (e) { console.error("Error disabling " + id, e); }
             }
+          }
+
+          // Extra cleanup after disabling features
+          if (typeof cleanupEditModeArtifacts === 'function') {
+            cleanupEditModeArtifacts(doc);
           }
 
           // Scroll iframe to top so shared page always loads from the starting section
@@ -7428,6 +7487,8 @@
           let html = "";
           try {
             html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+            html = html.replace(/<style[^>]*id=["']greeter-inline-edit-style["'][^>]*>[\s\S]*?<\/style>/gi, '');
+            html = html.replace(/\scontenteditable=["'](true|false)["']/gi, '');
             // Check HTML size to prevent crashes
             const htmlSizeBytes = new Blob([html]).size;
             if (htmlSizeBytes > 10 * 1024 * 1024) {
@@ -8202,6 +8263,14 @@
 
       window.showStage = function (stageNum) {
         window.currentStage = stageNum;
+        // Auto-disable pencil editing tool when leaving editor (Stage 1)
+        if (stageNum !== 1) {
+          if (typeof window.disableEditMode === 'function') {
+            window.disableEditMode();
+          } else if (typeof window.toggleEditMode === 'function') {
+            window.toggleEditMode(null, false);
+          }
+        }
         const stage1 = document.getElementById('stage1Editor');
         const stage2 = document.getElementById('stage2PublishHub');
         const stage3 = document.getElementById('stage3Pricing');
@@ -8274,6 +8343,14 @@
 
       window.showScreen = function (screenNum, e) {
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (screenNum === 2) {
+          // Auto-disable pencil editing tool when opening full preview
+          if (typeof window.disableEditMode === 'function') {
+            window.disableEditMode();
+          } else if (typeof window.toggleEditMode === 'function') {
+            window.toggleEditMode(null, false);
+          }
+        }
         const bodyEl = document.body;
         const topBar = document.getElementById('fullPreviewTopBar');
         if (screenNum === 2) {
@@ -8506,11 +8583,22 @@
 
       async function saveWebsiteConfigToServer(isPremium = false, explicitId = null) {
         try {
+          // Auto-disable pencil editing tool before saving generated website
+          if (typeof window.disableEditMode === 'function') {
+            window.disableEditMode();
+          } else if (typeof window.toggleEditMode === 'function') {
+            window.toggleEditMode(null, false);
+          }
+
           const doc = getIframeDocument();
           if (!doc) throw new Error('Preview document not available');
           const docUrl = doc.location ? doc.location.href : '';
           if (docUrl.includes('share.html') || (doc.body && doc.body.innerHTML.includes('Your Website is Ready'))) {
             throw new Error('Preview iframe is showing share page instead of template');
+          }
+
+          if (typeof cleanupEditModeArtifacts === 'function') {
+            cleanupEditModeArtifacts(doc);
           }
 
           let initialConfig = {
@@ -8533,9 +8621,16 @@
             }
           }
 
+          if (typeof cleanupEditModeArtifacts === 'function') {
+            cleanupEditModeArtifacts(doc);
+          }
+
           const docClone = doc.cloneNode(true);
-          const editorArtifacts = docClone.querySelectorAll('.edit-overlay, .editor-ui, [data-editor-element]');
+          const editorArtifacts = docClone.querySelectorAll('.edit-overlay, .editor-ui, [data-editor-element], #greeter-inline-edit-style');
           editorArtifacts.forEach(el => el.remove());
+          if (typeof cleanupEditModeArtifacts === 'function') {
+            cleanupEditModeArtifacts(docClone);
+          }
 
           // Re-enable features in preview iframe
           debouncedRefreshAll();
@@ -8652,6 +8747,8 @@
           }
 
           let html = '<!DOCTYPE html>\n' + docClone.documentElement.outerHTML;
+          html = html.replace(/<style[^>]*id=["']greeter-inline-edit-style["'][^>]*>[\s\S]*?<\/style>/gi, '');
+          html = html.replace(/\scontenteditable=["'](true|false)["']/gi, '');
 
           const urlParams = new URLSearchParams(window.location.search);
           const websiteId = explicitId || urlParams.get('view') || urlParams.get('restore') || null;
@@ -8698,6 +8795,11 @@
       }
 
       window.handleFinalPay = async function () {
+        if (typeof window.disableEditMode === 'function') {
+          window.disableEditMode();
+        } else if (typeof window.toggleEditMode === 'function') {
+          window.toggleEditMode(null, false);
+        }
         const planToValidate = (window.activePlan && window.activePlan.plan) ? window.activePlan.plan : (activePlan ? activePlan.plan : 'pro');
         if (typeof checkFeatureCompliance === 'function' && !checkFeatureCompliance(planToValidate)) return;
 
@@ -8755,7 +8857,9 @@
             email,
             phone,
             gateway: window.selectedGateway || undefined,
-            currency: window.selectedCurrency || undefined
+            currency: window.selectedCurrency || undefined,
+            returnUrl: `${window.location.origin}/generated/customize.html?action=payment-success&orderId={order_id}&view=${websiteId}`,
+            cancelUrl: `${window.location.origin}/generated/customize.html?restore=${websiteId}&payment=cancelled`
           };
 
           const response = await fetch(`${apiBaseUrl}/api/payment/create-order`, {
@@ -8860,7 +8964,7 @@
             }, 1200);
           } else {
             pollCount++;
-            if (pollCount < 5) {
+            if (pollCount < 20) {
               setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 2000);
             } else {
               const overlay = document.getElementById('paymentVerificationOverlay');
@@ -8869,18 +8973,20 @@
               const cleanUrl = new URL(window.location);
               cleanUrl.searchParams.delete('action');
               cleanUrl.searchParams.delete('orderId');
+              cleanUrl.searchParams.delete('token');
+              cleanUrl.searchParams.delete('PayerID');
               cleanUrl.searchParams.delete('view');
               if (targetId) cleanUrl.searchParams.set('restore', targetId);
               cleanUrl.searchParams.set('payment', 'cancelled');
               window.history.replaceState({}, '', cleanUrl);
-              alert('Payment Notice: Checkout was not completed. Your website draft is safely saved. Complete payment whenever you are ready to publish and activate your share link!');
+              alert('Payment Notice: Verification took longer than expected. If your payment was completed, please refresh this page in a moment to activate your premium features.');
             }
           }
         } catch (e) {
           console.error('Payment status check error:', e);
           pollCount++;
-          if (pollCount < 5) {
-            setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 3000);
+          if (pollCount < 20) {
+            setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 2000);
           } else {
             const overlay = document.getElementById('paymentVerificationOverlay');
             if (overlay) overlay.style.display = 'none';
@@ -8888,11 +8994,13 @@
             const cleanUrl = new URL(window.location);
             cleanUrl.searchParams.delete('action');
             cleanUrl.searchParams.delete('orderId');
+            cleanUrl.searchParams.delete('token');
+            cleanUrl.searchParams.delete('PayerID');
             cleanUrl.searchParams.delete('view');
             if (targetId) cleanUrl.searchParams.set('restore', targetId);
             cleanUrl.searchParams.set('payment', 'cancelled');
             window.history.replaceState({}, '', cleanUrl);
-            alert('Payment Notice: Checkout was not completed. Your website draft is safely saved.');
+            alert('Payment Notice: Verification took longer than expected. Please refresh this page to check status.');
           }
         }
       }
@@ -8900,10 +9008,10 @@
       function checkReturnPaymentStatus() {
         const urlParams = new URLSearchParams(window.location.search);
         const action = urlParams.get('action');
-        const orderId = urlParams.get('orderId');
+        const orderId = urlParams.get('orderId') || urlParams.get('token');
         const viewId = urlParams.get('view') || urlParams.get('restore');
 
-        if (action === 'payment-success' && orderId) {
+        if ((action === 'payment-success' || urlParams.get('token')) && orderId) {
           let overlay = document.getElementById('paymentVerificationOverlay');
           if (!overlay) {
             overlay = document.createElement('div');

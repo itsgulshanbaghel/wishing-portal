@@ -968,19 +968,26 @@ function getGeoPrice(req) {
   }
 }
 
-// PayPal API settings
+// PayPal API settings & Token Management
+let cachedPayPalToken = null;
+let cachedPayPalTokenExpiry = 0;
+let cachedPayPalApiBase = null;
+
 async function getPayPalAuthAndApiBase() {
+  const now = Date.now();
+  if (cachedPayPalToken && now < cachedPayPalTokenExpiry && cachedPayPalApiBase) {
+    return { token: cachedPayPalToken, apiBase: cachedPayPalApiBase };
+  }
+
   const rawClientId = (process.env.PAYPAL_CLIENT_ID || '').trim().replace(/^["']|["']$/g, '');
   const rawSecret = (process.env.PAYPAL_CLIENT_SECRET || '').trim().replace(/^["']|["']$/g, '');
   const userEnv = (process.env.PAYPAL_ENV || '').toLowerCase().trim();
 
   if (!rawClientId || !rawSecret) {
-    throw new Error('PayPal credentials missing: Please configure PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in Vercel environment variables.');
+    throw new Error('PayPal credentials missing: Please configure PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in environment variables.');
   }
 
   const authHeader = Buffer.from(`${rawClientId}:${rawSecret}`).toString('base64');
-
-  // Determine endpoints to test: if user explicitly set PAYPAL_ENV=sandbox, test sandbox first; otherwise test production first
   const primaryBase = userEnv === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
   const fallbackBase = userEnv === 'sandbox' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
@@ -998,35 +1005,53 @@ async function getPayPalAuthAndApiBase() {
       return { ok: false, status: response.status, error: errText };
     }
     const data = await response.json();
-    return { ok: true, token: data.access_token, apiBase };
+    return { ok: true, token: data.access_token, expiresIn: data.expires_in || 3600, apiBase };
   };
 
-  // Try primary endpoint (Production / Live API by default)
   let res = await tryAuth(primaryBase);
   if (res.ok) {
+    cachedPayPalToken = res.token;
+    cachedPayPalTokenExpiry = now + ((res.expiresIn - 120) * 1000); // 2 min safety margin
+    cachedPayPalApiBase = primaryBase;
     console.log(`[PayPal OAuth] Successfully authenticated on ${primaryBase.includes('sandbox') ? 'Sandbox' : 'Production'} API`);
     return { token: res.token, apiBase: primaryBase };
   }
 
   console.warn(`[PayPal OAuth Warning] Primary endpoint (${primaryBase}) returned ${res.status}. Attempting auto-detection fallback...`);
-
-  // Try fallback endpoint (auto-detect Sandbox vs Live matching credentials)
   let fallbackRes = await tryAuth(fallbackBase);
   if (fallbackRes.ok) {
+    cachedPayPalToken = fallbackRes.token;
+    cachedPayPalTokenExpiry = now + ((fallbackRes.expiresIn - 120) * 1000);
+    cachedPayPalApiBase = fallbackBase;
     console.log(`[PayPal OAuth] Auto-detected matching environment on ${fallbackBase.includes('sandbox') ? 'Sandbox' : 'Production'} API`);
     return { token: fallbackRes.token, apiBase: fallbackBase };
   }
 
-  // If both fail, throw descriptive error
   throw new Error(`PayPal OAuth Failed (${res.status}): ${res.error}. Please verify your Client ID and Client Secret in PayPal Developer Dashboard.`);
 }
 
-async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
+async function getPayPalOrderDetails(paypalOrderId) {
+  const { token, apiBase } = await getPayPalAuthAndApiBase();
+  const response = await fetch(`${apiBase}/v2/checkout/orders/${paypalOrderId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`PayPal API GET Order (${response.status}): ${errText}`);
+  }
+  return await response.json();
+}
+
+async function createPayPalOrder(orderId, amount, currency, returnUrl, cancelUrl, customMeta = {}) {
   const { token, apiBase } = await getPayPalAuthAndApiBase();
   const paypalCurr = (currency || 'USD').toUpperCase();
   const paypalVal = Number(amount || 1.99).toFixed(2);
 
-  console.log(`[PayPal API] Posting order to ${apiBase}: ${paypalVal} ${paypalCurr}`);
+  console.log(`[PayPal API] Posting order ${orderId} to ${apiBase}: ${paypalVal} ${paypalCurr}`);
   const response = await fetch(`${apiBase}/v2/checkout/orders`, {
     method: 'POST',
     headers: {
@@ -1036,11 +1061,14 @@ async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
     body: JSON.stringify({
       intent: 'CAPTURE',
       purchase_units: [{
+        reference_id: orderId,
+        custom_id: orderId,
+        invoice_id: orderId,
+        description: customMeta.description || 'Personalized Custom URL Activation',
         amount: {
           currency_code: paypalCurr,
           value: paypalVal
-        },
-        description: 'Personalized Custom URL Activation'
+        }
       }],
       application_context: {
         brand_name: 'The Greeter',
@@ -1062,17 +1090,161 @@ async function createPayPalOrder(amount, currency, returnUrl, cancelUrl) {
 }
 
 async function capturePayPalOrder(paypalOrderId) {
-  const token = await getPayPalAccessToken();
-  const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${paypalOrderId}/capture`, {
+  const { token, apiBase } = await getPayPalAuthAndApiBase();
+  console.log(`[PayPal API] Capturing order ${paypalOrderId} at ${apiBase}`);
+  const response = await fetch(`${apiBase}/v2/checkout/orders/${paypalOrderId}/capture`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     }
   });
+
+  const responseText = await response.text();
+  let data = {};
+  try {
+    data = JSON.parse(responseText);
+  } catch (e) {
+    data = { raw: responseText };
+  }
+
+  // Gracefully handle already captured orders
   if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Failed to capture PayPal order: ${response.status} ${errText}`);
+    if (data.name === 'UNPROCESSABLE_ENTITY' && Array.isArray(data.details)) {
+      const alreadyCaptured = data.details.some(d => d.issue === 'ORDER_ALREADY_CAPTURED');
+      if (alreadyCaptured) {
+        console.log(`[PayPal API] Order ${paypalOrderId} was already captured`);
+        return { status: 'COMPLETED', id: paypalOrderId, alreadyCaptured: true };
+      }
+    }
+    throw new Error(`Failed to capture PayPal order: ${response.status} ${responseText}`);
+  }
+
+  return data;
+}
+
+/**
+ * Centralized Payment Finalizer
+ * Activates custom slug, upgrades website to premium, and syncs CockroachDB and MongoDB
+ */
+async function finalizePaymentSuccess(orderIdOrPayPalId, paymentMethod = 'paypal', captureId = null, extraMeta = {}) {
+  try {
+    if (!orderIdOrPayPalId) return null;
+
+    // 1. Look up in CockroachDB primary DB
+    let payment = null;
+    try {
+      payment = await cockroach.getPaymentByOrderId(orderIdOrPayPalId);
+    } catch (e) { }
+
+    // 2. Look up in MongoDB fallback
+    if (!payment) {
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          payment = await Payment.findOne({
+            $or: [
+              { orderId: orderIdOrPayPalId },
+              { paypalOrderId: orderIdOrPayPalId }
+            ]
+          }).lean();
+        }
+      } catch (e) { }
+    }
+
+    const resolvedOrderId = payment?.orderId || orderIdOrPayPalId;
+    const websiteId = payment?.websiteId || extraMeta.websiteId || '';
+    const slug = payment?.slug || extraMeta.slug || '';
+    const plan = payment?.plan || extraMeta.plan || 'starter';
+    const planName = payment?.planName || extraMeta.planName || 'Starter (30+ Days)';
+    const planDays = payment?.planDays || extraMeta.planDays || 30;
+    const amount = payment?.amount || extraMeta.amount || 0;
+    const currency = payment?.currency || extraMeta.currency || (paymentMethod === 'paypal' ? 'USD' : 'INR');
+    const paypalOrderId = payment?.paypalOrderId || (payment?.metadata && payment.metadata.paypalOrderId) || (paymentMethod === 'paypal' && orderIdOrPayPalId.length === 17 ? orderIdOrPayPalId : null);
+
+    console.log(`[Payment Finalizer] Finalizing order ${resolvedOrderId} (Method: ${paymentMethod}, Website: ${websiteId}, Slug: ${slug})`);
+
+    // 3. Update CockroachDB Primary DB
+    await cockroach.savePayment({
+      orderId: resolvedOrderId,
+      websiteId,
+      slug,
+      plan,
+      planName,
+      planDays,
+      amount,
+      currency,
+      status: 'PAID',
+      paymentMethod,
+      paypalOrderId: paypalOrderId || undefined,
+      paypalCaptureId: captureId || undefined,
+      paidAt: new Date().toISOString()
+    });
+
+    // 4. Reserve custom slug in CockroachDB
+    if (slug && websiteId) {
+      await cockroach.saveCustomSlug(slug, websiteId);
+    }
+
+    // 5. Upgrade website to PRO/Premium in CockroachDB
+    if (websiteId) {
+      const record = await cockroach.getRecord(websiteId);
+      if (record) {
+        const updatedMeta = {
+          ...(record.metadata || {}),
+          isPremium: true,
+          plan,
+          planName,
+          planDays,
+          slug,
+          paymentStatus: 'paid',
+          paidAt: new Date().toISOString()
+        };
+        await cockroach.saveRecord(websiteId, updatedMeta, true);
+      }
+    }
+
+    // 6. Sync to MongoDB fallback
+    try {
+      const mongoReady = await ensureMongoConnected();
+      if (mongoReady) {
+        await Payment.findOneAndUpdate(
+          { $or: [{ orderId: resolvedOrderId }, { paypalOrderId: resolvedOrderId }] },
+          {
+            $set: {
+              status: 'PAID',
+              paidAt: new Date(),
+              paypalCaptureId: captureId || undefined,
+              ...(paypalOrderId ? { paypalOrderId } : {})
+            }
+          },
+          { upsert: false }
+        ).catch(() => { });
+
+        if (slug && websiteId) {
+          const { CustomSlug } = require('./models');
+          const existingSlug = await CustomSlug.findOne({ slug }).lean();
+          if (!existingSlug) {
+            await CustomSlug.create({ slug, websiteId }).catch(() => { });
+          }
+        }
+      }
+    } catch (e) { }
+
+    return {
+      orderId: resolvedOrderId,
+      websiteId,
+      slug,
+      plan,
+      planName,
+      planDays,
+      amount,
+      currency,
+      status: 'PAID'
+    };
+  } catch (err) {
+    console.error('[Payment Finalizer Error]:', err);
+    return null;
   }
 }
 
@@ -1080,25 +1252,6 @@ async function capturePayPalOrder(paypalOrderId) {
 app.get('/api/payment/detect-price', (req, res) => {
   const pricing = getGeoPrice(req);
   res.json({ success: true, ...pricing });
-});
-
-// GET /api/premium/check/:websiteId – returns premium status and whether custom URL can be claimed for free
-app.get('/api/premium/check/:websiteId', async (req, res) => {
-  const { websiteId } = req.params;
-  try {
-    const host = req.headers.host || req.headers['x-forwarded-host'] || '';
-    const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
-
-    const isPaid = isLocalhost || (await verifyWebsitePaymentStatus(websiteId));
-
-    res.json({
-      isPremium: isPaid,
-      plan: isPaid ? 'pro' : 'free',
-      canClaimFreeCustomUrl: isPaid
-    });
-  } catch (e) {
-    res.json({ isPremium: false, plan: 'free', canClaimFreeCustomUrl: false });
-  }
 });
 
 function getPlanMeta(pType, isFreeClaim = false) {
@@ -1407,14 +1560,36 @@ app.post('/api/payment/create-order', async (req, res) => {
     // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
     if (effectiveGateway === 'paypal') {
       try {
-        const returnUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId=${orderId}&view=${websiteId}`;
-        const cancelUrl = `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?restore=${websiteId}&payment=cancelled`;
+        let returnUrl = req.body.returnUrl || `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId=${orderId}&view=${websiteId}`;
+        returnUrl = returnUrl.replace('{order_id}', orderId).replace('{orderId}', orderId);
+        let cancelUrl = req.body.cancelUrl || `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?restore=${websiteId}&payment=cancelled`;
+        cancelUrl = cancelUrl.replace('{order_id}', orderId).replace('{orderId}', orderId);
 
         console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${targetCurrency}`);
-        const paypalOrder = await createPayPalOrder(paypalAmount, targetCurrency, returnUrl, cancelUrl);
+        const paypalOrder = await createPayPalOrder(orderId, paypalAmount, targetCurrency, returnUrl, cancelUrl, {
+          description: `Custom URL Activation: ${sanitizedSlug}`
+        });
         const approveLink = paypalOrder.links?.find(link => link.rel === 'approve')?.href;
 
         if (approveLink) {
+          // Update CockroachDB with paypalOrderId and approve link
+          await cockroach.savePayment({
+            orderId,
+            websiteId,
+            slug: sanitizedSlug,
+            plan: planMeta.plan,
+            planName: planMeta.planName,
+            planDays: planMeta.planDays,
+            customerEmail: customer.customer_email,
+            customerPhone: customer.customer_phone,
+            amount: paypalAmount,
+            currency: targetCurrency,
+            status: 'PENDING',
+            paymentMethod: 'paypal',
+            paypalOrderId: paypalOrder.id,
+            paymentLink: approveLink
+          });
+
           try {
             await Payment.findOneAndUpdate({ orderId }, { $set: { paymentLink: approveLink, paypalOrderId: paypalOrder.id } }).catch(() => { });
           } catch (e) { }
@@ -1687,24 +1862,98 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
     // 1. Fetch from CockroachDB / MongoDB
     let payment = null;
     try {
-      const crPayments = await cockroach.getAllPayments(500);
-      payment = crPayments.find(p => p.orderId === orderId);
+      payment = await cockroach.getPaymentByOrderId(orderId);
     } catch (e) { }
 
     if (!payment) {
       try {
         const mongoReady = await ensureMongoConnected();
         if (mongoReady) {
-          payment = await Payment.findOne({ orderId }).lean();
+          payment = await Payment.findOne({
+            $or: [{ orderId }, { paypalOrderId: orderId }]
+          }).lean();
         }
       } catch (e) { }
     }
 
-    // 2. If still pending or not found in local DB, verify directly with Cashfree
-    let isDirectPaid = false;
-    if (CF_APP_ID && CF_SECRET_KEY) {
+    const resolvedOrderId = payment?.orderId || orderId;
+    const isAlreadyPaid = payment?.status === 'PAID' || payment?.status === 'COMPLETED';
+
+    if (isAlreadyPaid) {
+      const planKey = (payment?.plan || 'starter').toLowerCase();
+      const canClaimFreeCustomUrl = planKey !== 'starter' && planKey !== 'free';
+      return res.json({
+        status: 'PAID',
+        isPremium: true,
+        orderId: resolvedOrderId,
+        websiteId: payment?.websiteId,
+        plan: payment?.plan || 'starter',
+        planName: payment?.planName || 'Starter (30+ Days)',
+        planDays: payment?.planDays || 30,
+        canClaimFreeCustomUrl,
+        slug: payment?.slug,
+        amount: payment?.amount,
+        currency: payment?.currency || 'INR'
+      });
+    }
+
+    // 2. If PayPal payment or token present, verify & auto-capture directly with PayPal
+    const ppOrderId = payment?.paypalOrderId || (payment?.metadata && payment.metadata.paypalOrderId) || (orderId.length === 17 ? orderId : null) || req.query.token;
+    const isPayPalMethod = payment?.paymentMethod === 'paypal' || payment?.gateway === 'paypal' || !!ppOrderId;
+
+    if (isPayPalMethod && ppOrderId) {
       try {
-        const cfRes = await fetch(`${CF_API_BASE}/orders/${orderId}`, {
+        console.log(`[Payment Status Check] Checking PayPal order: ${ppOrderId}`);
+        const ppOrder = await getPayPalOrderDetails(ppOrderId);
+        console.log(`[Payment Status Check] PayPal order ${ppOrderId} status: ${ppOrder.status}`);
+
+        if (ppOrder.status === 'APPROVED') {
+          console.log(`[PayPal Auto-Capture] Order ${ppOrderId} is APPROVED. Capturing now...`);
+          const capResult = await capturePayPalOrder(ppOrderId);
+          const capId = capResult?.id || capResult?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+          const finalized = await finalizePaymentSuccess(resolvedOrderId, 'paypal', capId);
+
+          const planKey = (finalized?.plan || payment?.plan || 'starter').toLowerCase();
+          return res.json({
+            status: 'PAID',
+            isPremium: true,
+            orderId: finalized?.orderId || resolvedOrderId,
+            slug: finalized?.slug || payment?.slug || '',
+            websiteId: finalized?.websiteId || payment?.websiteId,
+            plan: finalized?.plan || payment?.plan || 'starter',
+            planName: finalized?.planName || payment?.planName || 'Starter (30+ Days)',
+            planDays: finalized?.planDays || payment?.planDays || 30,
+            canClaimFreeCustomUrl: planKey !== 'starter' && planKey !== 'free',
+            amount: finalized?.amount || payment?.amount,
+            currency: finalized?.currency || payment?.currency || 'USD'
+          });
+        } else if (ppOrder.status === 'COMPLETED') {
+          const finalized = await finalizePaymentSuccess(resolvedOrderId, 'paypal');
+          const planKey = (finalized?.plan || payment?.plan || 'starter').toLowerCase();
+          return res.json({
+            status: 'PAID',
+            isPremium: true,
+            orderId: finalized?.orderId || resolvedOrderId,
+            slug: finalized?.slug || payment?.slug || '',
+            websiteId: finalized?.websiteId || payment?.websiteId,
+            plan: finalized?.plan || payment?.plan || 'starter',
+            planName: finalized?.planName || payment?.planName || 'Starter (30+ Days)',
+            planDays: finalized?.planDays || payment?.planDays || 30,
+            canClaimFreeCustomUrl: planKey !== 'starter' && planKey !== 'free',
+            amount: finalized?.amount || payment?.amount,
+            currency: finalized?.currency || payment?.currency || 'USD'
+          });
+        }
+      } catch (ppCheckErr) {
+        console.error('[Payment Status Check] PayPal check error:', ppCheckErr.message);
+      }
+    }
+
+    // 3. If Cashfree payment, verify directly with Cashfree
+    let isDirectPaid = false;
+    if (CF_APP_ID && CF_SECRET_KEY && !isPayPalMethod) {
+      try {
+        const cfRes = await fetch(`${CF_API_BASE}/orders/${resolvedOrderId}`, {
           method: 'GET',
           headers: cfHeaders()
         });
@@ -1713,52 +1962,26 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
           const cfStatus = cfData.order_status || cfData.status;
           if (cfStatus === 'PAID' || cfStatus === 'SUCCESS') {
             isDirectPaid = true;
-            const websiteId = payment?.websiteId || cfData.customer_details?.customer_id;
-            const slug = payment?.slug || '';
-
-            // Update CockroachDB Primary DB
-            await cockroach.savePayment({
-              orderId,
-              websiteId,
-              slug,
+            const finalized = await finalizePaymentSuccess(resolvedOrderId, 'cashfree', null, {
+              websiteId: payment?.websiteId || cfData.customer_details?.customer_id,
+              slug: payment?.slug || '',
               amount: cfData.order_amount || payment?.amount || 0,
-              currency: cfData.order_currency || payment?.currency || 'INR',
-              status: 'PAID',
-              paymentMethod: 'cashfree'
+              currency: cfData.order_currency || payment?.currency || 'INR'
             });
 
-            if (slug && websiteId) {
-              await cockroach.saveCustomSlug(slug, websiteId);
-            }
-
-            if (websiteId) {
-              const rec = await cockroach.getRecord(websiteId);
-              if (rec) {
-                await cockroach.saveRecord(websiteId, rec.metadata, true);
-              }
-            }
-
-            // Update Mongo
-            try {
-              const mongoReady = await ensureMongoConnected();
-              if (mongoReady) {
-                await Payment.findOneAndUpdate(
-                  { orderId },
-                  { status: 'PAID', paidAt: new Date() },
-                  { upsert: false }
-                );
-              }
-            } catch (e) { }
-
+            const planKey = (finalized?.plan || payment?.plan || 'starter').toLowerCase();
             return res.json({
               status: 'PAID',
               isPremium: true,
-              orderId,
-              slug,
-              websiteId,
-              plan: payment?.plan || 'starter',
-              planName: payment?.planName || 'Starter (30+ Days)',
-              planDays: payment?.planDays || 30
+              orderId: finalized?.orderId || resolvedOrderId,
+              slug: finalized?.slug || payment?.slug || '',
+              websiteId: finalized?.websiteId || payment?.websiteId,
+              plan: finalized?.plan || payment?.plan || 'starter',
+              planName: finalized?.planName || payment?.planName || 'Starter (30+ Days)',
+              planDays: finalized?.planDays || payment?.planDays || 30,
+              canClaimFreeCustomUrl: planKey !== 'starter' && planKey !== 'free',
+              amount: finalized?.amount || payment?.amount,
+              currency: finalized?.currency || payment?.currency || 'INR'
             });
           }
         }
@@ -1771,14 +1994,14 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
       return res.status(404).json({ error: 'Payment not found' });
     }
 
-    const isPaid = payment?.status === 'PAID' || payment?.status === 'COMPLETED' || isDirectPaid;
+    const isPaid = isAlreadyPaid || isDirectPaid;
     const planKey = (payment?.plan || 'starter').toLowerCase();
     const canClaimFreeCustomUrl = isPaid && planKey !== 'starter' && planKey !== 'free';
 
     res.json({
       status: isPaid ? 'PAID' : (payment?.status || 'PENDING'),
       isPremium: isPaid,
-      orderId: payment?.orderId || orderId,
+      orderId: payment?.orderId || resolvedOrderId,
       websiteId: payment?.websiteId,
       plan: payment?.plan || 'starter',
       planName: payment?.planName || 'Starter (30+ Days)',
@@ -1880,67 +2103,52 @@ app.post('/api/payment/paypal/capture', async (req, res) => {
       return res.status(400).json({ error: 'Invalid orderId' });
     }
 
-    const mongoReady = await ensureMongoConnected();
-    if (!mongoReady) {
-      return res.status(503).json({ error: 'Server temporarily unavailable. Please try again later.' });
+    let payment = null;
+    try {
+      payment = await cockroach.getPaymentByOrderId(orderId);
+    } catch (e) { }
+
+    if (!payment) {
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          payment = await Payment.findOne({
+            $or: [{ orderId }, { paypalOrderId: orderId }]
+          }).lean();
+        }
+      } catch (e) { }
     }
 
-    const payment = await Payment.findOne({ orderId }).lean();
     if (!payment) {
       return res.status(404).json({ error: 'Payment not found' });
-    }
-
-    if (!payment.paypalOrderId) {
-      return res.status(400).json({ error: 'Not a PayPal payment' });
     }
 
     if (payment.status === 'PAID') {
       return res.json({ success: true, status: 'PAID', slug: payment.slug });
     }
 
+    const paypalOrderId = payment.paypalOrderId || (payment.metadata && payment.metadata.paypalOrderId) || (orderId.length === 17 ? orderId : null);
+    if (!paypalOrderId) {
+      return res.status(400).json({ error: 'Not a PayPal payment or missing PayPal order ID' });
+    }
+
     // Capture the PayPal payment
-    console.log(`[PayPal] Capturing order ${payment.paypalOrderId}`);
-    const captureResult = await capturePayPalOrder(payment.paypalOrderId);
+    console.log(`[PayPal] Capturing order ${paypalOrderId}`);
+    const captureResult = await capturePayPalOrder(paypalOrderId);
+    const captureId = captureResult?.id || captureResult?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
 
-    if (captureResult.status === 'COMPLETED') {
-      // Update CockroachDB Primary DB
-      await cockroach.savePayment({
-        orderId: payment.orderId,
-        websiteId: payment.websiteId,
-        slug: payment.slug,
-        status: 'PAID',
-        paymentMethod: 'paypal'
-      });
-      if (payment.slug) {
-        await cockroach.saveCustomSlug(payment.slug, payment.websiteId);
-      }
-      const record = await cockroach.getRecord(payment.websiteId);
-      if (record) {
-        await cockroach.saveRecord(payment.websiteId, record.metadata, true);
-      }
-
-      // Non-blocking Mongo write
-      try {
-        await Payment.findByIdAndUpdate(payment._id, {
-          status: 'PAID',
-          paidAt: new Date(),
-          paypalCaptureId: captureResult.id
-        }).catch(() => { });
-
-        const { CustomSlug } = require('./models');
-        const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
-        if (!existingSlug) {
-          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => { });
-        }
-      } catch (e) { }
-
+    if (captureResult.status === 'COMPLETED' || captureResult.alreadyCaptured) {
+      const finalized = await finalizePaymentSuccess(payment.orderId || orderId, 'paypal', captureId);
       console.log(`[PayPal] Order ${orderId} captured successfully`);
-      return res.json({ success: true, status: 'PAID', slug: payment.slug });
+      return res.json({ success: true, status: 'PAID', slug: finalized?.slug || payment.slug });
     } else {
       console.error('[PayPal] Capture failed:', captureResult);
       await cockroach.savePayment({ orderId: payment.orderId, websiteId: payment.websiteId, status: 'FAILED' });
       try {
-        await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' }).catch(() => { });
+        await Payment.findOneAndUpdate(
+          { $or: [{ orderId: payment.orderId }, { paypalOrderId }] },
+          { $set: { status: 'FAILED' } }
+        ).catch(() => { });
       } catch (e) { }
       return res.status(400).json({ error: 'Payment capture failed', details: captureResult });
     }
@@ -1954,67 +2162,60 @@ app.post('/api/payment/paypal/capture', async (req, res) => {
 app.post('/api/payment/paypal/webhook', async (req, res) => {
   try {
     const webhookEvent = req.body;
-    console.log(`[PayPal Webhook] Received event: ${webhookEvent.event_type}`);
+    const eventType = webhookEvent.event_type;
+    console.log(`[PayPal Webhook] Received event: ${eventType} (ID: ${webhookEvent.id})`);
 
-    // Handle different PayPal webhook events
-    if (webhookEvent.event_type === 'PAYMENT.CAPTURE.COMPLETED' ||
-      webhookEvent.event_type === 'CHECKOUT.ORDER.APPROVED') {
-
-      const purchaseUnits = webhookEvent.resource?.purchase_units;
-      const customId = purchaseUnits?.[0]?.custom_id;
+    if (eventType === 'CHECKOUT.ORDER.APPROVED') {
       const paypalOrderId = webhookEvent.resource?.id;
+      const purchaseUnits = webhookEvent.resource?.purchase_units;
+      const customId = purchaseUnits?.[0]?.custom_id || purchaseUnits?.[0]?.reference_id;
 
-      // Update CockroachDB Primary DB
-      let crRecord = null;
-      if (customId) {
-        crRecord = await cockroach.getRecord(customId);
+      console.log(`[PayPal Webhook] Auto-capturing approved order ${paypalOrderId} (customId: ${customId})`);
+      let captureResult = null;
+      try {
+        captureResult = await capturePayPalOrder(paypalOrderId);
+      } catch (capErr) {
+        console.error(`[PayPal Webhook] Capture error for ${paypalOrderId}:`, capErr.message);
       }
-      await cockroach.savePayment({
-        orderId: customId || paypalOrderId,
-        status: 'PAID',
-        paymentMethod: 'paypal'
+
+      const captureId = captureResult?.id || captureResult?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+      await finalizePaymentSuccess(customId || paypalOrderId, 'paypal', captureId, {
+        amount: purchaseUnits?.[0]?.amount?.value,
+        currency: purchaseUnits?.[0]?.amount?.currency_code
       });
 
-      // Optional Mongo fallback write
-      try {
-        const mongoReady = await ensureMongoConnected();
-        if (mongoReady) {
-          let payment = await Payment.findOne({ paypalOrderId }).lean();
-          if (!payment && customId) {
-            payment = await Payment.findOne({ orderId: customId }).lean();
-          }
+    } else if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
+      const captureId = webhookEvent.resource?.id;
+      const customId = webhookEvent.resource?.custom_id;
+      const paypalOrderId = webhookEvent.resource?.supplementary_data?.related_ids?.order_id;
 
-          if (payment && payment.status !== 'PAID') {
-            await Payment.findByIdAndUpdate(payment._id, {
-              status: 'PAID',
-              paidAt: new Date(),
-              paypalCaptureId: webhookEvent.id
-            }).catch(() => { });
+      console.log(`[PayPal Webhook] Capture completed: ${captureId} (Order: ${paypalOrderId}, customId: ${customId})`);
+      await finalizePaymentSuccess(customId || paypalOrderId, 'paypal', captureId);
 
-            const { CustomSlug } = require('./models');
-            const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
-            if (!existingSlug) {
-              await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => { });
-            }
-          }
-        }
-      } catch (e) { }
-    } else if (webhookEvent.event_type === 'PAYMENT.CAPTURE.DECLINED' ||
-      webhookEvent.event_type === 'CHECKOUT.ORDER.DECLINED') {
-
+    } else if (eventType === 'PAYMENT.CAPTURE.DECLINED' || eventType === 'CHECKOUT.ORDER.DECLINED') {
       const paypalOrderId = webhookEvent.resource?.id;
-      const payment = await Payment.findOne({ paypalOrderId }).lean();
+      const customId = webhookEvent.resource?.custom_id || webhookEvent.resource?.purchase_units?.[0]?.custom_id;
+      const targetId = customId || paypalOrderId;
 
-      if (payment && payment.status !== 'FAILED') {
-        await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' });
-        console.log(`[PayPal Webhook] Order ${payment.orderId} marked as FAILED`);
+      console.log(`[PayPal Webhook] Order ${targetId} declined`);
+      if (targetId) {
+        await cockroach.savePayment({ orderId: targetId, status: 'FAILED' });
+        try {
+          const mongoReady = await ensureMongoConnected();
+          if (mongoReady) {
+            await Payment.findOneAndUpdate(
+              { $or: [{ orderId: targetId }, { paypalOrderId: targetId }] },
+              { $set: { status: 'FAILED' } }
+            ).catch(() => { });
+          }
+        } catch (e) { }
       }
     }
 
     res.status(200).json({ received: true });
   } catch (err) {
     console.error('[PayPal Webhook Error]:', err);
-    res.status(200).json({ received: true }); // Always return 200 to avoid PayPal retries
+    res.status(200).json({ received: true }); // Always return 200 to acknowledge webhook
   }
 });
 
@@ -2505,17 +2706,18 @@ app.get('/api/admin/supabase-list', adminAuth, async (req, res) => {
 // Delete a single website and all associated assets & tracking records
 app.delete('/api/admin/website/:id', adminAuth, async (req, res) => {
   try {
-    const websiteId = req.params.id;
-    const force = req.query.force === 'false' ? false : true;
-
-    if (!websiteId) {
+    const rawId = req.params.id;
+    if (!rawId) {
       return res.status(400).json({ error: 'Website ID is required' });
     }
 
+    const websiteId = decodeURIComponent(rawId).replace(/\.json$/i, '').trim();
+    const force = req.query.force === 'true' || req.query.force === true;
+
     const result = await analytics.deleteWebsite(websiteId, force, cloudinary);
 
-    if (!result.success && result.isPremium) {
-      return res.status(403).json(result);
+    if (!result.success) {
+      return res.status(result.isPremium ? 403 : 400).json(result);
     }
 
     res.json(result);
@@ -2530,8 +2732,12 @@ app.post('/api/admin/websites/bulk-delete', adminAuth, async (req, res) => {
   try {
     const { websiteIds, olderThanDays, protectPremium = true } = req.body || {};
 
+    const sanitizedIds = Array.isArray(websiteIds)
+      ? websiteIds.map(id => typeof id === 'string' ? decodeURIComponent(id).replace(/\.json$/i, '').trim() : id).filter(Boolean)
+      : null;
+
     const result = await analytics.bulkDeleteWebsites({
-      websiteIds,
+      websiteIds: sanitizedIds,
       olderThanDays,
       protectPremium: protectPremium !== false
     }, cloudinary);
