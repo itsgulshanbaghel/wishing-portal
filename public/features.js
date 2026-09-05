@@ -200,10 +200,37 @@
 
     // Global runner for Virtual Hug Animation
     function triggerVirtualHug(sectionEl) {
-        const d = typeof document !== 'undefined' ? document : null;
-        const w = typeof window !== 'undefined' ? window : null;
-        if (!d) return;
-        const section = sectionEl || d.getElementById('magic-virtual-hug-section');
+        const section = (sectionEl && sectionEl.nodeType === 1) ? sectionEl : (typeof document !== 'undefined' ? document.getElementById('magic-virtual-hug-section') : null);
+        const d = (section && section.ownerDocument) || (sectionEl && sectionEl.nodeType === 9 ? sectionEl : (typeof document !== 'undefined' ? document : null));
+        const w = (d && d.defaultView) || (typeof window !== 'undefined' ? window : null);
+        if (!d || !d.body) return;
+
+        if (!d.getElementById('magic-virtual-hug-styles')) {
+            const s = d.createElement('style');
+            s.id = 'magic-virtual-hug-styles';
+            s.textContent = `
+                .vh-heart-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.45);
+                    backdrop-filter: blur(4px);
+                    -webkit-backdrop-filter: blur(4px);
+                    z-index: 100000;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.5s ease;
+                }
+                .vh-heart-overlay.show {
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+                @keyframes vhHugPulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.15); }
+                }
+            `;
+            (d.head || d.body)?.appendChild(s);
+        }
 
         let overlay = d.getElementById('magic-vh-overlay');
         if (!overlay) {
@@ -238,7 +265,7 @@
         hugEmoji.style.cssText = `
             position: fixed;
             font-size: ${emojiSize};
-            z-index: 10001;
+            z-index: 100006;
             opacity: 0;
             transform: translate(-50%, -50%) scale(0);
             transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -267,11 +294,11 @@
                 position: fixed;
                 width: 22px;
                 height: 22px;
-                background-image: url('../assets/rose petal.png'), url('/assets/rose petal.png');
+                background-image: url('/assets/rose%20petal.png'), url('/assets/rose petal.png'), url('../assets/rose%20petal.png'), url('../assets/rose petal.png');
                 background-size: contain;
                 background-repeat: no-repeat;
                 pointer-events: none;
-                z-index: 10000;
+                z-index: 100005;
                 opacity: 0;
                 transform: translate(-50%, -50%) scale(0) rotate(${Math.random() * 360}deg);
                 transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -3818,7 +3845,7 @@
                     background: rgba(0, 0, 0, 0.45);
                     backdrop-filter: blur(4px);
                     -webkit-backdrop-filter: blur(4px);
-                    z-index: 2147483647;
+                    z-index: 100000;
                     opacity: 0;
                     pointer-events: none;
                     transition: opacity 0.5s ease;
@@ -3880,132 +3907,7 @@
                 let isAnimating = false;
 
                 const createRosePetalHeart = () => {
-                    if (isAnimating) return;
-                    isAnimating = true;
-
-                    btn.innerHTML = '<i class="fas fa-heart" style="color: #fff; animation: vhHugPulse 1s infinite;"></i> <span id="vhBtnText">Hug Received with Love! 💖</span>';
-
-                    const petalCount = 50;
-                    const heartPath = [];
-                    const winWidth = w.innerWidth || d.documentElement.clientWidth || 360;
-                    const winHeight = w.innerHeight || d.documentElement.clientHeight || 640;
-                    const centerX = winWidth / 2;
-                    const centerY = winHeight / 2;
-                    const scale = Math.min(centerX, centerY) * 0.75;
-
-                    // Show overlay
-                    overlay.classList.add('show');
-
-                    // Create center hug emoji
-                    const hugEmoji = d.createElement('div');
-                    hugEmoji.innerHTML = '&#129303;';
-                    const isMobile = winWidth <= 480;
-                    const emojiSize = isMobile ? '90px' : '120px';
-                    hugEmoji.style.cssText = `
-                    position: fixed;
-                    font-size: ${emojiSize};
-                    z-index: 10001;
-                    opacity: 0;
-                    transform: translate(-50%, -50%) scale(0);
-                    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                    pointer-events: none;
-                    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.35));
-                    left: ${centerX}px;
-                    top: ${centerY}px;
-                `;
-                    d.body.appendChild(hugEmoji);
-
-                    // Generate heart shape points (parametric equation)
-                    for (let i = 0; i < petalCount; i++) {
-                        const t = (i / petalCount) * Math.PI * 2;
-                        const x = 16 * Math.pow(Math.sin(t), 3);
-                        const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-
-                        heartPath.push({
-                            x: centerX + (x / 16) * scale,
-                            y: centerY + (y / 16) * scale,
-                            delay: i * 30
-                        });
-                    }
-
-                    // Create petals
-                    heartPath.forEach((point, index) => {
-                        const petal = d.createElement('div');
-                        petal.style.cssText = `
-                        position: fixed;
-                        width: 22px;
-                        height: 22px;
-                        background-image: url('../assets/rose petal.png'), url('/assets/rose petal.png');
-                        background-size: contain;
-                        background-repeat: no-repeat;
-                        pointer-events: none;
-                        z-index: 10000;
-                        opacity: 0;
-                        transform: translate(-50%, -50%) scale(0) rotate(${Math.random() * 360}deg);
-                        transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                        left: ${Math.random() < 0.5 ? -50 : winWidth + 50}px;
-                        top: ${Math.random() * winHeight}px;
-                    `;
-
-                        d.body.appendChild(petal);
-
-                        // Animate to heart position
-                        setTimeout(() => {
-                            petal.style.opacity = '1';
-                            petal.style.left = point.x + 'px';
-                            petal.style.top = point.y + 'px';
-                            petal.style.transform = `translate(-50%, -50%) scale(1) rotate(${Math.random() * 360}deg)`;
-                        }, point.delay);
-
-                        // Fade out after heart formation
-                        setTimeout(() => {
-                            petal.style.opacity = '0';
-                            petal.style.transform = `translate(-50%, -50%) scale(0) rotate(${Math.random() * 360}deg)`;
-                        }, (petalCount * 30) + 3000);
-
-                        // Remove from DOM
-                        setTimeout(() => {
-                            petal.remove();
-                        }, (petalCount * 30) + 4000);
-                    });
-
-                    // Show hug emoji after heart formation is complete
-                    setTimeout(() => {
-                        hugEmoji.style.opacity = '1';
-                        hugEmoji.style.transform = 'translate(-50%, -50%) scale(1)';
-                    }, (petalCount * 30) + 200);
-
-                    // Pulse animation for hug emoji
-                    let pulseCount = 0;
-                    const pulseInterval = setInterval(() => {
-                        if (pulseCount < 6) {
-                            hugEmoji.style.transform = `translate(-50%, -50%) scale(${1.1 + (pulseCount % 2) * 0.1})`;
-                            pulseCount++;
-                        } else {
-                            clearInterval(pulseInterval);
-                        }
-                    }, 500);
-
-                    // Confetti burst
-                    const cfn = w.confetti || w.canvasConfetti || (typeof window !== 'undefined' && (window.confetti || window.canvasConfetti));
-                    if (cfn) {
-                        setTimeout(() => {
-                            cfn({ particleCount: 80, spread: 80, origin: { x: 0.5, y: 0.5 }, colors: ['#ff69b4', '#ff1493', '#ff85a2', '#ffffff'] });
-                        }, (petalCount * 30) + 400);
-                    }
-
-                    // Fade out hug emoji
-                    setTimeout(() => {
-                        hugEmoji.style.opacity = '0';
-                        hugEmoji.style.transform = 'translate(-50%, -50%) scale(0)';
-                    }, (petalCount * 30) + 2800);
-
-                    // Remove hug emoji from DOM & close overlay
-                    setTimeout(() => {
-                        hugEmoji.remove();
-                        overlay.classList.remove('show');
-                        isAnimating = false;
-                    }, (petalCount * 30) + 3800);
+                    triggerVirtualHug(section);
                 };
 
                 if (btn) btn.addEventListener('click', createRosePetalHeart);
@@ -4054,10 +3956,11 @@
             // 3. Virtual Hug: "Hug For You 🤗" Button
             const hugBtn = target.closest ? (target.closest('#vhBtn') || target.closest('.vh-btn')) : null;
             if (hugBtn) {
-                const section = hugBtn.closest('#magic-virtual-hug-section') || document.getElementById('magic-virtual-hug-section');
+                const doc = hugBtn.ownerDocument || document;
+                const section = hugBtn.closest('#magic-virtual-hug-section') || doc.getElementById('magic-virtual-hug-section');
                 e.preventDefault();
                 e.stopPropagation();
-                triggerVirtualHug(section || document);
+                triggerVirtualHug(section || doc);
                 return;
             }
         };
