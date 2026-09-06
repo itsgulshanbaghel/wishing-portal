@@ -116,7 +116,7 @@ const corsOptions = {
     return callback(new Error(`CORS blocked: ${origin}`));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Admin-Bypass'],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -3264,6 +3264,16 @@ app.get('/:slug', async (req, res, next) => {
         }
         if (mEntry) entry = mEntry;
       }
+    }
+
+    // 3. Check if slug is directly a websiteId
+    if (!entry && /^[a-z0-9]{8,14}$/i.test(slug)) {
+      try {
+        const exists = await storage.readWebsiteConfig(slug);
+        if (exists) {
+          entry = { websiteId: slug };
+        }
+      } catch (e) { }
     }
 
     if (entry && entry.websiteId) {
