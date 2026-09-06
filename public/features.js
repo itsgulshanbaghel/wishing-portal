@@ -369,7 +369,34 @@
         lock: {
             enable(d, w, userName, customText) {
                 if (d.getElementById("lock-overlay")) return {};
-                if (window.lockUnlocked) return {};
+                if (w?.lockUnlocked || window.lockUnlocked) return {};
+
+                // If countdown is active, defer lock screen until countdown finishes
+                if (d.getElementById("magic-countdown-overlay") || (w && w.countdownFinished === false) || (typeof window !== 'undefined' && window.countdownFinished === false)) {
+                    const onCountdownDone = () => {
+                        window.removeEventListener('countdownFinished', onCountdownDone);
+                        if (w && w !== window) w.removeEventListener('countdownFinished', onCountdownDone);
+                        if (d && typeof d.removeEventListener === 'function') d.removeEventListener('countdownFinished', onCountdownDone);
+                        featureMap.lock.enable(d, w, userName, customText);
+                    };
+                    window.addEventListener('countdownFinished', onCountdownDone);
+                    if (w && w !== window) w.addEventListener('countdownFinished', onCountdownDone);
+                    if (d && typeof d.addEventListener === 'function') d.addEventListener('countdownFinished', onCountdownDone);
+                    return {};
+                }
+
+                // Ensure curtains or welcome message are removed if lock screen appears
+                const existingCurtain = d.getElementById("magic-curtain-reveal-root");
+                if (existingCurtain) {
+                    if (d.body && existingCurtain._prevOverflow !== undefined) d.body.style.overflow = existingCurtain._prevOverflow || "";
+                    existingCurtain.remove();
+                }
+                const existingWelcome = d.getElementById("magic-welcome-typing-root");
+                if (existingWelcome) {
+                    existingWelcome.remove();
+                    if (d.body) d.body.classList.remove('magic-noscroll');
+                }
+
                 // Ensure Font Awesome is loaded
                 if (!d.getElementById('greeter-font-awesome')) {
                     const faLink = d.createElement('link');
@@ -378,10 +405,10 @@
                     faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
                     (d.head || d.body)?.appendChild(faLink);
                 }
-                const password = customText || "";
+                const password = (customText && customText.trim()) ? customText.trim() : '1234';
                 const overlay = d.createElement("div");
                 overlay.id = "lock-overlay";
-                overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(135deg, rgba(26, 16, 37, 0.95) 0%, rgba(123, 93, 246, 0.8) 50%, rgba(255, 122, 47, 0.8) 100%); z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Inter', sans-serif; color:white; backdrop-filter:blur(15px); opacity:0; transition:opacity 0.8s ease-in-out;";
+                overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(135deg, rgba(26, 16, 37, 0.95) 0%, rgba(123, 93, 246, 0.8) 50%, rgba(255, 122, 47, 0.8) 100%); z-index:2147483649; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Inter', sans-serif; color:white; backdrop-filter:blur(15px); opacity:0; transition:opacity 0.8s ease-in-out;";
                 // Preload unlock audio
                 const unlockAudio = d.createElement('audio');
                 unlockAudio.src = 'https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1';
@@ -421,6 +448,10 @@
                 input.style.cssText = "width:280px; padding:15px 20px; border-radius:30px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; font-size:1rem; text-align:center; outline:none; margin-bottom:20px; transition:all 0.3s;";
                 input.onfocus = () => input.style.borderColor = '#7b5df6';
                 input.onblur = () => input.style.borderColor = 'rgba(255,255,255,0.3)';
+                input.addEventListener('keydown', (e) => {
+                    e.stopPropagation();
+                    if (e.key === 'Enter') btn.click();
+                });
                 overlay.appendChild(input);
                 // Preload wrong password audio
                 const wrongAudio = d.createElement('audio');
@@ -435,17 +466,19 @@
                 btn.onmouseover = () => btn.style.transform = 'translateY(-2px)';
                 btn.onmouseout = () => btn.style.transform = 'translateY(0)';
                 btn.onclick = () => {
-                    if (input.value.trim() === password.trim()) {
+                    if (input.value.trim().toLowerCase() === password.trim().toLowerCase()) {
                         // Play unlock sound
                         unlockAudio.currentTime = 0;
                         unlockAudio.play().catch(e => console.log('Unlock audio failed:', e));
                         try { const bgAudio = d.getElementById('magic-bg-audio'); if (bgAudio && bgAudio.paused) bgAudio.play().catch(() => { }); } catch (e) { }
-                        try { const bgAudio = d.getElementById('magic-bg-audio'); if (bgAudio && bgAudio.paused) bgAudio.play().catch(() => { }); } catch (e) { }
                         overlay.style.opacity = '0';
                         setTimeout(() => {
                             overlay.remove();
+                            if (w) w.lockUnlocked = true;
                             window.lockUnlocked = true;
-                            window.dispatchEvent(new CustomEvent('lockUnlocked'));
+                            try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('lockUnlocked')); } catch (e) { }
+                            try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('lockUnlocked')); } catch (e) { }
+                            try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('lockUnlocked')); } catch (e) { }
                         }, 800);
                     } else {
                         // Play wrong password sound
@@ -467,8 +500,43 @@
             },
             disable(d) { d?.getElementById("lock-overlay")?.remove(); }
         }, curtainReveal: {
-            enable(d, w) {
+            enable(d, w, userName, customText, images, customEmoji, audio) {
                 if (d.getElementById("magic-curtain-reveal-root")) return;
+
+                // If countdown is active, defer curtains until countdown finishes
+                if (d.getElementById("magic-countdown-overlay") || (w && w.countdownFinished === false) || (typeof window !== 'undefined' && window.countdownFinished === false)) {
+                    const onCountdownDone = () => {
+                        window.removeEventListener('countdownFinished', onCountdownDone);
+                        if (w && w !== window) w.removeEventListener('countdownFinished', onCountdownDone);
+                        if (d && typeof d.removeEventListener === 'function') d.removeEventListener('countdownFinished', onCountdownDone);
+                        featureMap.curtainReveal.enable(d, w, userName, customText, images, customEmoji, audio);
+                    };
+                    window.addEventListener('countdownFinished', onCountdownDone);
+                    if (w && w !== window) w.addEventListener('countdownFinished', onCountdownDone);
+                    if (d && typeof d.addEventListener === 'function') d.addEventListener('countdownFinished', onCountdownDone);
+                    return;
+                }
+
+                // If lock screen is currently active and not unlocked, defer curtains until lock is unlocked
+                if (d.getElementById("lock-overlay") || (w && w.lockUnlocked === false) || (typeof window !== 'undefined' && window.lockUnlocked === false)) {
+                    const onLockDone = () => {
+                        window.removeEventListener('lockUnlocked', onLockDone);
+                        if (w && w !== window) w.removeEventListener('lockUnlocked', onLockDone);
+                        if (d && typeof d.removeEventListener === 'function') d.removeEventListener('lockUnlocked', onLockDone);
+                        featureMap.curtainReveal.enable(d, w, userName, customText, images, customEmoji, audio);
+                    };
+                    window.addEventListener('lockUnlocked', onLockDone);
+                    if (w && w !== window) w.addEventListener('lockUnlocked', onLockDone);
+                    if (d && typeof d.addEventListener === 'function') d.addEventListener('lockUnlocked', onLockDone);
+                    return;
+                }
+
+                // Ensure welcome typing overlay is removed if curtains are being shown
+                const existingWelcome = d.getElementById("magic-welcome-typing-root");
+                if (existingWelcome) {
+                    existingWelcome.remove();
+                    if (d.body) d.body.classList.remove('magic-noscroll');
+                }
                 const cd = d.createElement("div");
                 cd.id = "magic-curtain-reveal-root";
                 cd.style.cssText = "position:fixed; inset:0; z-index:2147483647; display:flex; pointer-events:auto; overflow:hidden; visibility:visible !important; opacity:1 !important;";
@@ -505,6 +573,9 @@
                 const openCurtains = () => {
                     if (opened) return;
                     opened = true;
+                    cd._isOpening = true;
+                    if (w) w.curtainsOpening = true;
+                    if (typeof window !== 'undefined') window.curtainsOpening = true;
                     cd.style.pointerEvents = "none";
                     if (d.body) d.body.style.overflow = cd._prevOverflow || "";
                     const l = cd.querySelector(".left");
@@ -518,12 +589,17 @@
                         }
                     } catch (err) { }
 
-                    // Dispatch event across all potential listeners
+                    // Dispatch curtainOpened immediately as the user opens curtains
+                    // so the welcome screen appears right behind the opening curtains!
                     try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('curtainOpened')); } catch (e) { }
                     try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('curtainOpened')); } catch (e) { }
                     try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('curtainOpened')); } catch (e) { }
 
-                    setTimeout(() => cd?.remove(), 3500);
+                    // Clean up curtain element after 3.2s animation finishes
+                    setTimeout(() => {
+                        cd._isOpening = false;
+                        cd?.remove();
+                    }, 3500);
                 };
 
                 if (btn) btn.onclick = openCurtains;
@@ -536,6 +612,7 @@
             disable(d) {
                 const el = d?.getElementById("magic-curtain-reveal-root");
                 if (el) {
+                    if (el._isOpening) return; // Don't remove while opening animation is actively playing
                     if (d.body && el._prevOverflow !== undefined) d.body.style.overflow = el._prevOverflow || "";
                     el.remove();
                 }
@@ -545,6 +622,50 @@
         welcomeTyping: {
             enable(d, w, userName, customText) {
                 if (d.getElementById("magic-welcome-typing-root")) return;
+
+                // Defer welcome typing if countdown, lock, or unopened curtains are active
+                if (d.getElementById("magic-countdown-overlay") || (w && w.countdownFinished === false) || (typeof window !== 'undefined' && window.countdownFinished === false)) {
+                    const onCountdownDone = () => {
+                        window.removeEventListener('countdownFinished', onCountdownDone);
+                        if (w && w !== window) w.removeEventListener('countdownFinished', onCountdownDone);
+                        if (d && typeof d.removeEventListener === 'function') d.removeEventListener('countdownFinished', onCountdownDone);
+                        featureMap.welcomeTyping.enable(d, w, userName, customText);
+                    };
+                    window.addEventListener('countdownFinished', onCountdownDone);
+                    if (w && w !== window) w.addEventListener('countdownFinished', onCountdownDone);
+                    if (d && typeof d.addEventListener === 'function') d.addEventListener('countdownFinished', onCountdownDone);
+                    return {};
+                }
+                if (d.getElementById("lock-overlay") || (w && w.lockUnlocked === false) || (typeof window !== 'undefined' && window.lockUnlocked === false)) {
+                    const onLockDone = () => {
+                        window.removeEventListener('lockUnlocked', onLockDone);
+                        if (w && w !== window) w.removeEventListener('lockUnlocked', onLockDone);
+                        if (d && typeof d.removeEventListener === 'function') d.removeEventListener('lockUnlocked', onLockDone);
+                        featureMap.welcomeTyping.enable(d, w, userName, customText);
+                    };
+                    window.addEventListener('lockUnlocked', onLockDone);
+                    if (w && w !== window) w.addEventListener('lockUnlocked', onLockDone);
+                    if (d && typeof d.addEventListener === 'function') d.addEventListener('lockUnlocked', onLockDone);
+                    return {};
+                }
+
+                const curtainEl = d.getElementById("magic-curtain-reveal-root");
+                const isCurtainOpening = (curtainEl && curtainEl._isOpening) || (w && w.curtainsOpening) || (typeof window !== 'undefined' && window.curtainsOpening);
+                const isCurtainClosed = curtainEl && !isCurtainOpening;
+
+                if (isCurtainClosed || (!isCurtainOpening && ((w && w.curtainOpened === false) || (typeof window !== 'undefined' && window.curtainOpened === false)))) {
+                    const onCurtainDone = () => {
+                        window.removeEventListener('curtainOpened', onCurtainDone);
+                        if (w && w !== window) w.removeEventListener('curtainOpened', onCurtainDone);
+                        if (d && typeof d.removeEventListener === 'function') d.removeEventListener('curtainOpened', onCurtainDone);
+                        featureMap.welcomeTyping.enable(d, w, userName, customText);
+                    };
+                    window.addEventListener('curtainOpened', onCurtainDone);
+                    if (w && w !== window) w.addEventListener('curtainOpened', onCurtainDone);
+                    if (d && typeof d.addEventListener === 'function') d.addEventListener('curtainOpened', onCurtainDone);
+                    return {};
+                }
+
                 if (typeof injectFontsIfNeeded === 'function') injectFontsIfNeeded(d);
 
                 const lang = window.currentLang || 'en';
@@ -637,7 +758,11 @@
                         setTimeout(() => {
                             overlay?.remove();
                             d.body.classList.remove('magic-noscroll');
-                            window.dispatchEvent(new CustomEvent('welcomeTypingFinished'));
+                            if (w) w.welcomeFinished = true;
+                            window.welcomeFinished = true;
+                            try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('welcomeTypingFinished')); } catch (e) { }
+                            try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('welcomeTypingFinished')); } catch (e) { }
+                            try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('welcomeTypingFinished')); } catch (e) { }
                         }, 1200);
                     };
 
@@ -674,19 +799,7 @@
                     return { intervals: [] };
                 };
 
-                const curtain = d.getElementById("magic-curtain-reveal-root");
-                if (curtain) {
-                    const handler = () => { startTyping(); window.removeEventListener('curtainOpened', handler); };
-                    window.addEventListener('curtainOpened', handler);
-                    // Fail-safe: If curtainOpened doesn't fire in 8s, auto-start typing
-                    setTimeout(() => {
-                        window.removeEventListener('curtainOpened', handler);
-                        startTyping();
-                    }, 8000);
-                    return {};
-                } else {
-                    return startTyping();
-                }
+                return startTyping();
             },
             disable(d) {
                 const overlay = d?.getElementById("magic-welcome-typing-root");
@@ -2255,7 +2368,7 @@
 
                 const overlay = d.createElement("div");
                 overlay.id = "magic-countdown-overlay";
-                overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(45deg, #090214, #2a0b4e, #090214); background-size:200% 200%; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit', sans-serif; color:white; backdrop-filter:blur(15px); transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); animation: bgShift 10s ease infinite;";
+                overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(45deg, #090214, #2a0b4e, #090214); background-size:200% 200%; z-index:2147483650; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit', sans-serif; color:white; backdrop-filter:blur(15px); transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); animation: bgShift 10s ease infinite;";
 
                 // Add styles for rich animations
                 const style = d.createElement('style');
@@ -2362,7 +2475,11 @@
                             overlay.style.opacity = '0';
                             setTimeout(() => {
                                 overlay.remove();
-                                window.dispatchEvent(new CustomEvent('countdownFinished'));
+                                if (w) w.countdownFinished = true;
+                                window.countdownFinished = true;
+                                try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
+                                try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
+                                try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
                             }, 800);
                         }, 400);
                         return;

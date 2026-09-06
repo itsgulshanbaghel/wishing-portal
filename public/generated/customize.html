@@ -4810,9 +4810,9 @@
               applyFeature('welcomeTyping', false);
 
               window.countdownFinished = false;
-              window.lockUnlocked = false;
-              window.curtainOpened = false;
-              window.welcomeFinished = false;
+              window.lockUnlocked = !lockActive;
+              window.curtainOpened = !curtainActive;
+              window.welcomeFinished = !welcomeActive;
 
               window._countdownFinishedHandler = () => {
                 window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
@@ -4829,13 +4829,13 @@
 
             if (lockActive && !window.lockUnlocked) {
               const data = customData.get('lock') || {};
-              applyFeature('lock', true, name, data.text || "", data.images || [], data.emoji || "");
-
+              const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
               applyFeature('curtainReveal', false);
               applyFeature('welcomeTyping', false);
+              applyFeature('lock', true, name, lockPass, data.images || [], data.emoji || "");
 
-              window.curtainOpened = false;
-              window.welcomeFinished = false;
+              window.curtainOpened = !curtainActive;
+              window.welcomeFinished = !welcomeActive;
 
               window._lockUnlockedHandler = () => {
                 window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
@@ -4852,11 +4852,10 @@
 
             if (curtainActive && !window.curtainOpened) {
               const data = customData.get('curtainReveal') || {};
+              applyFeature('welcomeTyping', false);
               applyFeature('curtainReveal', true, name, data.text || "", data.images || [], data.emoji || "");
 
-              applyFeature('welcomeTyping', false);
-
-              window.welcomeFinished = false;
+              window.welcomeFinished = !welcomeActive;
 
               window._curtainOpenedHandler = () => {
                 window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
@@ -5231,12 +5230,22 @@
             const existing = doc.getElementById('lock-overlay');
             const wasExisting = !!existing;
             if (existing) existing.remove();
+            const existingCurtain = doc.getElementById('magic-curtain-reveal-root');
+            if (existingCurtain) {
+              if (doc.body && existingCurtain._prevOverflow !== undefined) doc.body.style.overflow = existingCurtain._prevOverflow || "";
+              existingCurtain.remove();
+            }
+            const existingWelcome = doc.getElementById('magic-welcome-typing-root');
+            if (existingWelcome) {
+              existingWelcome.remove();
+              if (doc.body) doc.body.classList.remove('magic-noscroll');
+            }
             if (window.lockUnlocked) return {};
             editModeBeforeLock = editModeActive;
             editModeActive = false;
             doc.body.contentEditable = false;
             editToggleBtn.classList.remove('active');
-            const password = customText;
+            const password = (customText && customText.trim()) ? customText.trim() : '1234';
             const overlay = doc.createElement('div');
             overlay.id = 'lock-overlay';
             overlay.style.position = 'fixed';
@@ -5245,7 +5254,7 @@
             overlay.style.width = '100%';
             overlay.style.height = '100%';
             overlay.style.background = 'linear-gradient(135deg, rgba(26, 16, 37, 0.95) 0%, rgba(123, 93, 246, 0.8) 50%, rgba(255, 122, 47, 0.8) 100%)';
-            overlay.style.zIndex = '9999';
+            overlay.style.zIndex = '2147483649';
             overlay.style.display = 'flex';
             overlay.style.flexDirection = 'column';
             overlay.style.alignItems = 'center';
@@ -5356,7 +5365,17 @@
                 unlockAudio.currentTime = 0;
                 unlockAudio.play().catch(e => console.log('Unlock audio failed:', e));
                 overlay.style.opacity = '0';
-                setTimeout(() => { overlay.remove(); window.lockUnlocked = true; window.dispatchEvent(new CustomEvent('lockUnlocked')); editModeActive = editModeBeforeLock; doc.body.contentEditable = editModeBeforeLock; editToggleBtn.classList.toggle('active', editModeBeforeLock); }, 800);
+                setTimeout(() => {
+                  overlay.remove();
+                  window.lockUnlocked = true;
+                  if (win) win.lockUnlocked = true;
+                  try { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
+                  try { if (win && win !== window) win.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
+                  try { if (doc && typeof doc.dispatchEvent === 'function') doc.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
+                  editModeActive = editModeBeforeLock;
+                  doc.body.contentEditable = editModeBeforeLock;
+                  editToggleBtn.classList.toggle('active', editModeBeforeLock);
+                }, 800);
               } else {
                 // Play preloaded wrong password sound
                 wrongAudio.currentTime = 0;
@@ -5890,7 +5909,7 @@
             let textarea = null, emojiInput = null, previewDiv = null;
             if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualCake", "virtualHug"].includes(id))) {
               textarea = document.createElement("textarea"); textarea.placeholder = t.placeholderText; textarea.setAttribute('data-placeholder-key', 'text');
-              if (id === "lock") textarea.placeholder = currentLang === 'en' ? "Set the Password here" : "यहाँ पासवर्ड दर्ज करें";
+              if (id === "lock") textarea.placeholder = currentLang === 'en' ? "Set the Password here (e.g. 1234)" : "यहाँ पासवर्ड दर्ज करें (उदा. 1234)";
               let def = "";
               const name = getUserName();
               const lang = getCurrentLang();
@@ -5898,7 +5917,7 @@
               const ev = eventData.event || 'birthday';
               const fest = eventData.festival || '';
 
-              if (id === "lock") def = "";
+              if (id === "lock") def = "1234";
               else if (id === "welcomeTyping") def = t.defaultWelcomeTyping(ev, fest);
               else if (id === "fireworksText") def = t.defaultFireworksText(name, ev);
               else if (id === "textFormation") def = t.defaultTextFormation(ev);
@@ -5928,6 +5947,9 @@
                 ex.text = textarea.value;
                 if (emojiInput) ex.emoji = emojiInput.value;
                 customData.set(id, ex);
+                if (id === 'lock') {
+                  window.lockUnlocked = false;
+                }
                 const nameVal = getUserName();
                 refreshFeatureIfActive(id, nameVal, ex.text, ex.images, ex.emoji);
                 autoSaveState();
@@ -6927,16 +6949,31 @@
                 toggleRow.classList.remove("active");
                 if (chevron) chevron.innerText = "▼";
                 activeFeatureStates.set(id, false);
+                if (id === 'countdown') window.countdownFinished = true;
+                if (id === 'lock') window.lockUnlocked = true;
+                if (id === 'curtainReveal') window.curtainOpened = true;
+                if (id === 'welcomeTyping') window.welcomeFinished = true;
                 applyFeature(id, false);
+                if (['countdown', 'lock', 'curtainReveal', 'welcomeTyping'].includes(id)) {
+                  debouncedRefreshAll();
+                }
                 if (openPanelId === customPanel) closeOpenPanel();
               } else {
+                if (id === 'countdown') window.countdownFinished = false;
                 if (id === 'lock') {
-                  const data = customData.get(id) || {};
-                  if (!data.text || data.text === 'password') {
-                    if (chevron) chevron.click();
-                    return;
+                  window.lockUnlocked = false;
+                  const existing = customData.get('lock') || {};
+                  if (!existing.text || existing.text.trim() === '' || existing.text === 'password') {
+                    existing.text = (textarea && textarea.value && textarea.value.trim() && textarea.value.trim() !== 'password') ? textarea.value.trim() : '1234';
+                    customData.set('lock', existing);
+                    if (textarea) textarea.value = existing.text;
+                  }
+                  if (customPanel && customPanel.style.display !== 'block' && chevron) {
+                    chevron.click();
                   }
                 }
+                if (id === 'curtainReveal') window.curtainOpened = false;
+                if (id === 'welcomeTyping') window.welcomeFinished = false;
                 toggleRow.classList.add("active");
                 if (chevron) chevron.innerText = "▼";
                 activeFeatureStates.set(id, true);
@@ -6960,7 +6997,9 @@
                 const instagramEmbedUrl = existingData.instagramEmbedUrl || "";
                 const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl };
                 customData.set(id, storeData);
-                if (id === 'addMusicSection') {
+                if (['countdown', 'lock', 'curtainReveal', 'welcomeTyping'].includes(id)) {
+                  debouncedRefreshAll();
+                } else if (id === 'addMusicSection') {
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
                 } else {
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio);
@@ -7756,6 +7795,10 @@
     const magicRaw = "${window._magicRaw || ""}";
     window._magicConfig = config;
     window.__IS_GENERATED_PAGE__ = true;
+    window.lockUnlocked = false;
+    window.curtainOpened = false;
+    window.welcomeFinished = false;
+    window.countdownFinished = false;
     if (config && config.userData) {
       try {
         localStorage.setItem('userData', JSON.stringify(config.userData));
@@ -7933,6 +7976,11 @@
         window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
       }
 
+      window.countdownFinished = !countdownActive;
+      window.lockUnlocked = !lockActive;
+      window.curtainOpened = !curtainActive;
+      window.welcomeFinished = !welcomeActive;
+
       const runStages = () => {
         if (isCountdownRunning()) {
           const data = customData.get('countdown') || {};
@@ -7943,9 +7991,9 @@
           window.applyFeature('welcomeTyping', false);
 
           window.countdownFinished = false;
-          window.lockUnlocked = false;
-          window.curtainOpened = false;
-          window.welcomeFinished = false;
+          window.lockUnlocked = !lockActive;
+          window.curtainOpened = !curtainActive;
+          window.welcomeFinished = !welcomeActive;
 
           showContent();
 
@@ -7963,13 +8011,13 @@
 
         if (lockActive && !window.lockUnlocked) {
           const data = customData.get('lock') || {};
-          window.applyFeature('lock', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
-          
+          const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
           window.applyFeature('curtainReveal', false);
           window.applyFeature('welcomeTyping', false);
+          window.applyFeature('lock', true, userName, lockPass, data.images || [], data.emoji || "", data.audio || "");
 
-          window.curtainOpened = false;
-          window.welcomeFinished = false;
+          window.curtainOpened = !curtainActive;
+          window.welcomeFinished = !welcomeActive;
 
           showContent();
 
@@ -7987,10 +8035,10 @@
 
         if (curtainActive && !window.curtainOpened) {
           const data = customData.get('curtainReveal') || {};
+          window.applyFeature('welcomeTyping', false);
           window.applyFeature('curtainReveal', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
           
-          window.applyFeature('welcomeTyping', false);
-          window.welcomeFinished = false;
+          window.welcomeFinished = !welcomeActive;
           showContent();
 
           window._curtainOpenedHandler = () => {
@@ -8001,13 +8049,13 @@
             }
           };
           window.addEventListener('curtainOpened', window._curtainOpenedHandler);
-          // Safety timeout: Auto-advance after 11s if curtain is opened or user doesn't tap
+          // Safety timeout: Auto-advance after 28s if curtainOpened event fails to arrive
           setTimeout(() => {
             if (!window.curtainOpened) {
               window.curtainOpened = true;
               runStages();
             }
-          }, 11000);
+          }, 28000);
           return;
         }
 
@@ -8675,30 +8723,151 @@
     const customData = new Map(config.customData || []);
     const userName = config.userName || 'Loved One';
 
+    const lockActive = activeFeatures.get('lock');
+    const curtainActive = activeFeatures.get('curtainReveal');
+    const countdownActive = activeFeatures.get('countdown');
+    const welcomeActive = activeFeatures.get('welcomeTyping');
+
+    window.countdownFinished = !countdownActive;
+    window.lockUnlocked = !lockActive;
+    window.curtainOpened = !curtainActive;
+    window.welcomeFinished = !welcomeActive;
+
+    const isCountdownRunning = () => {
+      if (!countdownActive) return false;
+      const data = customData.get('countdown') || {};
+      if (!data.text) return false;
+      try {
+        const parts = data.text.split('T');
+        if (parts.length !== 2) return new Date(data.text).getTime() > Date.now();
+        const dParts = parts[0].split('-');
+        const tParts = parts[1].split(':');
+        if (dParts.length !== 3 || tParts.length < 2) return new Date(data.text).getTime() > Date.now();
+        const target = new Date(parseInt(dParts[0], 10), parseInt(dParts[1], 10) - 1, parseInt(dParts[2], 10), parseInt(tParts[0], 10), parseInt(tParts[1], 10), 0, 0).getTime();
+        return !isNaN(target) && Date.now() < target;
+      } catch(e) { return false; }
+    };
+
     function runAll() {
       if (!window.FEATURE_MAP) return;
       window._magicReady = true;
 
-      for (const [id, active] of activeFeatures.entries()) {
-        if (active && window.FEATURE_MAP[id] && typeof window.FEATURE_MAP[id].enable === 'function') {
-          try {
-            const data = customData.get(id) || {};
-            if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
-              window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
-            } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
-              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
-            } else if (id === "magicMusic" || id === "voiceNote") {
-              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
-            } else if (id === "addMusicSection") {
-              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
-            } else {
-              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "");
+      const runStages = () => {
+        if (isCountdownRunning()) {
+          if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window);
+          if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
+          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+
+          const data = customData.get('countdown') || {};
+          if (window.FEATURE_MAP.countdown) {
+            window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          }
+          window._countdownFinishedHandler = () => {
+            window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
+            window.countdownFinished = true;
+            runStages();
+          };
+          window.addEventListener('countdownFinished', window._countdownFinishedHandler);
+          return;
+        }
+
+        if (window.FEATURE_MAP.countdown?.disable) window.FEATURE_MAP.countdown.disable(document, window);
+        window.countdownFinished = true;
+
+        if (lockActive && !window.lockUnlocked) {
+          if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
+          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+
+          const data = customData.get('lock') || {};
+          const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
+          if (window.FEATURE_MAP.lock) {
+            window.FEATURE_MAP.lock.enable(document, window, userName, lockPass);
+          }
+          window._lockUnlockedHandler = () => {
+            window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
+            window.lockUnlocked = true;
+            runStages();
+          };
+          window.addEventListener('lockUnlocked', window._lockUnlockedHandler);
+          return;
+        }
+
+        if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window);
+        window.lockUnlocked = true;
+
+        if (curtainActive && !window.curtainOpened) {
+          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+
+          const data = customData.get('curtainReveal') || {};
+          if (window.FEATURE_MAP.curtainReveal) {
+            window.FEATURE_MAP.curtainReveal.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          }
+          window._curtainOpenedHandler = () => {
+            window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
+            window.curtainOpened = true;
+            runStages();
+          };
+          window.addEventListener('curtainOpened', window._curtainOpenedHandler);
+          setTimeout(() => {
+            if (!window.curtainOpened) {
+              window.curtainOpened = true;
+              runStages();
             }
-          } catch(err) {
-            console.error("Error activating feature " + id, err);
+          }, 28000);
+          return;
+        }
+
+        if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
+        window.curtainOpened = true;
+
+        if (welcomeActive && !window.welcomeFinished) {
+          const data = customData.get('welcomeTyping') || {};
+          if (window.FEATURE_MAP.welcomeTyping) {
+            window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          }
+          window._welcomeFinishedHandler = () => {
+            window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+            window.welcomeFinished = true;
+            runStages();
+          };
+          window.addEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+          setTimeout(() => {
+            if (!window.welcomeFinished) {
+              window.welcomeFinished = true;
+              runStages();
+            }
+          }, 8000);
+          return;
+        }
+
+        window.welcomeFinished = true;
+
+        // Run remaining features
+        for (const [id, active] of activeFeatures.entries()) {
+          if (active && !['lock', 'curtainReveal', 'welcomeTyping', 'countdown'].includes(id)) {
+            if (window.FEATURE_MAP[id] && typeof window.FEATURE_MAP[id].enable === 'function') {
+              try {
+                const data = customData.get(id) || {};
+                if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
+                  window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
+                } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
+                } else if (id === "magicMusic" || id === "voiceNote") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
+                } else if (id === "addMusicSection") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+                } else {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "");
+                }
+              } catch(err) {
+                console.error("Error activating feature " + id, err);
+              }
+            }
           }
         }
-      }
+      };
+
+      runStages();
     }
 
     if (window.FEATURE_MAP) {
@@ -9397,6 +9566,10 @@
         }
 
         async function applySharedView(storedHtml, storedConfig) {
+          window.lockUnlocked = false;
+          window.curtainOpened = false;
+          window.welcomeFinished = false;
+          window.countdownFinished = false;
           let cfgObj = {};
           try {
             cfgObj = (typeof storedConfig === 'string') ? JSON.parse(storedConfig || '{}') : (storedConfig || {});
@@ -9513,30 +9686,151 @@
     const uData = config.userData || {};
     const userName = config.userName || uData.recipientName || uData.name || 'Loved One';
 
+    const lockActive = activeFeatures.get('lock');
+    const curtainActive = activeFeatures.get('curtainReveal');
+    const countdownActive = activeFeatures.get('countdown');
+    const welcomeActive = activeFeatures.get('welcomeTyping');
+
+    window.countdownFinished = !countdownActive;
+    window.lockUnlocked = !lockActive;
+    window.curtainOpened = !curtainActive;
+    window.welcomeFinished = !welcomeActive;
+
+    const isCountdownRunning = () => {
+      if (!countdownActive) return false;
+      const data = customData.get('countdown') || {};
+      if (!data.text) return false;
+      try {
+        const parts = data.text.split('T');
+        if (parts.length !== 2) return new Date(data.text).getTime() > Date.now();
+        const dParts = parts[0].split('-');
+        const tParts = parts[1].split(':');
+        if (dParts.length !== 3 || tParts.length < 2) return new Date(data.text).getTime() > Date.now();
+        const target = new Date(parseInt(dParts[0], 10), parseInt(dParts[1], 10) - 1, parseInt(dParts[2], 10), parseInt(tParts[0], 10), parseInt(tParts[1], 10), 0, 0).getTime();
+        return !isNaN(target) && Date.now() < target;
+      } catch(e) { return false; }
+    };
+
     function executeAllFeatures() {
       if (!window.FEATURE_MAP) return;
       window._magicReady = true;
 
-      for (const [id, active] of activeFeatures.entries()) {
-        if (active && window.FEATURE_MAP[id] && typeof window.FEATURE_MAP[id].enable === 'function') {
-          try {
-            const data = customData.get(id) || {};
-            if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
-              window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
-            } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
-              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
-            } else if (id === "magicMusic" || id === "voiceNote") {
-              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
-            } else if (id === "addMusicSection") {
-              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
-            } else {
-              window.FEATURE_MAP[id].enable(document, window, userName, data.text || "");
+      const runStages = () => {
+        if (isCountdownRunning()) {
+          if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window);
+          if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
+          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+
+          const data = customData.get('countdown') || {};
+          if (window.FEATURE_MAP.countdown) {
+            window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          }
+          window._countdownFinishedHandler = () => {
+            window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
+            window.countdownFinished = true;
+            runStages();
+          };
+          window.addEventListener('countdownFinished', window._countdownFinishedHandler);
+          return;
+        }
+
+        if (window.FEATURE_MAP.countdown?.disable) window.FEATURE_MAP.countdown.disable(document, window);
+        window.countdownFinished = true;
+
+        if (lockActive && !window.lockUnlocked) {
+          if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
+          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+
+          const data = customData.get('lock') || {};
+          const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
+          if (window.FEATURE_MAP.lock) {
+            window.FEATURE_MAP.lock.enable(document, window, userName, lockPass);
+          }
+          window._lockUnlockedHandler = () => {
+            window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
+            window.lockUnlocked = true;
+            runStages();
+          };
+          window.addEventListener('lockUnlocked', window._lockUnlockedHandler);
+          return;
+        }
+
+        if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window);
+        window.lockUnlocked = true;
+
+        if (curtainActive && !window.curtainOpened) {
+          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+
+          const data = customData.get('curtainReveal') || {};
+          if (window.FEATURE_MAP.curtainReveal) {
+            window.FEATURE_MAP.curtainReveal.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          }
+          window._curtainOpenedHandler = () => {
+            window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
+            window.curtainOpened = true;
+            runStages();
+          };
+          window.addEventListener('curtainOpened', window._curtainOpenedHandler);
+          setTimeout(() => {
+            if (!window.curtainOpened) {
+              window.curtainOpened = true;
+              runStages();
             }
-          } catch(err) {
-            console.error("Error activating feature " + id, err);
+          }, 28000);
+          return;
+        }
+
+        if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
+        window.curtainOpened = true;
+
+        if (welcomeActive && !window.welcomeFinished) {
+          const data = customData.get('welcomeTyping') || {};
+          if (window.FEATURE_MAP.welcomeTyping) {
+            window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          }
+          window._welcomeFinishedHandler = () => {
+            window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+            window.welcomeFinished = true;
+            runStages();
+          };
+          window.addEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
+          setTimeout(() => {
+            if (!window.welcomeFinished) {
+              window.welcomeFinished = true;
+              runStages();
+            }
+          }, 8000);
+          return;
+        }
+
+        window.welcomeFinished = true;
+
+        // Run remaining features
+        for (const [id, active] of activeFeatures.entries()) {
+          if (active && !['lock', 'curtainReveal', 'welcomeTyping', 'countdown'].includes(id)) {
+            if (window.FEATURE_MAP[id] && typeof window.FEATURE_MAP[id].enable === 'function') {
+              try {
+                const data = customData.get(id) || {};
+                if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
+                  window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
+                } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
+                } else if (id === "magicMusic" || id === "voiceNote") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
+                } else if (id === "addMusicSection") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+                } else {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "");
+                }
+              } catch(err) {
+                console.error("Error activating feature " + id, err);
+              }
+            }
           }
         }
-      }
+      };
+
+      runStages();
     }
 
     if (window.FEATURE_MAP) {
