@@ -28,9 +28,10 @@
   <script>
     (function () {
       const urlParams = new URLSearchParams(window.location.search);
+      const isPaymentReturn = urlParams.get('action') === 'payment-success' || urlParams.get('payment') === 'cancelled' || urlParams.has('orderId') || urlParams.has('token') || urlParams.has('restore');
       const pathParts = window.location.pathname.split('/').filter(p => p && !p.includes('.'));
       const potentialSlug = pathParts[pathParts.length - 1];
-      const isExplicitSharedView = (urlParams.get('_v') === 'c' || urlParams.get('slug') || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || urlParams.get('view') ||
+      const isExplicitSharedView = !isPaymentReturn && (urlParams.get('_v') === 'c' || urlParams.get('slug') || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || urlParams.get('view') ||
         (!window.location.pathname.startsWith('/generated/') && potentialSlug && !['api', 'assets', 'generated', 'blog', 'admin', 'contactus', 'whygreeter'].includes(potentialSlug)));
       if (isExplicitSharedView) {
         document.write('<style>.container, .navbar, .resizer, .panel, .footer { display: none !important; } body { background: #f9f7ff; } body.dark { background: #0a0614; }</style>');
@@ -8818,7 +8819,7 @@
           }
 
           // 1. STRICT SAVE VERIFICATION FIRST: DO NOT REDIRECT OR OPEN PAYMENT UNTIL WEBSITE IS SAVED PROPERLY
-          const saveRes = await saveWebsiteConfigToServer(true, websiteId);
+          const saveRes = await saveWebsiteConfigToServer(false, websiteId);
           if (!saveRes || !saveRes.success || !saveRes.id) {
             alert('Website Error: Could not save website draft to server before payment. Payment checkout has been aborted. Please check your internet connection and try again.');
             if (btn) {
@@ -8856,7 +8857,7 @@
             gateway: window.selectedGateway || undefined,
             currency: window.selectedCurrency || undefined,
             returnUrl: `${window.location.origin}/generated/customize.html?action=payment-success&orderId={order_id}&view=${websiteId}`,
-            cancelUrl: `${window.location.origin}/generated/customize.html?restore=${websiteId}&payment=cancelled`
+            cancelUrl: `${window.location.origin}/generated/customize`
           };
 
           const response = await fetch(`${apiBaseUrl}/api/payment/create-order`, {
@@ -8960,44 +8961,46 @@
               window.location.href = `/generated/share.html?view=${encodeURIComponent(targetId)}&payment=success&orderId=${encodeURIComponent(orderId)}`;
             }, 1200);
           } else {
+            const isExplicitDrop = ['CANCELLED', 'FAILED', 'USER_DROPPED', 'TERMINATED', 'EXPIRED'].includes(String(data.status).toUpperCase());
             pollCount++;
-            if (pollCount < 20) {
-              setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 2000);
+            if (!isExplicitDrop && pollCount < 4) {
+              setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 1500);
             } else {
               const overlay = document.getElementById('paymentVerificationOverlay');
               if (overlay) overlay.style.display = 'none';
-              const targetId = targetWebsiteId || new URLSearchParams(window.location.search).get('view') || new URLSearchParams(window.location.search).get('restore') || '';
-              const cleanUrl = new URL(window.location);
-              cleanUrl.searchParams.delete('action');
-              cleanUrl.searchParams.delete('orderId');
-              cleanUrl.searchParams.delete('token');
-              cleanUrl.searchParams.delete('PayerID');
-              cleanUrl.searchParams.delete('view');
-              if (targetId) cleanUrl.searchParams.set('restore', targetId);
-              cleanUrl.searchParams.set('payment', 'cancelled');
-              window.history.replaceState({}, '', cleanUrl);
-              alert('Payment Notice: Verification took longer than expected. If your payment was completed, please refresh this page in a moment to activate your premium features.');
+              const targetId = targetWebsiteId || new URLSearchParams(window.location.search).get('view') || '';
+              if (targetId) {
+                localStorage.removeItem(`premium_${targetId}`);
+                sessionStorage.removeItem(`premium_${targetId}`);
+                localStorage.removeItem(`pro_plan_${targetId}`);
+                sessionStorage.removeItem(`pro_plan_${targetId}`);
+              }
+              localStorage.removeItem('isPremium');
+              sessionStorage.removeItem('isPremium');
+
+              // Redirect immediately to /generated/customize so user cannot access the unpaid created website
+              sessionStorage.setItem('paymentNotice', 'cancelled');
+              window.location.replace(`${window.location.origin}/generated/customize`);
             }
           }
         } catch (e) {
           console.error('Payment status check error:', e);
           pollCount++;
-          if (pollCount < 20) {
-            setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 2000);
+          if (pollCount < 4) {
+            setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 1500);
           } else {
             const overlay = document.getElementById('paymentVerificationOverlay');
             if (overlay) overlay.style.display = 'none';
             const targetId = targetWebsiteId || new URLSearchParams(window.location.search).get('view') || '';
-            const cleanUrl = new URL(window.location);
-            cleanUrl.searchParams.delete('action');
-            cleanUrl.searchParams.delete('orderId');
-            cleanUrl.searchParams.delete('token');
-            cleanUrl.searchParams.delete('PayerID');
-            cleanUrl.searchParams.delete('view');
-            if (targetId) cleanUrl.searchParams.set('restore', targetId);
-            cleanUrl.searchParams.set('payment', 'cancelled');
-            window.history.replaceState({}, '', cleanUrl);
-            alert('Payment Notice: Verification took longer than expected. Please refresh this page to check status.');
+            if (targetId) {
+              localStorage.removeItem(`premium_${targetId}`);
+              sessionStorage.removeItem(`premium_${targetId}`);
+            }
+            localStorage.removeItem('isPremium');
+            sessionStorage.removeItem('isPremium');
+
+            sessionStorage.setItem('paymentNotice', 'timeout');
+            window.location.replace(`${window.location.origin}/generated/customize`);
           }
         }
       }
@@ -9023,10 +9026,17 @@
           }
           overlay.style.display = 'flex';
           pollPaymentStatus(orderId, viewId);
-        } else if (urlParams.get('payment') === 'cancelled') {
+        } else if (urlParams.get('payment') === 'cancelled' || sessionStorage.getItem('paymentNotice')) {
+          const noticeType = sessionStorage.getItem('paymentNotice') || 'cancelled';
+          sessionStorage.removeItem('paymentNotice');
+          if (window.location.search) {
+            window.history.replaceState({}, '', `${window.location.origin}/generated/customize`);
+          }
           setTimeout(() => {
-            alert('Payment Notice: Checkout was cancelled. Your website draft is safely saved. Complete payment whenever you are ready to publish and activate your share link!');
-          }, 600);
+            alert(noticeType === 'timeout'
+              ? 'Payment Notice: Verification took longer than expected. If your payment was completed, it will be activated shortly. Your website draft is safely saved in the editor.'
+              : 'Payment Notice: Checkout was cancelled or not completed. Your website draft is safely saved in the editor. Complete payment whenever you are ready to publish and activate your link!');
+          }, 400);
         }
       }
 
@@ -9313,6 +9323,13 @@
 
         console.log('[CustomURL] Final viewId:', viewId);
         if (!viewId) return;
+
+        // Never run shared view replacement during payment verification, return, or cancellation
+        const isPaymentReturn = urlParams.get('action') === 'payment-success' || urlParams.get('payment') === 'cancelled' || urlParams.has('orderId') || urlParams.has('token');
+        if (isPaymentReturn) {
+          console.log('[CustomURL] Payment return/verification flow detected. Skipping shared view handler.');
+          return;
+        }
 
         // Check if this is an explicit shared view (recipient viewing published site)
         const isExplicitSharedView = urlParams.get('_v') === 'c' || customSlug || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || urlParams.get('view') || !window.location.pathname.startsWith('/generated/');
@@ -9608,7 +9625,7 @@
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
           .then(async data => {
             const urlParams = new URLSearchParams(window.location.search);
-            const isPaidView = isLocalHost || urlParams.get('action') === 'payment-success' || (data && (data.isPremium || (data.metadata && (data.metadata.isPremium || data.metadata.paymentStatus === 'paid'))));
+            const isPaidView = isLocalHost || (data && (data.isPremium || (data.metadata && (data.metadata.isPremium || data.metadata.paymentStatus === 'paid'))));
 
             if (isPaidView) {
               window.isPremium = true;

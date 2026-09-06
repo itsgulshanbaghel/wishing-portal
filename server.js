@@ -378,7 +378,7 @@ app.post('/api/config', async (req, res) => {
       recipientName: config?.recipientName || config?.name || config?.userName || req.body.recipientName || 'Special Recipient',
       features: config?.activeFeatures?.map(f => f[0]) || [],
       isPremium: effectiveIsPremium,
-      paymentStatus: req.body.paymentStatus || (effectiveIsPremium ? 'paid' : 'pending_payment'),
+      paymentStatus: effectiveIsPremium ? 'paid' : 'pending_payment',
       createdAt: new Date().toISOString(),
       creatorGeo
     };
@@ -460,7 +460,7 @@ async function verifyWebsitePaymentStatus(id) {
   // 2. Check CockroachDB Record (isPremium flag)
   try {
     const crRecord = await cockroach.getRecord(safeId);
-    if (crRecord && (crRecord.isPremium || crRecord.is_premium || crRecord.payment_status === 'paid')) {
+    if (crRecord && (crRecord.isPremium || crRecord.is_premium)) {
       return true;
     }
   } catch (e) { }
@@ -483,7 +483,7 @@ async function verifyWebsitePaymentStatus(id) {
   // 5. Check Supabase JSON payload metadata
   try {
     const sbConfig = await storage.readWebsiteConfig(safeId);
-    if (sbConfig && (sbConfig.isPremium || (sbConfig.metadata && (sbConfig.metadata.isPremium || sbConfig.metadata.paymentStatus === 'paid')))) {
+    if (sbConfig && (sbConfig.isPremium || (sbConfig.metadata && sbConfig.metadata.isPremium))) {
       return true;
     }
   } catch (e) { }
@@ -1562,7 +1562,7 @@ app.post('/api/payment/create-order', async (req, res) => {
       try {
         let returnUrl = req.body.returnUrl || `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId=${orderId}&view=${websiteId}`;
         returnUrl = returnUrl.replace('{order_id}', orderId).replace('{orderId}', orderId);
-        let cancelUrl = req.body.cancelUrl || `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?restore=${websiteId}&payment=cancelled`;
+        let cancelUrl = req.body.cancelUrl || `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize`;
         cancelUrl = cancelUrl.replace('{order_id}', orderId).replace('{orderId}', orderId);
 
         console.log(`[PayPal] Creating order ${orderId} for ${paypalAmount} ${targetCurrency}`);
