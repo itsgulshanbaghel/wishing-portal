@@ -116,7 +116,7 @@ const corsOptions = {
     return callback(new Error(`CORS blocked: ${origin}`));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Admin-Bypass'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -500,25 +500,8 @@ app.get('/api/config/:id', async (req, res) => {
     const host = req.headers.host || req.headers['x-forwarded-host'] || '';
     const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
 
-    // Subtle admin/preview bypass parameter check (_c=v)
-    const isBypass = req.query._c === 'v' || req.query.preview === '1' || req.query.preview === 'true' ||
-                     req.query._p === '1' || req.query._v === 'p' ||
-                     req.query.adm === '1' || req.query.admin === '1' || req.query.admin === 'true' ||
-                     req.query.bypass === '1' || req.query.mode === 'preview' || req.query.mode === 'admin' ||
-                     req.headers['x-admin-bypass'] === '1';
-
-    // STRICT SERVER-SIDE PAYMENT VERIFICATION (bypassed if admin preview active)
-    const isPaid = isLocalhost || isBypass || (await verifyWebsitePaymentStatus(safeName));
-
-    if (!isPaid) {
-      return res.status(402).json({
-        error: 'Payment Required',
-        paymentRequired: true,
-        isPremium: false,
-        websiteId: safeName,
-        message: 'Payment for this generated website has not been completed. Please complete payment to unlock full website access.'
-      });
-    }
+    // Payment verification (bypassed so anybody can access websites with their link even if unpaid)
+    const isPaid = isLocalhost || (await verifyWebsitePaymentStatus(safeName));
 
     // 1. Fetch full JSON payload from Supabase Storage (Single Source of Truth)
     let sbConfig = null;
@@ -2029,25 +2012,6 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
   try {
     const { websiteId } = req.params;
 
-    const isBypass = req.query._c === 'v' || req.query.preview === '1' || req.query.preview === 'true' ||
-                     req.query._p === '1' || req.query._v === 'p' ||
-                     req.query.adm === '1' || req.query.admin === '1' || req.query.admin === 'true' ||
-                     req.query.bypass === '1' || req.query.mode === 'preview' || req.query.mode === 'admin' ||
-                     req.headers['x-admin-bypass'] === '1';
-
-    if (isBypass) {
-      return res.json({
-        isPremium: true,
-        websiteId,
-        plan: 'pro',
-        planName: '👑 Premium (Admin Preview)',
-        planDays: 365,
-        canClaimFreeCustomUrl: true,
-        paymentId: 'admin_bypass',
-        slug: null
-      });
-    }
-
     // 1. Check CockroachDB Primary DB
     let isPremium = false;
     let plan = 'free';
@@ -3241,9 +3205,7 @@ app.get('/:slug', async (req, res, next) => {
   if (cached && (Date.now() - cached.time < 10 * 60 * 1000)) {
     if (cached.websiteId) {
       res.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
-      const queryIdx = req.url.indexOf('?');
-      const extraQuery = queryIdx !== -1 ? '&' + req.url.substring(queryIdx + 1) : '';
-      return res.redirect(`/generated/customize.html?view=${cached.websiteId}&_v=c${extraQuery}`);
+      return res.redirect(`/generated/customize.html?view=${cached.websiteId}&_v=c`);
     }
   }
 
@@ -3266,23 +3228,11 @@ app.get('/:slug', async (req, res, next) => {
       }
     }
 
-    // 3. Check if slug is directly a websiteId
-    if (!entry && /^[a-z0-9]{8,14}$/i.test(slug)) {
-      try {
-        const exists = await storage.readWebsiteConfig(slug);
-        if (exists) {
-          entry = { websiteId: slug };
-        }
-      } catch (e) { }
-    }
-
     if (entry && entry.websiteId) {
       if (slugResolutionCache.size > 2000) slugResolutionCache.clear();
       slugResolutionCache.set(slug, { websiteId: entry.websiteId, time: Date.now() });
       res.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
-      const queryIdx = req.url.indexOf('?');
-      const extraQuery = queryIdx !== -1 ? '&' + req.url.substring(queryIdx + 1) : '';
-      return res.redirect(`/generated/customize.html?view=${entry.websiteId}&_v=c${extraQuery}`);
+      return res.redirect(`/generated/customize.html?view=${entry.websiteId}&_v=c`);
     }
   } catch (dbErr) {
     console.error('[CustomURL] lookup failed:', dbErr);

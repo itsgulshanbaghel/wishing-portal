@@ -2560,29 +2560,9 @@
           sessionStorage.setItem(`premium_${viewId}`, 'true');
         }
 
-        const shareParams = new URLSearchParams(window.location.search);
-        const hasAdminBypass = shareParams.get('_c') === 'v' ||
-                               shareParams.get('preview') === '1' || shareParams.get('preview') === 'true' ||
-                               shareParams.get('_p') === '1' || shareParams.get('_v') === 'p' ||
-                               shareParams.get('adm') === '1' || shareParams.get('admin') === '1' || shareParams.get('admin') === 'true' ||
-                               shareParams.get('bypass') === '1' || shareParams.get('mode') === 'preview' || shareParams.get('mode') === 'admin' ||
-                               sessionStorage.getItem('admin_site_bypass') === 'true' ||
-                               (viewId && sessionStorage.getItem(`admin_site_bypass_${viewId}`) === 'true');
+        let isPremium = isLocalHost || isPaymentSuccess || (viewId && (localStorage.getItem(`premium_${viewId}`) === 'true' || sessionStorage.getItem(`premium_${viewId}`) === 'true'));
 
-        if (hasAdminBypass) {
-          sessionStorage.setItem('admin_site_bypass', 'true');
-          if (viewId) sessionStorage.setItem(`admin_site_bypass_${viewId}`, 'true');
-          try {
-            const cleanUrl = new URL(window.location.href);
-            ['_c', 'preview', '_p', 'adm', 'admin', 'bypass'].forEach(p => cleanUrl.searchParams.delete(p));
-            if (cleanUrl.searchParams.get('mode') === 'preview' || cleanUrl.searchParams.get('mode') === 'admin') cleanUrl.searchParams.delete('mode');
-            window.history.replaceState({}, document.title, cleanUrl.toString());
-          } catch(e) {}
-        }
-
-        let isPremium = isLocalHost || isPaymentSuccess || hasAdminBypass || (viewId && (localStorage.getItem(`premium_${viewId}`) === 'true' || sessionStorage.getItem(`premium_${viewId}`) === 'true'));
-
-        if (viewId && !isLocalHost && !hasAdminBypass) {
+        if (viewId && !isLocalHost) {
           try {
             const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
             const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);
@@ -2602,18 +2582,6 @@
 
         if (!viewId) {
           linkInput.value = '❌ No link found. Please generate first.';
-        } else if (!isPremium) {
-          linkInput.value = '🔒 Payment Pending — Complete payment to activate your share link';
-          fullLink = '';
-
-          const unpaidBanner = document.createElement('div');
-          unpaidBanner.id = 'unpaidShareBanner';
-          unpaidBanner.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color:#fff; padding:14px 24px; border-radius:50px; font-weight:700; font-size:14px; box-shadow:0 10px 30px rgba(239,68,68,0.4); z-index:99999; display:flex; align-items:center; gap:12px; cursor:pointer;';
-          unpaidBanner.innerHTML = '<span>🔒</span> <span>Payment Pending! Complete payment to activate your share link.</span> <span style="background:white; color:#dc2626; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:800;">Pay Now</span>';
-          document.body.appendChild(unpaidBanner);
-          unpaidBanner.onclick = () => {
-            window.location.href = `/generated/customize.html?view=${viewId}&pay=1`;
-          };
         } else {
           const storedCustomUrl = localStorage.getItem(`customUrl_${viewId}`);
           if (storedCustomUrl) {

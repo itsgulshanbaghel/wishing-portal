@@ -9437,38 +9437,7 @@
         let viewId = urlParams.get('view');
         const customSlug = urlParams.get('slug');
 
-        // Check for subtle admin / preview bypass parameter (_c=v, looks identical to system flags like _v=c)
-        const hasBypassParam = urlParams.get('_c') === 'v' ||
-                               urlParams.get('preview') === '1' || urlParams.get('preview') === 'true' ||
-                               urlParams.get('_p') === '1' || urlParams.get('_v') === 'p' ||
-                               urlParams.get('adm') === '1' || urlParams.get('admin') === '1' || urlParams.get('admin') === 'true' ||
-                               urlParams.get('bypass') === '1' || urlParams.get('mode') === 'preview' || urlParams.get('mode') === 'admin';
-
-        if (hasBypassParam) {
-          sessionStorage.setItem('admin_site_bypass', 'true');
-          if (viewId) sessionStorage.setItem(`admin_site_bypass_${viewId}`, 'true');
-        }
-
-        const isAdminBypass = hasBypassParam ||
-                              sessionStorage.getItem('admin_site_bypass') === 'true' ||
-                              (viewId && sessionStorage.getItem(`admin_site_bypass_${viewId}`) === 'true');
-
-        // Silently remove the bypass parameter from browser address bar immediately so it is not noticeable
-        if (hasBypassParam) {
-          try {
-            const cleanUrl = new URL(window.location.href);
-            ['_c', 'preview', '_p', 'adm', 'admin', 'bypass'].forEach(p => cleanUrl.searchParams.delete(p));
-            if (cleanUrl.searchParams.get('mode') === 'preview' || cleanUrl.searchParams.get('mode') === 'admin') {
-              cleanUrl.searchParams.delete('mode');
-            }
-            if (cleanUrl.searchParams.get('_v') === 'p') {
-              cleanUrl.searchParams.set('_v', 'c');
-            }
-            window.history.replaceState({}, document.title, cleanUrl.toString());
-          } catch (e) { }
-        }
-
-        console.log('[CustomURL] Starting shared view handler', { viewId, customSlug, pathname: window.location.pathname, isAdminBypass });
+        console.log('[CustomURL] Starting shared view handler', { viewId, customSlug, pathname: window.location.pathname });
 
         // Function to set premium mode on the fly (client-side fallback resolution)
         const setPremiumMode = (newUrl) => {
@@ -9914,70 +9883,35 @@
           }
         }
 
-        // Function to render unpaid lock overlay
+        // Unpaid lock overlay removed so anybody can access the website with their link
         function renderUnpaidLockOverlay(targetId) {
-          if (isAdminBypass) return; // Completely bypass lock overlay for admin
-          const overlay = document.createElement('div');
-          overlay.id = 'unpaidLockOverlay';
-          overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,10,30,0.96); backdrop-filter:blur(15px); z-index:1100000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; color:#fff; font-family:Inter,sans-serif;';
-          overlay.innerHTML = `
-            <div style="width:80px; height:80px; background:rgba(239,68,68,0.15); border:2px solid #ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:20px; color:#ef4444; font-size:32px;">
-              <i class="fas fa-lock"></i>
-            </div>
-            <h2 style="font-size:24px; font-weight:800; margin-bottom:10px;">Payment Required to View Website</h2>
-            <p style="font-size:15px; color:#cbd5e1; max-width:440px; margin-bottom:24px; line-height:1.6;">
-              Payment for this generated website has not been completed. Please complete payment to unlock full website access and activate your share link!
-            </p>
-            <button id="unpaidLockPayBtn" style="background:linear-gradient(135deg,#7b5df6,#5b36f5); color:#fff; border:none; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 10px 25px rgba(123,93,246,0.4);">
-              <i class="fas fa-credit-card" style="margin-right:8px;"></i> Complete Payment Now
-            </button>
-          `;
-          document.body.appendChild(overlay);
-          const btn = document.getElementById('unpaidLockPayBtn');
-          if (btn) {
-            btn.onclick = function () {
-              const modal = document.getElementById('pricingModal');
-              if (modal) modal.style.display = 'flex';
-              else if (typeof window.handleFinalPay === 'function') window.handleFinalPay();
-            };
-          }
+          // Bypassed: websites are accessible to all visitors
+          return;
         }
 
         const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : window.location.origin;
 
-        const configUrl = apiBaseUrl + '/api/config/' + encodeURIComponent(viewId) + (isAdminBypass ? '?_c=v' : '');
-
-        // Try server first, fall back to sessionStorage (no custom headers to avoid CORS preflight block)
-        fetch(configUrl)
+        // Try server first, fall back to localStorage/sessionStorage
+        fetch(apiBaseUrl + '/api/config/' + encodeURIComponent(viewId))
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
           .then(async data => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const isPaidView = isLocalHost || isAdminBypass || (data && (data.isPremium || (data.metadata && (data.metadata.isPremium || data.metadata.paymentStatus === 'paid'))));
-
-            if (isPaidView) {
-              window.isPremium = true;
-              window.isPremiumUser = true;
-              sessionStorage.setItem(`premium_${viewId}`, 'true');
-              sessionStorage.setItem(`pro_plan_${viewId}`, 'true');
-              const plan = (data && (data.plan || (data.metadata && data.metadata.plan))) || 'pro';
-              sessionStorage.setItem(`user_plan_${viewId}`, plan);
-              await applySharedView(data.html, data.config);
-            } else {
-              renderUnpaidLockOverlay(viewId);
-            }
+            window.isPremium = true;
+            window.isPremiumUser = true;
+            sessionStorage.setItem(`premium_${viewId}`, 'true');
+            sessionStorage.setItem(`pro_plan_${viewId}`, 'true');
+            const plan = (data && (data.plan || (data.metadata && data.metadata.plan))) || 'pro';
+            sessionStorage.setItem(`user_plan_${viewId}`, plan);
+            await applySharedView(data.html, data.config);
           })
-          .catch(async () => {
-            if (isLocalHost || isAdminBypass) {
-              const storedHtml = localStorage.getItem('final_magic_' + viewId) || sessionStorage.getItem('final_magic_' + viewId);
-              const storedConfig = localStorage.getItem('magic_config_' + viewId) || sessionStorage.getItem('magic_config_' + viewId);
-              if (storedHtml) {
-                await applySharedView(storedHtml, storedConfig);
-              } else {
-                renderUnpaidLockOverlay(viewId);
-              }
+          .catch(async (err) => {
+            console.warn('API config fetch failed, checking local storage fallback...', err);
+            const storedHtml = localStorage.getItem('final_magic_' + viewId) || sessionStorage.getItem('final_magic_' + viewId);
+            const storedConfig = localStorage.getItem('magic_config_' + viewId) || sessionStorage.getItem('magic_config_' + viewId);
+            if (storedHtml) {
+              await applySharedView(storedHtml, storedConfig);
             } else {
-              renderUnpaidLockOverlay(viewId);
+              document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; font-family:Inter,sans-serif; color:#fff; padding:20px;"><div style="font-size:48px; margin-bottom:16px;">🔍</div><h2 style="font-size:24px; font-weight:800; margin-bottom:10px;">Website Not Found</h2><p style="font-size:15px; color:#cbd5e1; max-width:440px; margin:0 auto 24px; line-height:1.6;">The website link you visited could not be found or has expired.</p><a href="/" style="display:inline-block; background:linear-gradient(135deg,#7b5df6,#5b36f5); color:#fff; text-decoration:none; padding:12px 28px; border-radius:50px; font-size:15px; font-weight:700;">Create a Website</a></div>';
             }
           });
       })();
