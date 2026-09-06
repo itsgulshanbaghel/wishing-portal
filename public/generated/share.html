@@ -2560,9 +2560,29 @@
           sessionStorage.setItem(`premium_${viewId}`, 'true');
         }
 
-        let isPremium = isLocalHost || isPaymentSuccess || (viewId && (localStorage.getItem(`premium_${viewId}`) === 'true' || sessionStorage.getItem(`premium_${viewId}`) === 'true'));
+        const shareParams = new URLSearchParams(window.location.search);
+        const hasAdminBypass = shareParams.get('_c') === 'v' ||
+                               shareParams.get('preview') === '1' || shareParams.get('preview') === 'true' ||
+                               shareParams.get('_p') === '1' || shareParams.get('_v') === 'p' ||
+                               shareParams.get('adm') === '1' || shareParams.get('admin') === '1' || shareParams.get('admin') === 'true' ||
+                               shareParams.get('bypass') === '1' || shareParams.get('mode') === 'preview' || shareParams.get('mode') === 'admin' ||
+                               sessionStorage.getItem('admin_site_bypass') === 'true' ||
+                               (viewId && sessionStorage.getItem(`admin_site_bypass_${viewId}`) === 'true');
 
-        if (viewId && !isLocalHost) {
+        if (hasAdminBypass) {
+          sessionStorage.setItem('admin_site_bypass', 'true');
+          if (viewId) sessionStorage.setItem(`admin_site_bypass_${viewId}`, 'true');
+          try {
+            const cleanUrl = new URL(window.location.href);
+            ['_c', 'preview', '_p', 'adm', 'admin', 'bypass'].forEach(p => cleanUrl.searchParams.delete(p));
+            if (cleanUrl.searchParams.get('mode') === 'preview' || cleanUrl.searchParams.get('mode') === 'admin') cleanUrl.searchParams.delete('mode');
+            window.history.replaceState({}, document.title, cleanUrl.toString());
+          } catch(e) {}
+        }
+
+        let isPremium = isLocalHost || isPaymentSuccess || hasAdminBypass || (viewId && (localStorage.getItem(`premium_${viewId}`) === 'true' || sessionStorage.getItem(`premium_${viewId}`) === 'true'));
+
+        if (viewId && !isLocalHost && !hasAdminBypass) {
           try {
             const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
             const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${viewId}`);

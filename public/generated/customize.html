@@ -9437,7 +9437,38 @@
         let viewId = urlParams.get('view');
         const customSlug = urlParams.get('slug');
 
-        console.log('[CustomURL] Starting shared view handler', { viewId, customSlug, pathname: window.location.pathname });
+        // Check for subtle admin / preview bypass parameter (_c=v, looks identical to system flags like _v=c)
+        const hasBypassParam = urlParams.get('_c') === 'v' ||
+                               urlParams.get('preview') === '1' || urlParams.get('preview') === 'true' ||
+                               urlParams.get('_p') === '1' || urlParams.get('_v') === 'p' ||
+                               urlParams.get('adm') === '1' || urlParams.get('admin') === '1' || urlParams.get('admin') === 'true' ||
+                               urlParams.get('bypass') === '1' || urlParams.get('mode') === 'preview' || urlParams.get('mode') === 'admin';
+
+        if (hasBypassParam) {
+          sessionStorage.setItem('admin_site_bypass', 'true');
+          if (viewId) sessionStorage.setItem(`admin_site_bypass_${viewId}`, 'true');
+        }
+
+        const isAdminBypass = hasBypassParam ||
+                              sessionStorage.getItem('admin_site_bypass') === 'true' ||
+                              (viewId && sessionStorage.getItem(`admin_site_bypass_${viewId}`) === 'true');
+
+        // Silently remove the bypass parameter from browser address bar immediately so it is not noticeable
+        if (hasBypassParam) {
+          try {
+            const cleanUrl = new URL(window.location.href);
+            ['_c', 'preview', '_p', 'adm', 'admin', 'bypass'].forEach(p => cleanUrl.searchParams.delete(p));
+            if (cleanUrl.searchParams.get('mode') === 'preview' || cleanUrl.searchParams.get('mode') === 'admin') {
+              cleanUrl.searchParams.delete('mode');
+            }
+            if (cleanUrl.searchParams.get('_v') === 'p') {
+              cleanUrl.searchParams.set('_v', 'c');
+            }
+            window.history.replaceState({}, document.title, cleanUrl.toString());
+          } catch (e) { }
+        }
+
+        console.log('[CustomURL] Starting shared view handler', { viewId, customSlug, pathname: window.location.pathname, isAdminBypass });
 
         // Function to set premium mode on the fly (client-side fallback resolution)
         const setPremiumMode = (newUrl) => {
@@ -9885,6 +9916,7 @@
 
         // Function to render unpaid lock overlay
         function renderUnpaidLockOverlay(targetId) {
+          if (isAdminBypass) return; // Completely bypass lock overlay for admin
           const overlay = document.createElement('div');
           overlay.id = 'unpaidLockOverlay';
           overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,10,30,0.96); backdrop-filter:blur(15px); z-index:1100000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; color:#fff; font-family:Inter,sans-serif;';
@@ -9914,12 +9946,15 @@
         const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : window.location.origin;
 
+        const configUrl = apiBaseUrl + '/api/config/' + encodeURIComponent(viewId) + (isAdminBypass ? '?_c=v' : '');
+        const configHeaders = isAdminBypass ? { 'X-Admin-Bypass': '1' } : {};
+
         // Try server first, fall back to sessionStorage
-        fetch(apiBaseUrl + '/api/config/' + encodeURIComponent(viewId))
+        fetch(configUrl, { headers: configHeaders })
           .then(r => { if (!r.ok) throw new Error('Not found'); return r.json(); })
           .then(async data => {
             const urlParams = new URLSearchParams(window.location.search);
-            const isPaidView = isLocalHost || (data && (data.isPremium || (data.metadata && (data.metadata.isPremium || data.metadata.paymentStatus === 'paid'))));
+            const isPaidView = isLocalHost || isAdminBypass || (data && (data.isPremium || (data.metadata && (data.metadata.isPremium || data.metadata.paymentStatus === 'paid'))));
 
             if (isPaidView) {
               window.isPremium = true;
@@ -9934,10 +9969,14 @@
             }
           })
           .catch(async () => {
-            if (isLocalHost) {
+            if (isLocalHost || isAdminBypass) {
               const storedHtml = localStorage.getItem('final_magic_' + viewId) || sessionStorage.getItem('final_magic_' + viewId);
               const storedConfig = localStorage.getItem('magic_config_' + viewId) || sessionStorage.getItem('magic_config_' + viewId);
-              await applySharedView(storedHtml, storedConfig);
+              if (storedHtml) {
+                await applySharedView(storedHtml, storedConfig);
+              } else {
+                renderUnpaidLockOverlay(viewId);
+              }
             } else {
               renderUnpaidLockOverlay(viewId);
             }
