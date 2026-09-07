@@ -1179,8 +1179,9 @@ async function finalizePaymentSuccess(orderIdOrPayPalId, paymentMethod = 'paypal
       await cockroach.saveCustomSlug(slug, websiteId);
     }
 
-    // 5. Upgrade website to PRO/Premium in CockroachDB
+    // 5. Upgrade website to PRO/Premium in CockroachDB, Supabase Storage & MongoDB
     if (websiteId) {
+      // CockroachDB upgrade
       const record = await cockroach.getRecord(websiteId);
       if (record) {
         const updatedMeta = {
@@ -1195,6 +1196,39 @@ async function finalizePaymentSuccess(orderIdOrPayPalId, paymentMethod = 'paypal
         };
         await cockroach.saveRecord(websiteId, updatedMeta, true);
       }
+
+      // Supabase Storage: promote existing full configuration to premium storage
+      try {
+        const existingConfig = await storage.readWebsiteConfig(websiteId);
+        if (existingConfig) {
+          existingConfig.isPremium = true;
+          if (existingConfig.metadata) {
+            existingConfig.metadata.isPremium = true;
+            existingConfig.metadata.paymentStatus = 'paid';
+            existingConfig.metadata.plan = plan;
+            if (slug) existingConfig.metadata.slug = slug;
+          }
+          if (existingConfig.config) {
+            existingConfig.config.isPremium = true;
+          }
+          const buf = Buffer.from(JSON.stringify(existingConfig), 'utf8');
+          await storage.uploadMedia(buf, `${websiteId}.json`, 'application/json', true);
+          console.log(`[Payment Finalizer] Promoted website ${websiteId} to Supabase Premium storage (all features preserved)`);
+        }
+      } catch (sbErr) {
+        console.warn('[Payment Finalizer] Supabase promote warning:', sbErr.message);
+      }
+
+      // MongoDB Website collection upgrade
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          await Website.findOneAndUpdate(
+            { id: websiteId },
+            { $set: { 'metadata.isPremium': true, 'metadata.paymentStatus': 'paid', 'metadata.plan': plan } }
+          ).catch(() => { });
+        }
+      } catch (mErr) { }
     }
 
     // 6. Sync to MongoDB fallback

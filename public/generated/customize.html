@@ -9102,16 +9102,7 @@
             }
             window.isPremium = true;
             window.isPremiumUser = true;
-
-            // Re-confirm & save finalized website config with isPremium = true & paymentStatus = 'paid'
-            try {
-              const targetId = targetWebsiteId || data.websiteId || new URLSearchParams(window.location.search).get('view');
-              if (targetId) {
-                await saveWebsiteConfigToServer(true, targetId);
-              }
-            } catch (saveErr) {
-              console.warn('[PaymentVerification] Website re-save warning:', saveErr);
-            }
+            // Website was already saved before payment; server marks it premium in finalizePaymentSuccess
 
             const overlay = document.getElementById('paymentVerificationOverlay');
             if (overlay) {
