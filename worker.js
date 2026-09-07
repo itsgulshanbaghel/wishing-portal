@@ -5,7 +5,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-phi.vercel.app';
+    const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-4aui.onrender.com';
 
     const isApiRequest = path.startsWith('/api/');
     const pathSegments = path.split('/').filter(Boolean);

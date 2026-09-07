@@ -102,7 +102,7 @@ const corsOptions = {
       'https://www.thegreeter.in',
       'https://wishing-portal-phi.vercel.app',
       'https://wishing-portal.onrender.com',
-      'https://wishing-portal-05as.onrender.com',
+      'https://wishing-portal-4aui.onrender.com',
       'https://thegreeterindia.web.app',
       'https://thegreeterindia.firebaseapp.com',
       'http://localhost:3000',

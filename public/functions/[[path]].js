@@ -7,7 +7,7 @@ export async function onRequest(context) {
   const path = url.pathname;
 
   // Backend URL - configured via env variable or default to Render backend
-  const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-05as.onrender.com';
+  const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-4aui.onrender.com';
 
   // Check if this is an API request
   const isApiRequest = path.startsWith('/api/');

@@ -7,7 +7,7 @@
 
 const CONFIG = {
   // Production Backend URL (Render Web Service)
-  API_BASE_URL: 'https://wishing-portal-05as.onrender.com',
+  API_BASE_URL: 'https://wishing-portal-4aui.onrender.com',
   ADDITIONAL_API_BASE_URL: null,
 
   // Google Analytics 4 Measurement ID

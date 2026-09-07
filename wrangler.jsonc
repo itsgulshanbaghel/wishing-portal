@@ -3,6 +3,10 @@
   "name": "wishing-portal",
   "main": "worker.js",
   "compatibility_date": "2026-08-17",
+  "routes": [
+    { "pattern": "thegreeter.in/*", "zone_name": "thegreeter.in" },
+    { "pattern": "www.thegreeter.in/*", "zone_name": "thegreeter.in" }
+  ],
   "observability": {
     "enabled": true
   },
