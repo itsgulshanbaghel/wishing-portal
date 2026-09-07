@@ -5,3 +5,11 @@
   X-Content-Type-Options: nosniff
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
+
+# Static Assets (Images, WebP, Fonts, Audio, Scripts) - 1 Year Immutable Edge Caching
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Templates - 24 Hours Cache with Background Revalidation
+/templates/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

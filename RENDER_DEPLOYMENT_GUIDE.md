@@ -13,11 +13,11 @@
 
 ## Step 2: Prepare Your Repository
 1. Ensure your code is pushed to GitHub
-2. Verify these files exist in your repository:
+2. Verify these deployment files exist in your repository:
    - `Procfile` (already created)
    - `render.yaml` (already created)
-   - `package.json` (already exists)
-   - `.env` (already exists)
+   - `package.json` (already configured)
+   *(Note: Keep your `.env` private on your local machine; you will paste your variables into Render's dashboard in Step 4).*
 
 ## Step 3: Create New Web Service
 1. Log into your new Render account
@@ -87,6 +87,30 @@ API_BASE_URL=https://YOUR_ACTUAL_RENDER_URL.onrender.com
    - File uploads (Cloudinary)
    - Email notifications
 
+## Step 8: Prevent Render Free Tier Sleeping (Zero Cold Starts)
+
+Render free instances spin down after 15 minutes of inactivity. To prevent this and ensure instantaneous API responses:
+1. Go to [cron-job.org](https://cron-job.org) or [UptimeRobot](https://uptimerobot.com) (both 100% free).
+2. Create a new HTTP monitor or cron job.
+3. Target URL: `https://YOUR_ACTUAL_RENDER_URL.onrender.com/ping`
+4. Schedule: **Every 10 minutes** (24/7).
+5. Method: `GET`. Expected status: `200` (`pong`).
+This keeps your Render instance awake 24/7 with zero cold starts, completely within the 750 free instance hours per month.
+
+---
+
+## Step 9: Preserve Render 5 GB Bandwidth Limit (Split Architecture)
+
+Do **NOT** serve your static frontend files (`public/`) directly through Render.
+1. Deploy the `public/` directory to **Cloudflare Pages** (100% Unlimited Free Bandwidth).
+2. Set `API_BASE_URL` in [`public/assets/config.js`](file:///d:/wishing-portal/public/assets/config.js) to your Render URL:
+   ```javascript
+   API_BASE_URL: 'https://YOUR_ACTUAL_RENDER_URL.onrender.com'
+   ```
+3. Because Render now only serves tiny JSON payloads (~2 KB per request), your 5 GB limit can handle **over 2.5 million requests every month** without exhausting quota.
+
+---
+
 ## Troubleshooting
 
 ### Build Failures:
@@ -101,16 +125,7 @@ API_BASE_URL=https://YOUR_ACTUAL_RENDER_URL.onrender.com
 
 ### Database Connection Issues:
 - Ensure MongoDB URI is correct
-- Check if MongoDB Atlas allows connections from Render's IP ranges
+- Check if MongoDB Atlas allows connections from `0.0.0.0/0` (Anywhere)
 - Verify SSL settings in connection string
 
-## Migration Notes
-- Your old Render service (`wishing-portal.onrender.com`) will continue running until you delete it
-- Consider keeping both running during transition for safety
-- Update any third-party services (webhooks, callbacks) with your new URL
-- Update DNS records if you're using a custom domain
-
-## Cost Considerations
-- Free tier: 512MB RAM, 0.1 CPU (suitable for development/testing)
-- Paid tiers start at $7/month for production use
 - Consider your traffic and resource needs before choosing a plan

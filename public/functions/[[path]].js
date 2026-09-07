@@ -58,15 +58,25 @@ export async function onRequest(context) {
             statusText: response.statusText,
             headers: {
               'Location': targetLocation,
-              'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0'
+              'Cache-Control': isSlugRequest
+                ? 'public, max-age=300, s-maxage=86400, stale-while-revalidate=86400'
+                : 'no-cache, no-store, must-revalidate, max-age=0'
             }
           });
         }
       }
 
-      // Copy response headers for standard responses
+      // Preserve origin Cache-Control headers or apply intelligent defaults
       const responseHeaders = new Headers(response.headers);
-      responseHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      const originCacheControl = response.headers.get('Cache-Control');
+
+      if (!originCacheControl) {
+        if (path.startsWith('/api/payment') || path.startsWith('/api/admin') || path.startsWith('/api/upload') || request.method !== 'GET') {
+          responseHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        } else {
+          responseHeaders.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
+        }
+      }
 
       return new Response(response.body, {
         status: response.status,

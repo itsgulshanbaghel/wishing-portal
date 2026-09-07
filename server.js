@@ -110,7 +110,7 @@ const corsOptions = {
     ];
     // Allow requests with no origin (server-to-server, curl, Vercel cron)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('onrender.com')) {
+    if (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('onrender.com') || origin.includes('pages.dev')) {
       return callback(null, true);
     }
     return callback(new Error(`CORS blocked: ${origin}`));
@@ -496,6 +496,9 @@ app.get('/api/config/:id', async (req, res) => {
   try {
     const safeName = req.params.id.replace(/[^a-z0-9]/gi, '');
     if (!safeName) return res.status(400).json({ error: 'Invalid ID' });
+
+    // Edge CDN caching: 5 min in browser, 24 hours at Cloudflare/CDN edge
+    res.set('Cache-Control', 'public, max-age=300, s-maxage=86400, stale-while-revalidate=604800');
 
     const host = req.headers.host || req.headers['x-forwarded-host'] || '';
     const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
@@ -2214,7 +2217,7 @@ let lastFeaturesMtime = 0;
 app.get(['/features.js', '/assets/features.js'], (req, res) => {
   try {
     res.set('Content-Type', 'application/javascript; charset=utf-8');
-    res.set('Cache-Control', 'no-cache');
+    res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
     const targetPath = fs.existsSync(path.join(__dirname, 'public', 'features.js'))
       ? path.join(__dirname, 'public', 'features.js')
       : path.join(__dirname, 'features.js');
@@ -2235,7 +2238,7 @@ app.get('/api/magic', (req, res) => {
       cachedMagicBase64 = Buffer.from(features).toString('base64');
       lastFeaturesMtime = mtime;
     }
-    res.set('Cache-Control', 'no-cache');
+    res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
     res.json({ magic: cachedMagicBase64 });
   } catch (err) {
     console.error("Error reading features:", err);
@@ -2482,77 +2485,18 @@ app.post('/api/upload-template', upload.any(), (req, res) => {
 // ANALYTICS API ENDPOINTS (silent collection)
 // ══════════════════════════════════════════════════════════════
 
-const analyticsLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 5000, // Scaled for 1000 users/min
-  message: { error: 'Rate limited' },
-  standardHeaders: false,
-  legacyHeaders: false,
-});
-
-app.post('/api/analytics/pageview', analyticsLimiter, async (req, res) => {
-  try {
-    await ensureMongoConnected();
-    await analytics.trackPageView(req, req.body.page || 'unknown');
-    res.status(204).end();
-  } catch (e) { res.status(204).end(); }
-});
-
-app.post('/api/analytics/session', analyticsLimiter, async (req, res) => {
-  try {
-    await ensureMongoConnected();
-    await analytics.trackSession(req, req.body);
-    res.status(204).end();
-  } catch (e) { res.status(204).end(); }
-});
-
-// Handle both application/json (from fetch) and text/plain (from navigator.sendBeacon)
-app.post('/api/analytics/event', analyticsLimiter, async (req, res) => {
-  res.status(204).end(); // Respond immediately so sendBeacon doesn't wait
-
-  try {
-    await ensureMongoConnected();
-    let bodyData = req.body;
-
-    // If we captured a raw body (sendBeacon text/plain path), parse it instead
-    if (req.rawAnalyticsBody) {
-      try { bodyData = JSON.parse(req.rawAnalyticsBody); } catch (e) { bodyData = {}; }
-    }
-
-    if (typeof bodyData === 'string') {
-      try { bodyData = JSON.parse(bodyData); } catch (e) { bodyData = {}; }
-    }
-
-    console.log('[Analytics API] Event received - type:', bodyData?.type, '| websiteId:', bodyData?.websiteId);
-    await analytics.trackEvent(req, bodyData || {});
-  } catch (e) {
-    console.warn('[Analytics API] Error tracking event:', e.message);
-  }
-});
-
-app.post('/api/analytics/feature', analyticsLimiter, async (req, res) => {
-  try {
-    await ensureMongoConnected();
-    await analytics.trackFeatureUsage(req, req.body);
-    res.status(204).end();
-  } catch (e) { res.status(204).end(); }
-});
-
-app.post('/api/analytics/exit', analyticsLimiter, async (req, res) => {
-  try {
-    await ensureMongoConnected();
-    await analytics.trackExit(req, req.body);
-    res.status(204).end();
-  } catch (e) { res.status(204).end(); }
-});
-
-app.post('/api/analytics/website-view', analyticsLimiter, async (req, res) => {
-  try {
-    await ensureMongoConnected();
-    await analytics.trackWebsiteView(req, req.body.websiteId);
-    await analytics.trackPageView(req, 'shared_website');
-    res.status(204).end();
-  } catch (e) { res.status(204).end(); }
+// ── Legacy Analytics Handlers (Zero-Load HTTP 204) ──
+// Clients have switched to Google Analytics 4 (GA4).
+// Old or cached clients receive immediate 204 No Content with 0 DB queries and 0 CPU load.
+app.all([
+  '/api/analytics/pageview',
+  '/api/analytics/session',
+  '/api/analytics/event',
+  '/api/analytics/feature',
+  '/api/analytics/exit',
+  '/api/analytics/website-view'
+], (req, res) => {
+  res.status(204).end();
 });
 
 // ══════════════════════════════════════════════════════════════
@@ -3231,7 +3175,7 @@ app.get('/:slug', async (req, res, next) => {
     if (entry && entry.websiteId) {
       if (slugResolutionCache.size > 2000) slugResolutionCache.clear();
       slugResolutionCache.set(slug, { websiteId: entry.websiteId, time: Date.now() });
-      res.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
+      res.set('Cache-Control', 'public, max-age=300, s-maxage=86400, stale-while-revalidate=86400');
       return res.redirect(`/generated/customize.html?view=${entry.websiteId}&_v=c`);
     }
   } catch (dbErr) {
