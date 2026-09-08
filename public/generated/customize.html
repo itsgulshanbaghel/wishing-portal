@@ -4746,7 +4746,7 @@
           if (data.images && data.images.length > 0) {
             const previewDiv = customPanel.querySelector('.image-preview');
             if (previewDiv) {
-              updateImagePreview(previewDiv, data.images);
+              updateImagePreview(previewDiv, data.images, id, customPanel);
             }
           }
 
@@ -4793,8 +4793,9 @@
         });
       }
 
-      function updateImagePreview(previewDiv, images) {
+      function updateImagePreview(previewDiv, images, featureId, customPanel) {
         previewDiv.innerHTML = '';
+        if (!images || !Array.isArray(images)) return;
         images.forEach((imgSrc, idx) => {
           const item = document.createElement("div");
           item.className = "image-preview-item loaded";
@@ -4803,6 +4804,24 @@
           const removeBtn = document.createElement("span");
           removeBtn.className = "remove-image";
           removeBtn.innerHTML = "×";
+          removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (featureId) {
+              const existing = customData.get(featureId) || {};
+              existing.images = (existing.images || []).filter((_, i) => i !== idx);
+              customData.set(featureId, existing);
+              autoSaveState();
+              updateImagePreview(previewDiv, existing.images, featureId, customPanel);
+              const textarea = customPanel ? customPanel.querySelector('textarea[data-placeholder-key="text"]') : null;
+              const emojiInput = customPanel ? customPanel.querySelector('textarea[data-placeholder-key="emoji"]') : null;
+              if (textarea) existing.text = textarea.value;
+              if (emojiInput) existing.emoji = emojiInput.value;
+              const nameVal = getUserName();
+              refreshFeatureIfActive(featureId, nameVal, existing.text, existing.images, existing.emoji);
+            } else {
+              item.remove();
+            }
+          };
           item.appendChild(img);
           item.appendChild(removeBtn);
           previewDiv.appendChild(item);
