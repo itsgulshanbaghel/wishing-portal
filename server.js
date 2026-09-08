@@ -438,7 +438,13 @@ app.post('/api/config', async (req, res) => {
       console.error('[Server] Analytics registration warning:', e.message);
     }
 
-    res.json({ id });
+    // Include existing custom slug in response so frontend can preserve it
+    let existingSlugForResponse = null;
+    try {
+      const slugRec = await cockroach.getCustomSlugByWebsiteId(id);
+      if (slugRec && slugRec.slug) existingSlugForResponse = slugRec.slug;
+    } catch (e) { }
+    res.json({ id, slug: existingSlugForResponse || undefined });
   } catch (err) {
     console.error('Error saving config:', err);
     res.status(500).json({ error: 'Failed to save' });
@@ -506,6 +512,13 @@ app.get('/api/config/:id', async (req, res) => {
     // Payment verification (bypassed so anybody can access websites with their link even if unpaid)
     const isPaid = isLocalhost || (await verifyWebsitePaymentStatus(safeName));
 
+    // Look up existing custom slug for this website so editors can preserve it
+    let existingSlug = null;
+    try {
+      const slugRecord = await cockroach.getCustomSlugByWebsiteId(safeName);
+      if (slugRecord && slugRecord.slug) existingSlug = slugRecord.slug;
+    } catch (slugErr) { }
+
     // 1. Fetch full JSON payload from Supabase Storage (Single Source of Truth)
     let sbConfig = null;
     try {
@@ -516,8 +529,10 @@ app.get('/api/config/:id', async (req, res) => {
 
     if (sbConfig && sbConfig.html) {
       sbConfig.isPremium = true;
+      if (existingSlug) sbConfig.slug = existingSlug;
       if (typeof sbConfig.metadata === 'object' && sbConfig.metadata !== null) {
         sbConfig.metadata.isPremium = true;
+        if (existingSlug) sbConfig.metadata.slug = existingSlug;
       }
       return res.json(sbConfig);
     }
@@ -531,6 +546,7 @@ app.get('/api/config/:id', async (req, res) => {
     if (crRecord && crRecord.metadata && crRecord.metadata.html) {
       const resObj = Object.assign({}, crRecord.metadata);
       resObj.isPremium = true;
+      if (existingSlug) resObj.slug = existingSlug;
       return res.json(resObj);
     }
 
@@ -542,6 +558,7 @@ app.get('/api/config/:id', async (req, res) => {
         if (doc && doc.metadata && doc.metadata.html) {
           const resObj = Object.assign({}, doc.metadata);
           resObj.isPremium = true;
+          if (existingSlug) resObj.slug = existingSlug;
           return res.json(resObj);
         }
       }

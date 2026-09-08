@@ -4382,6 +4382,17 @@
       }
       let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null, isFrameLoaded = false, isPageInitializing = true;
 
+      // Auto-activate a feature toggle when the user uploads media (image/audio).
+      // Ensures the toggle turns ON and UI updates without requiring manual off-on cycling.
+      function autoActivateFeature(featureId) {
+        if (activeFeatureStates.get(featureId)) return; // Already active
+        activeFeatureStates.set(featureId, true);
+        const toggleRow = document.getElementById(`toggle-${featureId}`);
+        if (toggleRow && !toggleRow.classList.contains('active')) {
+          toggleRow.classList.add('active');
+        }
+      }
+
       function getTotalPhotoCount(excludeFeatureId = null) {
         let count = 0;
         const photoFeatures = ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion"];
@@ -4611,6 +4622,66 @@
           }
         } catch (e) {
           console.error('Failed to save customization state:', e);
+        }
+      }
+
+      // Fetch saved config from the server for cross-device editing
+      async function loadConfigFromServer(websiteId) {
+        try {
+          const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+            ? window.APP_CONFIG.API_BASE_URL
+            : window.location.origin;
+          const res = await fetch(`${apiBaseUrl}/api/config/${websiteId}`);
+          if (!res.ok) return null;
+          const serverData = await res.json();
+          if (!serverData || !serverData.config) return null;
+
+          const config = serverData.config;
+
+          // Populate activeFeatureStates from server config
+          if (config.activeFeatures && Array.isArray(config.activeFeatures)) {
+            activeFeatureStates = new Map(config.activeFeatures);
+          }
+
+          // Populate customData from server config
+          if (config.customData) {
+            if (Array.isArray(config.customData)) {
+              customData = new Map(config.customData);
+            } else if (typeof config.customData === 'object') {
+              customData = new Map(Object.entries(config.customData));
+            }
+          }
+
+          // Store premium status and slug
+          if (serverData.isPremium || (serverData.metadata && serverData.metadata.isPremium)) {
+            window.isPremiumUser = true;
+            window.isPremium = true;
+            sessionStorage.setItem(`premium_${websiteId}`, 'true');
+          }
+          if (serverData.slug || (serverData.metadata && serverData.metadata.slug)) {
+            window._existingSlug = serverData.slug || serverData.metadata.slug;
+          }
+
+          // Restore userData from config
+          if (config.userData) {
+            try {
+              localStorage.setItem('userData', JSON.stringify(config.userData));
+              sessionStorage.setItem('userData', JSON.stringify(config.userData));
+            } catch (e) {}
+          }
+          if (config.userName) {
+            try {
+              localStorage.setItem('userDataName', config.userName);
+              sessionStorage.setItem('userDataName', config.userName);
+            } catch (e) {}
+          }
+
+          console.log('[CustomizeEditor] Loaded config from server for', websiteId,
+            '- features:', activeFeatureStates.size, 'customData:', customData.size);
+          return serverData;
+        } catch (err) {
+          console.warn('[CustomizeEditor] Failed to load config from server:', err.message);
+          return null;
         }
       }
 
@@ -4917,6 +4988,13 @@
       function refreshAll() { debouncedRefreshAll(); }
       function refreshFeatureIfActive(id, userName, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl) {
         if (activeFeatureStates.get(id)) {
+          // Disable first to tear down the existing DOM section, then re-enable with updated data.
+          // This is needed because features.js enable() checks if the section already exists and returns early.
+          const doc = getIframeDocument();
+          const win = doc ? (document.getElementById("frame")?.contentWindow) : null;
+          if (doc && win && FEATURE_MAP && FEATURE_MAP[id]?.disable) {
+            try { FEATURE_MAP[id].disable(doc, win); } catch (e) {}
+          }
           if (id === 'addMusicSection') {
             applyFeature(id, true, userName, text, images, emoji, audio || "", spotifyEmbedUrl || "", youtubeEmbedUrl || "", instagramEmbedUrl || "");
           } else {
@@ -6014,6 +6092,9 @@
                 const rawFiles = Array.from(e.target.files);
                 if (!rawFiles || rawFiles.length === 0) return;
 
+                // Auto-activate the feature toggle when images are uploaded
+                autoActivateFeature(id);
+
                 const MAX_PHOTO_SIZE = 6 * 1024 * 1024; // 6MB limit
                 const MAX_TOTAL_PHOTOS = 9;
 
@@ -6228,6 +6309,9 @@
               audioInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
+
+                // Auto-activate magicMusic toggle when audio is uploaded
+                autoActivateFeature("magicMusic");
 
                 const MAX_AUDIO_SIZE = 6 * 1024 * 1024; // 6MB limit
                 if (file.size > MAX_AUDIO_SIZE) {
@@ -6448,6 +6532,9 @@
 
                     const file = new File([audioBlob], "voice_note.wav", { type: "audio/wav" });
 
+                    // Auto-activate voiceNote toggle when recording is completed
+                    autoActivateFeature("voiceNote");
+
                     timerEl.innerText = currentLang === 'hi' ? "अपलोड हो रहा है..." : "Uploading Voice Note...";
                     tabs.style.display = "none";
                     recordContent.style.display = "none";
@@ -6511,6 +6598,9 @@
               voiceFileInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
+
+                // Auto-activate voiceNote toggle when audio is uploaded
+                autoActivateFeature("voiceNote");
 
                 const MAX_AUDIO_SIZE = 6 * 1024 * 1024; // 6MB limit
                 if (file.size > MAX_AUDIO_SIZE) {
@@ -7184,16 +7274,39 @@
         showStage(1);
       }
 
-      // Load and apply saved customization state
-      if (loadCustomizationState()) {
-        // Apply state after a short delay to ensure UI is ready
-        setTimeout(() => {
-          applyCustomizationToUI();
-          if (isFrameLoaded) {
-            refreshAll();
+      // Load and apply saved customization state — prefer server for cross-device editing
+      (async function initCustomizationState() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewId = urlParams.get('view');
+        const restoreId = urlParams.get('restore');
+        const websiteId = viewId || restoreId;
+        let loaded = false;
+
+        // 1. Try fetching from server when we have a website ID (cross-device editing)
+        if (websiteId) {
+          const serverConfig = await loadConfigFromServer(websiteId);
+          if (serverConfig) {
+            loaded = true;
+            // Also save to localStorage as a cache for quick re-loads
+            saveCustomizationState(websiteId);
           }
-        }, 100);
-      }
+        }
+
+        // 2. Fall back to localStorage if server fetch failed or no ID
+        if (!loaded) {
+          loaded = loadCustomizationState();
+        }
+
+        // 3. Apply to UI
+        if (loaded) {
+          setTimeout(() => {
+            applyCustomizationToUI();
+            if (isFrameLoaded) {
+              refreshAll();
+            }
+          }, 100);
+        }
+      })();
 
       // Message listener for dropped images and errors
       window.addEventListener('message', (event) => {
@@ -8999,6 +9112,28 @@
           }
 
           websiteId = saveRes.id;
+
+          // BYPASS PAYMENT for already-paid websites: save update and go directly to share page
+          const isAlreadyPaid = !!(
+            window.isPremiumUser ||
+            window.isPremium ||
+            sessionStorage.getItem(`premium_${websiteId}`) === 'true' ||
+            (saveRes.slug) // has a custom slug = already paid
+          );
+          if (isAlreadyPaid) {
+            if (btn) {
+              btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating Website...';
+            }
+            // Save as premium directly
+            const premSaveRes = await saveWebsiteConfigToServer(true, websiteId);
+            if (premSaveRes && premSaveRes.success) {
+              sessionStorage.setItem(`premium_${websiteId}`, 'true');
+              window.isPremium = true;
+              window.isPremiumUser = true;
+              window.location.href = `/generated/share.html?view=${websiteId}&payment=success&updated=true`;
+              return;
+            }
+          }
 
           if (btn) {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening Payment Gateway...';
