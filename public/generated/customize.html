@@ -4597,14 +4597,273 @@
         });
       }
 
-      async function uploadAudioToCloudinary(file, onProgress) {
-        return new Promise((resolve) => {
-          window._pendingLocalFiles = window._pendingLocalFiles || new Map();
-          const blobUrl = URL.createObjectURL(file);
-          window._pendingLocalFiles.set(blobUrl, file);
-          if (typeof onProgress === 'function') onProgress(100);
-          resolve(blobUrl);
+      window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+
+      // High-performance Cloud Media Uploader: uploads any File, Blob, Data URI, or Blob URL to cloud storage
+      async function uploadMediaAsset(mediaSource, isPremium = false, filename = '') {
+        if (!mediaSource) return null;
+
+        // If it is already a permanent http/https URL, return immediately
+        if (typeof mediaSource === 'string' && (mediaSource.startsWith('http://') || mediaSource.startsWith('https://'))) {
+          return mediaSource;
+        }
+
+        const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+          ? window.APP_CONFIG.API_BASE_URL
+          : window.location.origin;
+
+        let blobToUpload = null;
+        let originalName = filename;
+
+        if (mediaSource instanceof File) {
+          blobToUpload = mediaSource;
+          originalName = originalName || mediaSource.name;
+        } else if (mediaSource instanceof Blob) {
+          blobToUpload = mediaSource;
+        } else if (typeof mediaSource === 'string') {
+          // Check if it's cached in _pendingLocalFiles
+          if (window._pendingLocalFiles && window._pendingLocalFiles.has(mediaSource)) {
+            const cached = window._pendingLocalFiles.get(mediaSource);
+            if (cached instanceof File || cached instanceof Blob) {
+              blobToUpload = cached;
+              if (cached.name) originalName = originalName || cached.name;
+            }
+          }
+
+          // If not resolved from cache, fetch blob from URL (works for active blob: and data: URLs)
+          if (!blobToUpload) {
+            try {
+              const res = await fetch(mediaSource);
+              if (res.ok) {
+                blobToUpload = await res.blob();
+              }
+            } catch (fetchErr) {
+              console.warn('[uploadMediaAsset] Could not fetch local media blob:', fetchErr.message);
+            }
+          }
+        }
+
+        if (!blobToUpload) {
+          console.warn('[uploadMediaAsset] Failed to resolve media blob for upload');
+          return null;
+        }
+
+        if (!originalName) {
+          const type = blobToUpload.type || '';
+          const ext = type.includes('audio') ? 'mp3' : (type.includes('png') ? 'png' : (type.includes('webp') ? 'webp' : 'jpg'));
+          originalName = `upload_${Date.now()}.${ext}`;
+        }
+
+        const formData = new FormData();
+        formData.append('file', blobToUpload, originalName);
+        formData.append('isPremium', isPremium ? 'true' : 'false');
+
+        const response = await fetch(`${apiBaseUrl}/api/upload-media`, {
+          method: 'POST',
+          body: formData
         });
+
+        if (!response.ok) {
+          throw new Error(`Media upload server returned status ${response.status}`);
+        }
+
+        const data = await response.json();
+        const cloudUrl = data.secure_url || data.url;
+        if (!cloudUrl) {
+          throw new Error('No cloud URL returned from media upload server');
+        }
+
+        return cloudUrl;
+      }
+
+      async function uploadPendingLocalMedia(html = '', config = {}, isPremium = false, docToUpdate = null) {
+        let updatedHtml = html || '';
+        let configStr = JSON.stringify(config || {});
+        const replacements = new Map();
+
+        // 1. Gather all local media URLs (blob: and data:) across config, _pendingLocalFiles, DOM, and HTML
+        const pendingUrls = new Set();
+
+        // From window._pendingLocalFiles
+        if (window._pendingLocalFiles) {
+          for (const key of window._pendingLocalFiles.keys()) {
+            if (typeof key === 'string' && (key.startsWith('blob:') || key.startsWith('data:'))) {
+              pendingUrls.add(key);
+            }
+          }
+        }
+
+        // From config.customData
+        if (config && Array.isArray(config.customData)) {
+          for (const [featId, featVal] of config.customData) {
+            if (!featVal) continue;
+            if (typeof featVal.text === 'string' && (featVal.text.startsWith('blob:') || featVal.text.startsWith('data:'))) {
+              pendingUrls.add(featVal.text);
+            }
+            if (Array.isArray(featVal.images)) {
+              for (const imgUrl of featVal.images) {
+                if (typeof imgUrl === 'string' && (imgUrl.startsWith('blob:') || imgUrl.startsWith('data:'))) {
+                  pendingUrls.add(imgUrl);
+                }
+              }
+            }
+          }
+        }
+
+        // From in-memory customData
+        if (typeof customData !== 'undefined' && customData instanceof Map) {
+          for (const [featId, featVal] of customData.entries()) {
+            if (!featVal) continue;
+            if (typeof featVal.text === 'string' && (featVal.text.startsWith('blob:') || featVal.text.startsWith('data:'))) {
+              pendingUrls.add(featVal.text);
+            }
+            if (Array.isArray(featVal.images)) {
+              for (const imgUrl of featVal.images) {
+                if (typeof imgUrl === 'string' && (imgUrl.startsWith('blob:') || imgUrl.startsWith('data:'))) {
+                  pendingUrls.add(imgUrl);
+                }
+              }
+            }
+          }
+        }
+
+        // Regex scan in configStr and updatedHtml for any leftover blob: or data: media
+        const localRegex = /(blob:[^"'\s)<>]+|data:(?:image|audio)\/[^;]+;base64,[^"'\s)<>]+)/g;
+        let m;
+        while ((m = localRegex.exec(configStr)) !== null) {
+          pendingUrls.add(m[1]);
+        }
+        localRegex.lastIndex = 0;
+        if (updatedHtml) {
+          while ((m = localRegex.exec(updatedHtml)) !== null) {
+            pendingUrls.add(m[1]);
+          }
+        }
+
+        // 2. Upload each local asset to the cloud and replace its URL
+        const fallbackStockPhoto = "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80";
+        const fallbackStockAudio = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+
+        for (const localUrl of pendingUrls) {
+          try {
+            let cloudUrl = null;
+            try {
+              cloudUrl = await uploadMediaAsset(localUrl, isPremium);
+            } catch (upErr) {
+              console.warn(`[uploadPendingLocalMedia] Failed to upload asset:`, upErr.message);
+            }
+
+            // If upload failed or blob was revoked/dead from an old session, use safe cloud fallback
+            if (!cloudUrl) {
+              const isAudio = localUrl.includes('audio') || (window._pendingLocalFiles && window._pendingLocalFiles.get(localUrl)?.type?.includes('audio'));
+              cloudUrl = isAudio ? fallbackStockAudio : fallbackStockPhoto;
+              console.warn(`[uploadPendingLocalMedia] Applied cloud fallback for unresolvable asset`);
+            }
+
+            if (cloudUrl) {
+              replacements.set(localUrl, cloudUrl);
+              updatedHtml = updatedHtml.split(localUrl).join(cloudUrl);
+              configStr = configStr.split(localUrl).join(cloudUrl);
+
+              // Update in-memory customData if available
+              if (typeof customData !== 'undefined' && customData instanceof Map) {
+                for (const [id, data] of customData.entries()) {
+                  if (!data) continue;
+                  let updated = false;
+                  if (data.text === localUrl) {
+                    data.text = cloudUrl;
+                    updated = true;
+                  }
+                  if (Array.isArray(data.images) && data.images.includes(localUrl)) {
+                    data.images = data.images.map(u => u === localUrl ? cloudUrl : u);
+                    updated = true;
+                  }
+                  if (updated) customData.set(id, data);
+                }
+              }
+
+              // Update docToUpdate DOM elements if provided
+              if (docToUpdate) {
+                docToUpdate.querySelectorAll(`img[src="${localUrl}"]`).forEach(el => { el.src = cloudUrl; });
+                docToUpdate.querySelectorAll(`audio[src="${localUrl}"]`).forEach(el => { el.src = cloudUrl; });
+                docToUpdate.querySelectorAll(`source[src="${localUrl}"]`).forEach(el => { el.src = cloudUrl; });
+              }
+
+              // Clean up local blob reference
+              if (window._pendingLocalFiles) {
+                window._pendingLocalFiles.delete(localUrl);
+              }
+              try { URL.revokeObjectURL(localUrl); } catch (e) {}
+            }
+          } catch (err) {
+            console.error('[uploadPendingLocalMedia] Asset processing error:', err);
+          }
+        }
+
+        // Safety purge of any remaining blob: URLs from updatedHtml
+        updatedHtml = updatedHtml.replace(/blob:[^"'\s)<>]+/g, fallbackStockPhoto);
+
+        let parsedConfig = config;
+        try {
+          parsedConfig = JSON.parse(configStr);
+        } catch (e) {}
+
+        if (typeof autoSaveState === 'function') {
+          try { autoSaveState(); } catch (e) {}
+        }
+
+        return { html: updatedHtml, config: parsedConfig, replacements };
+      }
+
+      async function uploadAudioToCloudinary(file, onProgress) {
+        window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+        const blobUrl = URL.createObjectURL(file);
+        window._pendingLocalFiles.set(blobUrl, file);
+        if (typeof onProgress === 'function') onProgress(10);
+        // Start background upload immediately
+        uploadMediaAsset(file, true, file.name).then(cloudUrl => {
+          if (cloudUrl) {
+            window._pendingLocalFiles.delete(blobUrl);
+            try { URL.revokeObjectURL(blobUrl); } catch (e) {}
+          }
+        }).catch(() => {});
+        return blobUrl;
+      }
+
+      // Resolve any template identifier, filename, or generic category into a clean relative template path
+      function resolveTemplateUrl(templateName, eventType) {
+        let t = String(templateName || '').trim();
+        if (!t || t === 'null' || t === 'undefined' || t === 'default' || t === 'Custom Preset') {
+          t = String(eventType || '').trim();
+        }
+        if (!t) return '../templates/birthday1.html';
+
+        if (t.startsWith('data:') || t.startsWith('http://') || t.startsWith('https://')) {
+          return t;
+        }
+
+        // Strip query string
+        t = t.split('?')[0];
+
+        // Strip leading ../, ./, /, or templates/
+        t = t.replace(/^(\.\.\/|\.\/|\/)+/, '').replace(/^templates\//i, '');
+
+        // Normalize base name without .html
+        const base = t.replace(/\.html$/i, '').toLowerCase();
+
+        // Map generic event keywords to default template 1
+        if (base === 'birthday') t = 'birthday1.html';
+        else if (base === 'anniversary') t = 'anniversary1.html';
+        else if (base === 'proposal') t = 'proposal1.html';
+        else if (base === 'festival') t = 'festival1.html';
+        else if (base === 'valentine') t = 'proposal1.html';
+        else if (base === 'newyear') t = 'festival1.html';
+        else if (base === 'diwali') t = 'festival1.html';
+        else if (!t.toLowerCase().endsWith('.html')) {
+          t = t + '.html';
+        }
+
+        return `../templates/${t}`;
       }
 
       // Customization state management
@@ -4613,6 +4872,7 @@
           const state = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
             customData: Array.from(customData.entries()),
+            template: localStorage.getItem('selectedTemplate') || null,
             timestamp: Date.now(),
             viewId: viewId
           };
@@ -4625,18 +4885,30 @@
         }
       }
 
-      // Fetch saved config from the server for cross-device editing
+      // Fetch saved config from the server for cross-device editing (hard fetch bypassing cache)
       async function loadConfigFromServer(websiteId) {
         try {
           const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
             ? window.APP_CONFIG.API_BASE_URL
             : window.location.origin;
-          const res = await fetch(`${apiBaseUrl}/api/config/${websiteId}`);
+
+          // Always hard fetch from server with cache-busting timestamp and no-store
+          const res = await fetch(`${apiBaseUrl}/api/config/${websiteId}?_t=${Date.now()}`, {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
           if (!res.ok) return null;
           const serverData = await res.json();
           if (!serverData || !serverData.config) return null;
 
           const config = serverData.config;
+
+          // Clear stale in-memory state before applying fresh server data
+          activeFeatureStates.clear();
+          customData.clear();
 
           // Populate activeFeatureStates from server config
           if (config.activeFeatures && Array.isArray(config.activeFeatures)) {
@@ -4650,6 +4922,20 @@
             } else if (typeof config.customData === 'object') {
               customData = new Map(Object.entries(config.customData));
             }
+          }
+
+          // Sanitize any dead blob: URLs from older saves
+          const fallbackPhoto = "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80";
+          const fallbackAudio = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+          for (const [featId, featVal] of customData.entries()) {
+            if (!featVal) continue;
+            if (typeof featVal.text === 'string' && featVal.text.startsWith('blob:')) {
+              featVal.text = (featId === 'magicMusic' || featId === 'voiceNote') ? fallbackAudio : fallbackPhoto;
+            }
+            if (Array.isArray(featVal.images)) {
+              featVal.images = featVal.images.map(u => (typeof u === 'string' && u.startsWith('blob:')) ? fallbackPhoto : u);
+            }
+            customData.set(featId, featVal);
           }
 
           // Store premium status and slug
@@ -4676,8 +4962,33 @@
             } catch (e) {}
           }
 
+          // Restore and switch to the correct saved template
+          const templateRaw = config.template || config.templateName ||
+            (serverData.metadata && (serverData.metadata.templateName || serverData.metadata.template)) ||
+            (serverData.metadata && serverData.metadata.eventType);
+
+          if (templateRaw) {
+            const resolvedTemplate = resolveTemplateUrl(templateRaw, serverData.metadata?.eventType);
+            localStorage.setItem('selectedTemplate', resolvedTemplate);
+            sessionStorage.setItem('selectedTemplate', resolvedTemplate);
+
+            const frame = document.getElementById("frame");
+            if (frame) {
+              const separator = resolvedTemplate.includes('?') ? '&' : '?';
+              const targetSrc = `${resolvedTemplate}${separator}v=${Date.now()}&_nocache=${Date.now()}&mode=edit&lang=${currentLang}`;
+              const currentSrcClean = (frame.src || '').split('?')[0].replace(/^https?:\/\/[^\/]+/, '');
+              const targetClean = resolvedTemplate.replace(/^\.\.\//, '/');
+
+              if (!currentSrcClean.endsWith(targetClean)) {
+                console.log('[CustomizeEditor] Hard reloading iframe with saved template:', resolvedTemplate);
+                isFrameLoaded = false;
+                frame.src = targetSrc;
+              }
+            }
+          }
+
           console.log('[CustomizeEditor] Loaded config from server for', websiteId,
-            '- features:', activeFeatureStates.size, 'customData:', customData.size);
+            '- features:', activeFeatureStates.size, 'customData:', customData.size, 'template:', localStorage.getItem('selectedTemplate'));
           return serverData;
         } catch (err) {
           console.warn('[CustomizeEditor] Failed to load config from server:', err.message);
@@ -4700,6 +5011,23 @@
             }
             if (state.customData) {
               customData = new Map(state.customData);
+              const fallbackPhoto = "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80";
+              const fallbackAudio = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+              for (const [featId, featVal] of customData.entries()) {
+                if (!featVal) continue;
+                if (typeof featVal.text === 'string' && featVal.text.startsWith('blob:')) {
+                  featVal.text = (featId === 'magicMusic' || featId === 'voiceNote') ? fallbackAudio : fallbackPhoto;
+                }
+                if (Array.isArray(featVal.images)) {
+                  featVal.images = featVal.images.map(u => (typeof u === 'string' && u.startsWith('blob:')) ? fallbackPhoto : u);
+                }
+                customData.set(featId, featVal);
+              }
+            }
+            if (state.template) {
+              const resolvedTp = resolveTemplateUrl(state.template);
+              localStorage.setItem('selectedTemplate', resolvedTp);
+              sessionStorage.setItem('selectedTemplate', resolvedTp);
             }
             return true;
           }
@@ -6205,6 +6533,34 @@
                         if (img.complete) item.classList.add('loaded');
                       }
                     }
+
+                    // Kick off immediate background upload to cloud storage
+                    uploadMediaAsset(f, isPremium, f.name).then(cloudUrl => {
+                      if (cloudUrl) {
+                        const current = customData.get(id) || {};
+                        if (current.images && Array.isArray(current.images)) {
+                          current.images = current.images.map(u => u === blobUrl ? cloudUrl : u);
+                          customData.set(id, current);
+                          autoSaveState();
+                        }
+                        if (window._pendingLocalFiles) {
+                          window._pendingLocalFiles.delete(blobUrl);
+                        }
+                        try { URL.revokeObjectURL(blobUrl); } catch(e) {}
+
+                        // Update preview DOM elements
+                        const iframeDoc = getIframeDocument();
+                        if (iframeDoc) {
+                          iframeDoc.querySelectorAll(`img[src="${blobUrl}"]`).forEach(el => { el.src = cloudUrl; });
+                        }
+                        if (previewDiv) {
+                          previewDiv.querySelectorAll(`img[src="${blobUrl}"]`).forEach(el => { el.src = cloudUrl; });
+                        }
+                      }
+                    }).catch(err => {
+                      console.warn(`[ImageUpload] Background upload for photo deferred to save:`, err);
+                    });
+
                     return blobUrl;
                   });
                   const existing = customData.get(id) || {};
@@ -6361,16 +6717,30 @@
                     throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल चुनें।" : "Audio file exceeds 6 MB limit. Please use a smaller file.");
                   }
 
-                  // Only upload to Cloudinary for premium users
-                  let secureUrl;
-                  if (isPremium) {
-                    secureUrl = await uploadAudioToCloudinary(processedFile, (pct) => {
-                      audioNameDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
-                    });
-                  } else {
-                    // For free users trying out features, convert & store as base64 Data URL in local storage
-                    secureUrl = await fileToDataURL(processedFile);
-                  }
+                  // Create local blob for instant audio playback
+                  window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+                  const localBlobUrl = URL.createObjectURL(processedFile);
+                  window._pendingLocalFiles.set(localBlobUrl, processedFile);
+
+                  let secureUrl = localBlobUrl;
+                  audioNameDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? 'क्लाउड पर अपलोड हो रहा है...' : 'Uploading audio to cloud...'}`;
+
+                  // Start background cloud upload immediately
+                  uploadMediaAsset(processedFile, isPremium, file.name).then(cloudUrl => {
+                    if (cloudUrl) {
+                      const ex2 = customData.get("magicMusic") || {};
+                      ex2.text = cloudUrl;
+                      customData.set("magicMusic", ex2);
+                      autoSaveState();
+                      if (window._pendingLocalFiles) window._pendingLocalFiles.delete(localBlobUrl);
+                      try { URL.revokeObjectURL(localBlobUrl); } catch(e) {}
+                      audioNameDiv.innerText = "Audio: " + file.name;
+                      const nVal = getUserName();
+                      refreshFeatureIfActive("magicMusic", nVal, cloudUrl);
+                    }
+                  }).catch(upErr => {
+                    console.warn('[magicMusic] Background audio upload deferred to save:', upErr);
+                  });
 
                   const ex = customData.get("magicMusic") || {};
                   ex.text = secureUrl;
@@ -6568,16 +6938,29 @@
                         urlParams.get('action') === 'payment-success'
                       );
 
-                      // Only upload to Cloudinary for premium users
-                      let secureUrl;
-                      if (isPremium) {
-                        secureUrl = await uploadAudioToCloudinary(file, (pct) => {
-                          timerEl.innerText = currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`;
-                        });
-                      } else {
-                        // For free users trying out features, convert & store as base64 Data URL in local storage
-                        secureUrl = await fileToDataURL(file);
-                      }
+                      window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+                      const localBlobUrl = URL.createObjectURL(file);
+                      window._pendingLocalFiles.set(localBlobUrl, file);
+
+                      let secureUrl = localBlobUrl;
+                      timerEl.innerText = currentLang === 'hi' ? 'क्लाउड पर अपलोड हो रहा है...' : 'Uploading voice note to cloud...';
+
+                      uploadMediaAsset(file, isPremium, 'voice_recording.webm').then(cloudUrl => {
+                        if (cloudUrl) {
+                          const ex2 = customData.get("voiceNote") || {};
+                          ex2.text = cloudUrl;
+                          customData.set("voiceNote", ex2);
+                          autoSaveState();
+                          if (window._pendingLocalFiles) window._pendingLocalFiles.delete(localBlobUrl);
+                          try { URL.revokeObjectURL(localBlobUrl); } catch(e) {}
+                          previewAudio.src = cloudUrl;
+                          const nVal = getUserName();
+                          refreshFeatureIfActive("voiceNote", nVal, cloudUrl);
+                          timerEl.innerText = "00:00 / 01:30";
+                        }
+                      }).catch(upErr => {
+                        console.warn('[voiceNote] Recording background upload deferred to save:', upErr);
+                      });
 
                       const ex = customData.get("voiceNote") || {};
                       ex.text = secureUrl;
@@ -6657,16 +7040,28 @@
                     throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल यूज़ करें।" : "Audio file exceeds 6MB. Please use a smaller file.");
                   }
 
-                  // Only upload to Cloudinary for premium users
-                  let secureUrl;
-                  if (isPremium) {
-                    secureUrl = await uploadAudioToCloudinary(processedFile, (pct) => {
-                      loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? `अपलोड हो रहा है: ${pct}%...` : `Uploading: ${pct}%...`}`;
-                    });
-                  } else {
-                    // For free users trying out features, convert & store as base64 Data URL in local storage
-                    secureUrl = await fileToDataURL(processedFile);
-                  }
+                  window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+                  const localBlobUrl = URL.createObjectURL(processedFile);
+                  window._pendingLocalFiles.set(localBlobUrl, processedFile);
+
+                  let secureUrl = localBlobUrl;
+                  loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? 'क्लाउड पर अपलोड हो रहा है...' : 'Uploading voice note to cloud...'}`;
+
+                  uploadMediaAsset(processedFile, isPremium, file.name).then(cloudUrl => {
+                    if (cloudUrl) {
+                      const ex2 = customData.get("voiceNote") || {};
+                      ex2.text = cloudUrl;
+                      customData.set("voiceNote", ex2);
+                      autoSaveState();
+                      if (window._pendingLocalFiles) window._pendingLocalFiles.delete(localBlobUrl);
+                      try { URL.revokeObjectURL(localBlobUrl); } catch(e) {}
+                      previewAudio.src = cloudUrl;
+                      const nVal = getUserName();
+                      refreshFeatureIfActive("voiceNote", nVal, cloudUrl);
+                    }
+                  }).catch(upErr => {
+                    console.warn('[voiceNote] File background upload deferred to save:', upErr);
+                  });
 
                   const ex = customData.get("voiceNote") || {};
                   ex.text = secureUrl;
@@ -7175,8 +7570,34 @@
           return;
         }
 
-        let tp = localStorage.getItem("selectedTemplate");
+        // Check URL parameter first (e.g. ?template=anniversary2 or ?template=../templates/birthday1.html)
+        const templateParam = urlParams.get('template');
+        let tp = null;
+        if (templateParam) {
+          tp = resolveTemplateUrl(templateParam);
+          localStorage.setItem("selectedTemplate", tp);
+          sessionStorage.setItem("selectedTemplate", tp);
+        } else {
+          // Check cached state for restoreId if available
+          const restoreId = urlParams.get('restore');
+          if (restoreId) {
+            try {
+              const cached = localStorage.getItem('customizationState_' + restoreId);
+              if (cached) {
+                const parsed = JSON.parse(cached);
+                if (parsed.template) {
+                  tp = resolveTemplateUrl(parsed.template);
+                }
+              }
+            } catch (e) {}
+          }
+          if (!tp) {
+            tp = localStorage.getItem("selectedTemplate");
+          }
+        }
+
         if (!tp || tp === "null") tp = "../templates/birthday1.html";
+        tp = resolveTemplateUrl(tp);
         const separator = tp.includes('?') ? '&' : '?';
         // Add mode=edit to enable image upload buttons inside the template
         frame.src = `${tp}${separator}v=${Date.now()}&mode=edit&lang=${currentLang}`;
@@ -7277,6 +7698,12 @@
               const urls = files.map(f => {
                 const blobUrl = URL.createObjectURL(f);
                 window._pendingLocalFiles.set(blobUrl, f);
+                uploadMediaAsset(f, isPremium, f.name).then(cloudUrl => {
+                  if (cloudUrl) {
+                    window._pendingLocalFiles.delete(blobUrl);
+                    try { URL.revokeObjectURL(blobUrl); } catch(e) {}
+                  }
+                }).catch(() => {});
                 return blobUrl;
               });
               window.parent.postMessage({ type: 'droppedImages', images: urls }, '*');
@@ -7298,8 +7725,19 @@
         const urlParams = new URLSearchParams(window.location.search);
         const viewId = urlParams.get('view');
         const restoreId = urlParams.get('restore');
+        const isFresh = urlParams.get('fresh') === '1' || urlParams.has('t') || urlParams.get('src') === 'edit';
         const websiteId = viewId || restoreId;
         let loaded = false;
+
+        // When opened from edit portal, clear stale generic local state so old local data never overrides server content
+        if (isFresh) {
+          try {
+            localStorage.removeItem('customizationState');
+            if (websiteId) {
+              localStorage.removeItem('customizationState_' + websiteId);
+            }
+          } catch (e) {}
+        }
 
         // 1. Try fetching from server when we have a website ID (cross-device editing)
         if (websiteId) {
@@ -7311,8 +7749,8 @@
           }
         }
 
-        // 2. Fall back to localStorage if server fetch failed or no ID
-        if (!loaded) {
+        // 2. Fall back to localStorage if server fetch failed or no ID (only when NOT a fresh edit request)
+        if (!loaded && !isFresh) {
           loaded = loadCustomizationState();
         }
 
@@ -7343,6 +7781,7 @@
           if (textarea) existing.text = textarea.value;
           customData.set('imageExplosion', existing);
           refreshFeatureIfActive('imageExplosion', getUserName(), existing.text, existing.images);
+          autoSaveState();
         } else if (event.data.type === 'removeImageExplosion') {
           const existing = customData.get('imageExplosion') || {};
           existing.images = [];
@@ -7350,6 +7789,7 @@
           if (textarea) existing.text = textarea.value;
           customData.set('imageExplosion', existing);
           refreshFeatureIfActive('imageExplosion', getUserName(), existing.text, existing.images);
+          autoSaveState();
         }
       });
       document.getElementById("backBtn").onclick = () => { window.location.href = "preview.html"; };
@@ -8331,28 +8771,42 @@
           const currentViewId = urlParams.get('view') || urlParams.get('restore') || (typeof userDataObj !== 'undefined' ? userDataObj?.websiteId : null);
           const isPremium = (currentViewId && sessionStorage.getItem(`premium_${currentViewId}`) === 'true') || sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' || urlParams.get('_v') === 'c' || urlParams.get('action') === 'payment-success';
 
-          uploadPendingLocalMedia(html, config, isPremium).then(uploaded => {
-            const finalHtml = uploaded.html || html;
+          uploadPendingLocalMedia(html, config, isPremium, doc2).then(uploaded => {
+            let finalHtml = uploaded.html || html;
             const finalConfig = uploaded.config || config;
 
-            return fetch((API_BASE || '') + '/api/config', {
+            if (uploaded && uploaded.replacements) {
+              for (const [blobUrl, cloudUrl] of uploaded.replacements.entries()) {
+                finalHtml = finalHtml.split(blobUrl).join(cloudUrl);
+              }
+            }
+
+            const apiBase = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+              ? window.APP_CONFIG.API_BASE_URL
+              : (API_BASE || window.location.origin);
+
+            return fetch(apiBase + '/api/config', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ html: finalHtml, config: finalConfig, isPremium, websiteId: currentViewId })
-            });
-          })
-            .then(r => {
+            }).then(r => {
               if (!r.ok) {
-                // Check if it's a size issue
                 if (r.status === 413) {
                   throw new Error('Page too large for server');
                 }
-                throw new Error('Server error');
+                throw new Error('Server error: ' + r.status);
               }
               return r.json();
-            })
-            .then(data => {
-              if (data.id) {
+            }).then(data => ({ data, finalHtml, finalConfig }));
+          })
+            .then(({ data, finalHtml, finalConfig }) => {
+              if (data && data.id) {
+                // Cache locally for faster opening on current machine
+                try {
+                  localStorage.setItem('final_magic_' + data.id, finalHtml);
+                  localStorage.setItem('magic_config_' + data.id, JSON.stringify(finalConfig));
+                } catch(e) {}
+
                 // Save customization state before navigating
                 saveCustomizationState(data.id);
 
@@ -8371,23 +8825,21 @@
                 if (isFest) target += `&festival=1&sender=${sender}`;
                 window.location.href = target;
               } else {
-                throw new Error('No ID returned');
+                throw new Error('No ID returned from server');
               }
             })
             .catch((err) => {
-              console.error("Server save failed, falling back to local storage", err);
-              const fallbackId = Math.random().toString(36).substring(2, 12);
-              if (err.message === 'Page too large for server' || !saveLocally(fallbackId)) {
-                linkInput.value = currentLang === 'hi' ? "त्रुटि: शेयर करने के लिए पेज बहुत बड़ा" : "Error: Page too large to share";
-                showModal(currentLang === 'hi' ? "पेज अपने आप शेयर करने के लिए बहुत बड़ा है। कुछ फीचर्स बंद करें या कम इमेज यूज करें।" : "The page is too large to share automatically. Try disabling some features or using fewer images.");
-              } else {
-                const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
-                const ev = getEventData().event || '';
-                const isFest = /festival/i.test(template) || ev === 'festival';
-                const sender = encodeURIComponent(getUserName() || '');
-                let target = `share.html?view=${fallbackId}`;
-                if (isFest) target += `&festival=1&sender=${sender}`;
-                window.location.href = target;
+              console.error("Server save failed:", err);
+              const errMsg = currentLang === 'hi'
+                ? "वेबसाइट सर्वर पर सेव नहीं हो सकी। कृपया इंटरनेट कनेक्शन जांचें और दोबारा कोशिश करें।"
+                : (err.message === 'Page too large for server' 
+                    ? "Page size exceeds server limit. Please use fewer images." 
+                    : "Could not save website to server. Please check your internet connection and try again.");
+              showModal(errMsg);
+              if (btn) {
+                btn.classList.remove('generating');
+                const span = btn.querySelector('span');
+                if (span) span.textContent = currentLang === 'hi' ? 'पुनः प्रयास करें' : 'Try Again';
               }
             })
             .finally(() => {
@@ -8712,53 +9164,6 @@
         });
       }
 
-      window._pendingLocalFiles = window._pendingLocalFiles || new Map();
-
-      async function uploadPendingLocalMedia(html, config, isPremium) {
-        let updatedHtml = html;
-        let configStr = JSON.stringify(config);
-
-        if (window._pendingLocalFiles && window._pendingLocalFiles.size > 0) {
-          const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
-            ? window.APP_CONFIG.API_BASE_URL
-            : window.location.origin;
-
-          const entries = Array.from(window._pendingLocalFiles.entries());
-          for (const [blobUrl, file] of entries) {
-            try {
-              const formData = new FormData();
-              formData.append('file', file);
-              formData.append('isPremium', isPremium ? 'true' : 'false');
-
-              const res = await fetch(`${apiBaseUrl}/api/upload-media`, {
-                method: 'POST',
-                body: formData
-              });
-
-              if (res.ok) {
-                const data = await res.json();
-                const cloudUrl = data.secure_url || data.url;
-                if (cloudUrl) {
-                  updatedHtml = updatedHtml.split(blobUrl).join(cloudUrl);
-                  configStr = configStr.split(blobUrl).join(cloudUrl);
-                  try { URL.revokeObjectURL(blobUrl); } catch (e) {}
-                  window._pendingLocalFiles.delete(blobUrl);
-                }
-              }
-            } catch (err) {
-              console.error('Error uploading local media on payment start:', err);
-            }
-          }
-        }
-
-        let parsedConfig = config;
-        try {
-          parsedConfig = JSON.parse(configStr);
-        } catch (e) {}
-
-        return { html: updatedHtml, config: parsedConfig };
-      }
-
       async function saveWebsiteConfigToServer(isPremium = false, explicitId = null) {
         try {
           // Auto-disable pencil editing tool before saving generated website
@@ -8788,10 +9193,6 @@
             isPremium: isPremium
           };
 
-          // 1. Upload any pending local blob media FIRST to convert blob URLs into permanent cloud URLs
-          const uploadedMedia = await uploadPendingLocalMedia('', initialConfig, isPremium);
-          const finalConfig = uploadedMedia.config || initialConfig;
-
           // Temporarily disable active features on doc to get clean DOM snapshot
           for (let [id, active] of activeFeatureStates.entries()) {
             if (active && FEATURE_MAP[id] && FEATURE_MAP[id].disable) {
@@ -8809,6 +9210,10 @@
           if (typeof cleanupEditModeArtifacts === 'function') {
             cleanupEditModeArtifacts(docClone);
           }
+
+          // 1. Upload ALL pending local blob and data media to cloud storage FIRST, updating docClone & config
+          const uploadedMedia = await uploadPendingLocalMedia('', initialConfig, isPremium, docClone);
+          const finalConfig = uploadedMedia.config || initialConfig;
 
           // Re-enable features in preview iframe
           debouncedRefreshAll();
@@ -9049,6 +9454,12 @@
           html = html.replace(/<style[^>]*id=["']greeter-inline-edit-style["'][^>]*>[\s\S]*?<\/style>/gi, '');
           html = html.replace(/\scontenteditable=["'](true|false)["']/gi, '');
 
+          if (uploadedMedia && uploadedMedia.replacements) {
+            for (const [blobUrl, cloudUrl] of uploadedMedia.replacements.entries()) {
+              html = html.split(blobUrl).join(cloudUrl);
+            }
+          }
+
           const urlParams = new URLSearchParams(window.location.search);
           const websiteId = explicitId || urlParams.get('view') || urlParams.get('restore') || null;
 
@@ -9076,11 +9487,24 @@
           if (data && data.id) {
             try {
               localStorage.setItem('final_magic_' + data.id, html);
-              localStorage.setItem('magic_config_' + data.id, JSON.stringify(config));
+              localStorage.setItem('magic_config_' + data.id, JSON.stringify(finalConfig));
               if (isPremium) {
                 localStorage.setItem(`premium_${data.id}`, 'true');
                 sessionStorage.setItem(`premium_${data.id}`, 'true');
               }
+              // Save to recent websites list for quick access in /edit portal
+              try {
+                const existingList = JSON.parse(localStorage.getItem('greeter_my_websites') || '[]');
+                const filtered = existingList.filter(item => item.id !== data.id);
+                filtered.unshift({
+                  id: data.id,
+                  recipientName: (typeof getUserName === 'function' ? getUserName() : '') || (config && config.userName) || 'Special Person',
+                  eventType: (config && config.eventType) || 'wishing',
+                  updatedAt: new Date().toISOString(),
+                  isPremium: !!isPremium
+                });
+                localStorage.setItem('greeter_my_websites', JSON.stringify(filtered.slice(0, 15)));
+              } catch (listErr) {}
             } catch (e) {}
 
             return { success: true, id: data.id };

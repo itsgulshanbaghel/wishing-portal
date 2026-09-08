@@ -229,6 +229,9 @@ const uploadMediaMulter = multer({
 });
 
 const uploadMediaMiddleware = (req, res, next) => {
+  if (req.is('application/json')) {
+    return express.json({ limit: '10mb' })(req, res, next);
+  }
   uploadMediaMulter.single('file')(req, res, (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
@@ -242,14 +245,39 @@ const uploadMediaMiddleware = (req, res, next) => {
 
 const handleMediaUpload = async (req, res) => {
   try {
-    if (!req.file) {
+    let fileBuffer = null;
+    let mimeType = 'image/jpeg';
+    let filename = `upload_${Date.now()}.jpg`;
+    const isPremium = req.body ? (req.body.isPremium === 'true' || req.body.isPremium === true) : false;
+
+    if (req.file) {
+      fileBuffer = req.file.buffer;
+      mimeType = req.file.mimetype || mimeType;
+      filename = req.file.originalname || filename;
+    } else if (req.body && (req.body.file || req.body.dataUrl)) {
+      const dataUrl = req.body.file || req.body.dataUrl;
+      if (typeof dataUrl === 'string' && dataUrl.startsWith('data:')) {
+        const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          mimeType = match[1];
+          fileBuffer = Buffer.from(match[2], 'base64');
+        }
+      } else if (typeof dataUrl === 'string') {
+        fileBuffer = Buffer.from(dataUrl, 'base64');
+      }
+      if (req.body.filename) {
+        filename = req.body.filename;
+      } else {
+        const ext = mimeType.includes('audio') ? 'mp3' : (mimeType.includes('png') ? 'png' : 'jpg');
+        filename = `upload_${Date.now()}.${ext}`;
+      }
+    }
+
+    if (!fileBuffer) {
       return res.status(400).json({ error: 'No media file provided' });
     }
-    const isPremium = req.body.isPremium === 'true' || req.body.isPremium === true;
-    const mimeType = req.file.mimetype || 'image/jpeg';
-    const filename = req.file.originalname || `upload_${Date.now()}.jpg`;
 
-    const secureUrl = await storage.uploadMedia(req.file.buffer, filename, mimeType, isPremium);
+    const secureUrl = await storage.uploadMedia(fileBuffer, filename, mimeType, isPremium);
     res.json({ secure_url: secureUrl, url: secureUrl });
   } catch (err) {
     console.error('Error uploading media via server:', err);
@@ -383,7 +411,52 @@ app.post('/api/config', async (req, res) => {
       creatorGeo
     };
 
-    const dataObj = { html, config, metadata };
+    // Server-side safety net: scan and auto-upload any inline Base64 data URIs in html or config
+    let processedHtml = html || '';
+    let processedConfig = config || {};
+    try {
+      let configJsonStr = JSON.stringify(processedConfig);
+      const dataUriRegex = /data:(image\/[a-zA-Z0-9.+_-]+|audio\/[a-zA-Z0-9.+_-]+);base64,([A-Za-z0-9+/=]+)/g;
+      const allMatches = new Set();
+      let m;
+      while ((m = dataUriRegex.exec(configJsonStr)) !== null) {
+        allMatches.add(m[0]);
+      }
+      dataUriRegex.lastIndex = 0;
+      while ((m = dataUriRegex.exec(processedHtml)) !== null) {
+        allMatches.add(m[0]);
+      }
+
+      if (allMatches.size > 0) {
+        console.log(`[Server] Detected ${allMatches.size} inline base64 media asset(s) in POST /api/config for website "${id}". Auto-uploading to cloud storage...`);
+        let assetIdx = 0;
+        for (const dataUri of allMatches) {
+          try {
+            const match = dataUri.match(/^data:([^;]+);base64,(.+)$/);
+            if (match) {
+              const mimeType = match[1];
+              const buffer = Buffer.from(match[2], 'base64');
+              const ext = mimeType.includes('audio') ? 'mp3' : (mimeType.includes('png') ? 'png' : 'jpg');
+              const fname = `auto_${id}_${Date.now()}_${++assetIdx}.${ext}`;
+              const cloudUrl = await storage.uploadMedia(buffer, fname, mimeType, effectiveIsPremium);
+              if (cloudUrl) {
+                processedHtml = processedHtml.split(dataUri).join(cloudUrl);
+                configJsonStr = configJsonStr.split(dataUri).join(cloudUrl);
+              }
+            }
+          } catch (autoUploadErr) {
+            console.warn('[Server] Failed to auto-upload inline dataUri:', autoUploadErr.message);
+          }
+        }
+        try {
+          processedConfig = JSON.parse(configJsonStr);
+        } catch (e) {}
+      }
+    } catch (scanErr) {
+      console.warn('[Server] Error during base64 scan:', scanErr.message);
+    }
+
+    const dataObj = { html: processedHtml, config: processedConfig, metadata };
     const dataJson = JSON.stringify(dataObj);
 
     // 1. Save lightweight indexing record to CockroachDB Serverless Primary DB (~200 bytes)
@@ -588,6 +661,127 @@ app.get('/api/config/:id', async (req, res) => {
   }
 });
 
+// Resolve website by ID or Custom Slug (used by Edit portal and smart link resolvers)
+app.get('/api/resolve/:identifier', async (req, res) => {
+  try {
+    const raw = (req.params.identifier || '').trim();
+    if (!raw) return res.status(400).json({ found: false, error: 'Identifier is required' });
+
+    // Clean input - handle URLs or raw slugs/IDs
+    let target = raw.toLowerCase()
+      .replace(/^https?:\/\/[^\/]+/i, '') // remove domain if pasted
+      .replace(/^\/+/g, '')               // remove leading slash
+      .replace(/^generated\//i, '')
+      .replace(/\.html.*$/i, '');          // remove .html extension and query params if raw
+
+    // If it was a query param string like ?id=gllqs6we69 or ?view=gllqs6we69
+    const idMatch = raw.match(/[?&](id|view|restore)=([a-z0-9]+)/i);
+    if (idMatch) {
+      target = idMatch[2].toLowerCase();
+    }
+
+    const sanitizedSlug = target.replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+    const safeId = target.replace(/[^a-z0-9]/gi, '');
+
+    let websiteId = null;
+    let customSlug = null;
+
+    // 1. Try resolving as custom slug first
+    try {
+      const slugEntry = await cockroach.getCustomSlug(sanitizedSlug);
+      if (slugEntry && slugEntry.websiteId) {
+        websiteId = slugEntry.websiteId;
+        customSlug = slugEntry.slug;
+      }
+    } catch (e) { }
+
+    // If not found via slug, assume it's direct website ID
+    if (!websiteId && safeId) {
+      websiteId = safeId;
+    }
+
+    if (!websiteId) {
+      return res.status(404).json({ found: false, error: 'No website found with this identifier' });
+    }
+
+    // Look up associated slug if not already resolved
+    if (!customSlug) {
+      try {
+        const slugRec = await cockroach.getCustomSlugByWebsiteId(websiteId);
+        if (slugRec && slugRec.slug) customSlug = slugRec.slug;
+      } catch (e) { }
+    }
+
+    // Try fetching metadata from Supabase Storage or CockroachDB
+    let metadata = null;
+    let features = [];
+    let isPremium = false;
+
+    try {
+      const sbConfig = await storage.readWebsiteConfig(websiteId);
+      if (sbConfig) {
+        metadata = sbConfig.metadata || {};
+        isPremium = !!sbConfig.isPremium;
+        if (sbConfig.config) {
+          if (Array.isArray(sbConfig.config.activeFeatures)) {
+            features = sbConfig.config.activeFeatures
+              .filter(f => Array.isArray(f) ? f[1] : true)
+              .map(f => Array.isArray(f) ? f[0] : f);
+          } else if (sbConfig.config.features && Array.isArray(sbConfig.config.features)) {
+            features = sbConfig.config.features;
+          }
+        }
+      }
+    } catch (e) { }
+
+    if (!metadata) {
+      try {
+        const crRecord = await cockroach.getRecord(websiteId);
+        if (crRecord) {
+          metadata = typeof crRecord.metadata === 'object' ? crRecord.metadata : (typeof crRecord.metadata === 'string' ? JSON.parse(crRecord.metadata) : {});
+          metadata.recipientName = metadata.recipientName || crRecord.recipient_name;
+          metadata.eventType = metadata.eventType || crRecord.event_type;
+          metadata.templateName = metadata.templateName || crRecord.template_name;
+          isPremium = isPremium || !!crRecord.is_premium;
+        }
+      } catch (e) { }
+    }
+
+    if (!metadata && !features.length) {
+      const verified = await verifyWebsitePaymentStatus(websiteId);
+      if (!verified) {
+        return res.status(404).json({ found: false, error: 'Website not found or has expired' });
+      }
+    }
+
+    const host = req.get('host') || 'thegreeter.in';
+    const protocol = req.protocol || 'https';
+    const baseUrl = `${protocol}://${host}`;
+
+    const resolvedTemplateName = metadata?.templateName || metadata?.template || sbConfig?.config?.template || sbConfig?.config?.templateName || (metadata?.eventType ? `${metadata.eventType}1` : 'birthday1');
+    const templateQuery = resolvedTemplateName ? `&template=${encodeURIComponent(resolvedTemplateName)}` : '';
+
+    res.set('Cache-Control', 'public, max-age=60, s-maxage=300');
+    return res.json({
+      found: true,
+      websiteId,
+      slug: customSlug,
+      recipientName: metadata?.recipientName || metadata?.name || 'Special Person',
+      eventType: metadata?.eventType || metadata?.category || 'wishing',
+      templateName: resolvedTemplateName,
+      features: features.length ? features : (metadata?.features || []),
+      isPremium: isPremium || !!metadata?.isPremium,
+      createdAt: metadata?.createdAt || null,
+      shareUrl: customSlug ? `${baseUrl}/${customSlug}` : `${baseUrl}/generated/customize.html?view=${websiteId}&_v=c`,
+      editUrl: `/generated/customize.html?restore=${websiteId}${templateQuery}`
+    });
+  } catch (err) {
+    console.error('[Resolve API] Error resolving website:', err);
+    return res.status(500).json({ found: false, error: 'Server error resolving website' });
+  }
+});
+
+
 
 
 function cleanAIResponse(rawText) {
@@ -771,7 +965,7 @@ app.post('/api/feedback', async (req, res) => {
 });
 
 const RESERVED_SLUGS = new Set([
-  'api', 'assets', 'generated', 'blog', 'admin', 'create', 'index', 'share', 'privacy',
+  'api', 'assets', 'generated', 'blog', 'admin', 'create', 'edit', 'index', 'share', 'privacy',
   'terms', 'contactus', 'aboutus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
   'preview', 'customize', 'custom-url', 'login', 'logout', 'dashboard', 'support', 'help',
   'null', 'undefined', 'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
@@ -3176,6 +3370,11 @@ app.get('/api/debug/slug/:slug', async (req, res) => {
   }
 
   res.json(results);
+});
+
+// Dedicated static route for Edit Portal
+app.get(['/edit', '/edit.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'edit.html'));
 });
 
 const slugResolutionCache = new Map();

@@ -1790,7 +1790,10 @@
         magicMusic: {
             enable(d, w, userName, customText, audio) {
                 if (d.getElementById("magic-bg-audio")) return {};
-                const srcUrl = audio || customText || "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+                let srcUrl = audio || customText || "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+                if (typeof srcUrl === 'string' && srcUrl.startsWith('blob:') && typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) {
+                    srcUrl = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+                }
                 const a = d.createElement("audio");
                 a.id = "magic-bg-audio";
                 a.src = srcUrl;

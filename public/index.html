@@ -6896,6 +6896,10 @@
 
 
 
+                <a href="edit" id="navEdit">Edit</a>
+
+
+
                 <a href="WhyGreeter" id="navWhy">Why Greeter</a>
 
 
@@ -7995,7 +7999,7 @@
 
 
 
-                nav: ["Home", "Create", "Why Greeter", "Blog", "Contact Us"], signin: "Sign in",
+                nav: ["Home", "Create", "Edit", "Why Greeter", "Blog", "Contact Us"], signin: "Sign in",
 
 
 
@@ -8081,7 +8085,7 @@
 
 
 
-                nav: ["होम", "बनाएं", "ग्रीटर क्यों?", "ब्लॉग", "संपर्क करें"], signin: "लॉगिन करें",
+                nav: ["होम", "बनाएं", "एडिट करें", "ग्रीटर क्यों?", "ब्लॉग", "संपर्क करें"], signin: "लॉगिन करें",
 
 
 
@@ -8195,15 +8199,19 @@
 
 
 
-            document.getElementById('navWhy').innerText = t.nav[2];
+            if (document.getElementById('navEdit')) document.getElementById('navEdit').innerText = t.nav[2];
 
 
 
-            document.getElementById('navShowcase').innerText = t.nav[3];
+            document.getElementById('navWhy').innerText = t.nav[3];
 
 
 
-            document.getElementById('navPricing').innerText = t.nav[4];
+            document.getElementById('navShowcase').innerText = t.nav[4];
+
+
+
+            document.getElementById('navPricing').innerText = t.nav[5];
 
 
 

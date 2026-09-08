@@ -2580,6 +2580,24 @@
           }
         }
 
+        if (viewId) {
+          try {
+            const existingList = JSON.parse(localStorage.getItem('greeter_my_websites') || '[]');
+            const filtered = existingList.filter(item => item.id !== viewId);
+            const rawCfg = localStorage.getItem('magic_config_' + viewId);
+            let parsedCfg = null;
+            try { if (rawCfg) parsedCfg = JSON.parse(rawCfg); } catch (e) {}
+            filtered.unshift({
+              id: viewId,
+              recipientName: parsedCfg?.userName || 'Special Person',
+              eventType: parsedCfg?.eventType || 'wishing',
+              updatedAt: new Date().toISOString(),
+              isPremium: !!isPremium
+            });
+            localStorage.setItem('greeter_my_websites', JSON.stringify(filtered.slice(0, 15)));
+          } catch (e) {}
+        }
+
         if (!viewId) {
           linkInput.value = '❌ No link found. Please generate first.';
         } else {

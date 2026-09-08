@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Edit Your Wishing Website | TheGreeter</title>
+  <meta name="description" content="Edit your previously created greeting and wishing website. Update photos, audio, secret messages, and features anytime with your website link or ID.">
+  <meta name="keywords" content="edit wishing website, update wish page, edit birthday website, customize greeting, thegreeter edit">
+  <meta name="author" content="TheGreeter">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#7b5df6">
+  <link rel="canonical" href="https://thegreeter.in/edit">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
+
+  <!-- Config & Analytics -->
+  <script src="/assets/config.js"></script>
+
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #f9f7ff;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a1025;
+      --text-secondary: #4a3b66;
+      --accent-gradient: linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%);
+      --accent-solid: #7b5df6;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(123, 93, 246, 0.12);
+      --navbar-bg: rgba(255, 255, 255, 0.8);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 16px 32px rgba(123, 93, 246, 0.08);
+      --shadow-lg: 0 25px 50px -12px rgba(123, 93, 246, 0.15);
+      --glow: rgba(123, 93, 246, 0.18);
+      --mode-transition: background 0.3s ease, color 0.2s ease, border-color 0.2s;
+      --border-light: #ece7f5;
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+    }
+
+    body.dark {
+      --bg-primary: #0c0719;
+      --bg-secondary: #1a1230;
+      --text-primary: #f0edff;
+      --text-secondary: #b9aed6;
+      --card-bg: rgba(26, 18, 48, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --navbar-bg: rgba(18, 12, 38, 0.85);
+      --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 16px 32px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+      --glow: rgba(123, 93, 246, 0.28);
+      --border-light: #2a2244;
+      --input-bg: rgba(30, 20, 55, 0.95);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: var(--mode-transition);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bg-ambient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 15% 15%, rgba(123, 93, 246, 0.12), transparent 45%),
+                  radial-gradient(circle at 85% 85%, rgba(255, 122, 47, 0.1), transparent 45%),
+                  radial-gradient(circle at 50% 50%, rgba(123, 93, 246, 0.05), transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ---------- NAVBAR ---------- */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 74px;
+      background: var(--navbar-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      transition: var(--mode-transition);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo img {
+      height: 38px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    body.dark .light-logo { display: none; }
+    body.dark .dark-logo { display: block; }
+    body:not(.dark) .light-logo { display: block; }
+    body:not(.dark) .dark-logo { display: none; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--accent-solid);
+    }
+
+    .nav-links a.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-gradient);
+      border-radius: 2px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .btn-icon {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+
+    .btn-icon:hover {
+      transform: scale(1.06);
+      border-color: var(--accent-solid);
+      color: var(--accent-solid);
+    }
+
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+
+    .lang-toggle:hover {
+      border-color: var(--accent-solid);
+      color: var(--accent-solid);
+    }
+
+    .btn-create-nav {
+      background: var(--accent-gradient);
+      color: white !important;
+      padding: 9px 20px;
+      border-radius: 25px;
+      font-weight: 600 !important;
+      font-size: 0.9rem !important;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(123, 93, 246, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-create-nav:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(123, 93, 246, 0.45);
+    }
+
+    /* ---------- MAIN CONTENT ---------- */
+    .main-container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 110px auto 60px;
+      padding: 0 20px;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Hero Section */
+    .edit-hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(123, 93, 246, 0.1);
+      border: 1px solid rgba(123, 93, 246, 0.25);
+      color: var(--accent-solid);
+      padding: 6px 18px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .edit-hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-solid) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .edit-hero p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* Search Box Container */
+    .search-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .search-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-gradient);
+    }
+
+    .search-input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .input-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 18px;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 58px;
+      padding: 0 95px 0 52px;
+      border-radius: 16px;
+      border: 2px solid var(--border-light);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-solid);
+      box-shadow: 0 0 0 4px var(--glow);
+    }
+
+    .paste-btn {
+      position: absolute;
+      right: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--accent-solid);
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+
+    .paste-btn:hover {
+      background: var(--accent-solid);
+      color: white;
+    }
+
+    .btn-find {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 0 32px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 58px;
+      box-shadow: 0 8px 24px rgba(123, 93, 246, 0.35);
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .btn-find:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(123, 93, 246, 0.45);
+    }
+
+    .btn-find:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .search-hints {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      padding: 0 4px;
+    }
+
+    .hint-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hint-chip {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .hint-chip:hover {
+      color: var(--accent-solid);
+      border-color: var(--accent-solid);
+    }
+
+    /* Result Card */
+    .result-section {
+      display: none;
+      margin-bottom: 40px;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .website-result-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 2px solid var(--accent-solid);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+
+    .result-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .result-title-group h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-meta-text {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-light);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .badge-premium {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-free {
+      background: var(--border-light);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .features-list-wrapper {
+      margin-bottom: 28px;
+    }
+
+    .features-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .features-chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .feature-chip {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-chip i {
+      color: var(--accent-solid);
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .btn-edit-open {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 16px 36px;
+      border-radius: 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(123, 93, 246, 0.35);
+      transition: all 0.25s ease;
+      flex: 1;
+      justify-content: center;
+      min-width: 220px;
+    }
+
+    .btn-edit-open:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(123, 93, 246, 0.45);
+    }
+
+    .btn-secondary-action {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      padding: 16px 24px;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .btn-secondary-action:hover {
+      border-color: var(--accent-solid);
+      color: var(--accent-solid);
+      background: var(--card-bg);
+    }
+
+    /* Error Message Box */
+    .error-card {
+      display: none;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 30px;
+      align-items: center;
+      gap: 16px;
+      color: #ef4444;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .error-card i {
+      font-size: 1.6rem;
+    }
+
+    .error-text h4 {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .error-text p {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    /* Recent Websites Section */
+    .recent-section {
+      margin-top: 50px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-header h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .recent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .recent-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 20px;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .recent-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-solid);
+      box-shadow: var(--shadow-md);
+    }
+
+    .recent-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .recent-event-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(123, 93, 246, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    .recent-recipient {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .recent-id {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .btn-recent-edit {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--accent-solid);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.2s;
+    }
+
+    .btn-recent-edit:hover {
+      background: var(--accent-gradient);
+      color: white;
+      border-color: transparent;
+    }
+
+    .empty-recent {
+      background: var(--card-bg);
+      border: 1px dashed var(--border-light);
+      border-radius: 20px;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .empty-recent i {
+      font-size: 2.2rem;
+      margin-bottom: 12px;
+      color: var(--accent-solid);
+      opacity: 0.6;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+      margin-top: 60px;
+    }
+
+    .faq-accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: 0.2s;
+    }
+
+    .faq-question {
+      padding: 18px 24px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      font-size: 1rem;
+    }
+
+    .faq-question i {
+      transition: transform 0.25s;
+      color: var(--accent-solid);
+    }
+
+    .faq-item.open .faq-question i {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 0 24px 20px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ---------- FOOTER ---------- */
+    .footer {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--card-border);
+      padding: 48px 32px 32px;
+      margin-top: 60px;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 36px;
+    }
+
+    .footer-brand p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      max-width: 280px;
+      margin-top: 10px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+    }
+
+    .footer-col h5 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--text-primary);
+    }
+
+    .footer-col a {
+      display: block;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent-solid);
+    }
+
+    .footer-bottom {
+      max-width: 1100px;
+      margin: 32px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-light);
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 20px;
+      }
+      .nav-links {
+        display: none;
+      }
+      .edit-hero h1 {
+        font-size: 2.1rem;
+      }
+      .search-card {
+        padding: 22px 18px;
+      }
+      .search-input-group {
+        flex-direction: column;
+      }
+      .btn-find {
+        width: 100%;
+        justify-content: center;
+      }
+      .website-result-card {
+        padding: 22px 18px;
+      }
+      .result-actions {
+        flex-direction: column;
+      }
+      .btn-edit-open, .btn-secondary-action {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-ambient"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="./" class="logo">
+      <img class="light-logo" src="/assets/Light_logo.webp" alt="TheGreeter">
+      <img class="dark-logo" src="/assets/Dark_logo.webp" alt="TheGreeter">
+    </a>
+
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="/create">Create</a>
+      <a href="/edit" class="active">Edit Website</a>
+      <a href="/WhyGreeter">Why Greeter</a>
+      <a href="/blog">Blog</a>
+      <a href="/ContactUs">Contact</a>
+    </div>
+
+    <div class="nav-actions">
+      <button class="lang-toggle" id="langBtn">
+        <i class="fas fa-globe"></i>
+        <span id="langLabel">हिन्दी</span>
+      </button>
+      <button class="btn-icon" id="themeToggle" aria-label="Toggle Theme">
+        <i class="fas fa-moon" id="themeIcon"></i>
+      </button>
+      <a href="/create" class="btn-create-nav">
+        <i class="fas fa-magic"></i>
+        <span>Create New</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- Hero Section -->
+    <section class="edit-hero">
+      <div class="hero-badge">
+        <i class="fas fa-edit"></i>
+        <span id="heroBadgeText">Website Editor Portal</span>
+      </div>
+      <h1 id="heroTitle">Edit Your Wishing Website ✨</h1>
+      <p id="heroDesc">
+        Enter your website link, ID, or custom name to load your creation into the editor and update any message, photo, audio, or feature.
+      </p>
+    </section>
+
+    <!-- Search / Input Card -->
+    <section class="search-card">
+      <div class="search-input-group">
+        <div class="input-wrapper">
+          <i class="fas fa-link input-icon"></i>
+          <input
+            type="text"
+            id="websiteInput"
+            class="search-input"
+            placeholder="Paste website link or enter ID (e.g. gllqs6we69 or happy-birthday-sam)"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="button" class="paste-btn" id="pasteBtn" title="Paste from clipboard">
+            <i class="fas fa-paste"></i>
+            <span>Paste</span>
+          </button>
+        </div>
+        <button type="button" class="btn-find" id="findBtn">
+          <i class="fas fa-search" id="findBtnIcon"></i>
+          <span id="findBtnText">Find Website</span>
+        </button>
+      </div>
+
+      <div class="search-hints">
+        <span><i class="fas fa-info-circle"></i> Works with full links, vanity URLs, or 10-digit IDs.</span>
+        <div class="hint-chips">
+          <span class="hint-chip" onclick="applySample('gllqs6we69')">e.g. gllqs6we69</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error Alert Box -->
+    <div class="error-card" id="errorCard">
+      <i class="fas fa-exclamation-circle"></i>
+      <div class="error-text">
+        <h4 id="errorTitle">Website Not Found</h4>
+        <p id="errorMsg">We couldn't find a website matching that link or ID. Please check the spelling or paste the full URL.</p>
+      </div>
+    </div>
+
+    <!-- Resolved Website Card -->
+    <section class="result-section" id="resultSection">
+      <div class="website-result-card">
+        <div class="result-header">
+          <div class="result-title-group">
+            <h2 id="resultRecipientName">Special Recipient</h2>
+            <div class="result-meta-text">
+              <span class="meta-tag" id="resultEventType">
+                <i class="fas fa-birthday-cake"></i> Birthday
+              </span>
+              <span class="meta-tag" id="resultIdTag">
+                <i class="fas fa-hashtag"></i> <span id="resultIdText">---</span>
+              </span>
+              <span class="meta-tag" id="resultSlugTag" style="display:none;">
+                <i class="fas fa-at"></i> <span id="resultSlugText">---</span>
+              </span>
+            </div>
+          </div>
+          <div id="resultPlanBadge">
+            <span class="badge-premium"><i class="fas fa-crown"></i> Premium</span>
+          </div>
+        </div>
+
+        <div class="features-list-wrapper">
+          <div class="features-label">Active Features in this Website</div>
+          <div class="features-chips-container" id="featuresChips">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <a href="#" id="openEditorBtn" class="btn-edit-open">
+            <i class="fas fa-sliders-h"></i>
+            <span>Open in Full Editor</span>
+          </a>
+          <a href="#" id="viewLiveBtn" class="btn-secondary-action" target="_blank" rel="noopener">
+            <i class="fas fa-external-link-alt"></i>
+            <span>View Live</span>
+          </a>
+          <button type="button" id="copyShareBtn" class="btn-secondary-action">
+            <i class="fas fa-copy"></i>
+            <span>Copy Link</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recently Created / Saved Websites on this device -->
+    <section class="recent-section">
+      <div class="section-header">
+        <h3>
+          <i class="fas fa-history" style="color: var(--accent-solid);"></i>
+          <span>Recently Created on this Device</span>
+        </h3>
+        <button type="button" class="paste-btn" id="clearHistoryBtn" style="display:none;">
+          <i class="fas fa-trash-alt"></i> Clear History
+        </button>
+      </div>
+
+      <div class="recent-grid" id="recentGrid">
+        <!-- Populated via JS -->
+      </div>
+    </section>
+
+    <!-- Helpful FAQs -->
+    <section class="faq-section">
+      <div class="section-header">
+        <h3>
+          <i class="fas fa-question-circle" style="color: var(--accent-solid);"></i>
+          <span>Frequently Asked Questions</span>
+        </h3>
+      </div>
+
+      <div class="faq-accordion">
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Where do I find my website link or ID?</span>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            Your website ID was generated when you created your page (e.g. <code>gllqs6we69</code>). You can find your full link in your WhatsApp or SMS chat history where you shared it, your browser history, or your payment confirmation.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Can I change photos, music, or messages after publishing?</span>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            Yes! When you open your website in the editor, all existing photos, audio, secret notes, and messages are automatically loaded. You can delete or replace photos, upload new background music, and change any text.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Do I need to pay again when saving edits?</span>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            No! If your website already has a paid premium package, all re-edits are 100% free. The editor will save your changes directly to the cloud without opening the payment gateway.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Will my link or QR code change after editing?</span>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            No, your link, custom vanity URL (e.g. <code>thegreeter.in/your-name</code>), and QR code remain permanently unchanged. Anyone who visits your link will immediately see your latest updates.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Feedback -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Link copied to clipboard!</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="./" class="logo">
+          <img class="light-logo" src="/assets/Light_logo.webp" alt="TheGreeter">
+          <img class="dark-logo" src="/assets/Dark_logo.webp" alt="TheGreeter">
+        </a>
+        <p>Create unforgettable personalized digital experiences for birthdays, anniversaries, and special celebrations.</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>Quick Links</h5>
+          <a href="./">Home</a>
+          <a href="/create">Create Wish Page</a>
+          <a href="/edit">Edit Website</a>
+          <a href="/WhyGreeter">Why Greeter</a>
+        </div>
+        <div class="footer-col">
+          <h5>Legal</h5>
+          <a href="/privacy.html">Privacy Policy</a>
+          <a href="/terms&cond.html">Terms of Service</a>
+          <a href="/ContactUs">Contact Us</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      &copy; <span id="currentYear">2026</span> TheGreeter.in — All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    // State & Config
+    let currentLang = localStorage.getItem('greeter_lang') || 'en';
+    const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+      ? window.APP_CONFIG.API_BASE_URL
+      : window.location.origin;
+
+    // Feature Icon mapping
+    const FEATURE_ICONS = {
+      'confetti': { icon: 'fa-gift', label: 'Confetti Explosion' },
+      'balloons': { icon: 'fa-cloud', label: 'Floating Balloons' },
+      'floatingHearts': { icon: 'fa-heart', label: 'Floating Hearts' },
+      'magicMusic': { icon: 'fa-music', label: 'Background Music' },
+      'voiceNote': { icon: 'fa-microphone', label: 'Voice Note' },
+      'photoTimeline': { icon: 'fa-images', label: 'Memory Timeline' },
+      'heartCollage': { icon: 'fa-heart', label: 'Heart Photo Collage' },
+      'imageExplosion': { icon: 'fa-bomb', label: 'Photo Explosion' },
+      'scratchCard': { icon: 'fa-magic', label: 'Scratch Card' },
+      'envelope': { icon: 'fa-envelope-open-text', label: 'Love Letter Envelope' },
+      'fireworks': { icon: 'fa-fire', label: 'Midnight Fireworks' },
+      'curtainReveal': { icon: 'fa-door-open', label: 'Curtain Reveal' },
+      'countdown': { icon: 'fa-hourglass-start', label: 'Live Countdown' },
+      'cakeCutting': { icon: 'fa-birthday-cake', label: 'Interactive Cake' },
+      'lock': { icon: 'fa-lock', label: 'Passcode Lock' },
+      'textFormation': { icon: 'fa-font', label: 'Floating Message' }
+    };
+
+    const EVENT_ICONS = {
+      'birthday': { icon: 'fa-birthday-cake', label: 'Birthday' },
+      'anniversary': { icon: 'fa-gem', label: 'Anniversary' },
+      'proposal': { icon: 'fa-heart', label: 'Romantic Proposal' },
+      'festival': { icon: 'fa-om', label: 'Festival' },
+      'diwali': { icon: 'fa-fire', label: 'Diwali' },
+      'newyear': { icon: 'fa-glass-cheers', label: 'New Year' },
+      'valentine': { icon: 'fa-heart', label: 'Valentine' },
+      'wishing': { icon: 'fa-sparkles', label: 'Special Greeting' }
+    };
+
+    // DOM Elements
+    const websiteInput = document.getElementById('websiteInput');
+    const findBtn = document.getElementById('findBtn');
+    const findBtnIcon = document.getElementById('findBtnIcon');
+    const findBtnText = document.getElementById('findBtnText');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const resultSection = document.getElementById('resultSection');
+    const errorCard = document.getElementById('errorCard');
+    const errorMsg = document.getElementById('errorMsg');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const langBtn = document.getElementById('langBtn');
+    const langLabel = document.getElementById('langLabel');
+    const recentGrid = document.getElementById('recentGrid');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+    // Setup Theme
+    function initTheme() {
+      const saved = localStorage.getItem('greeter-theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (saved === 'dark' || (!saved && prefersDark)) {
+        document.body.classList.add('dark');
+        themeIcon.className = 'fas fa-sun';
+      } else {
+        document.body.classList.remove('dark');
+        themeIcon.className = 'fas fa-moon';
+      }
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark');
+      themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+      localStorage.setItem('greeter-theme', isDark ? 'dark' : 'light');
+    });
+
+    // Language Toggle
+    function updateLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('greeter_lang', lang);
+      langLabel.innerText = lang === 'hi' ? 'English' : 'हिन्दी';
+
+      if (lang === 'hi') {
+        document.getElementById('heroBadgeText').innerText = 'वेबसाइट एडिटर पोर्टल';
+        document.getElementById('heroTitle').innerText = 'अपनी विशिंग वेबसाइट एडिट करें ✨';
+        document.getElementById('heroDesc').innerText = 'अपनी वेबसाइट का लिंक या ID दर्ज करें और कोई भी फोटो, गाना, सीक्रेट मैसेज या फीचर तुरंत अपडेट करें।';
+        websiteInput.placeholder = 'वेबसाइट का लिंक या ID पेस्ट करें (उदा: gllqs6we69)';
+        findBtnText.innerText = 'वेबसाइट खोजें';
+      } else {
+        document.getElementById('heroBadgeText').innerText = 'Website Editor Portal';
+        document.getElementById('heroTitle').innerText = 'Edit Your Wishing Website ✨';
+        document.getElementById('heroDesc').innerText = 'Enter your website link, ID, or custom name to load your creation into the editor and update any message, photo, audio, or feature.';
+        websiteInput.placeholder = 'Paste website link or enter ID (e.g. gllqs6we69 or happy-birthday-sam)';
+        findBtnText.innerText = 'Find Website';
+      }
+    }
+
+    langBtn.addEventListener('click', () => {
+      updateLang(currentLang === 'hi' ? 'en' : 'hi');
+    });
+
+    // Toast helper
+    function showToast(text) {
+      toastMsg.innerText = text;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Clipboard Paste
+    pasteBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          websiteInput.value = text.trim();
+          showToast('Pasted from clipboard!');
+          handleSearch();
+        }
+      } catch (err) {
+        websiteInput.focus();
+        showToast('Please press Ctrl+V to paste');
+      }
+    });
+
+    // Sample filler
+    window.applySample = function(id) {
+      websiteInput.value = id;
+      handleSearch();
+    };
+
+    // Clean Input & Extract ID or Slug
+    function cleanInput(raw) {
+      if (!raw) return '';
+      let clean = raw.trim();
+
+      // Check query params ?id=..., ?view=..., ?restore=...
+      const match = clean.match(/[?&](id|view|restore)=([a-z0-9]+)/i);
+      if (match && match[2]) return match[2];
+
+      // If full URL, take last segment
+      try {
+        if (clean.startsWith('http://') || clean.startsWith('https://')) {
+          const u = new URL(clean);
+          const path = u.pathname.replace(/\/+$/, '');
+          const segs = path.split('/').filter(Boolean);
+          if (segs.length > 0) {
+            const last = segs[segs.length - 1].replace(/\.html$/i, '');
+            if (last !== 'customize' && last !== 'preview' && last !== 'share') {
+              return last;
+            }
+          }
+        }
+      } catch (e) {}
+
+      // Strip domain-like prefix if typed without protocol
+      clean = clean.replace(/^(thegreeter\.in|www\.thegreeter\.in)\//i, '');
+      clean = clean.replace(/^(generated\/|templates\/)/i, '');
+      clean = clean.replace(/\.html.*$/i, '');
+
+      return clean.replace(/[^a-z0-9-]/gi, '').toLowerCase();
+    }
+
+    // Search & Resolve Website
+    async function handleSearch() {
+      const raw = websiteInput.value;
+      const target = cleanInput(raw);
+
+      if (!target) {
+        showError('Please enter a website link, ID, or custom name.');
+        return;
+      }
+
+      // UI Loading state
+      findBtn.disabled = true;
+      findBtnIcon.className = 'fas fa-spinner fa-spin';
+      findBtnText.innerText = 'Searching...';
+      hideError();
+      resultSection.style.display = 'none';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/resolve/${encodeURIComponent(target)}`);
+        const data = await res.json();
+
+        if (res.ok && data.found) {
+          renderResultCard(data);
+          saveToDeviceHistory(data);
+          loadRecentWebsites();
+        } else {
+          showError(data.error || 'No wishing website found with that link or ID. Please verify your link.');
+        }
+      } catch (err) {
+        console.error('Resolve error:', err);
+        showError('Failed to connect to server. Please check your internet connection.');
+      } finally {
+        findBtn.disabled = false;
+        findBtnIcon.className = 'fas fa-search';
+        findBtnText.innerText = currentLang === 'hi' ? 'वेबसाइट खोजें' : 'Find Website';
+      }
+    }
+
+    findBtn.addEventListener('click', handleSearch);
+    websiteInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleSearch();
+    });
+
+    function showError(msg) {
+      errorMsg.innerText = msg;
+      errorCard.style.display = 'flex';
+      resultSection.style.display = 'none';
+    }
+
+    function hideError() {
+      errorCard.style.display = 'none';
+    }
+
+    // Render Resolved Result
+    function renderResultCard(data) {
+      document.getElementById('resultRecipientName').innerText = data.recipientName || 'Special Person';
+
+      // Event Type badge
+      const evtInfo = EVENT_ICONS[data.eventType?.toLowerCase()] || EVENT_ICONS['wishing'];
+      document.getElementById('resultEventType').innerHTML = `<i class="fas ${evtInfo.icon}"></i> ${evtInfo.label}`;
+
+      // ID Tag
+      document.getElementById('resultIdText').innerText = data.websiteId;
+
+      // Slug Tag
+      const slugTag = document.getElementById('resultSlugTag');
+      if (data.slug) {
+        document.getElementById('resultSlugText').innerText = data.slug;
+        slugTag.style.display = 'inline-flex';
+      } else {
+        slugTag.style.display = 'none';
+      }
+
+      // Premium status badge
+      const planBadge = document.getElementById('resultPlanBadge');
+      if (data.isPremium) {
+        planBadge.innerHTML = `<span class="badge-premium"><i class="fas fa-crown"></i> Premium Active</span>`;
+      } else {
+        planBadge.innerHTML = `<span class="badge-free"><i class="fas fa-check"></i> Active</span>`;
+      }
+
+      // Features Chips
+      const chipsContainer = document.getElementById('featuresChips');
+      chipsContainer.innerHTML = '';
+      const featList = Array.isArray(data.features) ? data.features : [];
+
+      if (featList.length === 0) {
+        chipsContainer.innerHTML = `<span class="feature-chip"><i class="fas fa-sparkles"></i> Greeting Message & Animations</span>`;
+      } else {
+        featList.forEach(f => {
+          const fInfo = FEATURE_ICONS[f] || { icon: 'fa-check', label: f };
+          const chip = document.createElement('span');
+          chip.className = 'feature-chip';
+          chip.innerHTML = `<i class="fas ${fInfo.icon}"></i> ${fInfo.label}`;
+          chipsContainer.appendChild(chip);
+        });
+      }
+
+      // Action Buttons
+      const templateParam = data.templateName ? `&template=${encodeURIComponent(data.templateName)}` : '';
+      const editorUrl = `/generated/customize.html?restore=${encodeURIComponent(data.websiteId)}${templateParam}&fresh=1&src=edit&t=${Date.now()}`;
+      const liveUrl = data.slug
+        ? `/${data.slug}`
+        : `/generated/customize.html?view=${data.websiteId}&_v=c`;
+
+      const openEditorBtn = document.getElementById('openEditorBtn');
+      openEditorBtn.href = editorUrl;
+
+      const viewLiveBtn = document.getElementById('viewLiveBtn');
+      viewLiveBtn.href = liveUrl;
+
+      const copyShareBtn = document.getElementById('copyShareBtn');
+      copyShareBtn.onclick = () => {
+        const fullShareUrl = window.location.origin + liveUrl;
+        navigator.clipboard.writeText(fullShareUrl);
+        showToast('Share link copied to clipboard!');
+      };
+
+      resultSection.style.display = 'block';
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Save to localStorage history
+    function saveToDeviceHistory(data) {
+      try {
+        const list = JSON.parse(localStorage.getItem('greeter_my_websites') || '[]');
+        const filtered = list.filter(item => item.id !== data.websiteId);
+        filtered.unshift({
+          id: data.websiteId,
+          slug: data.slug || null,
+          recipientName: data.recipientName || 'Special Person',
+          eventType: data.eventType || 'wishing',
+          template: data.templateName || null,
+          isPremium: !!data.isPremium,
+          updatedAt: new Date().toISOString()
+        });
+        localStorage.setItem('greeter_my_websites', JSON.stringify(filtered.slice(0, 12)));
+      } catch (e) {}
+    }
+
+    // Load recent websites from localStorage
+    function loadRecentWebsites() {
+      let websites = [];
+      try {
+        websites = JSON.parse(localStorage.getItem('greeter_my_websites') || '[]');
+      } catch (e) {}
+
+      // Fallback: scan any legacy magic_config_* keys
+      if (websites.length === 0) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('magic_config_')) {
+            const id = key.replace('magic_config_', '');
+            try {
+              const cfg = JSON.parse(localStorage.getItem(key));
+              websites.push({
+                id: id,
+                recipientName: cfg.userName || 'Special Person',
+                eventType: cfg.eventType || 'wishing',
+                template: cfg.template || cfg.templateName || null,
+                isPremium: localStorage.getItem(`premium_${id}`) === 'true',
+                updatedAt: null
+              });
+            } catch (err) {}
+          }
+        }
+      }
+
+      recentGrid.innerHTML = '';
+
+      if (websites.length === 0) {
+        clearHistoryBtn.style.display = 'none';
+        recentGrid.innerHTML = `
+          <div class="empty-recent" style="grid-column: 1 / -1;">
+            <i class="fas fa-magic"></i>
+            <h4>No Recent Websites on this Device</h4>
+            <p style="margin-top:6px; font-size:0.9rem;">Once you create or search for a website, it will appear here for fast 1-tap editing.</p>
+          </div>
+        `;
+        return;
+      }
+
+      clearHistoryBtn.style.display = 'inline-flex';
+
+      websites.slice(0, 8).forEach(w => {
+        const evtInfo = EVENT_ICONS[w.eventType?.toLowerCase()] || EVENT_ICONS['wishing'];
+        const card = document.createElement('div');
+        card.className = 'recent-card';
+        const templateQuery = w.template ? `&template=${encodeURIComponent(w.template)}` : '';
+        card.innerHTML = `
+          <div>
+            <div class="recent-card-top">
+              <div class="recent-event-icon">
+                <i class="fas ${evtInfo.icon}" style="color: var(--accent-solid);"></i>
+              </div>
+              ${w.isPremium ? '<span class="badge-premium" style="font-size:0.7rem; padding:3px 10px;"><i class="fas fa-crown"></i> PRO</span>' : ''}
+            </div>
+            <div class="recent-recipient">${escapeHtml(w.recipientName || 'Special Person')}</div>
+            <div class="recent-id">ID: ${escapeHtml(w.id)}</div>
+          </div>
+          <a href="/generated/customize.html?restore=${encodeURIComponent(w.id)}${templateQuery}&fresh=1&src=edit&t=${Date.now()}" class="btn-recent-edit">
+            <i class="fas fa-pencil-alt"></i>
+            <span>Edit Website</span>
+          </a>
+        `;
+        recentGrid.appendChild(card);
+      });
+    }
+
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Clear your recently edited websites list on this browser?')) {
+        localStorage.removeItem('greeter_my_websites');
+        loadRecentWebsites();
+        showToast('History cleared');
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    // FAQ Accordion Toggle
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.addEventListener('click', () => {
+        const item = q.parentElement;
+        item.classList.toggle('open');
+      });
+    });
+
+    // Auto-search from URL query param ?id=... or ?slug=...
+    function checkUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      const urlId = params.get('id') || params.get('view') || params.get('restore') || params.get('slug');
+      if (urlId) {
+        websiteInput.value = urlId;
+        handleSearch();
+      }
+    }
+
+    // Init
+    document.getElementById('currentYear').innerText = new Date().getFullYear();
+    initTheme();
+    updateLang(currentLang);
+    loadRecentWebsites();
+    checkUrlParams();
+  </script>
+</body>
+</html>

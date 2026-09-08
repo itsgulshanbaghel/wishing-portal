@@ -21,6 +21,7 @@ export async function onRequest(context) {
                         !pathSegments[0].startsWith('blog') &&
                         !pathSegments[0].startsWith('assets') &&
                         !pathSegments[0].startsWith('templates') &&
+                        pathSegments[0] !== 'edit' &&
                         pathSegments[0] !== 'favicon.ico' &&
                         pathSegments[0] !== 'robots.txt' &&
                         pathSegments[0] !== 'sitemap.xml';
