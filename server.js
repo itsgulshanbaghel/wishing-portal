@@ -493,22 +493,27 @@ app.post('/api/config', async (req, res) => {
       finalPinHash = hashEditPin(incomingPin);
     }
 
+    const isExplicitDraftForUpgrade = (req.body.isPremium === false || req.body.paymentStatus === 'pending_payment' || req.body.isUpgradeDraft === true);
+
     // Strict Pro feature enforcement for Starter plan websites
     const resolvedPlan = paidPlan || (existingMeta && existingMeta.plan) || null;
     const PRO_FEATURES = ['virtualCake', 'virtualHug', 'addMusicSection'];
-    if (effectiveIsPremium && resolvedPlan === 'starter') {
-      const activeFeaturesList = (config && Array.isArray(config.activeFeatures))
-        ? config.activeFeatures.map(f => Array.isArray(f) ? f[0] : f)
-        : (config && config.features && Array.isArray(config.features) ? config.features : []);
+    const activeFeaturesList = (config && Array.isArray(config.activeFeatures))
+      ? config.activeFeatures.map(f => Array.isArray(f) ? f[0] : f)
+      : (config && config.features && Array.isArray(config.features) ? config.features : []);
+    const activeProFeatures = activeFeaturesList.filter(f => PRO_FEATURES.includes(f));
 
-      const activeProFeatures = activeFeaturesList.filter(f => PRO_FEATURES.includes(f));
-      if (activeProFeatures.length > 0) {
+    if (resolvedPlan === 'starter' && activeProFeatures.length > 0) {
+      if (req.body.isPremium === true && !isExplicitDraftForUpgrade) {
         return res.status(403).json({
           error: 'This website is on a Starter plan. Features like Virtual Cake, Virtual Hug, and Music Section require upgrading to the Pro plan.',
           code: 'PLAN_UPGRADE_REQUIRED',
           requiredPlan: 'pro',
           activeProFeatures
         });
+      }
+      if (isExplicitDraftForUpgrade) {
+        effectiveIsPremium = false;
       }
     }
 
