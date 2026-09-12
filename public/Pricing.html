@@ -339,35 +339,6 @@
       font-weight: 500;
     }
 
-    .geo-status-banner {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 8px 20px;
-      border-radius: 30px;
-      font-size: 0.86rem;
-      color: var(--text-primary);
-      font-weight: 600;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .geo-status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 10px #10b981;
-      display: inline-block;
-      animation: pulseDot 2s infinite;
-    }
-
-    @keyframes pulseDot {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
 
     /* ---------- PRICING CARDS GRID ---------- */
     .pricing-grid {
@@ -1090,11 +1061,6 @@
       <p class="hero-subtitle" id="heroSubtitle">
         One-time payment. Zero subscriptions. Choose how long you want your personalized surprise website to stay live, interactive, and ad-free.
       </p>
-
-      <div class="geo-status-banner" id="geoBanner">
-        <span class="geo-status-dot"></span>
-        <span id="geoStatusText">📍 Detecting best local pricing for your region...</span>
-      </div>
     </section>
 
     <!-- ========== 4-TIER PRICING GRID ========== -->
@@ -1544,169 +1510,152 @@
   </div>
 
   <script>
-    // ---------- COMPLETE GEO PRICING SYSTEM ----------
-    const fallbackPricing = {
-      IN: {
-        currency: 'INR', symbol: '₹', countryName: 'India',
-        plans: {
-          starter: { amount: 49, orig: 99, period: '14 Days' },
-          pro: { amount: 99, orig: 199, period: '30 Days' },
-          pro_plus: { amount: 149, orig: 299, period: '100 Days' },
-          forever: { amount: 299, orig: 599, period: 'Lifetime' }
-        }
-      },
-      US: {
-        currency: 'USD', symbol: '$', countryName: 'United States',
-        plans: {
-          starter: { amount: 0.99, orig: 1.99, period: '14 Days' },
-          pro: { amount: 1.99, orig: 3.99, period: '30 Days' },
-          pro_plus: { amount: 3.49, orig: 6.99, period: '100 Days' },
-          forever: { amount: 6.99, orig: 12.99, period: 'Lifetime' }
-        }
-      },
-      GB: {
-        currency: 'GBP', symbol: '£', countryName: 'United Kingdom',
-        plans: {
-          starter: { amount: 0.99, orig: 1.99, period: '14 Days' },
-          pro: { amount: 1.99, orig: 3.99, period: '30 Days' },
-          pro_plus: { amount: 3.49, orig: 6.99, period: '100 Days' },
-          forever: { amount: 6.99, orig: 12.99, period: 'Lifetime' }
-        }
-      },
-      EUR: {
-        currency: 'EUR', symbol: '€', countryName: 'Eurozone',
-        plans: {
-          starter: { amount: 0.99, orig: 1.99, period: '14 Days' },
-          pro: { amount: 1.99, orig: 3.99, period: '30 Days' },
-          pro_plus: { amount: 3.49, orig: 6.99, period: '100 Days' },
-          forever: { amount: 6.99, orig: 12.99, period: 'Lifetime' }
-        }
-      },
-      CA: {
-        currency: 'CAD', symbol: 'CA$', countryName: 'Canada',
-        plans: {
-          starter: { amount: 1.49, orig: 2.99, period: '14 Days' },
-          pro: { amount: 2.99, orig: 5.99, period: '30 Days' },
-          pro_plus: { amount: 4.99, orig: 9.99, period: '100 Days' },
-          forever: { amount: 9.99, orig: 19.99, period: 'Lifetime' }
-        }
-      },
-      AU: {
-        currency: 'AUD', symbol: 'A$', countryName: 'Australia',
-        plans: {
-          starter: { amount: 1.49, orig: 2.99, period: '14 Days' },
-          pro: { amount: 2.99, orig: 5.99, period: '30 Days' },
-          pro_plus: { amount: 4.99, orig: 9.99, period: '100 Days' },
-          forever: { amount: 9.99, orig: 19.99, period: 'Lifetime' }
-        }
-      },
-      AE: {
-        currency: 'AED', symbol: 'AED ', countryName: 'UAE',
-        plans: {
-          starter: { amount: 3.99, orig: 7.99, period: '14 Days' },
-          pro: { amount: 6.99, orig: 14.99, period: '30 Days' },
-          pro_plus: { amount: 12.99, orig: 24.99, period: '100 Days' },
-          forever: { amount: 29.99, orig: 59.99, period: 'Lifetime' }
-        }
-      },
-      DEFAULT: {
-        currency: 'USD', symbol: '$', countryName: 'International',
-        plans: {
-          starter: { amount: 0.99, orig: 1.99, period: '14 Days' },
-          pro: { amount: 1.99, orig: 3.99, period: '30 Days' },
-          pro_plus: { amount: 3.49, orig: 6.99, period: '100 Days' },
-          forever: { amount: 6.99, orig: 12.99, period: 'Lifetime' }
-        }
-      }
-    };
+    // ---------- GEO PRICING SYSTEM (IDENTICAL TO CUSTOMIZE.HTML) ----------
+    let selectedCurrency = sessionStorage.getItem('detected_currency') || localStorage.getItem('detected_currency') || 'USD';
+    window.selectedCurrency = selectedCurrency;
 
-    function applyPricing(pricingData) {
-      const sym = pricingData.symbol || '$';
-      const plans = pricingData.plans || fallbackPricing.DEFAULT.plans;
-      const country = pricingData.countryName || 'your region';
-
-      // Update Geo Status Banner
-      const statusText = document.getElementById('geoStatusText');
-      if (statusText) {
-        statusText.innerHTML = `📍 Showing local pricing for <strong>${country} (${pricingData.currency || 'USD'} ${sym.trim()})</strong>`;
+    async function detectUserLocation() {
+      const cached = sessionStorage.getItem('detected_currency') || localStorage.getItem('detected_currency');
+      if (cached) {
+        selectedCurrency = cached;
+        window.selectedCurrency = cached;
+        updatePricingUI();
       }
 
-      // Starter
-      const starter = plans.starter;
-      if (starter) {
-        const amt = starter.amount !== undefined ? starter.amount : 0.99;
-        const orig = starter.orig || (amt * 2);
-        document.getElementById('priceStarterVal').innerText = `${sym}${amt}`;
-        document.getElementById('priceStarterOrig').innerText = `${sym}${orig}`;
-      }
-
-      // Pro
-      const pro = plans.pro;
-      if (pro) {
-        const amt = pro.amount !== undefined ? pro.amount : 1.99;
-        const orig = pro.orig || (amt * 2);
-        document.getElementById('priceProVal').innerText = `${sym}${amt}`;
-        document.getElementById('priceProOrig').innerText = `${sym}${orig}`;
-      }
-
-      // Pro+
-      const proPlus = plans.pro_plus;
-      if (proPlus) {
-        const amt = proPlus.amount !== undefined ? proPlus.amount : 3.49;
-        const orig = proPlus.orig || (amt * 2);
-        document.getElementById('priceProPlusVal').innerText = `${sym}${amt}`;
-        document.getElementById('priceProPlusOrig').innerText = `${sym}${orig}`;
-      }
-
-      // Forever
-      const forever = plans.forever;
-      if (forever) {
-        const amt = forever.amount !== undefined ? forever.amount : 6.99;
-        const orig = forever.orig || (amt * 2);
-        document.getElementById('priceForeverVal').innerText = `${sym}${amt}`;
-        document.getElementById('priceForeverOrig').innerText = `${sym}${orig}`;
-      }
-    }
-
-    async function loadGeoPricing() {
       try {
-        const res = await fetch('/api/geo-pricing');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.success && data.plans) {
-            // Add original double prices for discount display if not in server response
-            const enrichedPlans = {};
-            for (const [key, val] of Object.entries(data.plans)) {
-              enrichedPlans[key] = {
-                ...val,
-                orig: val.orig || (val.amount * 2)
-              };
-            }
-            applyPricing({ ...data, plans: enrichedPlans });
+        // 1. Try server geo-pricing
+        const serverRes = await fetch('/api/geo-pricing').catch(() => null);
+        if (serverRes && serverRes.ok) {
+          const data = await serverRes.json().catch(() => null);
+          if (data && data.success && data.currency) {
+            selectedCurrency = data.currency;
+            window.selectedCurrency = data.currency;
+            sessionStorage.setItem('detected_currency', data.currency);
+            localStorage.setItem('detected_currency', data.currency);
+            updatePricingUI();
             return;
           }
         }
-      } catch (err) {
-        console.warn('Geo-pricing fetch error, falling back to local detection:', err);
+
+        // 2. Try ipapi.co
+        const res = await fetch('https://ipapi.co/json/').catch(() => null);
+        if (res && res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data && data.country_code) {
+            if (data.country_code === 'IN') selectedCurrency = 'INR';
+            else if (data.country_code === 'GB') selectedCurrency = 'GBP';
+            else if (data.country_code === 'CA') selectedCurrency = 'CAD';
+            else if (data.country_code === 'AU') selectedCurrency = 'AUD';
+            else if (data.country_code === 'AE') selectedCurrency = 'AED';
+            else if (data.country_code === 'PK') selectedCurrency = 'PKR';
+            else selectedCurrency = 'USD';
+
+            window.selectedCurrency = selectedCurrency;
+            sessionStorage.setItem('detected_currency', selectedCurrency);
+            localStorage.setItem('detected_currency', selectedCurrency);
+            updatePricingUI();
+            return;
+          }
+        }
+      } catch (e) {
+        console.log('Location detection fallback:', e);
       }
 
-      // Fallback detection via timezone / language
+      // 3. Timezone / language fallback
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
       const lang = (navigator.language || '').toLowerCase();
-
       if (tz.includes('Calcutta') || tz.includes('Kolkata') || lang.includes('in') || lang.includes('hi')) {
-        applyPricing(fallbackPricing.IN);
+        selectedCurrency = 'INR';
       } else if (tz.includes('London') || lang.includes('gb')) {
-        applyPricing(fallbackPricing.GB);
+        selectedCurrency = 'GBP';
       } else if (tz.includes('Toronto') || tz.includes('Vancouver') || lang.includes('ca')) {
-        applyPricing(fallbackPricing.CA);
+        selectedCurrency = 'CAD';
       } else if (tz.includes('Sydney') || tz.includes('Melbourne') || lang.includes('au')) {
-        applyPricing(fallbackPricing.AU);
+        selectedCurrency = 'AUD';
       } else if (tz.includes('Dubai') || lang.includes('ae')) {
-        applyPricing(fallbackPricing.AE);
+        selectedCurrency = 'AED';
+      } else if (tz.includes('Karachi') || lang.includes('pk')) {
+        selectedCurrency = 'PKR';
       } else {
-        applyPricing(fallbackPricing.US);
+        selectedCurrency = 'USD';
       }
+
+      window.selectedCurrency = selectedCurrency;
+      sessionStorage.setItem('detected_currency', selectedCurrency);
+      localStorage.setItem('detected_currency', selectedCurrency);
+      updatePricingUI();
+    }
+
+    function updatePricingUI() {
+      let symbol = '$';
+      if (selectedCurrency === 'INR') symbol = '₹';
+      else if (selectedCurrency === 'GBP') symbol = '£';
+      else if (selectedCurrency === 'CAD') symbol = 'CA$';
+      else if (selectedCurrency === 'AUD') symbol = 'A$';
+      else if (selectedCurrency === 'AED') symbol = 'AED ';
+      else if (selectedCurrency === 'PKR') symbol = 'PKR ';
+
+      let starterPrice = 0.99, starterOrig = '$1.99';
+      let proPrice = 1.99, proOrig = '$3.99';
+      let proPlusPrice = 3.49, proPlusOrig = '$6.99';
+      let foreverPrice = 6.99, foreverOrig = '$12.99';
+
+      if (selectedCurrency === 'INR') {
+        starterPrice = 49; starterOrig = '₹99';
+        proPrice = 99; proOrig = '₹199';
+        proPlusPrice = 149; proPlusOrig = '₹299';
+        foreverPrice = 299; foreverOrig = '₹599';
+      } else if (selectedCurrency === 'GBP') {
+        starterPrice = 0.99; starterOrig = '£1.99';
+        proPrice = 1.49; proOrig = '£2.99';
+        proPlusPrice = 2.99; proPlusOrig = '£4.99';
+        foreverPrice = 5.99; foreverOrig = '£9.99';
+      } else if (selectedCurrency === 'CAD') {
+        starterPrice = 1.49; starterOrig = 'CA$2.99';
+        proPrice = 2.49; proOrig = 'CA$4.99';
+        proPlusPrice = 4.49; proPlusOrig = 'CA$8.99';
+        foreverPrice = 8.99; foreverOrig = 'CA$16.99';
+      } else if (selectedCurrency === 'AUD') {
+        starterPrice = 1.49; starterOrig = 'A$2.99';
+        proPrice = 2.99; proOrig = 'A$5.99';
+        proPlusPrice = 4.99; proPlusOrig = 'A$9.99';
+        foreverPrice = 9.99; foreverOrig = 'A$19.99';
+      } else if (selectedCurrency === 'AED') {
+        starterPrice = 3.99; starterOrig = 'AED 7.99';
+        proPrice = 6.99; proOrig = 'AED 13.99';
+        proPlusPrice = 12.99; proPlusOrig = 'AED 24.99';
+        foreverPrice = 29.99; foreverOrig = 'AED 59.99';
+      } else if (selectedCurrency === 'PKR') {
+        starterPrice = 99; starterOrig = 'PKR 199';
+        proPrice = 149; proOrig = 'PKR 299';
+        proPlusPrice = 299; proPlusOrig = 'PKR 599';
+        foreverPrice = 799; foreverOrig = 'PKR 1599';
+      } else {
+        starterPrice = 0.99; starterOrig = '$1.99';
+        proPrice = 1.99; proOrig = '$3.99';
+        proPlusPrice = 3.49; proPlusOrig = '$6.99';
+        foreverPrice = 6.99; foreverOrig = '$12.99';
+      }
+
+      const elStarterVal = document.getElementById('priceStarterVal');
+      const elStarterOrig = document.getElementById('priceStarterOrig');
+      if (elStarterVal) elStarterVal.innerText = `${symbol}${starterPrice}`;
+      if (elStarterOrig) elStarterOrig.innerText = starterOrig;
+
+      const elProVal = document.getElementById('priceProVal');
+      const elProOrig = document.getElementById('priceProOrig');
+      if (elProVal) elProVal.innerText = `${symbol}${proPrice}`;
+      if (elProOrig) elProOrig.innerText = proOrig;
+
+      const elProPlusVal = document.getElementById('priceProPlusVal');
+      const elProPlusOrig = document.getElementById('priceProPlusOrig');
+      if (elProPlusVal) elProPlusVal.innerText = `${symbol}${proPlusPrice}`;
+      if (elProPlusOrig) elProPlusOrig.innerText = proPlusOrig;
+
+      const elForeverVal = document.getElementById('priceForeverVal');
+      const elForeverOrig = document.getElementById('priceForeverOrig');
+      if (elForeverVal) elForeverVal.innerText = `${symbol}${foreverPrice}`;
+      if (elForeverOrig) elForeverOrig.innerText = foreverOrig;
     }
 
     // ---------- FAQ ACCORDION INTERACTIVITY ----------
@@ -1853,7 +1802,7 @@
 
     // Initialize on DOM load
     document.addEventListener('DOMContentLoaded', () => {
-      loadGeoPricing();
+      detectUserLocation();
       setLanguage(currentLang);
     });
   </script>

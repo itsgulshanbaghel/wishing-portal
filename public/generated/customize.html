@@ -3819,19 +3819,6 @@
               </button>
             </div>
 
-            <!-- UPI & Payment Trust Badges for India -->
-            <div id="upiTrustBadges" style="margin: 16px auto 0; text-align: center; max-width: 480px; padding: 10px 14px; background: rgba(123, 93, 246, 0.05); border-radius: 14px; border: 1px dashed rgba(123, 93, 246, 0.3);">
-              <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                <i class="fas fa-bolt" style="color: #10b981;"></i> Instant UPI &amp; Card Activation
-              </div>
-              <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
-                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: #4285f4;"><i class="fab fa-google-pay" style="font-size: 1.1rem; vertical-align: middle;"></i> GPay</span>
-                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: #5f259f;"><i class="fas fa-mobile-alt" style="color: #5f259f;"></i> PhonePe</span>
-                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: #00b9f1;"><i class="fas fa-wallet" style="color: #00b9f1;"></i> Paytm</span>
-                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: #ff5722;"><i class="fas fa-university" style="color: #ff5722;"></i> BHIM UPI</span>
-                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-primary);"><i class="fas fa-credit-card"></i> Cards / NetBanking</span>
-              </div>
-            </div>
           </div>
 
           <div style="text-align: center; margin-top: 18px;">
@@ -5399,14 +5386,25 @@
             }
           }
 
-          // Store premium status and slug
+          // Store premium status, purchased plan, and slug
+          const resolvedPlan = (serverData.plan || (serverData.metadata && serverData.metadata.plan) || '').toLowerCase().trim();
+          if (resolvedPlan) {
+            window.purchasedPlan = resolvedPlan;
+            sessionStorage.setItem(`purchased_plan_${websiteId}`, resolvedPlan);
+            localStorage.setItem(`purchased_plan_${websiteId}`, resolvedPlan);
+          }
           if (serverData.isPremium || (serverData.metadata && serverData.metadata.isPremium)) {
             window.isPremiumUser = true;
             window.isPremium = true;
             sessionStorage.setItem(`premium_${websiteId}`, 'true');
             localStorage.setItem(`premium_${websiteId}`, 'true');
-            sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
-            localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            if (resolvedPlan && resolvedPlan !== 'starter') {
+              sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
+              localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            } else if (resolvedPlan === 'starter') {
+              sessionStorage.removeItem(`pro_plan_${websiteId}`);
+              localStorage.removeItem(`pro_plan_${websiteId}`);
+            }
           }
           if (serverData.slug || (serverData.metadata && serverData.metadata.slug)) {
             window._existingSlug = serverData.slug || serverData.metadata.slug;
@@ -7969,6 +7967,24 @@
                 }
                 if (openPanelId === customPanel) closeOpenPanel();
               } else {
+                const currentWebsiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || (new URLSearchParams(window.location.search)).get('restore') || (new URLSearchParams(window.location.search)).get('view');
+                const currentPaidPlan = window.purchasedPlan || (currentWebsiteId ? sessionStorage.getItem(`purchased_plan_${currentWebsiteId}`) : null);
+                if (currentPaidPlan === 'starter' && ['virtualCake', 'virtualHug', 'addMusicSection'].includes(id)) {
+                  if (typeof showFeatureNoticeModal === 'function') {
+                    const featureLabelMap = {
+                      virtualCake: '🎂 Virtual Cake Celebration (PRO feature)',
+                      virtualHug: '🤗 Virtual Hug Animation (PRO feature)',
+                      addMusicSection: '🎵 Add Music (PRO feature)'
+                    };
+                    showFeatureNoticeModal(
+                      '👑 Pro Feature Locked',
+                      [featureLabelMap[id] || id],
+                      'This feature is exclusive to the Pro plan. To use Virtual Cake & Virtual Hug, please upgrade your website to Pro.',
+                      true
+                    );
+                  }
+                  return;
+                }
                 if (id === 'countdown') window.countdownFinished = false;
                 if (id === 'lock') {
                   window.lockUnlocked = false;
@@ -9625,22 +9641,79 @@
       };
 
       // Stage 3 Pricing Handlers & Currency Detection
-      let selectedCurrency = 'USD';
-      let activePlan = { plan: 'pro', price: 1.99, days: 30, label: '30 Days' };
+      let selectedCurrency = sessionStorage.getItem('detected_currency') || localStorage.getItem('detected_currency') || 'USD';
+      window.selectedCurrency = selectedCurrency;
+      let activePlan = { plan: 'pro', price: selectedCurrency === 'INR' ? 99 : 1.99, days: 30, label: '30 Days' };
 
       async function detectUserLocation() {
+        const cached = sessionStorage.getItem('detected_currency') || localStorage.getItem('detected_currency');
+        if (cached) {
+          selectedCurrency = cached;
+          window.selectedCurrency = cached;
+          updatePricingUI();
+        }
+
         try {
+          // 1. Try server geo-pricing
+          const serverRes = await fetch('/api/geo-pricing').catch(() => null);
+          if (serverRes && serverRes.ok) {
+            const data = await serverRes.json().catch(() => null);
+            if (data && data.success && data.currency) {
+              selectedCurrency = data.currency;
+              window.selectedCurrency = data.currency;
+              sessionStorage.setItem('detected_currency', data.currency);
+              localStorage.setItem('detected_currency', data.currency);
+              updatePricingUI();
+              return;
+            }
+          }
+
+          // 2. Try ipapi.co
           const res = await fetch('https://ipapi.co/json/').catch(() => null);
           if (res && res.ok) {
-            const data = await res.json();
-            if (data.country_code === 'IN') selectedCurrency = 'INR';
-            else if (data.country_code === 'GB') selectedCurrency = 'GBP';
-            else if (data.country_code === 'CA') selectedCurrency = 'CAD';
-            else if (data.country_code === 'AU') selectedCurrency = 'AUD';
-            else if (data.country_code === 'AE') selectedCurrency = 'AED';
-            else if (data.country_code === 'PK') selectedCurrency = 'PKR';
+            const data = await res.json().catch(() => null);
+            if (data && data.country_code) {
+              if (data.country_code === 'IN') selectedCurrency = 'INR';
+              else if (data.country_code === 'GB') selectedCurrency = 'GBP';
+              else if (data.country_code === 'CA') selectedCurrency = 'CAD';
+              else if (data.country_code === 'AU') selectedCurrency = 'AUD';
+              else if (data.country_code === 'AE') selectedCurrency = 'AED';
+              else if (data.country_code === 'PK') selectedCurrency = 'PKR';
+              else selectedCurrency = 'USD';
+
+              window.selectedCurrency = selectedCurrency;
+              sessionStorage.setItem('detected_currency', selectedCurrency);
+              localStorage.setItem('detected_currency', selectedCurrency);
+              updatePricingUI();
+              return;
+            }
           }
-        } catch (e) { console.log('Location detection fallback to USD'); }
+        } catch (e) {
+          console.log('Location detection fallback:', e);
+        }
+
+        // 3. Timezone / language fallback
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const lang = (navigator.language || '').toLowerCase();
+        if (tz.includes('Calcutta') || tz.includes('Kolkata') || lang.includes('in') || lang.includes('hi')) {
+          selectedCurrency = 'INR';
+        } else if (tz.includes('London') || lang.includes('gb')) {
+          selectedCurrency = 'GBP';
+        } else if (tz.includes('Toronto') || tz.includes('Vancouver') || lang.includes('ca')) {
+          selectedCurrency = 'CAD';
+        } else if (tz.includes('Sydney') || tz.includes('Melbourne') || lang.includes('au')) {
+          selectedCurrency = 'AUD';
+        } else if (tz.includes('Dubai') || lang.includes('ae')) {
+          selectedCurrency = 'AED';
+        } else if (tz.includes('Karachi') || lang.includes('pk')) {
+          selectedCurrency = 'PKR';
+        } else {
+          selectedCurrency = 'USD';
+        }
+
+        window.selectedCurrency = selectedCurrency;
+        sessionStorage.setItem('detected_currency', selectedCurrency);
+        localStorage.setItem('detected_currency', selectedCurrency);
         updatePricingUI();
       }
 
@@ -10037,6 +10110,17 @@
                 }
                 throw new Error(errData.error || 'Edit PIN required to save changes to this website.');
               }
+              if (errData.code === 'PLAN_UPGRADE_REQUIRED') {
+                if (typeof showFeatureNoticeModal === 'function') {
+                  showFeatureNoticeModal(
+                    '👑 Pro Feature Locked',
+                    errData.activeProFeatures || ['🎂 Virtual Cake Celebration', '🤗 Virtual Hug Animation'],
+                    errData.error || 'This website is on a Starter plan. To use Virtual Cake & Virtual Hug, please upgrade your website to Pro.',
+                    true
+                  );
+                }
+                throw new Error(errData.error || 'Plan upgrade to Pro required.');
+              }
             }
             throw new Error(`Server returned ${response.status}`);
           }
@@ -10158,7 +10242,12 @@
         const phone = phoneInput ? phoneInput.value.trim() : '';
 
         try {
-          const isAlreadyPaid = !!(
+          const currentPaidPlan = window.purchasedPlan || (websiteId ? sessionStorage.getItem(`purchased_plan_${websiteId}`) : null);
+          const activeFeatures = typeof getActivePremiumFeatures === 'function' ? getActivePremiumFeatures() : [];
+          const hasProFeatures = activeFeatures.some(f => ['virtualCake', 'virtualHug', 'addMusicSection'].includes(f));
+          const requiresProUpgrade = (currentPaidPlan === 'starter' && hasProFeatures);
+
+          const isAlreadyPaid = !requiresProUpgrade && !!(
             window.isPremiumUser ||
             window.isPremium ||
             (websiteId && sessionStorage.getItem(`premium_${websiteId}`) === 'true') ||
@@ -10499,10 +10588,6 @@
           const proceedToPayBtnText = document.getElementById('proceedToPayBtnText');
           if (proceedToPayBtnText) proceedToPayBtnText.textContent = `Continue with ${planTitle} – ${symbol}${p}`;
 
-          const upiBox = document.getElementById('upiTrustBadges');
-          if (upiBox) {
-            upiBox.style.display = selectedCurrency === 'INR' ? 'block' : 'none';
-          }
 
           // Update Custom URL Feature item UI according to plan
           const urlRow = document.getElementById('featCustomUrl');
@@ -10683,6 +10768,11 @@
 
         // Check if returning from payment gateway
         checkReturnPaymentStatus();
+
+        // Detect user location and update pricing on load
+        if (typeof detectUserLocation === 'function') {
+          detectUserLocation();
+        }
       }
 
       if (document.readyState === 'loading') {

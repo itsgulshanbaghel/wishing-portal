@@ -418,6 +418,7 @@ app.post('/api/config', async (req, res) => {
     // High-speed payment & custom slug verification via parallel indexed lookups
     let effectiveIsPremium = false;
     let existingSlugForResponse = null;
+    let paidPlan = null;
     try {
       const [crPayment, crSlug] = await Promise.all([
         cockroach.getPaymentByWebsiteId(id).catch(() => null),
@@ -426,11 +427,18 @@ app.post('/api/config', async (req, res) => {
       if (crSlug && (crSlug.slug || crSlug.websiteId)) {
         existingSlugForResponse = crSlug.slug || null;
       }
-      if ((crPayment && (crPayment.status === 'PAID' || crPayment.status === 'COMPLETED')) || !!crSlug) {
+      if (crPayment && (crPayment.status === 'PAID' || crPayment.status === 'COMPLETED')) {
         effectiveIsPremium = true;
+        paidPlan = (crPayment.plan || '').toLowerCase().trim();
+      } else if (crSlug) {
+        effectiveIsPremium = true;
+        paidPlan = (crSlug.plan || '').toLowerCase().trim();
       } else if (mongoose.connection && mongoose.connection.readyState === 1) {
         const paidCheck = await Payment.findOne({ websiteId: id, status: 'PAID' }).lean().catch(() => null);
-        if (paidCheck) effectiveIsPremium = true;
+        if (paidCheck) {
+          effectiveIsPremium = true;
+          paidPlan = (paidCheck.plan || '').toLowerCase().trim();
+        }
       }
     } catch (e) { }
 
@@ -485,6 +493,25 @@ app.post('/api/config', async (req, res) => {
       finalPinHash = hashEditPin(incomingPin);
     }
 
+    // Strict Pro feature enforcement for Starter plan websites
+    const resolvedPlan = paidPlan || (existingMeta && existingMeta.plan) || null;
+    const PRO_FEATURES = ['virtualCake', 'virtualHug', 'addMusicSection'];
+    if (effectiveIsPremium && resolvedPlan === 'starter') {
+      const activeFeaturesList = (config && Array.isArray(config.activeFeatures))
+        ? config.activeFeatures.map(f => Array.isArray(f) ? f[0] : f)
+        : (config && config.features && Array.isArray(config.features) ? config.features : []);
+
+      const activeProFeatures = activeFeaturesList.filter(f => PRO_FEATURES.includes(f));
+      if (activeProFeatures.length > 0) {
+        return res.status(403).json({
+          error: 'This website is on a Starter plan. Features like Virtual Cake, Virtual Hug, and Music Section require upgrading to the Pro plan.',
+          code: 'PLAN_UPGRADE_REQUIRED',
+          requiredPlan: 'pro',
+          activeProFeatures
+        });
+      }
+    }
+
     // Geolocation from Cloudflare / Vercel headers
     const cityHeader = req.headers['cf-ipcity'] || req.headers['x-vercel-ip-city'] || '';
     const countryHeader = req.headers['cf-ipcountry'] || req.headers['x-vercel-ip-country'] || 'IN';
@@ -498,9 +525,10 @@ app.post('/api/config', async (req, res) => {
       eventType: config?.eventType || config?.category || req.body.eventType || 'birthday',
       templateName: config?.templateName || config?.template || req.body.templateName || 'birthday1',
       recipientName: config?.recipientName || config?.name || config?.userName || req.body.recipientName || 'Special Recipient',
-      features: config?.activeFeatures?.map(f => f[0]) || [],
+      features: config?.activeFeatures?.map(f => Array.isArray(f) ? f[0] : f) || [],
       isPremium: effectiveIsPremium,
       paymentStatus: effectiveIsPremium ? 'paid' : 'pending_payment',
+      plan: resolvedPlan || (effectiveIsPremium ? 'pro' : (req.body.plan || 'starter')),
       createdAt: existingMeta?.createdAt || new Date().toISOString(),
       creatorGeo,
       editPinHash: finalPinHash,
@@ -665,12 +693,19 @@ app.get('/api/config/:id', async (req, res) => {
     // Payment verification (bypassed so anybody can access websites with their link even if unpaid)
     const isPaid = isLocalhost || (await verifyWebsitePaymentStatus(safeName));
 
-    // Look up existing custom slug for this website so editors can preserve it
+    // Look up existing custom slug & paid plan for this website so editors can preserve it
     let existingSlug = null;
+    let paidPlan = null;
     try {
-      const slugRecord = await cockroach.getCustomSlugByWebsiteId(safeName);
+      const [slugRecord, paymentRecord] = await Promise.all([
+        cockroach.getCustomSlugByWebsiteId(safeName).catch(() => null),
+        cockroach.getPaymentByWebsiteId(safeName).catch(() => null)
+      ]);
       if (slugRecord && slugRecord.slug) existingSlug = slugRecord.slug;
-    } catch (slugErr) { }
+      if (paymentRecord && (paymentRecord.status === 'PAID' || paymentRecord.status === 'COMPLETED')) {
+        paidPlan = (paymentRecord.plan || '').toLowerCase().trim();
+      }
+    } catch (lookupErr) { }
 
     // 1. Fetch full JSON payload from Supabase Storage (Single Source of Truth)
     let sbConfig = null;
@@ -683,9 +718,11 @@ app.get('/api/config/:id', async (req, res) => {
     if (sbConfig && sbConfig.html) {
       sbConfig.isPremium = true;
       if (existingSlug) sbConfig.slug = existingSlug;
+      if (paidPlan) sbConfig.plan = paidPlan;
       if (typeof sbConfig.metadata === 'object' && sbConfig.metadata !== null) {
         sbConfig.metadata.isPremium = true;
         if (existingSlug) sbConfig.metadata.slug = existingSlug;
+        if (paidPlan) sbConfig.metadata.plan = paidPlan;
       }
       return res.json(sanitizeConfigResponse(sbConfig));
     }
@@ -700,6 +737,7 @@ app.get('/api/config/:id', async (req, res) => {
       const resObj = Object.assign({}, crRecord.metadata);
       resObj.isPremium = true;
       if (existingSlug) resObj.slug = existingSlug;
+      if (paidPlan) resObj.plan = paidPlan;
       return res.json(sanitizeConfigResponse(resObj));
     }
 
@@ -2041,6 +2079,14 @@ app.post('/api/payment/create-order', async (req, res) => {
     const cfOrderCurrency = (currency === 'INR' || currency === 'USD') ? currency : 'INR';
     const cfOrderAmount = (cfOrderCurrency === 'INR' && currency !== 'INR') ? Math.max(29, Math.round((paypalAmount || orderAmount) * 88)) : orderAmount;
 
+    const siteBase = req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in';
+    const liveGreetingUrl = sanitizedSlug
+      ? `${siteBase}/${sanitizedSlug}`
+      : `${siteBase}/generated/customize.html?view=${websiteId}&_v=c`;
+
+    const planTitle = planMeta.planName || 'Pro';
+    const orderNote = `Your Greeting Link: ${liveGreetingUrl} (${planTitle})`;
+
     const orderPayload = {
       order_id: orderId,
       order_amount: Number(cfOrderAmount).toFixed(2),
@@ -2052,9 +2098,15 @@ app.post('/api/payment/create-order', async (req, res) => {
         customer_phone: customer.customer_phone || '9999999999'
       },
       order_meta: {
-        return_url: `${req.headers.origin || process.env.SITE_URL || 'https://thegreeter.in'}/generated/customize.html?action=payment-success&orderId={order_id}&view=${websiteId}`,
+        return_url: `${siteBase}/generated/customize.html?action=payment-success&orderId={order_id}&view=${websiteId}`,
         notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal-phi.vercel.app'}/api/payment/webhook`,
         payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
+      },
+      order_note: orderNote.slice(0, 300),
+      order_tags: {
+        website_id: String(websiteId).slice(0, 50),
+        website_link: String(liveGreetingUrl).slice(0, 100),
+        plan: String(planTitle).slice(0, 50)
       }
     };
 
