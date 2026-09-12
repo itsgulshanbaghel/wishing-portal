@@ -2102,7 +2102,7 @@ app.post('/api/payment/create-order', async (req, res) => {
         notify_url: `${process.env.API_BASE_URL || 'https://wishing-portal-phi.vercel.app'}/api/payment/webhook`,
         payment_methods: 'cc,dc,upi,nb,app,paylater,emi,applepay'
       },
-      order_note: orderNote.slice(0, 300),
+      order_note: orderNote.slice(0, 200),
       order_tags: {
         website_id: String(websiteId).slice(0, 50),
         website_link: String(liveGreetingUrl).slice(0, 100),

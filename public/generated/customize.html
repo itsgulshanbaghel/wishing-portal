@@ -7967,24 +7967,6 @@
                 }
                 if (openPanelId === customPanel) closeOpenPanel();
               } else {
-                const currentWebsiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || (new URLSearchParams(window.location.search)).get('restore') || (new URLSearchParams(window.location.search)).get('view');
-                const currentPaidPlan = window.purchasedPlan || (currentWebsiteId ? sessionStorage.getItem(`purchased_plan_${currentWebsiteId}`) : null);
-                if (currentPaidPlan === 'starter' && ['virtualCake', 'virtualHug', 'addMusicSection'].includes(id)) {
-                  if (typeof showFeatureNoticeModal === 'function') {
-                    const featureLabelMap = {
-                      virtualCake: '🎂 Virtual Cake Celebration (PRO feature)',
-                      virtualHug: '🤗 Virtual Hug Animation (PRO feature)',
-                      addMusicSection: '🎵 Add Music (PRO feature)'
-                    };
-                    showFeatureNoticeModal(
-                      '👑 Pro Feature Locked',
-                      [featureLabelMap[id] || id],
-                      'This feature is exclusive to the Pro plan. To use Virtual Cake & Virtual Hug, please upgrade your website to Pro.',
-                      true
-                    );
-                  }
-                  return;
-                }
                 if (id === 'countdown') window.countdownFinished = false;
                 if (id === 'lock') {
                   window.lockUnlocked = false;
@@ -10692,6 +10674,13 @@
           switcher.querySelectorAll('.plan-pill').forEach(pill => {
             pill.onclick = (e) => {
               e.stopPropagation();
+              const planKey = pill.dataset.plan;
+              if (planKey === 'starter' && typeof checkFeatureCompliance === 'function') {
+                const isCompliant = checkFeatureCompliance('starter');
+                if (!isCompliant) {
+                  return;
+                }
+              }
               switcher.querySelectorAll('.plan-pill').forEach(p => p.classList.remove('sel'));
               pill.classList.add('sel');
               updatePricingUI();
