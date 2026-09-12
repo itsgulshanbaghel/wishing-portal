@@ -161,20 +161,6 @@ const corsOptions = {
     return callback(new Error(`CORS blocked: ${origin}`));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-    'x-edit-pin',
-    'X-Edit-Pin',
-    'x-admin-key',
-    'X-Admin-Key',
-    'x-client-id',
-    'x-client-secret',
-    'x-api-version',
-    'Accept',
-    'Origin'
-  ],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
