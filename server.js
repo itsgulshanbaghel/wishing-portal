@@ -7,6 +7,51 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const https = require('https');
+const crypto = require('crypto');
+
+// ==========================================
+// Creator Edit Protection (PIN / Passcode)
+// ==========================================
+function hashEditPin(pin, existingSalt = null) {
+  if (!pin) return null;
+  const cleanPin = String(pin).trim();
+  if (!cleanPin) return null;
+  const salt = existingSalt || crypto.randomBytes(16).toString('hex');
+  const hash = crypto.createHash('sha256').update(`${cleanPin}:${salt}`).digest('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyEditPin(pin, storedHash) {
+  if (!storedHash) return true; // Legacy website without PIN is open
+  if (!pin) return false;
+  const parts = String(storedHash).split(':');
+  if (parts.length !== 2) return false;
+  const [salt, expectedHash] = parts;
+  const computedHash = crypto.createHash('sha256').update(`${String(pin).trim()}:${salt}`).digest('hex');
+  try {
+    return crypto.timingSafeEqual(Buffer.from(computedHash, 'utf8'), Buffer.from(expectedHash, 'utf8'));
+  } catch (_) {
+    return false;
+  }
+}
+
+function sanitizeConfigResponse(payload) {
+  if (!payload || typeof payload !== 'object') return payload;
+  const out = JSON.parse(JSON.stringify(payload));
+  const hasPin = !!(
+    out.editPinHash ||
+    out.metadata?.editPinHash ||
+    out.hasEditPin ||
+    out.metadata?.hasEditPin
+  );
+  out.hasEditPin = hasPin;
+  delete out.editPinHash;
+  if (out.metadata) {
+    out.metadata.hasEditPin = hasPin;
+    delete out.metadata.editPinHash;
+  }
+  return out;
+}
 
 const storage = require('./storage');
 const cloudinary = storage.cloudinary;
@@ -229,9 +274,6 @@ const uploadMediaMulter = multer({
 });
 
 const uploadMediaMiddleware = (req, res, next) => {
-  if (req.is('application/json')) {
-    return express.json({ limit: '10mb' })(req, res, next);
-  }
   uploadMediaMulter.single('file')(req, res, (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
@@ -245,39 +287,14 @@ const uploadMediaMiddleware = (req, res, next) => {
 
 const handleMediaUpload = async (req, res) => {
   try {
-    let fileBuffer = null;
-    let mimeType = 'image/jpeg';
-    let filename = `upload_${Date.now()}.jpg`;
-    const isPremium = req.body ? (req.body.isPremium === 'true' || req.body.isPremium === true) : false;
-
-    if (req.file) {
-      fileBuffer = req.file.buffer;
-      mimeType = req.file.mimetype || mimeType;
-      filename = req.file.originalname || filename;
-    } else if (req.body && (req.body.file || req.body.dataUrl)) {
-      const dataUrl = req.body.file || req.body.dataUrl;
-      if (typeof dataUrl === 'string' && dataUrl.startsWith('data:')) {
-        const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-        if (match) {
-          mimeType = match[1];
-          fileBuffer = Buffer.from(match[2], 'base64');
-        }
-      } else if (typeof dataUrl === 'string') {
-        fileBuffer = Buffer.from(dataUrl, 'base64');
-      }
-      if (req.body.filename) {
-        filename = req.body.filename;
-      } else {
-        const ext = mimeType.includes('audio') ? 'mp3' : (mimeType.includes('png') ? 'png' : 'jpg');
-        filename = `upload_${Date.now()}.${ext}`;
-      }
-    }
-
-    if (!fileBuffer) {
+    if (!req.file) {
       return res.status(400).json({ error: 'No media file provided' });
     }
+    const isPremium = req.body.isPremium === 'true' || req.body.isPremium === true;
+    const mimeType = req.file.mimetype || 'image/jpeg';
+    const filename = req.file.originalname || `upload_${Date.now()}.jpg`;
 
-    const secureUrl = await storage.uploadMedia(fileBuffer, filename, mimeType, isPremium);
+    const secureUrl = await storage.uploadMedia(req.file.buffer, filename, mimeType, isPremium);
     res.json({ secure_url: secureUrl, url: secureUrl });
   } catch (err) {
     console.error('Error uploading media via server:', err);
@@ -374,22 +391,100 @@ app.post('/api/config', async (req, res) => {
       }
     }
 
-    // Auto-verify payment status from DB to ensure premium state is only granted for verified payments
-    let effectiveIsPremium = false;
-    try {
-      const crPayments = await cockroach.getAllPayments(100);
-      const isPaidPayment = Array.isArray(crPayments) && crPayments.some(p => p.websiteId === id && (p.status === 'PAID' || p.status === 'COMPLETED'));
-      const crSlug = await cockroach.getCustomSlug(id);
-      if (isPaidPayment || !!crSlug) {
-        effectiveIsPremium = true;
-      } else {
-        const mongoReady = await ensureMongoConnected();
-        if (mongoReady) {
-          const paidCheck = await Payment.findOne({ websiteId: id, status: 'PAID' }).lean();
-          if (paidCheck) effectiveIsPremium = true;
+    // Strict validation: reject any un-uploaded local blob URLs to ensure cross-device compatibility
+    const containsBlobUrls = (obj) => {
+      if (!obj) return false;
+      if (typeof obj === 'string') {
+        return obj.includes('blob:http://') || obj.includes('blob:https://');
+      }
+      if (Array.isArray(obj)) {
+        return obj.some(item => containsBlobUrls(item));
+      }
+      if (typeof obj === 'object') {
+        for (const key of Object.keys(obj)) {
+          if (containsBlobUrls(obj[key])) return true;
         }
       }
+      return false;
+    };
+
+    if (containsBlobUrls(config) || containsBlobUrls(html)) {
+      console.warn(`[Server] Rejected /api/config for ${id}: Contains un-uploaded local blob URLs.`);
+      return res.status(400).json({
+        error: 'Media upload incomplete. Some photos or audio files are still local blob URLs. Please retry uploading.',
+        code: 'BLOB_URL_DETECTED'
+      });
+    }
+
+    // High-speed payment & custom slug verification via parallel indexed lookups
+    let effectiveIsPremium = false;
+    let existingSlugForResponse = null;
+    try {
+      const [crPayment, crSlug] = await Promise.all([
+        cockroach.getPaymentByWebsiteId(id).catch(() => null),
+        cockroach.getCustomSlug(id).catch(() => null)
+      ]);
+      if (crSlug && (crSlug.slug || crSlug.websiteId)) {
+        existingSlugForResponse = crSlug.slug || null;
+      }
+      if ((crPayment && (crPayment.status === 'PAID' || crPayment.status === 'COMPLETED')) || !!crSlug) {
+        effectiveIsPremium = true;
+      } else if (mongoose.connection && mongoose.connection.readyState === 1) {
+        const paidCheck = await Payment.findOne({ websiteId: id, status: 'PAID' }).lean().catch(() => null);
+        if (paidCheck) effectiveIsPremium = true;
+      }
     } catch (e) { }
+
+    // Verify Creator Edit PIN Authorization if website already exists
+    let existingRecord = null;
+    try {
+      existingRecord = await cockroach.getRecord(id);
+    } catch (_) {}
+    if (!existingRecord) {
+      try {
+        existingRecord = await storage.readWebsiteConfig(id);
+      } catch (_) {}
+    }
+    if (!existingRecord && mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        const mDoc = await Website.findOne({ id }).lean();
+        if (mDoc) existingRecord = mDoc.metadata || mDoc;
+      } catch (_) {}
+    }
+
+    const existingMeta = existingRecord?.metadata || existingRecord;
+    const existingPinHash = existingMeta?.editPinHash || existingRecord?.editPinHash || null;
+    const incomingPin = req.headers['x-edit-pin'] || req.body.editPin || req.body.pin || null;
+
+    let finalPinHash = null;
+
+    if (existingPinHash) {
+      // Existing website IS protected by a PIN
+      if (!incomingPin || !verifyEditPin(incomingPin, existingPinHash)) {
+        console.warn(`[Server] Unauthorized /api/config attempt for ${id}: Missing or incorrect Edit PIN.`);
+        return res.status(403).json({
+          error: 'Unauthorized: This website is protected by an Edit PIN. Please enter the correct PIN to make changes.',
+          code: 'PIN_REQUIRED'
+        });
+      }
+      // PIN matches! Check if creator wants to update PIN
+      const newPin = req.body.newEditPin || req.body.newPin;
+      if (newPin && /^\d{4,6}$/.test(String(newPin).trim())) {
+        finalPinHash = hashEditPin(newPin);
+      } else {
+        finalPinHash = existingPinHash;
+      }
+    } else {
+      // New website OR existing website without PIN - Creator PIN is mandatory
+      if (!incomingPin || !/^\d{4,6}$/.test(String(incomingPin).trim())) {
+        console.warn(`[Server] Rejected /api/config for ${id}: Missing or invalid mandatory Edit PIN.`);
+        return res.status(400).json({
+          error: 'Creator Edit PIN is required (must be 4–6 numeric digits).',
+          code: 'PIN_REQUIRED'
+        });
+      }
+      finalPinHash = hashEditPin(incomingPin);
+    }
 
     // Geolocation from Cloudflare / Vercel headers
     const cityHeader = req.headers['cf-ipcity'] || req.headers['x-vercel-ip-city'] || '';
@@ -407,120 +502,106 @@ app.post('/api/config', async (req, res) => {
       features: config?.activeFeatures?.map(f => f[0]) || [],
       isPremium: effectiveIsPremium,
       paymentStatus: effectiveIsPremium ? 'paid' : 'pending_payment',
-      createdAt: new Date().toISOString(),
-      creatorGeo
+      createdAt: existingMeta?.createdAt || new Date().toISOString(),
+      creatorGeo,
+      editPinHash: finalPinHash,
+      hasEditPin: !!finalPinHash
     };
 
-    // Server-side safety net: scan and auto-upload any inline Base64 data URIs in html or config
-    let processedHtml = html || '';
-    let processedConfig = config || {};
-    try {
-      let configJsonStr = JSON.stringify(processedConfig);
-      const dataUriRegex = /data:(image\/[a-zA-Z0-9.+_-]+|audio\/[a-zA-Z0-9.+_-]+);base64,([A-Za-z0-9+/=]+)/g;
-      const allMatches = new Set();
-      let m;
-      while ((m = dataUriRegex.exec(configJsonStr)) !== null) {
-        allMatches.add(m[0]);
-      }
-      dataUriRegex.lastIndex = 0;
-      while ((m = dataUriRegex.exec(processedHtml)) !== null) {
-        allMatches.add(m[0]);
-      }
+    const dataObj = { html, config, metadata };
+    const dataBuffer = Buffer.from(JSON.stringify(dataObj), 'utf8');
 
-      if (allMatches.size > 0) {
-        console.log(`[Server] Detected ${allMatches.size} inline base64 media asset(s) in POST /api/config for website "${id}". Auto-uploading to cloud storage...`);
-        let assetIdx = 0;
-        for (const dataUri of allMatches) {
-          try {
-            const match = dataUri.match(/^data:([^;]+);base64,(.+)$/);
-            if (match) {
-              const mimeType = match[1];
-              const buffer = Buffer.from(match[2], 'base64');
-              const ext = mimeType.includes('audio') ? 'mp3' : (mimeType.includes('png') ? 'png' : 'jpg');
-              const fname = `auto_${id}_${Date.now()}_${++assetIdx}.${ext}`;
-              const cloudUrl = await storage.uploadMedia(buffer, fname, mimeType, effectiveIsPremium);
-              if (cloudUrl) {
-                processedHtml = processedHtml.split(dataUri).join(cloudUrl);
-                configJsonStr = configJsonStr.split(dataUri).join(cloudUrl);
+    // 1 & 2. Save CockroachDB record and Supabase Storage JSON in PARALLEL for maximum speed
+    await Promise.all([
+      cockroach.saveRecord(id, metadata, effectiveIsPremium).catch(crErr => {
+        console.warn('[Server] CockroachDB save warning:', crErr.message);
+      }),
+      storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', effectiveIsPremium).catch(uploadErr => {
+        console.warn('[Server] Supabase storage upload warning:', uploadErr?.message || uploadErr);
+      })
+    ]);
+
+    // 3. Fast background operations (swallows errors without blocking client response)
+    (async () => {
+      try {
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+          await Website.findOneAndUpdate(
+            { id },
+            {
+              $set: {
+                id,
+                recipientName: metadata.recipientName,
+                eventType: metadata.eventType,
+                templateName: metadata.templateName,
+                metadata: dataObj
               }
-            }
-          } catch (autoUploadErr) {
-            console.warn('[Server] Failed to auto-upload inline dataUri:', autoUploadErr.message);
-          }
+            },
+            { upsert: true, returnDocument: 'after', strict: false }
+          ).catch(() => { });
         }
-        try {
-          processedConfig = JSON.parse(configJsonStr);
-        } catch (e) {}
-      }
-    } catch (scanErr) {
-      console.warn('[Server] Error during base64 scan:', scanErr.message);
-    }
+        await analytics.incrementPersistentCounter('website_created', effectiveIsPremium).catch(() => {});
+        await analytics.registerWebsite(req, metadata).catch(() => {});
+        analytics.trackEvent(req, { type: 'website_created', details: { id, eventType: metadata.eventType } });
+      } catch (bgErr) {}
+    })();
 
-    const dataObj = { html: processedHtml, config: processedConfig, metadata };
-    const dataJson = JSON.stringify(dataObj);
-
-    // 1. Save lightweight indexing record to CockroachDB Serverless Primary DB (~200 bytes)
-    try {
-      await cockroach.saveRecord(id, metadata, effectiveIsPremium);
-    } catch (crErr) {
-      console.warn('[Server] CockroachDB save warning:', crErr.message);
-    }
-
-    // 2. Upload full website JSON payload to Supabase Storage (Single Source of Truth for JSON configs)
-    const dataBuffer = Buffer.from(dataJson, 'utf8');
-    try {
-      await storage.uploadMedia(dataBuffer, `${id}.json`, 'application/json', effectiveIsPremium);
-    } catch (uploadErr) {
-      console.warn('[Server] Supabase storage upload warning:', uploadErr?.message || uploadErr);
-    }
-
-    // 3. Optional non-blocking MongoDB write attempt (swallows quota errors gracefully)
-    try {
-      const mongoReady = await ensureMongoConnected();
-      if (mongoReady) {
-        await Website.findOneAndUpdate(
-          { id },
-          {
-            $set: {
-              id,
-              recipientName: metadata.recipientName,
-              eventType: metadata.eventType,
-              templateName: metadata.templateName,
-              metadata: dataObj
-            }
-          },
-          { upsert: true, returnDocument: 'after', strict: false }
-        ).catch(() => { });
-      }
-    } catch (dbErr) {
-      console.warn('[Server] Mongo DB config save warning (ignored):', dbErr.message);
-    }
-
-    // Increment persistent global website creation counter
-    try {
-      await analytics.incrementPersistentCounter('website_created', effectiveIsPremium);
-    } catch (cntErr) { }
-
-    // Register website in analytics
-    console.log('[Server] Registering website:', metadata.id, metadata.recipientName);
-    try {
-      await analytics.registerWebsite(req, metadata);
-      analytics.trackEvent(req, { type: 'website_created', details: { id, eventType: metadata.eventType } });
-      console.log('[Server] Website registered successfully');
-    } catch (e) {
-      console.error('[Server] Analytics registration warning:', e.message);
-    }
-
-    // Include existing custom slug in response so frontend can preserve it
-    let existingSlugForResponse = null;
-    try {
-      const slugRec = await cockroach.getCustomSlugByWebsiteId(id);
-      if (slugRec && slugRec.slug) existingSlugForResponse = slugRec.slug;
-    } catch (e) { }
-    res.json({ id, slug: existingSlugForResponse || undefined });
+    // Return response immediately without waiting for background telemetry
+    res.json({
+      id,
+      slug: existingSlugForResponse || undefined,
+      hasEditPin: !!finalPinHash
+    });
   } catch (err) {
     console.error('Error saving config:', err);
     res.status(500).json({ error: 'Failed to save' });
+  }
+});
+
+// Verify Creator Edit PIN Endpoint
+app.post('/api/verify-pin/:id', async (req, res) => {
+  try {
+    const rawId = req.params.id;
+    const safeId = String(rawId || '').replace(/[^a-z0-9]/gi, '');
+    if (!safeId) return res.status(400).json({ valid: false, error: 'Invalid website ID' });
+
+    let existing = null;
+    try { existing = await cockroach.getRecord(safeId); } catch (_) {}
+    if (!existing) {
+      try { existing = await storage.readWebsiteConfig(safeId); } catch (_) {}
+    }
+    if (!existing && mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        const mDoc = await Website.findOne({ id: safeId }).lean();
+        if (mDoc) existing = mDoc.metadata || mDoc;
+      } catch (_) {}
+    }
+
+    if (!existing) {
+      return res.status(404).json({ valid: false, error: 'Website not found' });
+    }
+
+    const meta = existing.metadata || existing;
+    const storedHash = meta.editPinHash || existing.editPinHash || null;
+
+    if (!storedHash) {
+      // Legacy unprotected website
+      return res.json({ valid: true, hasEditPin: false, message: 'Website is not PIN-protected' });
+    }
+
+    const pin = req.body.pin || req.body.editPin || req.headers['x-edit-pin'];
+    if (!pin) {
+      return res.status(400).json({ valid: false, hasEditPin: true, error: 'PIN is required' });
+    }
+
+    const isValid = verifyEditPin(pin, storedHash);
+    if (isValid) {
+      return res.json({ valid: true, hasEditPin: true });
+    } else {
+      return res.status(403).json({ valid: false, hasEditPin: true, error: 'Incorrect Edit PIN' });
+    }
+  } catch (err) {
+    console.error('[verify-pin] Error:', err);
+    return res.status(500).json({ valid: false, error: 'Server error verifying PIN' });
   }
 });
 
@@ -607,7 +688,7 @@ app.get('/api/config/:id', async (req, res) => {
         sbConfig.metadata.isPremium = true;
         if (existingSlug) sbConfig.metadata.slug = existingSlug;
       }
-      return res.json(sbConfig);
+      return res.json(sanitizeConfigResponse(sbConfig));
     }
 
     // 2. Check CockroachDB Primary DB
@@ -620,7 +701,7 @@ app.get('/api/config/:id', async (req, res) => {
       const resObj = Object.assign({}, crRecord.metadata);
       resObj.isPremium = true;
       if (existingSlug) resObj.slug = existingSlug;
-      return res.json(resObj);
+      return res.json(sanitizeConfigResponse(resObj));
     }
 
     // 3. Try fetching from MongoDB Website collection
@@ -632,7 +713,7 @@ app.get('/api/config/:id', async (req, res) => {
           const resObj = Object.assign({}, doc.metadata);
           resObj.isPremium = true;
           if (existingSlug) resObj.slug = existingSlug;
-          return res.json(resObj);
+          return res.json(sanitizeConfigResponse(resObj));
         }
       }
     } catch (dbErr) {
@@ -649,7 +730,7 @@ app.get('/api/config/:id', async (req, res) => {
         try {
           const json = JSON.parse(data);
           json.isPremium = true;
-          return res.json(json);
+          return res.json(sanitizeConfigResponse(json));
         } catch (err) { }
       }
     }
@@ -674,11 +755,14 @@ app.get('/api/resolve/:identifier', async (req, res) => {
       .replace(/^generated\//i, '')
       .replace(/\.html.*$/i, '');          // remove .html extension and query params if raw
 
-    // If it was a query param string like ?id=gllqs6we69 or ?view=gllqs6we69
-    const idMatch = raw.match(/[?&](id|view|restore)=([a-z0-9]+)/i);
-    if (idMatch) {
+    // If it was a query param string like ?id=gllqs6we69, ?view=..., ?restore=..., ?slug=...
+    const idMatch = raw.match(/[?&](id|view|restore|slug)=([a-z0-9_-]+)/i);
+    if (idMatch && idMatch[2]) {
       target = idMatch[2].toLowerCase();
     }
+
+    // Strip trailing query params if still present
+    target = target.split('?')[0].split('#')[0];
 
     const sanitizedSlug = target.replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
     const safeId = target.replace(/[^a-z0-9]/gi, '');
@@ -686,39 +770,75 @@ app.get('/api/resolve/:identifier', async (req, res) => {
     let websiteId = null;
     let customSlug = null;
 
-    // 1. Try resolving as custom slug first
-    try {
-      const slugEntry = await cockroach.getCustomSlug(sanitizedSlug);
-      if (slugEntry && slugEntry.websiteId) {
-        websiteId = slugEntry.websiteId;
-        customSlug = slugEntry.slug;
-      }
-    } catch (e) { }
+    // 1. Try resolving as custom slug first via CockroachDB
+    if (sanitizedSlug) {
+      try {
+        const slugEntry = await cockroach.getCustomSlug(sanitizedSlug);
+        if (slugEntry && slugEntry.websiteId) {
+          websiteId = slugEntry.websiteId;
+          customSlug = slugEntry.slug;
+        }
+      } catch (e) { }
 
-    // If not found via slug, assume it's direct website ID
+      // Fallback: MongoDB CustomSlug collection or Paid Payment
+      if (!websiteId) {
+        try {
+          const mongoReady = await ensureMongoConnected();
+          if (mongoReady) {
+            const mEntry = await CustomSlug.findOne({ slug: sanitizedSlug }).lean();
+            if (mEntry && mEntry.websiteId) {
+              websiteId = mEntry.websiteId;
+              customSlug = mEntry.slug;
+            } else {
+              const paidP = await Payment.findOne({ slug: sanitizedSlug, status: 'PAID' }).lean();
+              if (paidP && paidP.websiteId) {
+                websiteId = paidP.websiteId;
+                customSlug = paidP.slug;
+              }
+            }
+          }
+        } catch (e) { }
+      }
+    }
+
+    // 2. If not found via slug, treat as direct website ID
     if (!websiteId && safeId) {
       websiteId = safeId;
     }
 
     if (!websiteId) {
-      return res.status(404).json({ found: false, error: 'No website found with this identifier' });
+      return res.status(404).json({ found: false, error: 'No wishing website found with this link or ID' });
     }
 
-    // Look up associated slug if not already resolved
+    // 3. Look up associated custom slug for this websiteId if not already resolved
     if (!customSlug) {
       try {
         const slugRec = await cockroach.getCustomSlugByWebsiteId(websiteId);
         if (slugRec && slugRec.slug) customSlug = slugRec.slug;
       } catch (e) { }
+
+      if (!customSlug) {
+        try {
+          const mongoReady = await ensureMongoConnected();
+          if (mongoReady) {
+            const mSlug = await CustomSlug.findOne({ websiteId }).lean();
+            if (mSlug && mSlug.slug) customSlug = mSlug.slug;
+          }
+        } catch (e) { }
+      }
     }
 
-    // Try fetching metadata from Supabase Storage or CockroachDB
+    // 4. Fetch website config and metadata across Supabase Storage, CockroachDB, and MongoDB
+    let sbConfig = null;
+    let crRecord = null;
+    let mongoDoc = null;
     let metadata = null;
     let features = [];
     let isPremium = false;
 
+    // A. Supabase Storage (Primary store for rich website JSON config)
     try {
-      const sbConfig = await storage.readWebsiteConfig(websiteId);
+      sbConfig = await storage.readWebsiteConfig(websiteId);
       if (sbConfig) {
         metadata = sbConfig.metadata || {};
         isPremium = !!sbConfig.isPremium;
@@ -727,53 +847,91 @@ app.get('/api/resolve/:identifier', async (req, res) => {
             features = sbConfig.config.activeFeatures
               .filter(f => Array.isArray(f) ? f[1] : true)
               .map(f => Array.isArray(f) ? f[0] : f);
-          } else if (sbConfig.config.features && Array.isArray(sbConfig.config.features)) {
+          } else if (Array.isArray(sbConfig.config.features)) {
             features = sbConfig.config.features;
           }
         }
       }
     } catch (e) { }
 
-    if (!metadata) {
+    // B. CockroachDB Primary Records
+    try {
+      crRecord = await cockroach.getRecord(websiteId);
+      if (crRecord) {
+        const parsedCrMeta = typeof crRecord.metadata === 'object' ? crRecord.metadata : (typeof crRecord.metadata === 'string' ? JSON.parse(crRecord.metadata) : {});
+        metadata = metadata || {};
+        metadata.recipientName = metadata.recipientName || parsedCrMeta.recipientName || crRecord.recipient_name;
+        metadata.eventType = metadata.eventType || parsedCrMeta.eventType || crRecord.event_type;
+        metadata.templateName = metadata.templateName || parsedCrMeta.templateName || crRecord.template_name;
+        if (parsedCrMeta.features && Array.isArray(parsedCrMeta.features) && !features.length) {
+          features = parsedCrMeta.features;
+        }
+        isPremium = isPremium || !!crRecord.is_premium;
+      }
+    } catch (e) { }
+
+    // C. MongoDB Website document fallback
+    if (!metadata || !metadata.recipientName) {
       try {
-        const crRecord = await cockroach.getRecord(websiteId);
-        if (crRecord) {
-          metadata = typeof crRecord.metadata === 'object' ? crRecord.metadata : (typeof crRecord.metadata === 'string' ? JSON.parse(crRecord.metadata) : {});
-          metadata.recipientName = metadata.recipientName || crRecord.recipient_name;
-          metadata.eventType = metadata.eventType || crRecord.event_type;
-          metadata.templateName = metadata.templateName || crRecord.template_name;
-          isPremium = isPremium || !!crRecord.is_premium;
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          mongoDoc = await Website.findOne({ id: websiteId }).lean();
+          if (mongoDoc) {
+            const mMeta = mongoDoc.metadata?.metadata || mongoDoc.metadata || {};
+            metadata = metadata || {};
+            metadata.recipientName = metadata.recipientName || mongoDoc.recipientName || mMeta.recipientName;
+            metadata.eventType = metadata.eventType || mongoDoc.eventType || mMeta.eventType;
+            metadata.templateName = metadata.templateName || mongoDoc.templateName || mMeta.templateName;
+            if (mMeta.features && Array.isArray(mMeta.features) && !features.length) {
+              features = mMeta.features;
+            }
+          }
         }
       } catch (e) { }
     }
 
-    if (!metadata && !features.length) {
+    // Verify website existence
+    const exists = !!(sbConfig || crRecord || mongoDoc);
+    if (!exists && !features.length) {
       const verified = await verifyWebsitePaymentStatus(websiteId);
       if (!verified) {
-        return res.status(404).json({ found: false, error: 'Website not found or has expired' });
+        return res.status(404).json({ found: false, error: 'Website not found or link has expired. Please check your link or ID.' });
       }
     }
+
+    // Extract consolidated values
+    const recipientName = metadata?.recipientName || metadata?.name || sbConfig?.config?.userName || sbConfig?.config?.recipientName || sbConfig?.config?.name || 'Special Person';
+    const eventType = metadata?.eventType || metadata?.category || sbConfig?.config?.eventType || sbConfig?.config?.category || 'wishing';
+    const resolvedTemplateName = metadata?.templateName || metadata?.template || sbConfig?.config?.templateName || sbConfig?.config?.template || (eventType ? `${eventType}1` : 'birthday1');
+    const templateQuery = resolvedTemplateName ? `&template=${encodeURIComponent(resolvedTemplateName)}` : '';
 
     const host = req.get('host') || 'thegreeter.in';
     const protocol = req.protocol || 'https';
     const baseUrl = `${protocol}://${host}`;
 
-    const resolvedTemplateName = metadata?.templateName || metadata?.template || sbConfig?.config?.template || sbConfig?.config?.templateName || (metadata?.eventType ? `${metadata.eventType}1` : 'birthday1');
-    const templateQuery = resolvedTemplateName ? `&template=${encodeURIComponent(resolvedTemplateName)}` : '';
+    const hasEditPin = !!(
+      metadata?.editPinHash ||
+      sbConfig?.metadata?.editPinHash ||
+      sbConfig?.editPinHash ||
+      crRecord?.metadata?.editPinHash ||
+      metadata?.hasEditPin ||
+      sbConfig?.hasEditPin
+    );
 
     res.set('Cache-Control', 'public, max-age=60, s-maxage=300');
     return res.json({
       found: true,
       websiteId,
-      slug: customSlug,
-      recipientName: metadata?.recipientName || metadata?.name || 'Special Person',
-      eventType: metadata?.eventType || metadata?.category || 'wishing',
+      slug: customSlug || null,
+      recipientName,
+      eventType,
       templateName: resolvedTemplateName,
       features: features.length ? features : (metadata?.features || []),
       isPremium: isPremium || !!metadata?.isPremium,
-      createdAt: metadata?.createdAt || null,
+      hasEditPin,
+      createdAt: metadata?.createdAt || crRecord?.created_at || null,
       shareUrl: customSlug ? `${baseUrl}/${customSlug}` : `${baseUrl}/generated/customize.html?view=${websiteId}&_v=c`,
-      editUrl: `/generated/customize.html?restore=${websiteId}${templateQuery}`
+      editUrl: `/generated/customize.html?restore=${encodeURIComponent(websiteId)}${templateQuery}&fresh=1&src=edit&t=${Date.now()}`
     });
   } catch (err) {
     console.error('[Resolve API] Error resolving website:', err);
@@ -968,7 +1126,7 @@ const RESERVED_SLUGS = new Set([
   'api', 'assets', 'generated', 'blog', 'admin', 'create', 'edit', 'index', 'share', 'privacy',
   'terms', 'contactus', 'aboutus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
   'preview', 'customize', 'custom-url', 'login', 'logout', 'dashboard', 'support', 'help',
-  'null', 'undefined', 'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
+  'pricing', 'price', 'plans', 'null', 'undefined', 'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
 ]);
 
 app.post('/api/custom-url', async (req, res) => {
@@ -1052,7 +1210,6 @@ app.get('/api/custom-url/check/:slug', async (req, res) => {
 // ============================================================
 // CASHFREE PAYMENT ROUTES
 // ============================================================
-const crypto = require('crypto');
 
 // Cashfree env vars
 const CF_APP_ID = process.env.CASHFREE_APP_ID || '';
@@ -1101,7 +1258,7 @@ const PRICING_MAP = {
   // Tier 2: Developing (High Volume)
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India',
-    plans: { starter: { amount: 29, paypalAmount: 29 }, pro: { amount: 49, paypalAmount: 49 }, pro_plus: { amount: 99, paypalAmount: 99 }, forever: { amount: 299, paypalAmount: 299 } }
+    plans: { starter: { amount: 49, paypalAmount: 49 }, pro: { amount: 99, paypalAmount: 99 }, pro_plus: { amount: 149, paypalAmount: 149 }, forever: { amount: 299, paypalAmount: 299 } }
   },
   PK: {
     currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',
@@ -1486,16 +1643,16 @@ async function finalizePaymentSuccess(orderIdOrPayPalId, paymentMethod = 'paypal
   }
 }
 
-// GET /api/payment/detect-price – returns server-computed price for the caller's location
-app.get('/api/payment/detect-price', (req, res) => {
+// GET /api/payment/detect-price & /api/geo-pricing – returns server-computed price for the caller's location
+app.get(['/api/payment/detect-price', '/api/geo-pricing'], (req, res) => {
   const pricing = getGeoPrice(req);
   res.json({ success: true, ...pricing });
 });
 
 function getPlanMeta(pType, isFreeClaim = false) {
   const norm = (pType || '').toString().toLowerCase().trim();
-  if (norm === 'starter' || norm === '7_days' || norm === '7days' || norm.includes('7')) {
-    return { plan: 'starter', planName: '7 Days', planDays: 7 };
+  if (norm === 'starter' || norm === '14_days' || norm === '14days' || norm === '7_days' || norm === '7days' || norm.includes('14') || norm.includes('7')) {
+    return { plan: 'starter', planName: '14 Days', planDays: 14 };
   }
   if (norm === 'pro' || norm === '30_days' || norm === '30days' || norm.includes('30') || norm.includes('month')) {
     return { plan: 'pro', planName: '30 Days', planDays: 30 };
@@ -1620,18 +1777,32 @@ app.post('/api/payment/create-order', async (req, res) => {
       return res.status(409).json({ error: 'This personalized URL is already taken. Try another.' });
     }
 
-    // 👑 Premium Free Custom URL Claim Bypass
+    // 👑 Premium Free Custom URL Claim Bypass (Strictly for Pro or higher plans)
+    const PRO_OR_HIGHER_PLANS = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'];
     let isProOrHigherPaid = false;
     if (websiteId) {
       try {
-        const crRec = await cockroach.getRecord(websiteId);
-        if (crRec && crRec.is_premium) {
-          const crPlan = (crRec.metadata?.plan || 'pro').toLowerCase();
-          if (crPlan !== 'starter' && crPlan !== 'free') {
+        const crPayments = await cockroach.getAllPayments(500);
+        const paidPayment = crPayments.find(p => p.websiteId === websiteId && (p.status === 'PAID' || p.status === 'COMPLETED'));
+        if (paidPayment && paidPayment.plan) {
+          const normPlan = paidPayment.plan.toLowerCase();
+          if (PRO_OR_HIGHER_PLANS.includes(normPlan)) {
             isProOrHigherPaid = true;
           }
         }
       } catch (e) { }
+
+      if (!isProOrHigherPaid) {
+        try {
+          const crRec = await cockroach.getRecord(websiteId);
+          if (crRec && (crRec.is_premium || crRec.isPremium)) {
+            const crPlan = (crRec.metadata?.plan || crRec.plan || '').toLowerCase();
+            if (PRO_OR_HIGHER_PLANS.includes(crPlan)) {
+              isProOrHigherPaid = true;
+            }
+          }
+        } catch (e) { }
+      }
 
       if (!isProOrHigherPaid) {
         try {
@@ -1640,7 +1811,7 @@ app.post('/api/payment/create-order', async (req, res) => {
             const paidCheck = await Payment.findOne({ websiteId, status: 'PAID' }).lean();
             if (paidCheck && paidCheck.plan) {
               const normPlan = paidCheck.plan.toLowerCase();
-              if (normPlan !== 'starter' && normPlan !== 'free') {
+              if (PRO_OR_HIGHER_PLANS.includes(normPlan)) {
                 isProOrHigherPaid = true;
               }
             }
@@ -1649,13 +1820,17 @@ app.post('/api/payment/create-order', async (req, res) => {
       }
     }
 
-    const clientPlan = (req.body.plan || '').toLowerCase();
-    const isClientProOrHigher = (clientPlan === 'pro' || clientPlan === 'pro_plus' || clientPlan === 'proplus' || clientPlan === 'forever' || clientPlan === 'infinity');
+    const isFreeClaimRequested = (Number(req.body.amount) === 0) || (req.body.isPremium === true && isProOrHigherPaid);
 
-    const isFreePremiumClaim = (req.body.amount === 0) || (req.body.isPremium === true && (isProOrHigherPaid || isClientProOrHigher || req.body.amount === 0));
+    if (isFreeClaimRequested) {
+      if (!isProOrHigherPaid) {
+        return res.status(403).json({
+          error: 'Free custom URL is only available for Pro or higher plans. Starter plan users can purchase a custom URL.',
+          requiresPayment: true
+        });
+      }
 
-    if (isFreePremiumClaim) {
-      console.log(`[Premium Free Claim] Granting free custom URL "${sanitizedSlug}" for websiteId: ${websiteId}`);
+      console.log(`[Premium Free Claim] Granting free custom URL "${sanitizedSlug}" for Pro+ websiteId: ${websiteId}`);
       let finalPhotoUrl = qrCenterPhotoUrl || '';
       if (qrCenterPhotoBase64) {
         try {
@@ -1666,7 +1841,7 @@ app.post('/api/payment/create-order', async (req, res) => {
       }
 
       const freeOrderId = `ORD_PREM_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const freePlanMeta = getPlanMeta(req.body.plan, true);
+      const freePlanMeta = getPlanMeta(req.body.plan || 'pro', true);
 
       await cockroach.savePayment({
         orderId: freeOrderId,
@@ -2119,15 +2294,15 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
 
     if (isAlreadyPaid) {
       const planKey = (payment?.plan || 'starter').toLowerCase();
-      const canClaimFreeCustomUrl = planKey !== 'starter' && planKey !== 'free';
+      const canClaimFreeCustomUrl = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'].includes(planKey);
       return res.json({
         status: 'PAID',
         isPremium: true,
         orderId: resolvedOrderId,
         websiteId: payment?.websiteId,
         plan: payment?.plan || 'starter',
-        planName: payment?.planName || 'Starter (30+ Days)',
-        planDays: payment?.planDays || 30,
+        planName: payment?.planName || (planKey === 'starter' ? 'Starter Plan' : 'Pro Plan'),
+        planDays: payment?.planDays || (planKey === 'starter' ? 14 : 30),
         canClaimFreeCustomUrl,
         slug: payment?.slug,
         amount: payment?.amount,
@@ -2159,9 +2334,9 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
             slug: finalized?.slug || payment?.slug || '',
             websiteId: finalized?.websiteId || payment?.websiteId,
             plan: finalized?.plan || payment?.plan || 'starter',
-            planName: finalized?.planName || payment?.planName || 'Starter (30+ Days)',
-            planDays: finalized?.planDays || payment?.planDays || 30,
-            canClaimFreeCustomUrl: planKey !== 'starter' && planKey !== 'free',
+            planName: finalized?.planName || payment?.planName || (planKey === 'starter' ? 'Starter Plan' : 'Pro Plan'),
+            planDays: finalized?.planDays || payment?.planDays || (planKey === 'starter' ? 14 : 30),
+            canClaimFreeCustomUrl: ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'].includes(planKey),
             amount: finalized?.amount || payment?.amount,
             currency: finalized?.currency || payment?.currency || 'USD'
           });
@@ -2175,9 +2350,9 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
             slug: finalized?.slug || payment?.slug || '',
             websiteId: finalized?.websiteId || payment?.websiteId,
             plan: finalized?.plan || payment?.plan || 'starter',
-            planName: finalized?.planName || payment?.planName || 'Starter (30+ Days)',
-            planDays: finalized?.planDays || payment?.planDays || 30,
-            canClaimFreeCustomUrl: planKey !== 'starter' && planKey !== 'free',
+            planName: finalized?.planName || payment?.planName || (planKey === 'starter' ? 'Starter Plan' : 'Pro Plan'),
+            planDays: finalized?.planDays || payment?.planDays || (planKey === 'starter' ? 14 : 30),
+            canClaimFreeCustomUrl: ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'].includes(planKey),
             amount: finalized?.amount || payment?.amount,
             currency: finalized?.currency || payment?.currency || 'USD'
           });
@@ -2215,9 +2390,9 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
               slug: finalized?.slug || payment?.slug || '',
               websiteId: finalized?.websiteId || payment?.websiteId,
               plan: finalized?.plan || payment?.plan || 'starter',
-              planName: finalized?.planName || payment?.planName || 'Starter (30+ Days)',
-              planDays: finalized?.planDays || payment?.planDays || 30,
-              canClaimFreeCustomUrl: planKey !== 'starter' && planKey !== 'free',
+              planName: finalized?.planName || payment?.planName || (planKey === 'starter' ? 'Starter Plan' : 'Pro Plan'),
+              planDays: finalized?.planDays || payment?.planDays || (planKey === 'starter' ? 14 : 30),
+              canClaimFreeCustomUrl: ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'].includes(planKey),
               amount: finalized?.amount || payment?.amount,
               currency: finalized?.currency || payment?.currency || 'INR'
             });
@@ -2234,7 +2409,7 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
 
     const isPaid = isAlreadyPaid || isDirectPaid;
     const planKey = (payment?.plan || 'starter').toLowerCase();
-    const canClaimFreeCustomUrl = isPaid && planKey !== 'starter' && planKey !== 'free';
+    const canClaimFreeCustomUrl = isPaid && ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'].includes(planKey);
 
     res.json({
       status: isPaid ? 'PAID' : (payment?.status || 'PENDING'),
@@ -2242,8 +2417,8 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
       orderId: payment?.orderId || resolvedOrderId,
       websiteId: payment?.websiteId,
       plan: payment?.plan || 'starter',
-      planName: payment?.planName || 'Starter (30+ Days)',
-      planDays: payment?.planDays || 30,
+      planName: payment?.planName || (planKey === 'starter' ? 'Starter Plan' : 'Pro Plan'),
+      planDays: payment?.planDays || (planKey === 'starter' ? 14 : 30),
       canClaimFreeCustomUrl,
       slug: payment?.slug,
       amount: payment?.amount,
@@ -2259,6 +2434,7 @@ app.get('/api/payment/status/:orderId', async (req, res) => {
 app.get('/api/premium/check/:websiteId', async (req, res) => {
   try {
     const { websiteId } = req.params;
+    const PRO_OR_HIGHER_PLANS = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'];
 
     // 1. Check CockroachDB Primary DB
     let isPremium = false;
@@ -2269,28 +2445,34 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
     let paymentId = null;
 
     try {
-      const crRecord = await cockroach.getRecord(websiteId);
-      if (crRecord && (crRecord.isPremium || crRecord.is_premium)) {
-        isPremium = true;
-        plan = 'pro';
-        planName = '👑 Premium';
-        planDays = 365;
-      }
-
       const crPayments = await cockroach.getAllPayments(500);
       const paidPayment = crPayments.find(p => p.websiteId === websiteId && (p.status === 'PAID' || p.status === 'COMPLETED'));
       if (paidPayment) {
         isPremium = true;
-        plan = paidPayment.plan || 'starter';
-        planName = paidPayment.planName || 'Starter Plan';
-        planDays = paidPayment.planDays || 30;
+        plan = (paidPayment.plan || 'starter').toLowerCase();
+        planName = paidPayment.planName || (plan === 'starter' ? 'Starter Plan' : 'Pro Plan');
+        planDays = paidPayment.planDays || (plan === 'starter' ? 14 : 30);
         paymentId = paidPayment.orderId;
         slug = paidPayment.slug;
       }
 
+      const crRecord = await cockroach.getRecord(websiteId);
+      if (crRecord && (crRecord.isPremium || crRecord.is_premium)) {
+        isPremium = true;
+        const recPlan = (crRecord.metadata?.plan || crRecord.plan || '').toLowerCase();
+        if (recPlan) {
+          plan = recPlan;
+          planName = crRecord.metadata?.planName || crRecord.planName || (recPlan === 'starter' ? 'Starter Plan' : 'Pro Plan');
+          planDays = crRecord.metadata?.planDays || (plan === 'starter' ? 14 : (plan === 'forever' || plan === 'infinity' ? 99999 : 30));
+        } else if (!paidPayment) {
+          plan = 'starter';
+          planName = 'Starter Plan';
+          planDays = 14;
+        }
+      }
+
       const crSlug = await cockroach.getCustomSlug(websiteId);
       if (crSlug) {
-        isPremium = true;
         slug = slug || crSlug.slug;
       }
     } catch (e) { }
@@ -2304,8 +2486,8 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
           if (paidPayment) {
             isPremium = true;
             plan = (paidPayment.plan || 'starter').toLowerCase();
-            planName = paidPayment.planName || 'Starter Plan';
-            planDays = paidPayment.planDays || 30;
+            planName = paidPayment.planName || (plan === 'starter' ? 'Starter Plan' : 'Pro Plan');
+            planDays = paidPayment.planDays || (plan === 'starter' ? 14 : 30);
             paymentId = paidPayment.orderId;
             slug = paidPayment.slug;
           }
@@ -2313,12 +2495,13 @@ app.get('/api/premium/check/:websiteId', async (req, res) => {
       } catch (e) { }
     }
 
-    const canClaimFreeCustomUrl = isPremium && plan !== 'starter' && plan !== 'free';
+    const normPlan = (plan || 'free').toLowerCase();
+    const canClaimFreeCustomUrl = isPremium && PRO_OR_HIGHER_PLANS.includes(normPlan);
 
     res.json({
       isPremium,
       websiteId,
-      plan,
+      plan: normPlan,
       planName,
       planDays,
       canClaimFreeCustomUrl,
@@ -3435,8 +3618,18 @@ app.get('/:slug', async (req, res, next) => {
   next();
 });
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+// Serve static files from the 'public' directory with optimized caching
+app.use(express.static(path.join(__dirname, 'public'), {
+  extensions: ['html'],
+  maxAge: '7d',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    } else if (filePath.match(/\.(js|css|webp|png|jpg|jpeg|gif|svg|woff2|woff|ttf|mp3)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+    }
+  }
+}));
 
 // 🕒 Vercel Scheduled Cron: Auto-cleanup expired free storage & database records
 app.get('/api/cron/cleanup', async (req, res) => {

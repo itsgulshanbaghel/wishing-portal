@@ -535,6 +535,214 @@
       filter: brightness(1.05);
     }
 
+    /* ---------- DEVICE RECOMMENDATION POPUP (Small Screens) ---------- */
+    .device-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 6, 20, 0.65);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 10005;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .device-modal.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .device-modal-card {
+      background: var(--bg-secondary);
+      border-radius: 28px;
+      max-width: 420px;
+      width: 92%;
+      padding: 26px 22px 22px;
+      box-shadow: 0 25px 50px -12px rgba(123, 93, 246, 0.28), 0 0 0 1px var(--card-border);
+      position: relative;
+      text-align: center;
+      transform: translateY(18px) scale(0.96);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+
+    .device-modal.show .device-modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .device-modal-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 120px;
+      background: var(--accent-gradient);
+      filter: blur(50px);
+      opacity: 0.32;
+      pointer-events: none;
+      border-radius: 50%;
+    }
+
+    .device-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 2;
+    }
+
+    .device-modal-close:hover {
+      background: var(--accent-solid);
+      color: #ffffff;
+      transform: rotate(90deg);
+    }
+
+    .device-modal-icon-wrap {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(123, 93, 246, 0.15), rgba(255, 122, 47, 0.15));
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      color: var(--accent-solid);
+      font-size: 26px;
+      box-shadow: 0 8px 20px -6px var(--glow);
+    }
+
+    .device-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(123, 93, 246, 0.12);
+      border: 1px solid rgba(123, 93, 246, 0.25);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent-solid);
+      margin-bottom: 10px;
+    }
+
+    .device-modal-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .device-modal-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.48;
+      margin-bottom: 14px;
+    }
+
+    .device-features-pill-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .device-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .device-pill i {
+      color: var(--accent-solid);
+      font-size: 0.72rem;
+    }
+
+    .device-modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .device-btn-primary,
+    .device-btn-secondary {
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .device-btn-primary {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 14px var(--glow);
+    }
+
+    .device-btn-primary:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+    }
+
+    .device-btn-secondary {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      color: var(--text-primary);
+    }
+
+    .device-btn-secondary:hover {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .device-btn-secondary.copied {
+      background: #10b981;
+      color: #ffffff;
+      border-color: #10b981;
+    }
+
     /* ---------- MAIN SPLIT LAYOUT ---------- */
     .split-layout {
       display: flex;
@@ -1604,6 +1812,38 @@
     </div>
   </div>
 
+  <!-- Device Recommendation Popup (Mobile & Small Screens) -->
+  <div class="device-modal" id="deviceModal" aria-hidden="true" role="dialog" aria-labelledby="deviceModalTitle">
+    <div class="device-modal-card">
+      <button class="device-modal-close" id="deviceModalCloseBtn" aria-label="Close popup"><i class="fas fa-times"></i></button>
+      <div class="device-modal-icon-wrap">
+        <i class="fas fa-laptop"></i>
+      </div>
+      <div class="device-badge">
+        <i class="fas fa-sparkles"></i> <span id="deviceTipBadge">Desktop Recommended</span>
+      </div>
+      <h3 class="device-modal-title" id="deviceModalTitle">Better on Laptop or PC 💻</h3>
+      <p class="device-modal-desc" id="deviceModalDesc">
+        For the best experience, rich interactive tools, and full split-screen editing, we recommend opening this page on a desktop or laptop.
+      </p>
+      
+      <div class="device-features-pill-row">
+        <div class="device-pill"><i class="fas fa-columns"></i> <span id="pillSplit">Split View</span></div>
+        <div class="device-pill"><i class="fas fa-wand-magic-sparkles"></i> <span id="pillEdit">Live Customizer</span></div>
+        <div class="device-pill"><i class="fas fa-expand"></i> <span id="pillVisuals">Full Preview</span></div>
+      </div>
+
+      <div class="device-modal-actions">
+        <button class="device-btn-secondary" id="deviceCopyLinkBtn">
+          <i class="fas fa-link"></i> <span id="deviceCopyBtnText">Copy Link for PC</span>
+        </button>
+        <button class="device-btn-primary" id="deviceContinueBtn">
+          <span id="deviceContinueBtnText">Continue on Mobile</span> <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       // ---------- MODAL ----------
@@ -1700,7 +1940,16 @@
           alertCustomizeFirst: "✨ Select a template first before customizing!",
           alertUploadInvalid: "Please upload a valid .html template file",
           alertSignin: "Sign in feature coming soon!",
-          shareInsta: "📸 Copy this link to share on Instagram:"
+          shareInsta: "📸 Copy this link to share on Instagram:",
+          deviceTipBadge: "Desktop Recommended",
+          deviceTipTitle: "Better on Laptop or PC 💻",
+          deviceTipDesc: "For the best experience, rich interactive tools, and full split-screen editing, we recommend opening this page on a desktop or laptop.",
+          devicePillSplit: "Split View",
+          devicePillEdit: "Live Customizer",
+          devicePillVisuals: "Full Preview",
+          deviceTipCopyBtn: "Copy Link for PC",
+          deviceTipCopied: "Link Copied! ✓",
+          deviceTipContinueBtn: "Continue on Mobile"
         },
         hi: {
           navHome: "होम", navCreate: "सरप्राइज़ बनाएं", navWhy: "Greeter ही क्यों", navPrivacy: "गोपनीयता", navContact: "संपर्क करें",
@@ -1712,7 +1961,16 @@
           alertCustomizeFirst: "✨ कस्टमाइज़ करने से पहले टेम्पलेट चुनें!",
           alertUploadInvalid: "कृपया मान्य .html टेम्पलेट फ़ाइल अपलोड करें",
           alertSignin: "लॉगिन सुविधा जल्द आ रही है!",
-          shareInsta: "📸 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:"
+          shareInsta: "📸 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:",
+          deviceTipBadge: "डेस्कटॉप अनुशंसित",
+          deviceTipTitle: "लैपटॉप या PC पर बेहतर अनुभव 💻",
+          deviceTipDesc: "शानदार प्रीव्यू अनुभव, लाइव कस्टमाइज़ेशन और फुल स्प्लिट-स्क्रीन टूल्स के लिए, हम इसे लैपटॉप या कंप्यूटर पर खोलने की सलाह देते हैं।",
+          devicePillSplit: "स्प्लिट व्यू",
+          devicePillEdit: "लाइव कस्टमाइज़र",
+          devicePillVisuals: "फुल प्रीव्यू",
+          deviceTipCopyBtn: "PC के लिए लिंक कॉपी करें",
+          deviceTipCopied: "लिंक कॉपी हो गया! ✓",
+          deviceTipContinueBtn: "मोबाइल पर जारी रखें"
         }
       };
       let currentLang = localStorage.getItem('greeter_lang') || 'en';
@@ -1743,6 +2001,19 @@
           inlineSelect.options[2].text = '❤️ ' + t.eventChips[2];
           inlineSelect.options[3].text = '🎉 ' + t.eventChips[3];
         }
+        if (document.getElementById('deviceTipBadge')) document.getElementById('deviceTipBadge').innerText = t.deviceTipBadge;
+        if (document.getElementById('deviceModalTitle')) document.getElementById('deviceModalTitle').innerText = t.deviceTipTitle;
+        if (document.getElementById('deviceModalDesc')) document.getElementById('deviceModalDesc').innerText = t.deviceTipDesc;
+        if (document.getElementById('pillSplit')) document.getElementById('pillSplit').innerText = t.devicePillSplit;
+        if (document.getElementById('pillEdit')) document.getElementById('pillEdit').innerText = t.devicePillEdit;
+        if (document.getElementById('pillVisuals')) document.getElementById('pillVisuals').innerText = t.devicePillVisuals;
+        const copyBtn = document.getElementById('deviceCopyLinkBtn');
+        const copyBtnText = document.getElementById('deviceCopyBtnText');
+        if (copyBtnText && (!copyBtn || !copyBtn.classList.contains('copied'))) {
+          copyBtnText.innerText = t.deviceTipCopyBtn;
+        }
+        if (document.getElementById('deviceContinueBtnText')) document.getElementById('deviceContinueBtnText').innerText = t.deviceTipContinueBtn;
+
         document.getElementById('langToggleBtn').innerHTML = `<i class="fas fa-globe"></i><span>${lang === 'en' ? 'हिन्दी' : 'English'}</span>`;
         localStorage.setItem('greeter_lang', lang);
         if (window.currentSelectedPath) {
@@ -1961,8 +2232,12 @@
           localStorage.setItem('pendingPremiumForNextWebsite', 'true');
         }
 
-        const viewId = new URLSearchParams(window.location.search).get('view') || userData.websiteId || '';
-        window.location.href = viewId ? `customize.html?restore=${viewId}` : "customize.html";
+        const viewId = new URLSearchParams(window.location.search).get('view') || 
+                       new URLSearchParams(window.location.search).get('restore') || 
+                       userData.websiteId || 
+                       localStorage.getItem('activeCustomizerWebsiteId') || 
+                       '';
+        window.location.href = viewId ? `customize.html?restore=${encodeURIComponent(viewId)}` : "customize.html";
       }
 
       document.getElementById('customizeBtn').onclick = proceedToCustomize;
@@ -2094,11 +2369,108 @@
           leftPanel.style.flex = `0 0 ${clampWidth(leftPanel.getBoundingClientRect().width)}px`;
         }
       });
+      // ---------- DEVICE RECOMMENDATION POPUP CONTROLLER ----------
+      const deviceModal = document.getElementById('deviceModal');
+      const deviceModalCloseBtn = document.getElementById('deviceModalCloseBtn');
+      const deviceContinueBtn = document.getElementById('deviceContinueBtn');
+      const deviceCopyLinkBtn = document.getElementById('deviceCopyLinkBtn');
+
+      function isSmallScreen() {
+        return window.innerWidth <= 768 || (window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+      }
+
+      function showDeviceModal() {
+        if (!deviceModal) return;
+        deviceModal.classList.add('show');
+        deviceModal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeDeviceModal() {
+        if (!deviceModal) return;
+        deviceModal.classList.remove('show');
+        deviceModal.setAttribute('aria-hidden', 'true');
+        try {
+          sessionStorage.setItem('greeter_pc_recommendation_dismissed', 'true');
+        } catch (e) {}
+      }
+
+      if (deviceModalCloseBtn) deviceModalCloseBtn.addEventListener('click', closeDeviceModal);
+      if (deviceContinueBtn) deviceContinueBtn.addEventListener('click', closeDeviceModal);
+      if (deviceModal) {
+        deviceModal.addEventListener('click', function (e) {
+          if (e.target === deviceModal) closeDeviceModal();
+        });
+      }
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && deviceModal && deviceModal.classList.contains('show')) {
+          closeDeviceModal();
+        }
+      });
+
+      if (deviceCopyLinkBtn) {
+        deviceCopyLinkBtn.addEventListener('click', function () {
+          const createUrl = new URL('/create.html', window.location.href).href;
+          const originalHTML = deviceCopyLinkBtn.innerHTML;
+          const successText = translations[currentLang]?.deviceTipCopied || 'Link Copied! ✓';
+
+          const copySuccess = () => {
+            deviceCopyLinkBtn.classList.add('copied');
+            deviceCopyLinkBtn.innerHTML = `<i class="fas fa-check"></i> <span>${successText}</span>`;
+            setTimeout(() => {
+              deviceCopyLinkBtn.classList.remove('copied');
+              deviceCopyLinkBtn.innerHTML = originalHTML;
+              applyLanguage(currentLang);
+            }, 2000);
+          };
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(createUrl).then(copySuccess).catch(() => {
+              fallbackCopy(createUrl, copySuccess);
+            });
+          } else {
+            fallbackCopy(createUrl, copySuccess);
+          }
+        });
+      }
+
+      function fallbackCopy(text, cb) {
+        try {
+          const tempInput = document.createElement('input');
+          tempInput.value = text;
+          tempInput.style.position = 'fixed';
+          tempInput.style.opacity = '0';
+          document.body.appendChild(tempInput);
+          tempInput.select();
+          document.execCommand('copy');
+          document.body.removeChild(tempInput);
+          if (cb) cb();
+        } catch (e) {
+          console.warn('Copy failed:', e);
+        }
+      }
+
+      function checkDeviceRecommendation() {
+        try {
+          const dismissed = sessionStorage.getItem('greeter_pc_recommendation_dismissed');
+          if (!dismissed && isSmallScreen()) {
+            setTimeout(showDeviceModal, 650);
+          }
+        } catch (e) {
+          if (isSmallScreen()) {
+            setTimeout(showDeviceModal, 650);
+          }
+        }
+      }
+
       (async () => await loadTemplatesForEvent(currentEvent))();
+
       window.addEventListener('load', async () => {
         scrollActiveEventIntoView();
         const inlineSelectEl = document.getElementById('inlineEventSelect');
         if (inlineSelectEl) inlineSelectEl.value = currentEvent;
+
+        // Check and trigger device recommendation popup if on small screen
+        checkDeviceRecommendation();
 
         // Show premium badge using server-side verification with sessionStorage fallback
         const urlParams = new URLSearchParams(window.location.search);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -96,23 +96,27 @@
       z-index: 0;
     }
 
-    /* ---------- NAVBAR ---------- */
+    /* ---------- FLOATING PILL NAVBAR (Matches Home Page) ---------- */
     .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 74px;
-      background: var(--navbar-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--card-border);
-      z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
+      gap: 12px;
+      padding: 12px 28px;
+      margin: 16px auto 8px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 1000;
       transition: var(--mode-transition);
+      max-width: 1280px;
+      width: calc(100% - 32px);
+      flex-wrap: nowrap;
     }
 
     .logo {
@@ -120,6 +124,7 @@
       align-items: center;
       gap: 10px;
       text-decoration: none;
+      flex-shrink: 0;
     }
 
     .logo img {
@@ -136,7 +141,7 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 24px;
     }
 
     .nav-links a {
@@ -167,75 +172,97 @@
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
+      flex-shrink: 0;
     }
 
-    .btn-icon {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text-primary);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: 0.2s;
-    }
-
-    .btn-icon:hover {
-      transform: scale(1.06);
-      border-color: var(--accent-solid);
-      color: var(--accent-solid);
-    }
-
+    .mode-toggle,
     .lang-toggle {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      color: var(--text-primary);
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
+      backdrop-filter: blur(8px);
+      height: 38px;
+      border-radius: 32px;
+      display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      cursor: pointer;
       transition: 0.2s;
+      color: var(--text-primary);
     }
 
+    .mode-toggle {
+      width: 38px;
+    }
+
+    .mode-toggle i {
+      font-size: 1rem;
+      color: var(--text-primary);
+      transition: transform 0.3s ease;
+    }
+
+    .mode-toggle:hover,
     .lang-toggle:hover {
       border-color: var(--accent-solid);
       color: var(--accent-solid);
     }
 
-    .btn-create-nav {
-      background: var(--accent-gradient);
-      color: white !important;
-      padding: 9px 20px;
-      border-radius: 25px;
-      font-weight: 600 !important;
-      font-size: 0.9rem !important;
+    .lang-toggle {
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      gap: 6px;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--card-border);
+      padding: 8px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: 0.2s;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 14px rgba(123, 93, 246, 0.3);
-      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .btn-create-nav:hover {
+    .btn-outline:hover {
+      border-color: var(--accent-solid);
+      color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.08);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(123, 93, 246, 0.45);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      background: var(--card-bg);
+      border-radius: 32px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      transition: 0.2s;
+    }
+
+    .mobile-menu-btn:hover {
+      border-color: var(--accent-solid);
+      color: var(--accent-solid);
     }
 
     /* ---------- MAIN CONTENT ---------- */
     .main-container {
       position: relative;
       z-index: 1;
-      max-width: 900px;
-      margin: 110px auto 60px;
+      max-width: 920px;
+      margin: 36px auto 60px;
       padding: 0 20px;
       flex: 1;
       width: 100%;
@@ -271,6 +298,7 @@
       margin-bottom: 14px;
       background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-solid) 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -281,28 +309,17 @@
       margin: 0 auto;
     }
 
-    /* Search Box Container */
+    /* Search Box Container - Soft Card Aesthetic */
     .search-card {
       background: var(--card-bg);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 32px;
+      border-radius: 32px;
+      padding: 36px 32px;
       box-shadow: var(--shadow-md);
       margin-bottom: 40px;
       position: relative;
-      overflow: hidden;
-    }
-
-    .search-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--accent-gradient);
     }
 
     .search-input-group {
@@ -321,7 +338,7 @@
 
     .input-icon {
       position: absolute;
-      left: 18px;
+      left: 20px;
       color: var(--text-secondary);
       font-size: 1.1rem;
       pointer-events: none;
@@ -330,12 +347,12 @@
     .search-input {
       width: 100%;
       height: 58px;
-      padding: 0 95px 0 52px;
-      border-radius: 16px;
+      padding: 0 120px 0 52px;
+      border-radius: 50px;
       border: 2px solid var(--border-light);
       background: var(--input-bg);
       color: var(--text-primary);
-      font-size: 1rem;
+      font-size: 0.98rem;
       font-family: inherit;
       outline: none;
       transition: all 0.25s ease;
@@ -346,15 +363,39 @@
       box-shadow: 0 0 0 4px var(--glow);
     }
 
-    .paste-btn {
+    .input-actions-wrapper {
       position: absolute;
       right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .clear-input-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 50%;
+      transition: color 0.2s;
+    }
+
+    .clear-input-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .paste-btn {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       color: var(--accent-solid);
-      padding: 6px 14px;
-      border-radius: 10px;
-      font-size: 0.8rem;
+      padding: 7px 16px;
+      border-radius: 30px;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
@@ -372,8 +413,8 @@
       background: var(--accent-gradient);
       color: white;
       border: none;
-      border-radius: 16px;
-      padding: 0 32px;
+      border-radius: 50px;
+      padding: 0 36px;
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
@@ -715,20 +756,27 @@
       margin-bottom: 16px;
     }
 
+    .recent-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
     .btn-recent-edit {
+      flex: 1;
       background: var(--input-bg);
       border: 1px solid var(--card-border);
       color: var(--accent-solid);
-      padding: 10px 16px;
+      padding: 9px 14px;
       border-radius: 10px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       text-align: center;
       text-decoration: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       transition: 0.2s;
     }
 
@@ -736,6 +784,59 @@
       background: var(--accent-gradient);
       color: white;
       border-color: transparent;
+    }
+
+    .btn-recent-view {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .btn-recent-view:hover {
+      color: var(--accent-solid);
+      border-color: var(--accent-solid);
+    }
+
+    .btn-recent-delete {
+      background: rgba(148, 163, 184, 0.15);
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-recent-delete:hover,
+    .btn-recent-delete:focus-visible {
+      opacity: 1;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.3);
+      transform: scale(1.08);
+    }
+
+    .btn-recent-delete:active {
+      transform: scale(0.92);
+    }
+
+    .btn-recent-delete i {
+      pointer-events: none;
     }
 
     .empty-recent {
@@ -832,51 +933,63 @@
       transform: translateY(0);
     }
 
-    /* ---------- FOOTER ---------- */
+    /* ---------- 4-COLUMN FOOTER (Matches Home Page) ---------- */
     .footer {
       background: var(--card-bg);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-top: 1px solid var(--card-border);
-      padding: 48px 32px 32px;
-      margin-top: 60px;
+      padding: 56px 32px 36px;
+      margin-top: 80px;
+      transition: var(--mode-transition);
     }
 
     .footer-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
-      gap: 36px;
+      gap: 40px;
+    }
+
+    .footer-brand {
+      flex: 1 1 280px;
+      max-width: 320px;
     }
 
     .footer-brand p {
       color: var(--text-secondary);
       font-size: 0.9rem;
-      max-width: 280px;
-      margin-top: 10px;
+      line-height: 1.6;
+      margin-top: 12px;
     }
 
     .footer-links {
       display: flex;
       flex-wrap: wrap;
-      gap: 48px;
+      gap: 50px;
     }
 
-    .footer-col h5 {
+    .footer-col h4 {
       font-family: 'Outfit', sans-serif;
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       font-weight: 700;
-      margin-bottom: 14px;
+      margin-bottom: 18px;
       color: var(--text-primary);
     }
 
+    .footer-col ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
     .footer-col a {
-      display: block;
+      display: inline-block;
       text-decoration: none;
       color: var(--text-secondary);
-      font-size: 0.88rem;
-      margin-bottom: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
       transition: color 0.2s;
     }
 
@@ -884,9 +997,49 @@
       color: var(--accent-solid);
     }
 
-    .footer-bottom {
-      max-width: 1100px;
-      margin: 32px auto 0;
+    .footer-social {
+      flex: 0 1 200px;
+    }
+
+    .footer-social h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: var(--text-primary);
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .social-icons a {
+      width: 42px;
+      height: 42px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .social-icons a:hover {
+      background: var(--accent-gradient);
+      color: white;
+      border-color: transparent;
+      transform: translateY(-3px);
+    }
+
+    .copyright {
+      max-width: 1200px;
+      margin: 40px auto 0;
       padding-top: 24px;
       border-top: 1px solid var(--border-light);
       text-align: center;
@@ -894,35 +1047,132 @@
       color: var(--text-secondary);
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
+    /* ---------- RESPONSIVE BREAKPOINTS ---------- */
+    @media (max-width: 992px) {
       .navbar {
-        padding: 0 20px;
+        width: calc(100% - 24px);
+        padding: 10px 20px;
       }
       .nav-links {
+        gap: 18px;
+      }
+      .footer-inner {
+        gap: 32px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        width: calc(100% - 20px);
+        padding: 10px 16px;
+        margin: 10px auto 4px;
+      }
+      .logo img {
+        height: 32px;
+      }
+      .nav-links {
+        position: absolute;
+        top: 65px;
+        left: 0;
+        right: 0;
+        background: var(--navbar-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: var(--shadow-lg);
+        padding: 24px 20px;
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        z-index: 1000;
+        border: 1px solid var(--card-border);
+        opacity: 0;
+        transform: translateY(-12px);
+        pointer-events: none;
+        transition: all 0.3s ease;
         display: none;
+      }
+      .nav-links.show {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+      .mobile-menu-btn {
+        display: flex;
+      }
+      .nav-actions .btn-outline {
+        display: none;
+      }
+      .main-container {
+        margin: 20px auto 40px;
+        padding: 0 16px;
       }
       .edit-hero h1 {
         font-size: 2.1rem;
       }
       .search-card {
-        padding: 22px 18px;
+        padding: 24px 18px;
+        border-radius: 24px;
       }
       .search-input-group {
         flex-direction: column;
+        gap: 12px;
+      }
+      .search-input {
+        height: 52px;
+        font-size: 0.92rem;
+        padding: 0 115px 0 46px;
+      }
+      .input-icon {
+        left: 16px;
+        font-size: 0.95rem;
       }
       .btn-find {
         width: 100%;
+        height: 52px;
         justify-content: center;
+      }
+      .search-hints {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
       }
       .website-result-card {
         padding: 22px 18px;
+        border-radius: 24px;
       }
       .result-actions {
         flex-direction: column;
       }
       .btn-edit-open, .btn-secondary-action {
         width: 100%;
+      }
+      .footer {
+        padding: 40px 20px 24px;
+      }
+      .footer-inner {
+        flex-direction: column;
+        gap: 32px;
+      }
+      .footer-links {
+        gap: 36px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .edit-hero h1 {
+        font-size: 1.75rem;
+      }
+      .edit-hero p {
+        font-size: 0.95rem;
+      }
+      .hero-badge {
+        font-size: 0.75rem;
+        padding: 4px 14px;
+      }
+      .recent-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -931,34 +1181,36 @@
 <body>
   <div class="bg-ambient"></div>
 
-  <!-- Navbar -->
+  <!-- Floating Pill Navbar (Matches Home Page) -->
   <nav class="navbar">
     <a href="./" class="logo">
       <img class="light-logo" src="/assets/Light_logo.webp" alt="TheGreeter">
       <img class="dark-logo" src="/assets/Dark_logo.webp" alt="TheGreeter">
     </a>
 
-    <div class="nav-links">
-      <a href="./">Home</a>
-      <a href="/create">Create</a>
-      <a href="/edit" class="active">Edit Website</a>
-      <a href="/WhyGreeter">Why Greeter</a>
-      <a href="/blog">Blog</a>
-      <a href="/ContactUs">Contact</a>
+    <div class="nav-links" id="navLinks">
+      <a href="./" id="navHome">Home</a>
+      <a href="/create" id="navCreate">Create</a>
+      <a href="/edit" id="navEdit" class="active">Edit</a>
+      <a href="/WhyGreeter" id="navWhy">Why Greeter</a>
+      <a href="/blog" id="navShowcase">Blog</a>
+      <a href="/ContactUs" id="navPricing">Contact Us</a>
     </div>
 
     <div class="nav-actions">
-      <button class="lang-toggle" id="langBtn">
+      <div class="lang-toggle" id="langBtn" title="Switch Language">
         <i class="fas fa-globe"></i>
         <span id="langLabel">हिन्दी</span>
+      </div>
+      <div class="mode-toggle" id="themeToggle" title="Toggle Theme">
+        <i class="fas fa-sun" id="themeIcon"></i>
+      </div>
+      <button class="btn-outline" id="signinBtn" type="button">
+        <i class="far fa-user-circle"></i> <span>Sign in</span>
       </button>
-      <button class="btn-icon" id="themeToggle" aria-label="Toggle Theme">
-        <i class="fas fa-moon" id="themeIcon"></i>
-      </button>
-      <a href="/create" class="btn-create-nav">
-        <i class="fas fa-magic"></i>
-        <span>Create New</span>
-      </a>
+      <div class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation Menu">
+        <i class="fas fa-bars"></i>
+      </div>
     </div>
   </nav>
 
@@ -985,14 +1237,19 @@
             type="text"
             id="websiteInput"
             class="search-input"
-            placeholder="Paste website link or enter ID (e.g. gllqs6we69 or happy-birthday-sam)"
+            placeholder="Enter website link, ID, or custom name..."
             autocomplete="off"
             spellcheck="false"
           />
-          <button type="button" class="paste-btn" id="pasteBtn" title="Paste from clipboard">
-            <i class="fas fa-paste"></i>
-            <span>Paste</span>
-          </button>
+          <div class="input-actions-wrapper">
+            <button type="button" class="clear-input-btn" id="clearInputBtn" title="Clear input">
+              <i class="fas fa-times-circle"></i>
+            </button>
+            <button type="button" class="paste-btn" id="pasteBtn" title="Paste from clipboard">
+              <i class="fas fa-paste"></i>
+              <span>Paste</span>
+            </button>
+          </div>
         </div>
         <button type="button" class="btn-find" id="findBtn">
           <i class="fas fa-search" id="findBtnIcon"></i>
@@ -1004,6 +1261,7 @@
         <span><i class="fas fa-info-circle"></i> Works with full links, vanity URLs, or 10-digit IDs.</span>
         <div class="hint-chips">
           <span class="hint-chip" onclick="applySample('gllqs6we69')">e.g. gllqs6we69</span>
+          <span class="hint-chip" onclick="applySample('happy-birthday-sam')">e.g. happy-birthday-sam</span>
         </div>
       </div>
     </section>
@@ -1055,6 +1313,10 @@
           <a href="#" id="viewLiveBtn" class="btn-secondary-action" target="_blank" rel="noopener">
             <i class="fas fa-external-link-alt"></i>
             <span>View Live</span>
+          </a>
+          <a href="#" id="shareDashboardBtn" class="btn-secondary-action" target="_blank" rel="noopener">
+            <i class="fas fa-qrcode"></i>
+            <span>QR & Share</span>
           </a>
           <button type="button" id="copyShareBtn" class="btn-secondary-action">
             <i class="fas fa-copy"></i>
@@ -1140,36 +1402,50 @@
     <span id="toastMsg">Link copied to clipboard!</span>
   </div>
 
-  <!-- Footer -->
+  <!-- 4-Column Footer (Matches Home Page) -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <a href="./" class="logo">
-          <img class="light-logo" src="/assets/Light_logo.webp" alt="TheGreeter">
-          <img class="dark-logo" src="/assets/Dark_logo.webp" alt="TheGreeter">
+        <a href="./" class="logo" style="margin-bottom: 16px; display: inline-flex;">
+          <img class="light-logo" src="/assets/Light_logo.webp" alt="TheGreeter Logo">
+          <img class="dark-logo" src="/assets/Dark_logo.webp" alt="TheGreeter Logo">
         </a>
-        <p>Create unforgettable personalized digital experiences for birthdays, anniversaries, and special celebrations.</p>
+        <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals - no coding needed.</p>
       </div>
 
       <div class="footer-links">
         <div class="footer-col">
-          <h5>Quick Links</h5>
-          <a href="./">Home</a>
-          <a href="/create">Create Wish Page</a>
-          <a href="/edit">Edit Website</a>
-          <a href="/WhyGreeter">Why Greeter</a>
+          <h4 id="exploreTitle">Explore</h4>
+          <ul>
+            <li><a href="/create" id="exploreTemplates">Create</a></li>
+            <li><a href="/WhyGreeter" id="exploreFeatures">Why Greeter</a></li>
+            <li><a href="/blog" id="exploreBlog">Blog & Ideas</a></li>
+            </ul>
         </div>
         <div class="footer-col">
-          <h5>Legal</h5>
-          <a href="/privacy.html">Privacy Policy</a>
-          <a href="/terms&cond.html">Terms of Service</a>
-          <a href="/ContactUs">Contact Us</a>
+          <h4 id="supportTitle">Support</h4>
+          <ul>
+            <li><a href="/ContactUs" id="supportHelp">Help Center</a></li>
+            <li><a href="/privacy.html" id="supportPrivacy">Privacy Policy</a></li>
+            <li><a href="/terms&cond.html" id="supportTerms">Terms of Use</a></li>
+            <li><a href="/ContactUs" id="supportContact">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-social">
+        <h4 id="followTitle">Follow us</h4>
+        <div class="social-icons">
+          <a href="#" id="footerFacebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://instagram.com/thegreeter.in" target="_blank" rel="noopener" id="footerInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" id="footerWhatsApp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          <a href="#" id="footerTwitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
         </div>
       </div>
     </div>
 
-    <div class="footer-bottom">
-      &copy; <span id="currentYear">2026</span> TheGreeter.in — All rights reserved.
+    <div class="copyright">
+      &copy; <span id="currentYear">2026</span> TheGreeter.in — Made with ❤️ for memorable moments worldwide.
     </div>
   </footer>
 
@@ -1213,6 +1489,7 @@
 
     // DOM Elements
     const websiteInput = document.getElementById('websiteInput');
+    const clearInputBtn = document.getElementById('clearInputBtn');
     const findBtn = document.getElementById('findBtn');
     const findBtnIcon = document.getElementById('findBtnIcon');
     const findBtnText = document.getElementById('findBtnText');
@@ -1226,8 +1503,39 @@
     const themeIcon = document.getElementById('themeIcon');
     const langBtn = document.getElementById('langBtn');
     const langLabel = document.getElementById('langLabel');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const navLinksDiv = document.getElementById('navLinks');
+    const signinBtn = document.getElementById('signinBtn');
     const recentGrid = document.getElementById('recentGrid');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+    // Mobile Menu Drawer Handler
+    if (mobileMenuBtn && navLinksDiv) {
+      mobileMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navLinksDiv.classList.toggle('show');
+        const icon = mobileMenuBtn.querySelector('i');
+        if (navLinksDiv.classList.contains('show')) {
+          icon.className = 'fas fa-times';
+        } else {
+          icon.className = 'fas fa-bars';
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!navLinksDiv.contains(e.target) && !mobileMenuBtn.contains(e.target) && navLinksDiv.classList.contains('show')) {
+          navLinksDiv.classList.remove('show');
+          mobileMenuBtn.querySelector('i').className = 'fas fa-bars';
+        }
+      });
+    }
+
+    // Sign in Button Handler
+    if (signinBtn) {
+      signinBtn.addEventListener('click', () => {
+        showToast('Sign in portal coming soon! Manage your websites below.');
+      });
+    }
 
     // Setup Theme
     function initTheme() {
@@ -1258,14 +1566,30 @@
         document.getElementById('heroBadgeText').innerText = 'वेबसाइट एडिटर पोर्टल';
         document.getElementById('heroTitle').innerText = 'अपनी विशिंग वेबसाइट एडिट करें ✨';
         document.getElementById('heroDesc').innerText = 'अपनी वेबसाइट का लिंक या ID दर्ज करें और कोई भी फोटो, गाना, सीक्रेट मैसेज या फीचर तुरंत अपडेट करें।';
-        websiteInput.placeholder = 'वेबसाइट का लिंक या ID पेस्ट करें (उदा: gllqs6we69)';
+        websiteInput.placeholder = 'वेबसाइट का लिंक, ID या नाम दर्ज करें...';
         findBtnText.innerText = 'वेबसाइट खोजें';
+        const exploreTitle = document.getElementById('exploreTitle');
+        if (exploreTitle) exploreTitle.innerText = 'एक्सप्लोर करें';
+        const supportTitle = document.getElementById('supportTitle');
+        if (supportTitle) supportTitle.innerText = 'सहायता';
+        const followTitle = document.getElementById('followTitle');
+        if (followTitle) followTitle.innerText = 'फॉलो करें';
+        const brandText = document.getElementById('footerBrandText');
+        if (brandText) brandText.innerText = 'जन्मदिन, प्रपोजल, सालगिरह और त्योहारों के लिए यादगार डिजिटल सरप्राइज बनाएं।';
       } else {
         document.getElementById('heroBadgeText').innerText = 'Website Editor Portal';
         document.getElementById('heroTitle').innerText = 'Edit Your Wishing Website ✨';
         document.getElementById('heroDesc').innerText = 'Enter your website link, ID, or custom name to load your creation into the editor and update any message, photo, audio, or feature.';
-        websiteInput.placeholder = 'Paste website link or enter ID (e.g. gllqs6we69 or happy-birthday-sam)';
+        websiteInput.placeholder = 'Enter website link, ID, or custom name...';
         findBtnText.innerText = 'Find Website';
+        const exploreTitle = document.getElementById('exploreTitle');
+        if (exploreTitle) exploreTitle.innerText = 'Explore';
+        const supportTitle = document.getElementById('supportTitle');
+        if (supportTitle) supportTitle.innerText = 'Support';
+        const followTitle = document.getElementById('followTitle');
+        if (followTitle) followTitle.innerText = 'Follow us';
+        const brandText = document.getElementById('footerBrandText');
+        if (brandText) brandText.innerText = 'Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals - no coding needed.';
       }
     }
 
@@ -1280,12 +1604,34 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    // Input clear button state
+    function updateClearBtn() {
+      if (websiteInput.value.trim().length > 0) {
+        clearInputBtn.style.display = 'inline-flex';
+      } else {
+        clearInputBtn.style.display = 'none';
+      }
+    }
+
+    websiteInput.addEventListener('input', () => {
+      updateClearBtn();
+      hideError();
+    });
+
+    clearInputBtn.addEventListener('click', () => {
+      websiteInput.value = '';
+      updateClearBtn();
+      hideError();
+      websiteInput.focus();
+    });
+
     // Clipboard Paste
     pasteBtn.addEventListener('click', async () => {
       try {
         const text = await navigator.clipboard.readText();
         if (text) {
           websiteInput.value = text.trim();
+          updateClearBtn();
           showToast('Pasted from clipboard!');
           handleSearch();
         }
@@ -1295,9 +1641,39 @@
       }
     });
 
+    // Universal copy with fallback
+    function copyToClipboard(text, successMsg = 'Copied to clipboard!') {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(successMsg);
+        }).catch(() => {
+          fallbackCopy(text, successMsg);
+        });
+      } else {
+        fallbackCopy(text, successMsg);
+      }
+    }
+
+    function fallbackCopy(text, successMsg) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast(successMsg);
+      } catch (e) {
+        showToast('Please copy: ' + text);
+      }
+    }
+
     // Sample filler
     window.applySample = function(id) {
       websiteInput.value = id;
+      updateClearBtn();
       handleSearch();
     };
 
@@ -1306,29 +1682,39 @@
       if (!raw) return '';
       let clean = raw.trim();
 
-      // Check query params ?id=..., ?view=..., ?restore=...
-      const match = clean.match(/[?&](id|view|restore)=([a-z0-9]+)/i);
-      if (match && match[2]) return match[2];
+      // Check query params ?id=..., ?view=..., ?restore=..., ?slug=...
+      const match = clean.match(/[?&](id|view|restore|slug)=([a-z0-9_-]+)/i);
+      if (match && match[2]) return match[2].toLowerCase();
 
-      // If full URL, take last segment
+      // Normalize if URL without protocol
+      if (!clean.startsWith('http://') && !clean.startsWith('https://') && clean.includes('/')) {
+        clean = 'https://' + clean;
+      }
+
+      // If full URL, take last segment or query param
       try {
         if (clean.startsWith('http://') || clean.startsWith('https://')) {
           const u = new URL(clean);
+          const qId = u.searchParams.get('id') || u.searchParams.get('view') || u.searchParams.get('restore') || u.searchParams.get('slug');
+          if (qId) return qId.toLowerCase();
+
           const path = u.pathname.replace(/\/+$/, '');
           const segs = path.split('/').filter(Boolean);
           if (segs.length > 0) {
             const last = segs[segs.length - 1].replace(/\.html$/i, '');
-            if (last !== 'customize' && last !== 'preview' && last !== 'share') {
-              return last;
+            if (last !== 'customize' && last !== 'preview' && last !== 'share' && last !== 'edit') {
+              return last.toLowerCase();
             }
           }
         }
       } catch (e) {}
 
       // Strip domain-like prefix if typed without protocol
-      clean = clean.replace(/^(thegreeter\.in|www\.thegreeter\.in)\//i, '');
+      clean = clean.replace(/^(https?:\/\/)?(www\.)?(thegreeter\.in|wishing-portal[a-z0-9.-]*|localhost:[0-9]+|127\.0\.0\.1:[0-9]+)\//i, '');
       clean = clean.replace(/^(generated\/|templates\/)/i, '');
       clean = clean.replace(/\.html.*$/i, '');
+      clean = clean.split('?')[0].split('#')[0];
+      clean = clean.replace(/\s+/g, '-');
 
       return clean.replace(/[^a-z0-9-]/gi, '').toLowerCase();
     }
@@ -1346,20 +1732,39 @@
       // UI Loading state
       findBtn.disabled = true;
       findBtnIcon.className = 'fas fa-spinner fa-spin';
-      findBtnText.innerText = 'Searching...';
+      findBtnText.innerText = currentLang === 'hi' ? 'खोज रहे हैं...' : 'Searching...';
       hideError();
       resultSection.style.display = 'none';
 
       try {
-        const res = await fetch(`${API_BASE}/api/resolve/${encodeURIComponent(target)}`);
-        const data = await res.json();
+        let res = null;
+        let data = null;
 
-        if (res.ok && data.found) {
+        // Primary resolve attempt
+        try {
+          res = await fetch(`${API_BASE}/api/resolve/${encodeURIComponent(target)}`);
+          if (res.ok) data = await res.json();
+        } catch (e1) {
+          console.warn('API_BASE resolve attempt error:', e1);
+        }
+
+        // Secondary fallback to same-origin /api/resolve (proxied by Cloudflare Pages or local dev)
+        if (!data && API_BASE !== window.location.origin) {
+          try {
+            res = await fetch(`/api/resolve/${encodeURIComponent(target)}`);
+            if (res.ok) data = await res.json();
+          } catch (e2) {
+            console.warn('Relative resolve attempt error:', e2);
+          }
+        }
+
+        if (data && data.found) {
           renderResultCard(data);
           saveToDeviceHistory(data);
           loadRecentWebsites();
         } else {
-          showError(data.error || 'No wishing website found with that link or ID. Please verify your link.');
+          const errMsg = (data && data.error) ? data.error : 'No wishing website found with that link or ID. Please check the spelling or paste the full URL.';
+          showError(errMsg);
         }
       } catch (err) {
         console.error('Resolve error:', err);
@@ -1406,13 +1811,16 @@
         slugTag.style.display = 'none';
       }
 
-      // Premium status badge
+      // Premium status badge & PIN Protection badge
       const planBadge = document.getElementById('resultPlanBadge');
-      if (data.isPremium) {
-        planBadge.innerHTML = `<span class="badge-premium"><i class="fas fa-crown"></i> Premium Active</span>`;
-      } else {
-        planBadge.innerHTML = `<span class="badge-free"><i class="fas fa-check"></i> Active</span>`;
+      let badgeHtml = data.isPremium
+        ? `<span class="badge-premium"><i class="fas fa-crown"></i> Premium Active</span>`
+        : `<span class="badge-free"><i class="fas fa-check"></i> Active</span>`;
+
+      if (data.hasEditPin) {
+        badgeHtml += ` <span class="badge-pin-protected" style="margin-left: 6px; font-size: 0.8rem; font-weight: 700; padding: 6px 14px; border-radius: 20px; background: rgba(245, 158, 11, 0.15); color: #d97706; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-lock"></i> Protected</span>`;
       }
+      planBadge.innerHTML = badgeHtml;
 
       // Features Chips
       const chipsContainer = document.getElementById('featuresChips');
@@ -1436,7 +1844,7 @@
       const editorUrl = `/generated/customize.html?restore=${encodeURIComponent(data.websiteId)}${templateParam}&fresh=1&src=edit&t=${Date.now()}`;
       const liveUrl = data.slug
         ? `/${data.slug}`
-        : `/generated/customize.html?view=${data.websiteId}&_v=c`;
+        : `/generated/customize.html?view=${encodeURIComponent(data.websiteId)}&_v=c`;
 
       const openEditorBtn = document.getElementById('openEditorBtn');
       openEditorBtn.href = editorUrl;
@@ -1444,11 +1852,15 @@
       const viewLiveBtn = document.getElementById('viewLiveBtn');
       viewLiveBtn.href = liveUrl;
 
+      const shareDashboardBtn = document.getElementById('shareDashboardBtn');
+      if (shareDashboardBtn) {
+        shareDashboardBtn.href = `/generated/share.html?view=${encodeURIComponent(data.websiteId)}`;
+      }
+
       const copyShareBtn = document.getElementById('copyShareBtn');
       copyShareBtn.onclick = () => {
-        const fullShareUrl = window.location.origin + liveUrl;
-        navigator.clipboard.writeText(fullShareUrl);
-        showToast('Share link copied to clipboard!');
+        const fullShareUrl = liveUrl.startsWith('http') ? liveUrl : (window.location.origin + liveUrl);
+        copyToClipboard(fullShareUrl, 'Website link copied to clipboard!');
       };
 
       resultSection.style.display = 'block';
@@ -1467,25 +1879,122 @@
           eventType: data.eventType || 'wishing',
           template: data.templateName || null,
           isPremium: !!data.isPremium,
+          hasEditPin: !!data.hasEditPin,
           updatedAt: new Date().toISOString()
         });
         localStorage.setItem('greeter_my_websites', JSON.stringify(filtered.slice(0, 12)));
       } catch (e) {}
     }
 
+    // Remove single item from device history
+    window.removeFromHistory = function(id, slug) {
+      try {
+        const idLower = String(id || '').trim().toLowerCase();
+        const slugLower = String(slug || '').trim().toLowerCase();
+
+        // 1. Remove from modern greeter_my_websites list
+        const list = JSON.parse(localStorage.getItem('greeter_my_websites') || '[]');
+        const filtered = list.filter(item => {
+          if (!item) return false;
+          const itemId = String(item.id || '').trim().toLowerCase();
+          const itemSlug = String(item.slug || '').trim().toLowerCase();
+          if (idLower && (itemId === idLower || itemSlug === idLower)) return false;
+          if (slugLower && (itemId === slugLower || itemSlug === slugLower)) return false;
+          return true;
+        });
+        localStorage.setItem('greeter_my_websites', JSON.stringify(filtered));
+
+        // 2. Remove legacy config keys for this specific ID and slug
+        if (id) {
+          localStorage.removeItem('magic_config_' + id);
+          localStorage.removeItem('customizationState_' + id);
+          localStorage.removeItem('premium_' + id);
+          localStorage.removeItem('custom_css_' + id);
+        }
+        if (slug) {
+          localStorage.removeItem('magic_config_' + slug);
+          localStorage.removeItem('customizationState_' + slug);
+          localStorage.removeItem('premium_' + slug);
+          localStorage.removeItem('custom_css_' + slug);
+        }
+
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (!k) continue;
+          const kLower = k.toLowerCase();
+          if (idLower && (kLower.endsWith('_' + idLower) || kLower.includes('config_' + idLower))) {
+            localStorage.removeItem(k);
+          }
+        }
+
+        // 3. Keep in hidden list so legacy scans don't resurrect it
+        let hidden = [];
+        try {
+          hidden = JSON.parse(localStorage.getItem('greeter_hidden_websites') || '[]');
+        } catch (e) {}
+        if (id && !hidden.includes(id)) hidden.push(id);
+        if (idLower && !hidden.includes(idLower)) hidden.push(idLower);
+        if (slug && !hidden.includes(slug)) hidden.push(slug);
+        if (slugLower && !hidden.includes(slugLower)) hidden.push(slugLower);
+        localStorage.setItem('greeter_hidden_websites', JSON.stringify(hidden));
+
+        // 4. Re-render UI
+        loadRecentWebsites();
+        showToast('Removed from device history');
+      } catch (e) {
+        console.error('Error removing from history:', e);
+      }
+    };
+
+    // Event delegation on recentGrid to ensure delete clicks NEVER fail
+    recentGrid.addEventListener('click', (e) => {
+      const delBtn = e.target.closest('.btn-recent-delete');
+      if (delBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = delBtn.getAttribute('data-id');
+        const slug = delBtn.getAttribute('data-slug');
+        const card = delBtn.closest('.recent-card');
+        if (card) {
+          card.style.transition = 'all 0.2s ease';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.85)';
+          setTimeout(() => {
+            card.remove();
+            removeFromHistory(id, slug);
+          }, 180);
+        } else {
+          removeFromHistory(id, slug);
+        }
+      }
+    });
+
     // Load recent websites from localStorage
     function loadRecentWebsites() {
-      let websites = [];
+      let hidden = [];
       try {
-        websites = JSON.parse(localStorage.getItem('greeter_my_websites') || '[]');
+        hidden = JSON.parse(localStorage.getItem('greeter_hidden_websites') || '[]');
       } catch (e) {}
 
-      // Fallback: scan any legacy magic_config_* keys
+      let websites = [];
+      try {
+        const stored = JSON.parse(localStorage.getItem('greeter_my_websites') || '[]');
+        websites = stored.filter(item => {
+          if (!item || !item.id) return false;
+          const idLower = String(item.id).toLowerCase();
+          const slugLower = item.slug ? String(item.slug).toLowerCase() : '';
+          return !hidden.includes(item.id) && !hidden.includes(idLower) && (!slugLower || !hidden.includes(slugLower));
+        });
+      } catch (e) {}
+
+      // Fallback: scan any legacy magic_config_* keys if no modern records
       if (websites.length === 0) {
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           if (key && key.startsWith('magic_config_')) {
             const id = key.replace('magic_config_', '');
+            const idLower = id.toLowerCase();
+            if (hidden.includes(id) || hidden.includes(idLower)) continue;
             try {
               const cfg = JSON.parse(localStorage.getItem(key));
               websites.push({
@@ -1522,29 +2031,74 @@
         const card = document.createElement('div');
         card.className = 'recent-card';
         const templateQuery = w.template ? `&template=${encodeURIComponent(w.template)}` : '';
+        const editorUrl = `/generated/customize.html?restore=${encodeURIComponent(w.id)}${templateQuery}&fresh=1&src=edit&t=${Date.now()}`;
+        const liveUrl = w.slug ? `/${w.slug}` : `/generated/customize.html?view=${encodeURIComponent(w.id)}&_v=c`;
+
         card.innerHTML = `
           <div>
             <div class="recent-card-top">
               <div class="recent-event-icon">
                 <i class="fas ${evtInfo.icon}" style="color: var(--accent-solid);"></i>
               </div>
-              ${w.isPremium ? '<span class="badge-premium" style="font-size:0.7rem; padding:3px 10px;"><i class="fas fa-crown"></i> PRO</span>' : ''}
+              <div style="display: flex; gap: 6px; align-items: center;">
+                ${w.isPremium ? '<span class="badge-premium" style="font-size:0.7rem; padding:3px 10px;"><i class="fas fa-crown"></i> PRO</span>' : ''}
+                ${w.hasEditPin ? '<span class="badge-pin-protected" title="Creator Edit PIN Protected" style="font-size:0.68rem; padding:3px 8px; border-radius:12px; background:rgba(245, 158, 11, 0.15); color:#d97706; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="fas fa-lock"></i> PIN</span>' : ''}
+                <button type="button" class="btn-recent-delete" data-id="${escapeHtml(w.id)}" data-slug="${escapeHtml(w.slug || '')}" title="Remove from device history" aria-label="Remove website">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
             </div>
             <div class="recent-recipient">${escapeHtml(w.recipientName || 'Special Person')}</div>
-            <div class="recent-id">ID: ${escapeHtml(w.id)}</div>
+            <div class="recent-id">ID: <code>${escapeHtml(w.id)}</code>${w.slug ? `<span style="color: var(--accent-solid); margin-left: 6px;">/${escapeHtml(w.slug)}</span>` : ''}</div>
           </div>
-          <a href="/generated/customize.html?restore=${encodeURIComponent(w.id)}${templateQuery}&fresh=1&src=edit&t=${Date.now()}" class="btn-recent-edit">
-            <i class="fas fa-pencil-alt"></i>
-            <span>Edit Website</span>
-          </a>
+          <div class="recent-card-actions">
+            <a href="${editorUrl}" class="btn-recent-edit">
+              <i class="fas fa-pencil-alt"></i>
+              <span>Edit</span>
+            </a>
+            <a href="${liveUrl}" target="_blank" rel="noopener" class="btn-recent-view" title="View Live Website">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </div>
         `;
+
+        const delBtn = card.querySelector('.btn-recent-delete');
+        if (delBtn) {
+          delBtn.onclick = function(e) {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+            card.style.transition = 'all 0.2s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.85)';
+            setTimeout(() => {
+              card.remove();
+              removeFromHistory(w.id, w.slug);
+            }, 180);
+          };
+        }
+
         recentGrid.appendChild(card);
       });
     }
 
-    clearHistoryBtn.addEventListener('click', () => {
+    clearHistoryBtn.addEventListener('click', (e) => {
+      if (e) e.preventDefault();
       if (confirm('Clear your recently edited websites list on this browser?')) {
-        localStorage.removeItem('greeter_my_websites');
+        try {
+          localStorage.removeItem('greeter_my_websites');
+          // Also clear all legacy keys starting with magic_config_, customizationState_, and premium_
+          const toRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('magic_config_') || key.startsWith('customizationState_') || key.startsWith('premium_') || key.startsWith('custom_css_'))) {
+              toRemove.push(key);
+            }
+          }
+          toRemove.forEach(k => localStorage.removeItem(k));
+          localStorage.removeItem('greeter_hidden_websites');
+        } catch (e) {}
         loadRecentWebsites();
         showToast('History cleared');
       }
@@ -1575,6 +2129,7 @@
       const urlId = params.get('id') || params.get('view') || params.get('restore') || params.get('slug');
       if (urlId) {
         websiteInput.value = urlId;
+        updateClearBtn();
         handleSearch();
       }
     }

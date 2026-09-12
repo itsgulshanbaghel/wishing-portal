@@ -769,8 +769,9 @@
         <a href="./" id="navHome">Home</a>
         <a href="create" id="navCreate">Create</a>
         <a href="WhyGreeter" id="navWhy">Why Greeter</a>
+        <a href="Pricing" id="navPricing">Pricing</a>
         <a href="blog" id="navShowcase">Blog</a>
-        <a href="ContactUs" id="navPricing">Contact Us</a>
+        <a href="ContactUs" id="navContact">Contact Us</a>
       </div>
       <div class="nav-actions">
         <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
@@ -971,8 +972,8 @@
             <ul>
               <li><a href="create" id="exploreTemplates">Create</a></li>
               <li><a href="WhyGreeter" id="exploreFeatures">Why Greeter</a></li>
-              <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
-              <li><a href="AboutUs" id="explorePricing">About Us</a></li>
+              <li><a href="Pricing" id="explorePricing">Pricing</a></li>
+              <li><a href="AboutUs" id="exploreAbout">About Us</a></li>
             </ul>
           </div>
           <div class="footer-col">
@@ -1006,7 +1007,7 @@
     const translations = {
       en: {
         // Navbar (5 items)
-        nav: ["Home", "Create", "Why Greeter", "Blog", "Contact Us"],
+        nav: ["Home", "Create", "Why Greeter", "Pricing", "Blog", "Contact Us"],
         signin: "Sign in",
         // Privacy policy sections (unchanged from original)
         policyTitle: "PRIVACY POLICY",
@@ -1073,14 +1074,14 @@
         // Footer texts
         footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
         exploreTitle: "Explore",
-        exploreLinks: ["Create", "Why Greeter", "How it Works", "About Us"],
+        exploreLinks: ["Create", "Why Greeter", "Pricing", "About Us"],
         supportTitle: "Support",
         supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
         followTitle: "Follow us",
         copyright: "© 2026 Greeter · Make every moment magical"
       },
       hi: {
-        nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"],
+        nav: ["होम", "बनाएं", "ग्रीटर क्यों", "मूल्य निर्धारण", "ब्लॉग", "संपर्क करें"],
         signin: "लॉगिन करें",
         policyTitle: "गोपनीयता नीति",
         s1Title: "1. दायरा और स्वीकृति",
@@ -1145,7 +1146,7 @@
         footerNote: "किसी भी गोपनीयता से संबंधित पूछताछ के लिए, कृपया हमारे डेटा संरक्षण अधिकारी से greeterindia@gmail.com पर संपर्क करें।",
         footerBrand: "जन्मदिन, प्रपोज़ल, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
         exploreTitle: "देखिए",
-        exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "हमारे बारे में"],
+        exploreLinks: ["बनाएं", "ग्रीटर क्यों", "मूल्य निर्धारण", "हमारे बारे में"],
         supportTitle: "सहायता",
         supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
         followTitle: "हमें फॉलो करें",
@@ -1193,7 +1194,7 @@
       document.getElementById('supportTitle').innerText = t.supportTitle;
       document.getElementById('followTitle').innerText = t.followTitle;
       document.getElementById('copyrightText').innerText = t.copyright;
-      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'explorePricing', 'exploreAbout'];
       t.exploreLinks.forEach((txt, idx) => { if (document.getElementById(exploreIds[idx])) document.getElementById(exploreIds[idx]).innerText = txt; });
       const supportIds = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
       t.supportLinks.forEach((txt, idx) => { if (document.getElementById(supportIds[idx])) document.getElementById(supportIds[idx]).innerText = txt; });

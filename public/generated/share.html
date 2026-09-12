@@ -2455,7 +2455,6 @@
             <ul>
               <li><a href="../create.html" id="exploreTemplates">Create</a></li>
               <li><a href="../WhyGreeter.html" id="exploreFeatures">Why Greeter</a></li>
-              <li><a href="../index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
               <li><a href="../AboutUs" id="explorePricing">About Us</a></li>
             </ul>
           </div>
@@ -2714,9 +2713,10 @@
       if (!isPersonalized) {
         document.getElementById('backToCustomizeBtn').addEventListener('click', () => {
           const urlParams = new URLSearchParams(window.location.search);
-          const viewId = urlParams.get('view');
+          const viewId = urlParams.get('view') || urlParams.get('id') || urlParams.get('websiteId') || localStorage.getItem('activeCustomizerWebsiteId');
           if (viewId) {
-            window.location.href = `./customize.html?restore=${viewId}`;
+            localStorage.setItem('activeCustomizerWebsiteId', viewId);
+            window.location.href = `./customize.html?restore=${encodeURIComponent(viewId)}`;
           } else {
             window.location.href = './customize.html';
           }
@@ -2740,7 +2740,7 @@
         en: {
           nav: ["Home", "Create", "Why Greeter", "Privacy", "Contact Us"], signin: "Sign in",
           footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
-          exploreTitle: "Explore", exploreLinks: ["Create", "Why Greeter", "How it Works", "About Us"],
+          exploreTitle: "Explore", exploreLinks: ["Create", "Why Greeter", "About Us"],
           supportTitle: "Support", supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
           followTitle: "Follow us", copyright: "© 2026 Greeter · Make every moment magical",
           signinAlert: "Sign in feature coming soon!",
@@ -2760,7 +2760,7 @@
         hi: {
           nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"], signin: "लॉगिन करें",
           footerBrand: "जन्मदिन, प्रपोज़ल, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
-          exploreTitle: "देखिए", exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "हमारे बारे में"],
+          exploreTitle: "देखिए", exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "हमारे बारे में"],
           supportTitle: "सहायता", supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क"],
           followTitle: "हमें फॉलो करें", copyright: "© 2026 Greeter · हर पल जादुई बनाएँ",
           signinAlert: "लॉगिन सुविधा जल्द आ रही है!",
@@ -2794,7 +2794,7 @@
         // Footer
         document.getElementById('footerBrandText').innerText = t.footerBrand;
         document.getElementById('exploreTitle').innerText = t.exploreTitle;
-        const exploreIds = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+        const exploreIds = ['exploreTemplates', 'exploreFeatures', 'explorePricing'];
         t.exploreLinks.forEach((txt, i) => { if (document.getElementById(exploreIds[i])) document.getElementById(exploreIds[i]).innerText = txt; });
         document.getElementById('supportTitle').innerText = t.supportTitle;
         const supportIds = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];

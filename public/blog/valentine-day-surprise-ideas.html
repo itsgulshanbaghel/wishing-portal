@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta name="google-adsense-account" content="ca-pub-8043014881280685">
@@ -261,7 +261,6 @@
             <ul>
               <li><a href="../create" id="exploreTemplates">Create</a></li>
               <li><a href="../WhyGreeter" id="exploreFeatures">Why Greeter</a></li>
-              <li><a href="../index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
               <li><a href="../AboutUs" id="explorePricing">About Us</a></li>
             </ul>
           </div>
@@ -353,7 +352,7 @@
         relatedCardTitles: ["Romantic Ways to Propose Online", "Anniversary Surprise Ideas", "Surprise Your Best Friend Online"],
         footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
         exploreTitle: "Explore",
-        exploreLinks: ["Create", "Why Greeter", "How it Works", "About Us"],
+        exploreLinks: ["Create", "Why Greeter", "About Us"],
         supportTitle: "Support",
         supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
         followTitle: "Follow us",
@@ -405,7 +404,7 @@
       const relatedTitles = document.querySelectorAll('.related-card-title');
       t.relatedCardTitles.forEach((text, idx) => { if (relatedTitles[idx]) relatedTitles[idx].innerText = text; });
       document.getElementById('footerBrandText').innerText = t.footerBrand;
-      const exploreLinks = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+      const exploreLinks = ['exploreTemplates', 'exploreFeatures', 'explorePricing'];
       t.exploreLinks.forEach((text, idx) => { if (document.getElementById(exploreLinks[idx])) document.getElementById(exploreLinks[idx]).innerText = text; });
       const supportLinks = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
       t.supportLinks.forEach((text, idx) => { if (document.getElementById(supportLinks[idx])) document.getElementById(supportLinks[idx]).innerText = text; });

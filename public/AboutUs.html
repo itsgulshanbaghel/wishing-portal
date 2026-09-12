@@ -762,8 +762,9 @@
         <a href="./" id="navHome">Home</a>
         <a href="create" id="navCreate">Create</a>
         <a href="WhyGreeter" id="navWhy">Why Greeter</a>
+        <a href="Pricing" id="navPricing">Pricing</a>
         <a href="blog" id="navShowcase">Blog</a>
-        <a href="ContactUs" id="navPricing">Contact Us</a>
+        <a href="ContactUs" id="navContact">Contact Us</a>
       </div>
       <div class="nav-actions">
         <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
@@ -811,7 +812,7 @@
       </div>
 
       <div class="about-section">
-        <h2 id="s4Title"><i class="fas fa-headset"></i> Support & Transparency</h2>
+        <h2 id="s4Title"><i class="fas fa-headset"></i> Support &amp; Transparency</h2>
         <p id="s4Text">We believe in full transparency and being close to our community. If you have any inquiries, suggestions, or need help with any feature of the platform, feel free to reach out to us. We typically reply within 24 hours.</p>
         <p id="s4Text2">You can visit our <a href="ContactUs" style="color: var(--accent-solid); font-weight: 600; text-decoration: none;">Contact Page</a> or write directly to our team at <a href="mailto:greeterindia@gmail.com" style="color: var(--accent-solid); font-weight: 600; text-decoration: none;">greeterindia@gmail.com</a>.</p>
       </div>
@@ -825,7 +826,7 @@
             <img src="assets/Light_logo.webp" alt="Greeter Logo" class="logo-light">
             <img src="assets/Dark_logo.webp" alt="Greeter Logo" class="logo-dark">
           </a>
-          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.</p>
+          <p id="footerBrandText">Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals &mdash; no coding needed.</p>
         </div>
         <div class="footer-links">
           <div class="footer-col">
@@ -833,7 +834,7 @@
             <ul>
               <li><a href="create" id="exploreTemplates">Create</a></li>
               <li><a href="WhyGreeter" id="exploreFeatures">Why Greeter</a></li>
-              <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
+              <li><a href="Pricing" id="explorePricing">Pricing</a></li>
               <li><a href="AboutUs" id="exploreAbout" class="active">About Us</a></li>
             </ul>
           </div>
@@ -867,13 +868,13 @@
     // === TRANSLATIONS ===
     const translations = {
       en: {
-        nav: ["Home", "Create", "Why Greeter", "Blog", "Contact Us"],
+        nav: ["Home", "Create", "Why Greeter", "Pricing", "Blog", "Contact Us"],
         signin: "Sign in",
         aboutTitle: "About TheGreeter",
         aboutSub: "Bringing people closer through beautiful, interactive, and personalized digital wishes.",
         s1Title: "Our Story",
         s1Text: "TheGreeter was founded with a simple yet powerful idea: traditional greeting cards and boring text messages are outdated. In a digital world where everyone is connected, our wishes should be just as alive, creative, and memorable as the moments we celebrate.",
-        s1Text2: "We created a portal that allows anyone, regardless of their technical background, to build stunning custom websites and wish pages in under 60 seconds. Whether it’s a birthday, an anniversary, a heartfelt love proposal, or a festive celebration, our platform acts as the bridge that conveys genuine emotions digitally.",
+        s1Text2: "We created a portal that allows anyone, regardless of their technical background, to build stunning custom websites and wish pages in under 60 seconds. Whether it's a birthday, an anniversary, a heartfelt love proposal, or a festive celebration, our platform acts as the bridge that conveys genuine emotions digitally.",
         s2Title: "Our Mission",
         s2Text: "Our mission is to spread joy and create unforgettable memories worldwide. We aim to offer an easy-to-use, premium, and free solution for digital greetings. By incorporating beautiful animations, custom backgrounds, responsive grids, and personalized music tracks, we ensure every greeting feels like a genuine surprise gift.",
         s3Title: "Core Values",
@@ -888,14 +889,14 @@
         s4Text2: "You can visit our Contact Page or write directly to our team at greeterindia@gmail.com.",
         footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
         exploreTitle: "Explore",
-        exploreLinks: ["Create", "Why Greeter", "How it Works", "About Us"],
+        exploreLinks: ["Create", "Why Greeter", "Pricing", "About Us"],
         supportTitle: "Support",
         supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
         followTitle: "Follow us",
         copyright: "© 2026 Greeter · Make every moment magical"
       },
       hi: {
-        nav: ["होम", "बनाएं", "Greeter क्यों", "ब्लॉग", "संपर्क करें"],
+        nav: ["होम", "बनाएं", "Greeter क्यों", "मूल्य (Pricing)", "ब्लॉग", "संपर्क करें"],
         signin: "लॉगिन करें",
         aboutTitle: "हमारे बारे में",
         aboutSub: "सुंदर, इंटरैक्टिव और व्यक्तिगत डिजिटल शुभकामनाओं के माध्यम से लोगों को करीब लाना।",
@@ -916,7 +917,7 @@
         s4Text2: "आप हमारे संपर्क पृष्ठ पर जा सकते हैं या सीधे greeterindia@gmail.com पर हमारी टीम को लिख सकते हैं।",
         footerBrand: "जन्मदिन, प्रस्ताव, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएं — बिना कोडिंग के।",
         exploreTitle: "एक्सप्लोर",
-        exploreLinks: ["बनाएं", "Greeter क्यों", "यह कैसे काम करता है", "हमारे बारे में"],
+        exploreLinks: ["बनाएं", "Greeter क्यों", "मूल्य (Pricing)", "हमारे बारे में"],
         supportTitle: "सहायता",
         supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
         followTitle: "हमें फॉलो करें",
@@ -934,8 +935,9 @@
       document.getElementById('navHome').innerText = t.nav[0];
       document.getElementById('navCreate').innerText = t.nav[1];
       document.getElementById('navWhy').innerText = t.nav[2];
-      document.getElementById('navShowcase').innerText = t.nav[3];
-      document.getElementById('navPricing').innerText = t.nav[4];
+      document.getElementById('navPricing').innerText = t.nav[3];
+      document.getElementById('navShowcase').innerText = t.nav[4];
+      if (document.getElementById('navContact')) document.getElementById('navContact').innerText = t.nav[5];
       document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
       
       // Hero
@@ -974,7 +976,7 @@
       document.getElementById('followTitle').innerText = t.followTitle;
       document.getElementById('copyrightText').innerText = t.copyright;
       
-      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'exploreAbout'];
+      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'explorePricing', 'exploreAbout'];
       t.exploreLinks.forEach((txt, idx) => { if (document.getElementById(exploreIds[idx])) document.getElementById(exploreIds[idx]).innerText = txt; });
       const supportIds = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
       t.supportLinks.forEach((txt, idx) => { if (document.getElementById(supportIds[idx])) document.getElementById(supportIds[idx]).innerText = txt; });

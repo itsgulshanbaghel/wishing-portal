@@ -291,7 +291,7 @@
 </div>
 
 <audio id="bgMusic" loop preload="auto">
-  <source src="https://cdn.pixabay.com/audio/2022/03/10/audio_1f3e8a3d7e.mp3" type="audio/mpeg">
+  <source src="/assets/Happy Birthday short.mp3" type="audio/mpeg">
 </audio>
 
 <div class="content">
@@ -468,6 +468,25 @@
 
     // Music toggle
     const bgMusic = document.getElementById('bgMusic');
+    const DEFAULT_BG_AUDIO = '/assets/Happy Birthday short.mp3';
+    const userAudioSrc = userData.bgMusic || userData.audioUrl || userData.musicUrl || userData.song || userData.audio || (userData.magicMusic && (userData.magicMusic.text || userData.magicMusic.src));
+
+    if (userAudioSrc && typeof userAudioSrc === 'string' && userAudioSrc.trim()) {
+      const targetSrc = userAudioSrc.trim();
+      bgMusic.src = targetSrc;
+      bgMusic.onerror = function() {
+        console.warn('[birthday7] User audio failed to load (' + targetSrc + '), falling back to default:', DEFAULT_BG_AUDIO);
+        bgMusic.onerror = null;
+        bgMusic.src = DEFAULT_BG_AUDIO;
+        bgMusic.load();
+        if (musicPlaying) {
+          bgMusic.play().catch(function(){});
+        }
+      };
+    } else {
+      bgMusic.src = DEFAULT_BG_AUDIO;
+    }
+
     const musicToggle = document.getElementById('musicToggle');
     const musicText = document.getElementById('musicText');
     let musicPlaying = false;

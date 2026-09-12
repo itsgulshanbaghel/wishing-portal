@@ -1790,17 +1790,31 @@
         magicMusic: {
             enable(d, w, userName, customText, audio) {
                 if (d.getElementById("magic-bg-audio")) return {};
-                let srcUrl = audio || customText || "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+                const DEFAULT_BG_AUDIO = "/assets/Happy Birthday short.mp3";
+                let srcUrl = audio || customText;
                 if (typeof srcUrl === 'string' && srcUrl.startsWith('blob:') && typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) {
-                    srcUrl = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
+                    srcUrl = null;
                 }
                 const a = d.createElement("audio");
                 a.id = "magic-bg-audio";
-                a.src = srcUrl;
                 a.loop = true;
                 a.volume = 0.4;
-                // Background music should NOT autoplay immediately if blocked by countdown, lock, curtains or welcome typing
                 a.autoplay = false;
+
+                if (srcUrl && typeof srcUrl === 'string' && srcUrl.trim().length > 0) {
+                    a.src = srcUrl.trim();
+                    a.onerror = () => {
+                        console.warn("Custom background music failed to load. Falling back to default birthday music.");
+                        a.onerror = null;
+                        a.src = DEFAULT_BG_AUDIO;
+                        a.load();
+                        if (!a.paused) {
+                            a.play().catch(() => {});
+                        }
+                    };
+                } else {
+                    a.src = DEFAULT_BG_AUDIO;
+                }
                 d.body.appendChild(a);
 
                 // Checks if any of the overlays are still active/blocking
@@ -2791,15 +2805,15 @@
                     }
                 }
 
-                fileInput.onchange = (e) => {
+                fileInput.onchange = async (e) => {
                     const file = e.target.files[0];
                     if (file) {
-                        if (file.size > 6 * 1024 * 1024) {
-                            alert("Image exceeds 6 MB limit. Please select an image under 6 MB.");
+                        if (file.size > 15 * 1024 * 1024) {
+                            alert("Image exceeds limit. Please select an image under 15 MB.");
                             fileInput.value = "";
                             return;
                         }
-                        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+                        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Optimizing & Uploading...';
                         uploadBtn.disabled = true;
 
                         const urlParams = new URLSearchParams(window.location.search);
@@ -2818,8 +2832,18 @@
                             window.isPremium = true;
                         }
 
+                        let fileToUpload = file;
+                        const compressor = (w.parent && typeof w.parent.compressImageIfNeeded === 'function')
+                            ? w.parent.compressImageIfNeeded
+                            : (typeof window.compressImageIfNeeded === 'function' ? window.compressImageIfNeeded : null);
+                        if (compressor) {
+                            try {
+                                fileToUpload = await compressor(file, isPrem);
+                            } catch (_) {}
+                        }
+
                         const formData = new FormData();
-                        formData.append('file', file);
+                        formData.append('file', fileToUpload);
                         formData.append('isPremium', isPrem ? 'true' : 'false');
 
                         fetch('/api/upload-photo', {

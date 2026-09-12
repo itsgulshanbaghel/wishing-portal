@@ -3,18 +3,19 @@
 
 <head>
     <meta name="google-adsense-account" content="ca-pub-8043014881280685">
-      <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon_io/android-chrome-512x512.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
     <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
-  
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>🎉 Celebration Spectacular · TheGreeter.in</title>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;500;700;800&display=swap">
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;500;700;800&display=swap"
+    <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;500;700;800&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;500;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -501,7 +502,7 @@
         <i class="fas fa-music"></i> <span id="musicText">Play Music</span>
     </div>
 
-    <audio id="bgMusic" loop src="https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3"></audio>
+    <audio id="bgMusic" loop src="/assets/Happy Birthday short.mp3"></audio>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
     <script>
@@ -870,6 +871,25 @@
 
             // ==================== MUSIC ====================
             const music = document.getElementById("bgMusic");
+            const DEFAULT_BG_AUDIO = '/assets/Happy Birthday short.mp3';
+            const userAudioSrc = userData.bgMusic || userData.audioUrl || userData.musicUrl || userData.song || userData.audio || (userData.magicMusic && (userData.magicMusic.text || userData.magicMusic.src));
+
+            if (userAudioSrc && typeof userAudioSrc === 'string' && userAudioSrc.trim()) {
+                const targetSrc = userAudioSrc.trim();
+                music.src = targetSrc;
+                music.onerror = function () {
+                    console.warn('[birthday8] User audio failed to load (' + targetSrc + '), falling back to default:', DEFAULT_BG_AUDIO);
+                    music.onerror = null;
+                    music.src = DEFAULT_BG_AUDIO;
+                    music.load();
+                    if (musicPlaying) {
+                        music.play().catch(function () { });
+                    }
+                };
+            } else {
+                music.src = DEFAULT_BG_AUDIO;
+            }
+
             const musicToggle = document.getElementById("musicToggle");
             const musicTextSpan = document.getElementById("musicText");
             let musicPlaying = false;

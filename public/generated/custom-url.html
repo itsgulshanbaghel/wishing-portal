@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1765,7 +1765,6 @@
             <ul>
               <li><a href="../create.html" id="exploreTemplates">Create</a></li>
               <li><a href="../WhyGreeter.html" id="exploreFeatures">Why Greeter</a></li>
-              <li><a href="../index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
               <li><a href="../AboutUs" id="explorePricing">About Us</a></li>
             </ul>
           </div>
@@ -1830,7 +1829,7 @@
       let websiteId = '';
       let isSlugAvailable = false;
       let selectedCurrency = 'INR';
-      let selectedAmount = 29;
+      let selectedAmount = 49;
       let selectedGateway = 'cashfree'; // 'cashfree' for India, 'paypal' for international
       let isPremiumUser = false;
 
@@ -1858,27 +1857,24 @@
        const urlParams = new URLSearchParams(window.location.search);
        const action = urlParams.get('action');
        const orderIdParam = urlParams.get('orderId');
-       websiteId = urlParams.get('view') || '';
+       websiteId = urlParams.get('view') || urlParams.get('restore') || urlParams.get('id') || localStorage.getItem('activeCustomizerWebsiteId') || '';
 
        // Initialize Page
        init();
 
       async function init() {
-        // Pro or higher plan buyers can claim custom URL for free (Starter / free users pay Starter price: ₹29 / $0.99)
+        // Free custom URL is EXCLUSIVELY for Pro or higher plan buyers (Starter / free users pay Starter price: ₹29 / $0.99)
+        const PRO_PLANS = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime'];
         const localUserData = (function(){ try { return JSON.parse(localStorage.getItem('userData') || '{}'); } catch(e) { return {}; } })();
-        const storedPlan = (localUserData.selectedPlan || localUserData.plan || localStorage.getItem(`plan_${websiteId}`) || localStorage.getItem(`user_plan_${websiteId}`) || localStorage.getItem('user_plan') || '').toLowerCase();
+        const storedPlan = (localUserData.selectedPlan || localUserData.plan || (websiteId ? localStorage.getItem(`plan_${websiteId}`) : '') || (websiteId ? localStorage.getItem(`user_plan_${websiteId}`) : '') || localStorage.getItem('user_plan') || '').toLowerCase();
         
-        const isProOrHigherLocal = storedPlan === 'pro' || storedPlan === 'pro_plus' || storedPlan === 'proplus' || storedPlan === 'forever' || storedPlan === 'infinity' || storedPlan === 'lifetime' || storedPlan === 'custom_url';
+        const isProOrHigherLocal = PRO_PLANS.includes(storedPlan);
         
-        const localIsPremium = (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
-                               (websiteId && localStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
-                               localStorage.getItem('isPremium') === 'true' ||
-                               localStorage.getItem('isPro') === 'true' ||
-                               localUserData.isPremium === true ||
-                               localUserData.isPro === true ||
-                               urlParams.get('_v') === 'c';
-
-        isPremiumUser = localIsPremium && (isProOrHigherLocal || !storedPlan || localUserData.isPro === true);
+        // Strictly false by default unless user has a verified Pro or higher plan
+        isPremiumUser = false;
+        if (isProOrHigherLocal && (websiteId && localStorage.getItem(`pro_plan_${websiteId}`) === 'true' || localStorage.getItem('isPro') === 'true' || localUserData.isPro === true)) {
+          isPremiumUser = true;
+        }
 
         try {
           const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
@@ -1886,13 +1882,18 @@
             const premiumRes = await fetch(`${apiBaseUrl}/api/premium/check/${websiteId}`);
             if (premiumRes.ok) {
               const premiumData = await premiumRes.json();
-              if (premiumData.canClaimFreeCustomUrl || (premiumData.isPremium && premiumData.plan !== 'starter')) {
+              const serverPlan = (premiumData.plan || '').toLowerCase();
+              if (premiumData.canClaimFreeCustomUrl && PRO_PLANS.includes(serverPlan)) {
                 isPremiumUser = true;
-                localStorage.setItem('isPremium', 'true');
                 localStorage.setItem('isPro', 'true');
                 if (websiteId) {
-                  localStorage.setItem(`premium_${websiteId}`, 'true');
                   localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+                }
+              } else {
+                // Starter or Free plans must pay for Custom URL
+                isPremiumUser = false;
+                if (websiteId) {
+                  localStorage.removeItem(`pro_plan_${websiteId}`);
                 }
               }
             }
@@ -2218,7 +2219,7 @@
             if (data.success) {
               selectedCurrency = data.currency;
               // The detect-price endpoint returns a plans object; use starter plan amount
-              selectedAmount = (data.plans && data.plans.starter && data.plans.starter.amount) || data.amount || 29;
+              selectedAmount = (data.plans && data.plans.starter && data.plans.starter.amount) || data.amount || 49;
               selectedGateway = data.gateway || 'cashfree';
               geoPriceAmount.textContent = isPremiumUser ? 'FREE' : `${data.symbol}${selectedAmount}`;
               updateCheckoutUI();

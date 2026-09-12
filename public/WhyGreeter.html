@@ -963,8 +963,9 @@
         <a href="./" id="navHome">Home</a>
         <a href="create" id="navCreate">Create</a>
         <a href="WhyGreeter" id="navWhy">Why Greeter</a>
+        <a href="Pricing" id="navPricing">Pricing</a>
         <a href="blog" id="navShowcase">Blog</a>
-        <a href="ContactUs" id="navPricing">Contact Us</a>
+        <a href="ContactUs" id="navContact">Contact Us</a>
       </div>
       <div class="nav-actions">
         <div class="lang-toggle" id="langToggleBtn"><i class="fas fa-globe"></i><span>हिन्दी</span></div>
@@ -1022,8 +1023,8 @@
             <ul>
               <li><a href="create" id="exploreTemplates">Create</a></li>
               <li><a href="WhyGreeter" id="exploreFeatures">Why Greeter</a></li>
-              <li><a href="index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
-              <li><a href="AboutUs" id="explorePricing">About Us</a></li>
+              <li><a href="Pricing" id="explorePricing">Pricing</a></li>
+              <li><a href="AboutUs" id="exploreAbout">About Us</a></li>
             </ul>
           </div>
           <div class="footer-col">
@@ -1057,7 +1058,7 @@
     const translations = {
       en: {
         // nav & footer
-        nav: ["Home", "Create", "Why Greeter", "Blog", "Contact Us"],
+        nav: ["Home", "Create", "Why Greeter", "Pricing", "Blog", "Contact Us"],
         signin: "Sign in",
         heroBadge: "✨ The professional surprise builder",
         heroTitle: "What makes Greeter different !",
@@ -1091,14 +1092,14 @@
         ctaBtn: "Launch your first surprise",
         footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
         exploreTitle: "Explore",
-        exploreLinks: ["Create", "Why Greeter", "How it Works", "About Us"],
+        exploreLinks: ["Create", "Why Greeter", "Pricing", "About Us"],
         supportTitle: "Support",
         supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
         followTitle: "Follow us",
         copyright: "© 2026 Greeter · Make every moment magical"
       },
       hi: {
-        nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "गोपनीयता", "संपर्क करें"],
+        nav: ["होम", "सरप्राइज़ बनाएं", "Greeter ही क्यों", "मूल्य (Pricing)", "ब्लॉग", "संपर्क करें"],
         signin: "लॉगिन करें",
         heroBadge: "✨ पेशेवर सरप्राइज़ बनाने वाला",
         heroTitle: "Greeter को क्या खास बनाता है !",
@@ -1132,7 +1133,7 @@
         ctaBtn: "अपना पहला सरप्राइज़ बनाएँ",
         footerBrand: "जन्मदिन, शादी का प्रस्ताव, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएँ — बिना कोडिंग के।",
         exploreTitle: "देखिए",
-        exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "यह कैसे काम करता है", "हमारे बारे में"],
+        exploreLinks: ["सरप्राइज़ बनाएं", "Greeter ही क्यों", "मूल्य (Pricing)", "हमारे बारे में"],
         supportTitle: "सहायता",
         supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
         followTitle: "हमें फॉलो करें",
@@ -1150,8 +1151,9 @@
       document.getElementById('navHome').innerText = t.nav[0];
       document.getElementById('navCreate').innerText = t.nav[1];
       document.getElementById('navWhy').innerText = t.nav[2];
-      document.getElementById('navShowcase').innerText = t.nav[3];
-      document.getElementById('navPricing').innerText = t.nav[4];
+      document.getElementById('navPricing').innerText = t.nav[3];
+      document.getElementById('navShowcase').innerText = t.nav[4];
+      if (document.getElementById('navContact')) document.getElementById('navContact').innerText = t.nav[5];
       document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
       // hero
       document.getElementById('heroBadge').innerHTML = `<i class="fas fa-crown"></i> ${t.heroBadge}`;
@@ -1185,7 +1187,7 @@
       document.getElementById('supportTitle').innerText = t.supportTitle;
       document.getElementById('followTitle').innerText = t.followTitle;
       document.getElementById('copyrightText').innerText = t.copyright;
-      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+      const exploreIds = ['exploreTemplates', 'exploreFeatures', 'explorePricing', 'exploreAbout'];
       t.exploreLinks.forEach((txt, i) => { if (document.getElementById(exploreIds[i])) document.getElementById(exploreIds[i]).innerText = txt; });
       const supportIds = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
       t.supportLinks.forEach((txt, i) => { if (document.getElementById(supportIds[i])) document.getElementById(supportIds[i]).innerText = txt; });

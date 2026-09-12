@@ -253,7 +253,7 @@ button:hover{transform:scale(1.1);}
 </div>
 
 <audio id="song" preload="auto">
-  <source src="Happy Birthday short.mp3" type="audio/mpeg">
+  <source src="/assets/Happy Birthday short.mp3" type="audio/mpeg">
 </audio>
 <audio id="boomSound" src="sound.weba" preload="auto"></audio>
 <audio id="drumRoll" preload="auto">
@@ -526,6 +526,22 @@ let audioUnlocked = false;
 let playCount = 0;
 let songLoopUntilBomb = false;
 const song = document.getElementById("song");
+const DEFAULT_BG_AUDIO = '/assets/Happy Birthday short.mp3';
+const userAudioSrc = userData.bgMusic || userData.audioUrl || userData.musicUrl || userData.song || userData.audio || (userData.magicMusic && (userData.magicMusic.text || userData.magicMusic.src));
+
+if (userAudioSrc && typeof userAudioSrc === 'string' && userAudioSrc.trim()) {
+  const targetSrc = userAudioSrc.trim();
+  song.src = targetSrc;
+  song.onerror = function() {
+    console.warn('[birthday6] User audio failed to load (' + targetSrc + '), falling back to default:', DEFAULT_BG_AUDIO);
+    song.onerror = null;
+    song.src = DEFAULT_BG_AUDIO;
+    song.load();
+  };
+} else {
+  song.src = DEFAULT_BG_AUDIO;
+}
+
 song.addEventListener("ended", () => {
   if(songLoopUntilBomb){
     song.currentTime = 0;

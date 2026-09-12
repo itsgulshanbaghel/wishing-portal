@@ -26,6 +26,20 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script>
+    window.togglePinVisibility = function(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      if (btn) {
+        btn.innerHTML = isPassword 
+          ? '<i class="fas fa-eye-slash" style="pointer-events: none;"></i>' 
+          : '<i class="fas fa-eye" style="pointer-events: none;"></i>';
+        btn.setAttribute('title', isPassword ? 'Hide PIN' : 'Show PIN');
+        btn.setAttribute('aria-label', isPassword ? 'Hide PIN' : 'Show PIN');
+      }
+    };
+
     (function () {
       const urlParams = new URLSearchParams(window.location.search);
       const isPaymentReturn = urlParams.get('action') === 'payment-success' || urlParams.get('payment') === 'cancelled' || urlParams.has('orderId') || urlParams.has('token') || urlParams.has('restore');
@@ -2620,39 +2634,81 @@
     .cmp-price-row {
       display: flex;
       align-items: baseline;
-      gap: 6px;
-      margin: 10px 0 8px;
+      justify-content: center;
+      gap: 8px;
+      margin: 6px 0 4px;
+      flex-wrap: nowrap;
+    }
+
+    .cmp-price-orig {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-decoration: line-through;
+      opacity: 0.65;
     }
 
     .cmp-price-big {
-      font-size: 2.3rem;
+      font-size: clamp(2.1rem, 7vw, 2.7rem);
       font-weight: 900;
       line-height: 1;
-      color: var(--text-primary);
+      color: #7b5df6;
     }
 
-    .cmp-card.premium .cmp-price-big {
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+    .cmp-price-period {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .cmp-price-badge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: white;
+      font-size: 0.62rem;
+      font-weight: 900;
+      padding: 3px 10px;
+      border-radius: 12px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 2px;
     }
 
     .plan-switcher {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 6px;
-      margin: 16px 0 18px;
+      margin: 18px 0 16px;
       background: var(--bg-primary);
-      padding: 5px;
-      border-radius: 16px;
+      padding: 6px;
+      border-radius: 18px;
       border: 1px solid var(--card-border);
     }
 
     @media (max-width: 480px) {
       .plan-switcher {
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        gap: 12px 8px;
+        margin-top: 22px;
+      }
+      .plan-pill {
+        padding-top: 13px !important;
+      }
+      .cmp-price-big {
+        font-size: 2.2rem;
+      }
+      .cmp-price-row {
+        gap: 6px;
+      }
+      .cmp-price-orig {
+        font-size: 1.15rem;
+      }
+      .cmp-price-period {
+        font-size: 0.92rem;
       }
     }
 
@@ -3280,9 +3336,134 @@
       box-shadow: 0 10px 24px rgba(123, 93, 246, 0.5);
     }
 
-    .notice-btn *,
-    .notice-modal-close * {
-      pointer-events: none;
+    /* Stage 3 Media Upload Modal */
+    .media-upload-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .media-upload-card {
+      background: var(--card-bg, #ffffff);
+      border: 1.5px solid var(--card-border, rgba(123, 93, 246, 0.25));
+      border-radius: 28px;
+      max-width: 440px;
+      width: 100%;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .upload-icon-pulse {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(123, 93, 246, 0.15), rgba(255, 122, 47, 0.15));
+      color: var(--accent-solid, #7b5df6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 16px;
+      border: 2px solid rgba(123, 93, 246, 0.35);
+      box-shadow: 0 10px 25px rgba(123, 93, 246, 0.25);
+      animation: pulseGlow 2s infinite alternate;
+    }
+    @keyframes pulseGlow {
+      from { transform: scale(1); box-shadow: 0 10px 25px rgba(123, 93, 246, 0.25); }
+      to { transform: scale(1.08); box-shadow: 0 14px 35px rgba(255, 122, 47, 0.35); }
+    }
+    .upload-modal-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0 0 6px;
+    }
+    .upload-modal-status {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin: 0 0 20px;
+    }
+    .upload-progress-container {
+      margin-bottom: 8px;
+    }
+    .upload-progress-bar {
+      height: 10px;
+      background: rgba(123, 93, 246, 0.12);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    .upload-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #7b5df6 0%, #ff7a2f 100%);
+      border-radius: 10px;
+      transition: width 0.25s ease;
+    }
+    .upload-progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .upload-error-box {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+    }
+    .upload-modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .upload-modal-btn {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .upload-modal-btn.btn-primary {
+      background: linear-gradient(135deg, #7b5df6, #ff7a2f);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(123, 93, 246, 0.3);
+    }
+    .upload-modal-btn.btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(123, 93, 246, 0.4);
+    }
+    .upload-modal-btn.btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      border: 1px solid var(--card-border);
+    }
+    .upload-modal-btn.btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
     }
   </style>
 </head>
@@ -3475,20 +3656,20 @@
 
             <!-- 4-tier pill switcher -->
             <div class="plan-switcher" id="planSwitcher">
-              <button class="plan-pill" data-price="29" data-days="7" data-label="7 Days" data-plan="starter">
+              <button class="plan-pill" data-price="49" data-days="14" data-label="14 Days" data-plan="starter">
                 <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Starter</span>
-                <span class="pill-period">7 Days</span>
+                <span class="pill-period">14 Days</span>
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill sel" data-price="49" data-days="30" data-label="30 Days" data-plan="pro">
+              <button class="plan-pill sel" data-price="99" data-days="30" data-label="30 Days" data-plan="pro">
                 <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
                 <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro</span>
                 <span class="pill-period">30 Days</span>
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill" data-price="99" data-days="100" data-label="100 Days" data-plan="pro_plus">
+              <button class="plan-pill" data-price="149" data-days="100" data-label="100 Days" data-plan="pro_plus">
                 <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #10b981, #059669); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">BEST VALUE</span>
                 <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro+</span>
                 <span class="pill-period">100 Days</span>
@@ -3503,10 +3684,14 @@
             </div>
 
             <!-- Selected Plan Price & Validity Row -->
-            <div style="text-align: center; margin: 20px 0 16px;">
-              <div class="cmp-price-row" style="justify-content: center; align-items: baseline; gap: 8px; margin-bottom: 4px;">
-                <span class="cmp-price-big" id="priceBig" style="font-size: 2.7rem; font-weight: 900; color: #7b5df6; line-height: 1;">₹49</span>
-                <span class="cmp-price-period" id="pricePeriod" style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">for 30 Days</span>
+            <div style="text-align: center; margin: 16px 0 14px;">
+              <div style="margin-bottom: 6px;" id="priceBadgeContainer">
+                <span class="cmp-price-badge" id="priceLimitedBadge">⚡ Limited Offer</span>
+              </div>
+              <div class="cmp-price-row">
+                <span class="cmp-price-orig" id="priceOrig">₹199</span>
+                <span class="cmp-price-big" id="priceBig">₹99</span>
+                <span class="cmp-price-period" id="pricePeriod">for 30 Days</span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
                 One-time payment • No subscription • No hidden fees
@@ -3517,6 +3702,10 @@
             </div>
 
             <ul class="feat-list" id="planFeatList" style="margin: 24px 0 20px;">
+              <li class="feat-item star" style="display: flex; align-items: center;">
+                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>✏️ <strong>Unlimited Free Edits</strong> — Edit photos, notes &amp; music anytime</span>
+                <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
+              </li>
               <li class="feat-item star" style="display: flex; align-items: center;">
                 <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>🚫 100% Ad-Free &amp; High-Speed Hosting</span>
                 <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
@@ -3600,12 +3789,48 @@
                 </div>
                 <input type="tel" id="checkoutPhone" class="optional-contact-input" placeholder="e.g. 9876543210" autocomplete="tel" style="width: 100%; box-sizing: border-box; padding: 13px 16px; border-radius: 14px; border: 1.5px solid var(--card-border); background: var(--bg-primary); color: var(--text-primary); font-size: 0.95rem;">
               </div>
+
+              <!-- Creator Edit PIN Protection -->
+              <div id="checkoutPinCard" style="margin-top: 16px; padding: 14px 16px; border-radius: 16px; background: rgba(245, 158, 11, 0.06); border: 1.5px dashed rgba(245, 158, 11, 0.4); transition: border-color 0.25s, background-color 0.25s;">
+                <div class="optional-contact-label" style="font-size: 0.84rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+                  <span style="display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-lock" style="color: #f59e0b;"></i> Set 4–6 Digit Edit PIN <span style="color: #ef4444; font-weight: 900;">*</span>
+                  </span>
+                  <span class="req-badge" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); color: #ef4444; font-weight: 800;"><i class="fas fa-asterisk" style="font-size: 0.55rem;"></i> Required</span>
+                </div>
+                <div style="position: relative;">
+                  <input type="password" id="checkoutEditPin" required minlength="4" maxlength="6" pattern="[0-9]{4,6}" inputmode="numeric" placeholder="Enter 4–6 digit numeric PIN (Required)" autocomplete="new-password" style="width: 100%; box-sizing: border-box; padding: 12px 42px 12px 14px; border-radius: 12px; border: 1.5px solid var(--card-border); background: var(--bg-primary); color: var(--text-primary); font-size: 0.95rem; letter-spacing: 2px;">
+                  <button type="button" id="toggleCheckoutPinBtn" onclick="togglePinVisibility('checkoutEditPin', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 8px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center;" title="Show/Hide PIN" aria-label="Toggle PIN visibility">
+                    <i class="fas fa-eye" style="pointer-events: none;"></i>
+                  </button>
+                </div>
+                <div id="checkoutPinError" style="display: none; color: #ef4444; font-size: 0.78rem; font-weight: 700; margin-top: 6px; align-items: center; gap: 6px;">
+                  <i class="fas fa-exclamation-circle"></i> <span id="checkoutPinErrorText">Please set a 4–6 digit Edit PIN before proceeding.</span>
+                </div>
+                <p style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.35; text-align: left;">
+                  🔒 Setting this PIN is mandatory. Only someone who knows this PIN can edit this website in the future.
+                </p>
+              </div>
             </div>
 
             <div style="display: flex; justify-content: center; width: 100%;">
               <button class="btn-stage3-pay" id="finalPayBtn" onclick="handleFinalPay()" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 520px; padding: 16px 28px; border-radius: 50px; font-size: 1.15rem; font-weight: 800; font-family: inherit; border: none; cursor: pointer; color: #ffffff; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 10px 28px rgba(16, 185, 129, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-                <i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ₹49 Securely</span>
+                <i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ₹99 Securely</span>
               </button>
+            </div>
+
+            <!-- UPI & Payment Trust Badges for India -->
+            <div id="upiTrustBadges" style="margin: 16px auto 0; text-align: center; max-width: 480px; padding: 10px 14px; background: rgba(123, 93, 246, 0.05); border-radius: 14px; border: 1px dashed rgba(123, 93, 246, 0.3);">
+              <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <i class="fas fa-bolt" style="color: #10b981;"></i> Instant UPI &amp; Card Activation
+              </div>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: #4285f4;"><i class="fab fa-google-pay" style="font-size: 1.1rem; vertical-align: middle;"></i> GPay</span>
+                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: #5f259f;"><i class="fas fa-mobile-alt" style="color: #5f259f;"></i> PhonePe</span>
+                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: #00b9f1;"><i class="fas fa-wallet" style="color: #00b9f1;"></i> Paytm</span>
+                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: #ff5722;"><i class="fas fa-university" style="color: #ff5722;"></i> BHIM UPI</span>
+                <span style="font-size: 0.72rem; font-weight: 800; padding: 4px 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-primary);"><i class="fas fa-credit-card"></i> Cards / NetBanking</span>
+              </div>
             </div>
           </div>
 
@@ -3694,6 +3919,46 @@
     </div>
   </div>
 
+  <!-- Creator Edit PIN Protection Unlock Modal -->
+  <div class="pin-unlock-overlay" id="pinUnlockOverlay" style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); align-items: center; justify-content: center; padding: 20px;">
+    <div class="pin-unlock-card" style="background: var(--card-bg, #ffffff); border: 1.5px solid var(--card-border, rgba(123, 93, 246, 0.2)); border-radius: 28px; max-width: 440px; width: 100%; padding: 36px 28px; text-align: center; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35); position: relative;">
+      <div style="width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.2) 100%); border: 1.5px solid rgba(245, 158, 11, 0.35); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 1.8rem; color: #f59e0b;">
+        <i class="fas fa-lock"></i>
+      </div>
+      <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.45rem; font-weight: 800; color: var(--text-primary, #1e293b); margin-bottom: 8px;">
+        Creator Protected
+      </h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary, #64748b); line-height: 1.5; margin-bottom: 24px;">
+        This wishing website is locked by its creator. Please enter the 4–6 digit Edit PIN to unlock the editor.
+      </p>
+
+      <form id="pinUnlockForm" onsubmit="handlePinUnlock(event)" style="margin-bottom: 20px;">
+        <div style="position: relative; margin-bottom: 14px;">
+          <input type="password" id="pinUnlockInput" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="Enter Edit PIN" autocomplete="current-password" autofocus required
+            style="width: 100%; box-sizing: border-box; padding: 15px 46px 15px 18px; border-radius: 16px; border: 2px solid var(--card-border, #e2e8f0); background: var(--bg-primary, #f8fafc); color: var(--text-primary, #0f172a); font-size: 1.25rem; letter-spacing: 6px; text-align: center; font-weight: 700; transition: border-color 0.2s;">
+          <button type="button" id="toggleUnlockPinBtn" onclick="togglePinVisibility('pinUnlockInput', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; cursor: pointer; color: var(--text-secondary, #94a3b8); padding: 8px; font-size: 1rem; display: flex; align-items: center; justify-content: center;" title="Show/Hide PIN" aria-label="Toggle PIN visibility">
+            <i class="fas fa-eye" style="pointer-events: none;"></i>
+          </button>
+        </div>
+
+        <div id="pinUnlockError" style="display: none; color: #ef4444; font-size: 0.84rem; font-weight: 600; margin-bottom: 14px; align-items: center; justify-content: center; gap: 6px;">
+          <i class="fas fa-exclamation-circle"></i> <span>Incorrect PIN. Please try again.</span>
+        </div>
+
+        <button type="submit" id="pinUnlockSubmitBtn"
+          style="width: 100%; padding: 15px 24px; border-radius: 50px; font-size: 1.05rem; font-weight: 700; border: none; cursor: pointer; color: #ffffff; background: linear-gradient(135deg, #7b5df6 0%, #6366f1 100%); box-shadow: 0 10px 24px rgba(123, 93, 246, 0.35); transition: all 0.2s;">
+          <i class="fas fa-key"></i> Unlock Editor
+        </button>
+      </form>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
+        <a href="#" id="pinViewLiveBtn" target="_blank" rel="noopener" style="color: var(--accent-solid, #7b5df6); text-decoration: none; font-weight: 600;">
+          <i class="fas fa-external-link-alt"></i> View Website in Read-Only Mode
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Custom Modal -->
   <div class="custom-modal" id="customModal">
     <div class="modal-card">
@@ -3746,8 +4011,7 @@
           style="background: linear-gradient(135deg, #7b5df6, #ff7a2f); color: white; border: none; font-weight: 700; padding: 16px 28px; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 20px rgba(123, 93, 246, 0.35); font-size: 1.05rem; font-family: 'Outfit', sans-serif; transition: 0.2s;">Upgrade
           to Premium</button>
         <button class="modal-button secondary" id="upgradeCancelBtn"
-          style="background: transparent; color: var(--text-secondary); border: 1.5px solid var(--card-border); font-weight: 600; padding: 12px 28px; border-radius: 50px; cursor: pointer; font-size: 0.9rem; font-family: 'Outfit', sans-serif;">Continue
-          Free (Disable Premium Features)</button>
+          style="background: transparent; color: var(--text-secondary); border: 1.5px solid var(--card-border); font-weight: 600; padding: 12px 28px; border-radius: 50px; cursor: pointer; font-size: 0.9rem; font-family: 'Outfit', sans-serif;">✏️ Back to Edit Features</button>
       </div>
     </div>
   </div>
@@ -3858,7 +4122,7 @@
               <p style="margin-top: 10px;">अपनी वेबसाइट PRO फीचर्स के साथ शेयर करने के लिए कृपया PRO प्लान में अपग्रेड करें।</p>
             `;
             payBtnEl.textContent = 'PRO में अपग्रेड करें';
-            if (cancelBtnEl) cancelBtnEl.textContent = 'फ्री जारी रखें (PRO फीचर हटाकर)';
+            if (cancelBtnEl) cancelBtnEl.textContent = '✏️ वापस जाएं और फीचर्स बदलें';
           } else {
             titleEl.textContent = '👑 Upgrade to PRO Plan';
             msgEl.innerHTML = `
@@ -3869,7 +4133,7 @@
               <p style="margin-top: 10px;">To share your website with PRO features, please upgrade to the PRO Plan.</p>
             `;
             payBtnEl.textContent = 'Upgrade to PRO Plan';
-            if (cancelBtnEl) cancelBtnEl.textContent = 'Continue (Disable PRO Feature)';
+            if (cancelBtnEl) cancelBtnEl.textContent = '✏️ Back to Edit Features';
           }
         } else {
           if (currentLang === 'hi') {
@@ -3879,10 +4143,10 @@
               <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
                 ${listItems}
               </ul>
-              <p style="margin-top: 10px;">इस जादुई बधाई वेबसाइट को बनाने और शेयर करने के लिए कृपया प्रीमियम में अपग्रेड करें (मात्र ₹29 / $0.99 से शुरू)।</p>
+              <p style="margin-top: 10px;">इस जादुई बधाई वेबसाइट को बनाने और शेयर करने के लिए कृपया प्रीमियम में अपग्रेड करें (मात्र ₹49 / $0.99 से शुरू)।</p>
             `;
             payBtnEl.textContent = 'अभी अपग्रेड करें';
-            if (cancelBtnEl) cancelBtnEl.textContent = 'फ्री जारी रखें (प्रीमियम फीचर्स हटाकर)';
+            if (cancelBtnEl) cancelBtnEl.textContent = '✏️ वापस जाएं और फीचर्स बदलें';
           } else {
             titleEl.textContent = '🌟 Upgrade to Premium';
             msgEl.innerHTML = `
@@ -3893,7 +4157,7 @@
               <p style="margin-top: 10px;">To generate and share this magical greeting, please upgrade to premium.</p>
             `;
             payBtnEl.textContent = 'Upgrade to Premium';
-            if (cancelBtnEl) cancelBtnEl.textContent = 'Continue Free (Disable Premium Features)';
+            if (cancelBtnEl) cancelBtnEl.textContent = '✏️ Back to Edit Features';
           }
         }
 
@@ -4326,6 +4590,23 @@
       function getCurrentLang() { return currentLang; }
       function t(key) { return translations[getCurrentLang()][key] || translations.en[key]; }
 
+      window.getActiveWebsiteId = function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const restoreParam = urlParams.get('restore');
+        const viewParam = urlParams.get('view');
+        let fromUserData = null;
+        try {
+          const ud = JSON.parse(localStorage.getItem('userData') || '{}');
+          fromUserData = ud.websiteId || null;
+        } catch (e) {}
+        return restoreParam || 
+               (urlParams.get('fresh') ? null : viewParam) || 
+               window._activeWebsiteId || 
+               localStorage.getItem('activeCustomizerWebsiteId') || 
+               fromUserData || 
+               null;
+      };
+
       // Theme & Nav
       const body = document.body, themeIcon = document.getElementById('themeIcon');
       window.toggleTheme = () => {
@@ -4341,7 +4622,10 @@
       };
       document.getElementById('modeToggle').addEventListener('click', window.toggleTheme);
       if (localStorage.getItem('greeter-theme') === 'dark') { body.classList.add('dark'); themeIcon.className = 'fas fa-moon'; } else themeIcon.className = 'fas fa-sun';
-      window.goBack = () => { window.location.href = "preview.html"; };
+      window.goBack = () => {
+        const wId = typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null;
+        window.location.href = wId ? `preview.html?view=${encodeURIComponent(wId)}` : "preview.html";
+      };
       window.toggleMobileMenu = () => document.getElementById('navLinks').classList.toggle('show');
 
       function getEventData() {
@@ -4406,8 +4690,8 @@
         return count;
       }
 
-      // ---------- CLIENT-SIDE SMART IMAGE OPTIMIZATION ----------
-      async function compressImageIfNeeded(file, isPremium = false, maxWidth = 1920, maxHeight = 1920, quality = 0.85) {
+      // ---------- CLIENT-SIDE SMART IMAGE OPTIMIZATION (WebP / Auto-Resizing) ----------
+      window.compressImageIfNeeded = async function compressImageIfNeeded(file, isPremium = false, maxWidth = 1280, maxHeight = 1280, quality = 0.82) {
         if (!file || !file.type || !file.type.startsWith('image/')) {
           return file;
         }
@@ -4417,82 +4701,123 @@
           return file;
         }
 
-        return new Promise((resolve) => {
-          const img = new Image();
-          const objectUrl = URL.createObjectURL(file);
-          img.src = objectUrl;
+        try {
+          let imgSource = null;
+          let originalWidth = 0;
+          let originalHeight = 0;
 
-          img.onload = () => {
-            URL.revokeObjectURL(objectUrl);
-            const originalWidth = img.naturalWidth || img.width;
-            const originalHeight = img.naturalHeight || img.height;
-
-            if (!originalWidth || !originalHeight) {
-              return resolve(file);
+          // Method A: Fast off-thread decode with EXIF auto-rotation
+          if (typeof createImageBitmap === 'function') {
+            try {
+              imgSource = await createImageBitmap(file, { imageOrientation: 'from-image' });
+              originalWidth = imgSource.width;
+              originalHeight = imgSource.height;
+            } catch (_) {
+              imgSource = null;
             }
+          }
 
-            let targetWidth = originalWidth;
-            let targetHeight = originalHeight;
+          // Method B: Standard Image element fallback
+          if (!imgSource) {
+            imgSource = await new Promise((resolve, reject) => {
+              const img = new Image();
+              const objectUrl = URL.createObjectURL(file);
+              img.onload = () => {
+                URL.revokeObjectURL(objectUrl);
+                resolve(img);
+              };
+              img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error('Image decode error'));
+              };
+              img.src = objectUrl;
+            });
+            originalWidth = imgSource.naturalWidth || imgSource.width;
+            originalHeight = imgSource.naturalHeight || imgSource.height;
+          }
 
-            // Calculate scaled dimensions keeping aspect ratio
-            if (targetWidth > maxWidth || targetHeight > maxHeight) {
-              const widthRatio = maxWidth / targetWidth;
-              const heightRatio = maxHeight / targetHeight;
-              const scale = Math.min(widthRatio, heightRatio);
-              targetWidth = Math.round(targetWidth * scale);
-              targetHeight = Math.round(targetHeight * scale);
+          if (!originalWidth || !originalHeight) {
+            return file;
+          }
+
+          let targetWidth = originalWidth;
+          let targetHeight = originalHeight;
+
+          // Scale down keeping aspect ratio
+          if (targetWidth > maxWidth || targetHeight > maxHeight) {
+            const widthRatio = maxWidth / targetWidth;
+            const heightRatio = maxHeight / targetHeight;
+            const scale = Math.min(widthRatio, heightRatio);
+            targetWidth = Math.max(1, Math.round(targetWidth * scale));
+            targetHeight = Math.max(1, Math.round(targetHeight * scale));
+          }
+
+          // Create canvas (OffscreenCanvas if supported)
+          let canvas = null;
+          if (typeof OffscreenCanvas === 'function') {
+            try {
+              canvas = new OffscreenCanvas(targetWidth, targetHeight);
+            } catch (_) {
+              canvas = document.createElement('canvas');
+              canvas.width = targetWidth;
+              canvas.height = targetHeight;
             }
-
-            // Create high quality canvas with smoothing
-            const canvas = document.createElement('canvas');
+          } else {
+            canvas = document.createElement('canvas');
             canvas.width = targetWidth;
             canvas.height = targetHeight;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return resolve(file);
+          }
 
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return file;
 
-            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(imgSource, 0, 0, targetWidth, targetHeight);
 
-            // Export as WebP for optimal compression, falling back to JPEG if needed
-            const tryWebp = () => {
-              canvas.toBlob((blob) => {
-                if (blob && (blob.size < file.size || targetWidth < originalWidth)) {
-                  const optimizedFileName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
-                  const optimizedFile = new File([blob], optimizedFileName, {
-                    type: 'image/webp',
-                    lastModified: Date.now()
-                  });
-                  console.log(`[ImageOptimizer] Compressed "${file.name}": ${(file.size / 1024).toFixed(1)}KB -> ${(optimizedFile.size / 1024).toFixed(1)}KB (${Math.round((1 - optimizedFile.size / file.size) * 100)}% saved)`);
-                  resolve(optimizedFile);
-                } else {
-                  // Fallback to JPEG
-                  canvas.toBlob((jpgBlob) => {
-                    if (jpgBlob && jpgBlob.size < file.size) {
-                      const optName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
-                      resolve(new File([jpgBlob], optName, { type: 'image/jpeg', lastModified: Date.now() }));
-                    } else {
-                      resolve(file);
-                    }
-                  }, 'image/jpeg', quality);
-                }
-              }, 'image/webp', quality);
-            };
+          if (imgSource.close && typeof imgSource.close === 'function') {
+            imgSource.close();
+          }
 
-            try {
-              tryWebp();
-            } catch (e) {
-              resolve(file);
+          // Convert to WebP blob with JPEG fallback
+          const getBlob = async (mime, q) => {
+            if (canvas.convertToBlob) {
+              return await canvas.convertToBlob({ type: mime, quality: q });
             }
+            return new Promise((res) => canvas.toBlob(res, mime, q));
           };
 
-          img.onerror = () => {
-            URL.revokeObjectURL(objectUrl);
-            resolve(file);
-          };
-        });
-      }
+          let blob = await getBlob('image/webp', quality).catch(() => null);
+          let chosenMime = 'image/webp';
+          let ext = '.webp';
+
+          if (!blob || (blob.size >= file.size && targetWidth >= originalWidth)) {
+            // Try JPEG fallback if WebP was not smaller or unsupported
+            const jpgBlob = await getBlob('image/jpeg', quality).catch(() => null);
+            if (jpgBlob && jpgBlob.size < file.size) {
+              blob = jpgBlob;
+              chosenMime = 'image/jpeg';
+              ext = '.jpg';
+            }
+          }
+
+          if (blob && (blob.size < file.size || targetWidth < originalWidth)) {
+            const baseName = (file.name || 'image').replace(/\.[^/.]+$/, '');
+            const optimizedFile = new File([blob], `${baseName}${ext}`, {
+              type: chosenMime,
+              lastModified: Date.now()
+            });
+            const savedPct = Math.round((1 - (optimizedFile.size / file.size)) * 100);
+            console.log(`[ImageOptimizer] "${file.name}": ${(file.size / 1024).toFixed(1)}KB -> ${(optimizedFile.size / 1024).toFixed(1)}KB (${savedPct}% saved, ${targetWidth}x${targetHeight} ${chosenMime})`);
+            return optimizedFile;
+          }
+
+          return file;
+        } catch (err) {
+          console.warn('[ImageOptimizer] Compression skipped, using original:', err.message);
+          return file;
+        }
+      };
 
       function bufferToWav(buffer) {
         let numOfChan = buffer.numberOfChannels,
@@ -4597,237 +4922,382 @@
         });
       }
 
-      window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+      // ══════════ INDEXEDDB PERSISTENT MEDIA STORAGE MANAGER ══════════
+      const MediaStorageManager = {
+        dbName: 'greeter_media_cache',
+        storeName: 'pending_media',
+        version: 1,
+        _db: null,
 
-      // High-performance Cloud Media Uploader: uploads any File, Blob, Data URI, or Blob URL to cloud storage
-      async function uploadMediaAsset(mediaSource, isPremium = false, filename = '') {
-        if (!mediaSource) return null;
+        async getDB() {
+          if (this._db) return this._db;
+          return new Promise((resolve) => {
+            if (!window.indexedDB) return resolve(null);
+            try {
+              const req = indexedDB.open(this.dbName, this.version);
+              req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(this.storeName)) {
+                  db.createObjectStore(this.storeName, { keyPath: 'blobUrl' });
+                }
+              };
+              req.onsuccess = (e) => {
+                this._db = e.target.result;
+                resolve(this._db);
+              };
+              req.onerror = (e) => {
+                console.warn('[MediaStorage] IndexedDB open error:', e);
+                resolve(null);
+              };
+            } catch (err) {
+              console.warn('[MediaStorage] IndexedDB initialization failed:', err);
+              resolve(null);
+            }
+          });
+        },
 
-        // If it is already a permanent http/https URL, return immediately
-        if (typeof mediaSource === 'string' && (mediaSource.startsWith('http://') || mediaSource.startsWith('https://'))) {
-          return mediaSource;
+        async savePendingMedia(blobUrl, file, metadata = {}) {
+          window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+          window._pendingLocalFiles.set(blobUrl, file);
+          try {
+            const db = await this.getDB();
+            if (!db) return;
+            return new Promise((resolve) => {
+              const tx = db.transaction(this.storeName, 'readwrite');
+              const store = tx.objectStore(this.storeName);
+              store.put({
+                blobUrl,
+                file,
+                name: file.name || metadata.name || 'media',
+                type: file.type || metadata.type || 'application/octet-stream',
+                featureId: metadata.featureId || '',
+                timestamp: Date.now()
+              });
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => resolve(false);
+            });
+          } catch (e) {
+            console.warn('[MediaStorage] Error saving to IndexedDB:', e);
+          }
+        },
+
+        async getAllPendingMedia() {
+          try {
+            const db = await this.getDB();
+            if (!db) return [];
+            return new Promise((resolve) => {
+              const tx = db.transaction(this.storeName, 'readonly');
+              const store = tx.objectStore(this.storeName);
+              const req = store.getAll();
+              req.onsuccess = () => resolve(req.result || []);
+              req.onerror = () => resolve([]);
+            });
+          } catch (e) {
+            return [];
+          }
+        },
+
+        async deletePendingMedia(blobUrl) {
+          if (window._pendingLocalFiles) {
+            window._pendingLocalFiles.delete(blobUrl);
+          }
+          try {
+            const db = await this.getDB();
+            if (!db) return;
+            return new Promise((resolve) => {
+              const tx = db.transaction(this.storeName, 'readwrite');
+              const store = tx.objectStore(this.storeName);
+              store.delete(blobUrl);
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => resolve(false);
+            });
+          } catch (e) {}
+        },
+
+        async clearAll() {
+          if (window._pendingLocalFiles) {
+            window._pendingLocalFiles.clear();
+          }
+          try {
+            const db = await this.getDB();
+            if (!db) return;
+            return new Promise((resolve) => {
+              const tx = db.transaction(this.storeName, 'readwrite');
+              const store = tx.objectStore(this.storeName);
+              store.clear();
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => resolve(false);
+            });
+          } catch (e) {}
         }
+      };
+
+      // Re-hydrate in-memory pending media from IndexedDB on page load/refresh
+      async function rehydratePendingMediaFromIDB() {
+        try {
+          const items = await MediaStorageManager.getAllPendingMedia();
+          if (!items || items.length === 0) return;
+
+          window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+          let stateChanged = false;
+
+          for (const item of items) {
+            if (!item || !item.file) continue;
+            const oldBlob = item.blobUrl;
+            // Generate a fresh new valid blob URL for this browser session
+            const freshBlob = URL.createObjectURL(item.file);
+            window._pendingLocalFiles.set(freshBlob, item.file);
+
+            // Replace oldBlob with freshBlob in customData
+            if (typeof customData !== 'undefined') {
+              for (let [featId, featVal] of customData.entries()) {
+                if (featVal && Array.isArray(featVal.images)) {
+                  if (featVal.images.includes(oldBlob)) {
+                    featVal.images = featVal.images.map(u => (u === oldBlob ? freshBlob : u));
+                    stateChanged = true;
+                  }
+                }
+                if (featVal && featVal.text === oldBlob) {
+                  featVal.text = freshBlob;
+                  stateChanged = true;
+                }
+              }
+            }
+
+            // Update IDB record with fresh blob URL key
+            await MediaStorageManager.deletePendingMedia(oldBlob);
+            await MediaStorageManager.savePendingMedia(freshBlob, item.file, {
+              name: item.name,
+              type: item.type,
+              featureId: item.featureId
+            });
+          }
+
+          if (stateChanged && typeof autoSaveState === 'function') {
+            autoSaveState();
+            if (typeof applyCustomizationToUI === 'function') applyCustomizationToUI();
+            if (typeof isFrameLoaded !== 'undefined' && isFrameLoaded && typeof refreshAll === 'function') {
+              refreshAll();
+            }
+          }
+        } catch (err) {
+          console.warn('[MediaStorage] Rehydrate error:', err);
+        }
+      }
+
+      // Stage 3 Unified Cloud Upload Pipeline with Real-Time Modal and Retry Support
+      async function uploadAllPendingMedia(isPremium = false) {
+        window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+        const idbItems = await MediaStorageManager.getAllPendingMedia();
+        for (const item of idbItems) {
+          if (item && item.blobUrl && item.file && !window._pendingLocalFiles.has(item.blobUrl)) {
+            window._pendingLocalFiles.set(item.blobUrl, item.file);
+          }
+        }
+
+        const entries = Array.from(window._pendingLocalFiles.entries());
+        if (entries.length === 0) {
+          return { success: true };
+        }
+
+        const modal = document.getElementById('mediaUploadModal');
+        const modalTitle = document.getElementById('uploadModalTitle');
+        const modalStatus = document.getElementById('uploadModalStatus');
+        const fillEl = document.getElementById('uploadProgressFill');
+        const fileEl = document.getElementById('uploadProgressFile');
+        const pctEl = document.getElementById('uploadProgressPct');
+        const errorBox = document.getElementById('uploadErrorBox');
+        const errorMsg = document.getElementById('uploadErrorMsg');
+        const actionsEl = document.getElementById('uploadModalActions');
+        const retryBtn = document.getElementById('uploadRetryBtn');
+        const cancelBtn = document.getElementById('uploadCancelBtn');
+
+        if (modal) modal.style.display = 'flex';
+        if (modalTitle) modalTitle.innerText = currentLang === 'hi' ? 'क्लाउड पर मीडिया अपलोड हो रहा है ✨' : 'Uploading Media to Cloud ✨';
+        if (errorBox) errorBox.style.display = 'none';
+        if (actionsEl) actionsEl.style.display = 'none';
+        if (fillEl) fillEl.style.width = '0%';
+        if (pctEl) pctEl.innerText = '0%';
 
         const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
           ? window.APP_CONFIG.API_BASE_URL
           : window.location.origin;
 
-        let blobToUpload = null;
-        let originalName = filename;
+        const totalCount = entries.length;
+        let completedCount = 0;
+        const fileProgressMap = new Map();
 
-        if (mediaSource instanceof File) {
-          blobToUpload = mediaSource;
-          originalName = originalName || mediaSource.name;
-        } else if (mediaSource instanceof Blob) {
-          blobToUpload = mediaSource;
-        } else if (typeof mediaSource === 'string') {
-          // Check if it's cached in _pendingLocalFiles
-          if (window._pendingLocalFiles && window._pendingLocalFiles.has(mediaSource)) {
-            const cached = window._pendingLocalFiles.get(mediaSource);
-            if (cached instanceof File || cached instanceof Blob) {
-              blobToUpload = cached;
-              if (cached.name) originalName = originalName || cached.name;
-            }
-          }
+        const updateCombinedProgress = () => {
+          let sum = 0;
+          for (const p of fileProgressMap.values()) sum += p;
+          const totalPercent = Math.min(100, Math.round(sum / totalCount));
+          if (fillEl) fillEl.style.width = `${totalPercent}%`;
+          if (pctEl) pctEl.innerText = `${totalPercent}%`;
+        };
 
-          // If not resolved from cache, fetch blob from URL (works for active blob: and data: URLs)
-          if (!blobToUpload) {
-            try {
-              const res = await fetch(mediaSource);
-              if (res.ok) {
-                blobToUpload = await res.blob();
+        const uploadSingleFile = (blobUrl, file, index) => {
+          return new Promise((resolve, reject) => {
+            const fileName = file.name || `media_${index + 1}`;
+            if (fileEl) fileEl.innerText = fileName;
+
+            const formData = new FormData();
+            formData.append('file', file, fileName);
+            formData.append('isPremium', isPremium ? 'true' : 'false');
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${apiBaseUrl}/api/upload-media`, true);
+
+            xhr.upload.onprogress = (evt) => {
+              if (evt.lengthComputable) {
+                const itemPercent = (evt.loaded / evt.total) * 100;
+                fileProgressMap.set(blobUrl, itemPercent);
+                updateCombinedProgress();
               }
-            } catch (fetchErr) {
-              console.warn('[uploadMediaAsset] Could not fetch local media blob:', fetchErr.message);
+            };
+
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  const data = JSON.parse(xhr.responseText);
+                  const cloudUrl = data.secure_url || data.url;
+                  if (!cloudUrl) return reject(new Error('No cloud URL returned by upload server'));
+                  resolve({ blobUrl, cloudUrl, file });
+                } catch (err) {
+                  reject(new Error('Invalid response from upload server'));
+                }
+              } else {
+                reject(new Error(`Upload failed for "${fileName}" (HTTP ${xhr.status}).`));
+              }
+            };
+
+            xhr.onerror = () => {
+              reject(new Error(currentLang === 'hi'
+                ? `नेटवर्क त्रुटि: "${fileName}" अपलोड नहीं हो सका। कृपया इंटरनेट जांचें।`
+                : `Network error: Could not upload "${fileName}". Please check your internet.`));
+            };
+
+            xhr.ontimeout = () => {
+              reject(new Error(`Upload timed out for "${fileName}".`));
+            };
+
+            xhr.send(formData);
+          });
+        };
+
+        return new Promise((resolveFinal, rejectFinal) => {
+          const runQueue = async () => {
+            if (errorBox) errorBox.style.display = 'none';
+            if (actionsEl) actionsEl.style.display = 'none';
+
+            let hasError = false;
+            const CONCURRENCY = 3;
+            const entriesToUpload = Array.from(window._pendingLocalFiles.entries());
+            let nextIndex = 0;
+
+            const worker = async () => {
+              while (nextIndex < entriesToUpload.length && !hasError) {
+                const currentIndex = nextIndex++;
+                const [blobUrl, file] = entriesToUpload[currentIndex];
+                if (!window._pendingLocalFiles.has(blobUrl)) continue;
+
+                if (modalStatus) {
+                  modalStatus.innerText = currentLang === 'hi'
+                    ? `अपलोड हो रहा है (${completedCount + 1}/${totalCount})...`
+                    : `Uploading (${completedCount + 1}/${totalCount})...`;
+                }
+
+                try {
+                  const result = await uploadSingleFile(blobUrl, file, currentIndex);
+                  const { cloudUrl } = result;
+
+                  // Replace in customData
+                  if (typeof customData !== 'undefined') {
+                    for (let [featId, featVal] of customData.entries()) {
+                      if (featVal && Array.isArray(featVal.images)) {
+                        featVal.images = featVal.images.map(u => (u === blobUrl ? cloudUrl : u));
+                      }
+                      if (featVal && featVal.text === blobUrl) {
+                        featVal.text = cloudUrl;
+                      }
+                    }
+                  }
+
+                  // Replace in preview document
+                  if (typeof getIframeDocument === 'function') {
+                    const doc = getIframeDocument();
+                    if (doc) {
+                      const imgs = doc.querySelectorAll(`img[src*="${blobUrl}"]`);
+                      imgs.forEach(img => { img.src = cloudUrl; });
+                      const audios = doc.querySelectorAll(`audio[src*="${blobUrl}"], source[src*="${blobUrl}"]`);
+                      audios.forEach(aud => { aud.src = cloudUrl; });
+                    }
+                  }
+
+                  // Remove from Map and IndexedDB
+                  window._pendingLocalFiles.delete(blobUrl);
+                  await MediaStorageManager.deletePendingMedia(blobUrl);
+                  try { URL.revokeObjectURL(blobUrl); } catch (e) {}
+
+                  fileProgressMap.set(blobUrl, 100);
+                  completedCount++;
+                  updateCombinedProgress();
+
+                  if (typeof autoSaveState === 'function') autoSaveState();
+                } catch (err) {
+                  hasError = true;
+                  console.error('[UploadQueue] File upload error:', err);
+                  if (errorBox) {
+                    errorBox.style.display = 'flex';
+                    if (errorMsg) errorMsg.innerText = err.message || 'Upload failed';
+                  }
+                  if (actionsEl) actionsEl.style.display = 'flex';
+                  if (modalStatus) {
+                    modalStatus.innerText = currentLang === 'hi'
+                      ? 'अपलोड रुक गया है। कृपया पुनः प्रयास करें।'
+                      : 'Upload paused due to an error. Please retry.';
+                  }
+
+                  if (retryBtn) {
+                    retryBtn.onclick = () => {
+                      runQueue();
+                    };
+                  }
+                  if (cancelBtn) {
+                    cancelBtn.onclick = () => {
+                      if (modal) modal.style.display = 'none';
+                      rejectFinal(new Error('Media upload cancelled by user'));
+                    };
+                  }
+                  return;
+                }
+              }
+            };
+
+            const workers = [];
+            const workerCount = Math.min(CONCURRENCY, entriesToUpload.length);
+            for (let w = 0; w < workerCount; w++) {
+              workers.push(worker());
             }
-          }
-        }
 
-        if (!blobToUpload) {
-          console.warn('[uploadMediaAsset] Failed to resolve media blob for upload');
-          return null;
-        }
+            await Promise.all(workers);
+            if (hasError) return;
 
-        if (!originalName) {
-          const type = blobToUpload.type || '';
-          const ext = type.includes('audio') ? 'mp3' : (type.includes('png') ? 'png' : (type.includes('webp') ? 'webp' : 'jpg'));
-          originalName = `upload_${Date.now()}.${ext}`;
-        }
+            if (modalStatus) {
+              modalStatus.innerText = currentLang === 'hi'
+                ? 'सभी मीडिया फ़ाइलें सफलतापूर्वक क्लाउड पर सेव हो गईं! ✨'
+                : 'All media files saved to cloud successfully! ✨';
+            }
+            if (fillEl) fillEl.style.width = '100%';
+            if (pctEl) pctEl.innerText = '100%';
 
-        const formData = new FormData();
-        formData.append('file', blobToUpload, originalName);
-        formData.append('isPremium', isPremium ? 'true' : 'false');
+            setTimeout(() => {
+              if (modal) modal.style.display = 'none';
+              resolveFinal({ success: true });
+            }, 300);
+          };
 
-        const response = await fetch(`${apiBaseUrl}/api/upload-media`, {
-          method: 'POST',
-          body: formData
+          runQueue();
         });
-
-        if (!response.ok) {
-          throw new Error(`Media upload server returned status ${response.status}`);
-        }
-
-        const data = await response.json();
-        const cloudUrl = data.secure_url || data.url;
-        if (!cloudUrl) {
-          throw new Error('No cloud URL returned from media upload server');
-        }
-
-        return cloudUrl;
-      }
-
-      async function uploadPendingLocalMedia(html = '', config = {}, isPremium = false, docToUpdate = null) {
-        let updatedHtml = html || '';
-        let configStr = JSON.stringify(config || {});
-        const replacements = new Map();
-
-        // 1. Gather all local media URLs (blob: and data:) across config, _pendingLocalFiles, DOM, and HTML
-        const pendingUrls = new Set();
-
-        // From window._pendingLocalFiles
-        if (window._pendingLocalFiles) {
-          for (const key of window._pendingLocalFiles.keys()) {
-            if (typeof key === 'string' && (key.startsWith('blob:') || key.startsWith('data:'))) {
-              pendingUrls.add(key);
-            }
-          }
-        }
-
-        // From config.customData
-        if (config && Array.isArray(config.customData)) {
-          for (const [featId, featVal] of config.customData) {
-            if (!featVal) continue;
-            if (typeof featVal.text === 'string' && (featVal.text.startsWith('blob:') || featVal.text.startsWith('data:'))) {
-              pendingUrls.add(featVal.text);
-            }
-            if (Array.isArray(featVal.images)) {
-              for (const imgUrl of featVal.images) {
-                if (typeof imgUrl === 'string' && (imgUrl.startsWith('blob:') || imgUrl.startsWith('data:'))) {
-                  pendingUrls.add(imgUrl);
-                }
-              }
-            }
-          }
-        }
-
-        // From in-memory customData
-        if (typeof customData !== 'undefined' && customData instanceof Map) {
-          for (const [featId, featVal] of customData.entries()) {
-            if (!featVal) continue;
-            if (typeof featVal.text === 'string' && (featVal.text.startsWith('blob:') || featVal.text.startsWith('data:'))) {
-              pendingUrls.add(featVal.text);
-            }
-            if (Array.isArray(featVal.images)) {
-              for (const imgUrl of featVal.images) {
-                if (typeof imgUrl === 'string' && (imgUrl.startsWith('blob:') || imgUrl.startsWith('data:'))) {
-                  pendingUrls.add(imgUrl);
-                }
-              }
-            }
-          }
-        }
-
-        // Regex scan in configStr and updatedHtml for any leftover blob: or data: media
-        const localRegex = /(blob:[^"'\s)<>]+|data:(?:image|audio)\/[^;]+;base64,[^"'\s)<>]+)/g;
-        let m;
-        while ((m = localRegex.exec(configStr)) !== null) {
-          pendingUrls.add(m[1]);
-        }
-        localRegex.lastIndex = 0;
-        if (updatedHtml) {
-          while ((m = localRegex.exec(updatedHtml)) !== null) {
-            pendingUrls.add(m[1]);
-          }
-        }
-
-        // 2. Upload each local asset to the cloud and replace its URL
-        const fallbackStockPhoto = "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80";
-        const fallbackStockAudio = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
-
-        for (const localUrl of pendingUrls) {
-          try {
-            let cloudUrl = null;
-            try {
-              cloudUrl = await uploadMediaAsset(localUrl, isPremium);
-            } catch (upErr) {
-              console.warn(`[uploadPendingLocalMedia] Failed to upload asset:`, upErr.message);
-            }
-
-            // If upload failed or blob was revoked/dead from an old session, use safe cloud fallback
-            if (!cloudUrl) {
-              const isAudio = localUrl.includes('audio') || (window._pendingLocalFiles && window._pendingLocalFiles.get(localUrl)?.type?.includes('audio'));
-              cloudUrl = isAudio ? fallbackStockAudio : fallbackStockPhoto;
-              console.warn(`[uploadPendingLocalMedia] Applied cloud fallback for unresolvable asset`);
-            }
-
-            if (cloudUrl) {
-              replacements.set(localUrl, cloudUrl);
-              updatedHtml = updatedHtml.split(localUrl).join(cloudUrl);
-              configStr = configStr.split(localUrl).join(cloudUrl);
-
-              // Update in-memory customData if available
-              if (typeof customData !== 'undefined' && customData instanceof Map) {
-                for (const [id, data] of customData.entries()) {
-                  if (!data) continue;
-                  let updated = false;
-                  if (data.text === localUrl) {
-                    data.text = cloudUrl;
-                    updated = true;
-                  }
-                  if (Array.isArray(data.images) && data.images.includes(localUrl)) {
-                    data.images = data.images.map(u => u === localUrl ? cloudUrl : u);
-                    updated = true;
-                  }
-                  if (updated) customData.set(id, data);
-                }
-              }
-
-              // Update docToUpdate DOM elements if provided
-              if (docToUpdate) {
-                docToUpdate.querySelectorAll(`img[src="${localUrl}"]`).forEach(el => { el.src = cloudUrl; });
-                docToUpdate.querySelectorAll(`audio[src="${localUrl}"]`).forEach(el => { el.src = cloudUrl; });
-                docToUpdate.querySelectorAll(`source[src="${localUrl}"]`).forEach(el => { el.src = cloudUrl; });
-              }
-
-              // Clean up local blob reference
-              if (window._pendingLocalFiles) {
-                window._pendingLocalFiles.delete(localUrl);
-              }
-              try { URL.revokeObjectURL(localUrl); } catch (e) {}
-            }
-          } catch (err) {
-            console.error('[uploadPendingLocalMedia] Asset processing error:', err);
-          }
-        }
-
-        // Safety purge of any remaining blob: URLs from updatedHtml
-        updatedHtml = updatedHtml.replace(/blob:[^"'\s)<>]+/g, fallbackStockPhoto);
-
-        let parsedConfig = config;
-        try {
-          parsedConfig = JSON.parse(configStr);
-        } catch (e) {}
-
-        if (typeof autoSaveState === 'function') {
-          try { autoSaveState(); } catch (e) {}
-        }
-
-        return { html: updatedHtml, config: parsedConfig, replacements };
-      }
-
-      async function uploadAudioToCloudinary(file, onProgress) {
-        window._pendingLocalFiles = window._pendingLocalFiles || new Map();
-        const blobUrl = URL.createObjectURL(file);
-        window._pendingLocalFiles.set(blobUrl, file);
-        if (typeof onProgress === 'function') onProgress(10);
-        // Start background upload immediately
-        uploadMediaAsset(file, true, file.name).then(cloudUrl => {
-          if (cloudUrl) {
-            window._pendingLocalFiles.delete(blobUrl);
-            try { URL.revokeObjectURL(blobUrl); } catch (e) {}
-          }
-        }).catch(() => {});
-        return blobUrl;
       }
 
       // Resolve any template identifier, filename, or generic category into a clean relative template path
@@ -4869,16 +5339,17 @@
       // Customization state management
       function saveCustomizationState(viewId = null) {
         try {
+          const effectiveId = viewId || (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null);
           const state = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
             customData: Array.from(customData.entries()),
             template: localStorage.getItem('selectedTemplate') || null,
             timestamp: Date.now(),
-            viewId: viewId
+            viewId: effectiveId
           };
           localStorage.setItem('customizationState', JSON.stringify(state));
-          if (viewId) {
-            localStorage.setItem('customizationState_' + viewId, JSON.stringify(state));
+          if (effectiveId) {
+            localStorage.setItem('customizationState_' + effectiveId, JSON.stringify(state));
           }
         } catch (e) {
           console.error('Failed to save customization state:', e);
@@ -4906,6 +5377,10 @@
 
           const config = serverData.config;
 
+          // Retain website ID in memory and local storage
+          window._activeWebsiteId = websiteId;
+          localStorage.setItem('activeCustomizerWebsiteId', websiteId);
+
           // Clear stale in-memory state before applying fresh server data
           activeFeatureStates.clear();
           customData.clear();
@@ -4924,35 +5399,32 @@
             }
           }
 
-          // Sanitize any dead blob: URLs from older saves
-          const fallbackPhoto = "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80";
-          const fallbackAudio = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
-          for (const [featId, featVal] of customData.entries()) {
-            if (!featVal) continue;
-            if (typeof featVal.text === 'string' && featVal.text.startsWith('blob:')) {
-              featVal.text = (featId === 'magicMusic' || featId === 'voiceNote') ? fallbackAudio : fallbackPhoto;
-            }
-            if (Array.isArray(featVal.images)) {
-              featVal.images = featVal.images.map(u => (typeof u === 'string' && u.startsWith('blob:')) ? fallbackPhoto : u);
-            }
-            customData.set(featId, featVal);
-          }
-
           // Store premium status and slug
           if (serverData.isPremium || (serverData.metadata && serverData.metadata.isPremium)) {
             window.isPremiumUser = true;
             window.isPremium = true;
             sessionStorage.setItem(`premium_${websiteId}`, 'true');
+            localStorage.setItem(`premium_${websiteId}`, 'true');
+            sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            localStorage.setItem(`pro_plan_${websiteId}`, 'true');
           }
           if (serverData.slug || (serverData.metadata && serverData.metadata.slug)) {
             window._existingSlug = serverData.slug || serverData.metadata.slug;
           }
 
-          // Restore userData from config
+          // Restore userData from config, ensuring websiteId is firmly attached
           if (config.userData) {
             try {
-              localStorage.setItem('userData', JSON.stringify(config.userData));
-              sessionStorage.setItem('userData', JSON.stringify(config.userData));
+              const ud = Object.assign({}, config.userData, { websiteId: websiteId });
+              localStorage.setItem('userData', JSON.stringify(ud));
+              sessionStorage.setItem('userData', JSON.stringify(ud));
+            } catch (e) {}
+          } else {
+            try {
+              const ud = JSON.parse(localStorage.getItem('userData') || '{}');
+              ud.websiteId = websiteId;
+              localStorage.setItem('userData', JSON.stringify(ud));
+              sessionStorage.setItem('userData', JSON.stringify(ud));
             } catch (e) {}
           }
           if (config.userName) {
@@ -4987,6 +5459,41 @@
             }
           }
 
+          // Check if website has Edit PIN protection
+          const hasEditPin = !!(serverData.hasEditPin || (serverData.metadata && serverData.metadata.hasEditPin));
+          window.isPinProtected = hasEditPin;
+          const cachedPin = localStorage.getItem('creator_pin_' + websiteId);
+          if (cachedPin) {
+            const checkoutPin = document.getElementById('checkoutEditPin');
+            if (checkoutPin && !checkoutPin.value) checkoutPin.value = cachedPin;
+            window._verifiedEditPin = cachedPin;
+          }
+
+          if (hasEditPin) {
+            const localPin = localStorage.getItem('creator_pin_' + websiteId);
+            if (localPin) {
+              fetch(`/api/verify-pin/${websiteId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: localPin })
+              }).then(r => r.json()).then(vRes => {
+                if (vRes && vRes.valid) {
+                  window._verifiedEditPin = localPin;
+                  console.log('[CustomizeEditor] Creator verified seamlessly via device PIN cache');
+                  const checkoutPin = document.getElementById('checkoutEditPin');
+                  if (checkoutPin) checkoutPin.value = localPin;
+                } else {
+                  localStorage.removeItem('creator_pin_' + websiteId);
+                  window.showPinUnlockModal(websiteId);
+                }
+              }).catch(() => {
+                window._verifiedEditPin = localPin;
+              });
+            } else {
+              window.showPinUnlockModal(websiteId);
+            }
+          }
+
           console.log('[CustomizeEditor] Loaded config from server for', websiteId,
             '- features:', activeFeatureStates.size, 'customData:', customData.size, 'template:', localStorage.getItem('selectedTemplate'));
           return serverData;
@@ -4995,6 +5502,90 @@
           return null;
         }
       }
+
+      window.togglePinVisibility = function(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        if (btn) {
+          btn.innerHTML = isPassword 
+            ? '<i class="fas fa-eye-slash" style="pointer-events: none;"></i>' 
+            : '<i class="fas fa-eye" style="pointer-events: none;"></i>';
+          btn.setAttribute('title', isPassword ? 'Hide PIN' : 'Show PIN');
+          btn.setAttribute('aria-label', isPassword ? 'Hide PIN' : 'Show PIN');
+        }
+      };
+
+      window.showPinUnlockModal = function(id) {
+        const overlay = document.getElementById('pinUnlockOverlay');
+        if (!overlay) return;
+        overlay.style.display = 'flex';
+        const input = document.getElementById('pinUnlockInput');
+        if (input) {
+          input.value = '';
+          setTimeout(() => input.focus(), 140);
+        }
+        const viewLiveBtn = document.getElementById('pinViewLiveBtn');
+        if (viewLiveBtn) {
+          viewLiveBtn.href = window._existingSlug ? `/${window._existingSlug}` : `/generated/customize.html?view=${id}&_v=c`;
+        }
+      };
+
+      window.handlePinUnlock = async function(e) {
+        if (e) e.preventDefault();
+        const input = document.getElementById('pinUnlockInput');
+        const btn = document.getElementById('pinUnlockSubmitBtn');
+        const errDiv = document.getElementById('pinUnlockError');
+        const pin = input ? input.value.trim() : '';
+
+        if (!pin) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const websiteId = urlParams.get('restore') || urlParams.get('view');
+
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+        }
+        if (errDiv) errDiv.style.display = 'none';
+
+        try {
+          const res = await fetch(`/api/verify-pin/${websiteId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin })
+          });
+          const data = await res.json();
+          if (data && data.valid) {
+            window._verifiedEditPin = pin;
+            localStorage.setItem('creator_pin_' + websiteId, pin);
+            const overlay = document.getElementById('pinUnlockOverlay');
+            if (overlay) overlay.style.display = 'none';
+            const checkoutPin = document.getElementById('checkoutEditPin');
+            if (checkoutPin) checkoutPin.value = pin;
+          } else {
+            if (errDiv) {
+              errDiv.style.display = 'flex';
+              errDiv.querySelector('span').innerText = data.error || 'Incorrect Edit PIN. Please try again.';
+            }
+            if (input) {
+              input.focus();
+              input.select();
+            }
+          }
+        } catch (err) {
+          if (errDiv) {
+            errDiv.style.display = 'flex';
+            errDiv.querySelector('span').innerText = 'Connection error. Please try again.';
+          }
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-key"></i> Unlock Editor';
+          }
+        }
+      };
 
       function loadCustomizationState() {
         try {
@@ -5011,18 +5602,6 @@
             }
             if (state.customData) {
               customData = new Map(state.customData);
-              const fallbackPhoto = "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80";
-              const fallbackAudio = "https://cdn.pixabay.com/download/audio/2022/10/16/audio_d0a0d7a6b4.mp3?filename=happy-birthday-8bit-128331.mp3";
-              for (const [featId, featVal] of customData.entries()) {
-                if (!featVal) continue;
-                if (typeof featVal.text === 'string' && featVal.text.startsWith('blob:')) {
-                  featVal.text = (featId === 'magicMusic' || featId === 'voiceNote') ? fallbackAudio : fallbackPhoto;
-                }
-                if (Array.isArray(featVal.images)) {
-                  featVal.images = featVal.images.map(u => (typeof u === 'string' && u.startsWith('blob:')) ? fallbackPhoto : u);
-                }
-                customData.set(featId, featVal);
-              }
             }
             if (state.template) {
               const resolvedTp = resolveTemplateUrl(state.template);
@@ -6522,6 +7101,9 @@
                   const urls = processedFiles.map((f, idx) => {
                     const blobUrl = URL.createObjectURL(f);
                     window._pendingLocalFiles.set(blobUrl, f);
+                    if (typeof MediaStorageManager !== 'undefined') {
+                      MediaStorageManager.savePendingMedia(blobUrl, f, { featureId: id, name: f.name });
+                    }
 
                     const items = previewDiv.querySelectorAll('.image-preview-item');
                     const item = items[items.length - filesToProcess.length + idx];
@@ -6533,34 +7115,6 @@
                         if (img.complete) item.classList.add('loaded');
                       }
                     }
-
-                    // Kick off immediate background upload to cloud storage
-                    uploadMediaAsset(f, isPremium, f.name).then(cloudUrl => {
-                      if (cloudUrl) {
-                        const current = customData.get(id) || {};
-                        if (current.images && Array.isArray(current.images)) {
-                          current.images = current.images.map(u => u === blobUrl ? cloudUrl : u);
-                          customData.set(id, current);
-                          autoSaveState();
-                        }
-                        if (window._pendingLocalFiles) {
-                          window._pendingLocalFiles.delete(blobUrl);
-                        }
-                        try { URL.revokeObjectURL(blobUrl); } catch(e) {}
-
-                        // Update preview DOM elements
-                        const iframeDoc = getIframeDocument();
-                        if (iframeDoc) {
-                          iframeDoc.querySelectorAll(`img[src="${blobUrl}"]`).forEach(el => { el.src = cloudUrl; });
-                        }
-                        if (previewDiv) {
-                          previewDiv.querySelectorAll(`img[src="${blobUrl}"]`).forEach(el => { el.src = cloudUrl; });
-                        }
-                      }
-                    }).catch(err => {
-                      console.warn(`[ImageUpload] Background upload for photo deferred to save:`, err);
-                    });
-
                     return blobUrl;
                   });
                   const existing = customData.get(id) || {};
@@ -6578,6 +7132,9 @@
                       const url = urls[urlIdx];
                       item.querySelector('.remove-image').onclick = (e) => {
                         e.stopPropagation();
+                        if (typeof MediaStorageManager !== 'undefined') {
+                          MediaStorageManager.deletePendingMedia(url);
+                        }
                         const ex = customData.get(id) || {};
                         ex.images = ex.images.filter(u => u !== url);
                         customData.set(id, ex);
@@ -6671,6 +7228,10 @@
               };
 
               deleteBtn.onclick = () => {
+                const prev = customData.get("magicMusic") || {};
+                if (prev.text && typeof MediaStorageManager !== 'undefined') {
+                  MediaStorageManager.deletePendingMedia(prev.text);
+                }
                 customData.set("magicMusic", {});
                 audioNameDiv.innerText = "";
                 deleteBtn.style.display = "none";
@@ -6698,7 +7259,7 @@
                   return;
                 }
 
-                audioNameDiv.innerText = currentLang === 'hi' ? "अपलोड हो रहा है..." : "Uploading...";
+                audioNameDiv.innerText = currentLang === 'hi' ? "प्रोसेस हो रहा है..." : "Processing audio...";
                 uploadBox.style.display = "none";
                 deleteBtn.style.display = "none";
 
@@ -6717,33 +7278,16 @@
                     throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल चुनें।" : "Audio file exceeds 6 MB limit. Please use a smaller file.");
                   }
 
-                  // Create local blob for instant audio playback
+                  // Store local blob for playback and add to pending queue & IndexedDB
+                  const blobUrl = URL.createObjectURL(processedFile);
                   window._pendingLocalFiles = window._pendingLocalFiles || new Map();
-                  const localBlobUrl = URL.createObjectURL(processedFile);
-                  window._pendingLocalFiles.set(localBlobUrl, processedFile);
-
-                  let secureUrl = localBlobUrl;
-                  audioNameDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? 'क्लाउड पर अपलोड हो रहा है...' : 'Uploading audio to cloud...'}`;
-
-                  // Start background cloud upload immediately
-                  uploadMediaAsset(processedFile, isPremium, file.name).then(cloudUrl => {
-                    if (cloudUrl) {
-                      const ex2 = customData.get("magicMusic") || {};
-                      ex2.text = cloudUrl;
-                      customData.set("magicMusic", ex2);
-                      autoSaveState();
-                      if (window._pendingLocalFiles) window._pendingLocalFiles.delete(localBlobUrl);
-                      try { URL.revokeObjectURL(localBlobUrl); } catch(e) {}
-                      audioNameDiv.innerText = "Audio: " + file.name;
-                      const nVal = getUserName();
-                      refreshFeatureIfActive("magicMusic", nVal, cloudUrl);
-                    }
-                  }).catch(upErr => {
-                    console.warn('[magicMusic] Background audio upload deferred to save:', upErr);
-                  });
+                  window._pendingLocalFiles.set(blobUrl, processedFile);
+                  if (typeof MediaStorageManager !== 'undefined') {
+                    await MediaStorageManager.savePendingMedia(blobUrl, processedFile, { featureId: 'magicMusic', name: file.name, type: processedFile.type });
+                  }
 
                   const ex = customData.get("magicMusic") || {};
-                  ex.text = secureUrl;
+                  ex.text = blobUrl;
                   ex.audioName = file.name;
                   ex.volume = parseFloat(volumeSlider.value);
                   customData.set("magicMusic", ex);
@@ -6752,11 +7296,11 @@
                   deleteBtn.style.display = "inline-block";
 
                   const nameVal = getUserName();
-                  refreshFeatureIfActive("magicMusic", nameVal, secureUrl);
+                  refreshFeatureIfActive("magicMusic", nameVal, blobUrl);
                   autoSaveState();
                 } catch (err) {
                   console.error(err);
-                  showModal(err.message || (currentLang === 'hi' ? 'ऑडियो अपलोड विफल रहा।' : 'Audio upload failed.'));
+                  showModal(err.message || (currentLang === 'hi' ? 'ऑडियो प्रोसेस विफल रहा।' : 'Audio processing failed.'));
                   audioNameDiv.innerText = "";
                   uploadBox.style.display = "block";
                   audioInput.value = "";
@@ -6924,58 +7468,32 @@
                     // Auto-activate voiceNote toggle when recording is completed
                     autoActivateFeature("voiceNote");
 
-                    timerEl.innerText = currentLang === 'hi' ? "अपलोड हो रहा है..." : "Uploading Voice Note...";
+                    timerEl.innerText = currentLang === 'hi' ? "वॉइस नोट तैयार है!" : "Voice Note Ready!";
                     tabs.style.display = "none";
                     recordContent.style.display = "none";
 
                     try {
-                      const urlParams = new URLSearchParams(window.location.search);
-                      const viewId = urlParams.get('view') || urlParams.get('restore');
-                      const isPremium = !!(
-                        (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') ||
-                        sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
-                        urlParams.get('_v') === 'c' ||
-                        urlParams.get('action') === 'payment-success'
-                      );
-
+                      const blobUrl = URL.createObjectURL(file);
                       window._pendingLocalFiles = window._pendingLocalFiles || new Map();
-                      const localBlobUrl = URL.createObjectURL(file);
-                      window._pendingLocalFiles.set(localBlobUrl, file);
-
-                      let secureUrl = localBlobUrl;
-                      timerEl.innerText = currentLang === 'hi' ? 'क्लाउड पर अपलोड हो रहा है...' : 'Uploading voice note to cloud...';
-
-                      uploadMediaAsset(file, isPremium, 'voice_recording.webm').then(cloudUrl => {
-                        if (cloudUrl) {
-                          const ex2 = customData.get("voiceNote") || {};
-                          ex2.text = cloudUrl;
-                          customData.set("voiceNote", ex2);
-                          autoSaveState();
-                          if (window._pendingLocalFiles) window._pendingLocalFiles.delete(localBlobUrl);
-                          try { URL.revokeObjectURL(localBlobUrl); } catch(e) {}
-                          previewAudio.src = cloudUrl;
-                          const nVal = getUserName();
-                          refreshFeatureIfActive("voiceNote", nVal, cloudUrl);
-                          timerEl.innerText = "00:00 / 01:30";
-                        }
-                      }).catch(upErr => {
-                        console.warn('[voiceNote] Recording background upload deferred to save:', upErr);
-                      });
+                      window._pendingLocalFiles.set(blobUrl, file);
+                      if (typeof MediaStorageManager !== 'undefined') {
+                        await MediaStorageManager.savePendingMedia(blobUrl, file, { featureId: 'voiceNote', name: 'Voice Note', type: file.type || 'audio/wav' });
+                      }
 
                       const ex = customData.get("voiceNote") || {};
-                      ex.text = secureUrl;
+                      ex.text = blobUrl;
                       ex.audioName = "Voice Note";
                       customData.set("voiceNote", ex);
 
-                      previewAudio.src = secureUrl;
+                      previewAudio.src = blobUrl;
                       previewContainer.style.cssText = "display:flex; margin-top:15px; flex-direction:column; align-items:center; gap:10px;";
 
                       const nameVal = getUserName();
-                      refreshFeatureIfActive("voiceNote", nameVal, secureUrl);
+                      refreshFeatureIfActive("voiceNote", nameVal, blobUrl);
                       autoSaveState();
                     } catch (err) {
                       console.error(err);
-                      showModal(err.message || (currentLang === 'hi' ? 'वॉइस नोट अपलोड विफल रहा।' : 'Voice Note upload failed.'));
+                      showModal(err.message || (currentLang === 'hi' ? 'वॉइस नोट प्रोसेस विफल रहा।' : 'Voice Note processing failed.'));
                       tabs.style.display = "flex";
                       recordContent.style.display = "block";
                       timerEl.innerText = "00:00 / 01:30";
@@ -7022,7 +7540,7 @@
 
                 const loadingDiv = document.createElement("div");
                 loadingDiv.className = "voice-upload-loading";
-                loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? 'प्रोसेस और अपलोड हो रहा है...' : 'Processing & uploading...'}`;
+                loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? 'प्रोसेस हो रहा है...' : 'Processing audio...'}`;
                 previewContainer.insertBefore(loadingDiv, previewAudio);
 
                 try {
@@ -7040,45 +7558,29 @@
                     throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया छोटी फाइल यूज़ करें।" : "Audio file exceeds 6MB. Please use a smaller file.");
                   }
 
+                  const blobUrl = URL.createObjectURL(processedFile);
                   window._pendingLocalFiles = window._pendingLocalFiles || new Map();
-                  const localBlobUrl = URL.createObjectURL(processedFile);
-                  window._pendingLocalFiles.set(localBlobUrl, processedFile);
-
-                  let secureUrl = localBlobUrl;
-                  loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${currentLang === 'hi' ? 'क्लाउड पर अपलोड हो रहा है...' : 'Uploading voice note to cloud...'}`;
-
-                  uploadMediaAsset(processedFile, isPremium, file.name).then(cloudUrl => {
-                    if (cloudUrl) {
-                      const ex2 = customData.get("voiceNote") || {};
-                      ex2.text = cloudUrl;
-                      customData.set("voiceNote", ex2);
-                      autoSaveState();
-                      if (window._pendingLocalFiles) window._pendingLocalFiles.delete(localBlobUrl);
-                      try { URL.revokeObjectURL(localBlobUrl); } catch(e) {}
-                      previewAudio.src = cloudUrl;
-                      const nVal = getUserName();
-                      refreshFeatureIfActive("voiceNote", nVal, cloudUrl);
-                    }
-                  }).catch(upErr => {
-                    console.warn('[voiceNote] File background upload deferred to save:', upErr);
-                  });
+                  window._pendingLocalFiles.set(blobUrl, processedFile);
+                  if (typeof MediaStorageManager !== 'undefined') {
+                    await MediaStorageManager.savePendingMedia(blobUrl, processedFile, { featureId: 'voiceNote', name: file.name, type: processedFile.type });
+                  }
 
                   const ex = customData.get("voiceNote") || {};
-                  ex.text = secureUrl;
+                  ex.text = blobUrl;
                   ex.audioName = file.name;
                   customData.set("voiceNote", ex);
 
                   loadingDiv.remove();
-                  previewAudio.src = secureUrl;
+                  previewAudio.src = blobUrl;
                   previewAudio.style.display = "block";
                   deleteBtn.style.display = "inline-block";
 
                   const nameVal = getUserName();
-                  refreshFeatureIfActive("voiceNote", nameVal, secureUrl);
+                  refreshFeatureIfActive("voiceNote", nameVal, blobUrl);
                   autoSaveState();
                 } catch (err) {
                   console.error(err);
-                  showModal(err.message || (currentLang === 'hi' ? 'अपलोड विफल रहा।' : 'Upload failed.'));
+                  showModal(err.message || (currentLang === 'hi' ? 'प्रोसेस विफल रहा।' : 'Processing failed.'));
                   loadingDiv.remove();
                   previewContainer.style.display = "none";
                   tabs.style.display = "flex";
@@ -7088,6 +7590,10 @@
               };
 
               deleteBtn.onclick = () => {
+                const prev = customData.get("voiceNote") || {};
+                if (prev.text && typeof MediaStorageManager !== 'undefined') {
+                  MediaStorageManager.deletePendingMedia(prev.text);
+                }
                 customData.set("voiceNote", {});
                 previewAudio.src = "";
                 previewContainer.style.display = "none";
@@ -7698,12 +8204,9 @@
               const urls = files.map(f => {
                 const blobUrl = URL.createObjectURL(f);
                 window._pendingLocalFiles.set(blobUrl, f);
-                uploadMediaAsset(f, isPremium, f.name).then(cloudUrl => {
-                  if (cloudUrl) {
-                    window._pendingLocalFiles.delete(blobUrl);
-                    try { URL.revokeObjectURL(blobUrl); } catch(e) {}
-                  }
-                }).catch(() => {});
+                if (typeof MediaStorageManager !== 'undefined') {
+                  MediaStorageManager.savePendingMedia(blobUrl, f, { featureId: 'droppedImages', name: f.name });
+                }
                 return blobUrl;
               });
               window.parent.postMessage({ type: 'droppedImages', images: urls }, '*');
@@ -7726,7 +8229,7 @@
         const viewId = urlParams.get('view');
         const restoreId = urlParams.get('restore');
         const isFresh = urlParams.get('fresh') === '1' || urlParams.has('t') || urlParams.get('src') === 'edit';
-        const websiteId = viewId || restoreId;
+        const websiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || viewId || restoreId;
         let loaded = false;
 
         // When opened from edit portal, clear stale generic local state so old local data never overrides server content
@@ -7752,6 +8255,11 @@
         // 2. Fall back to localStorage if server fetch failed or no ID (only when NOT a fresh edit request)
         if (!loaded && !isFresh) {
           loaded = loadCustomizationState();
+        }
+
+        // Re-hydrate any pending media binary files cached in IndexedDB
+        if (typeof rehydratePendingMediaFromIDB === 'function') {
+          await rehydratePendingMediaFromIDB();
         }
 
         // 3. Apply to UI
@@ -7781,7 +8289,6 @@
           if (textarea) existing.text = textarea.value;
           customData.set('imageExplosion', existing);
           refreshFeatureIfActive('imageExplosion', getUserName(), existing.text, existing.images);
-          autoSaveState();
         } else if (event.data.type === 'removeImageExplosion') {
           const existing = customData.get('imageExplosion') || {};
           existing.images = [];
@@ -7789,10 +8296,12 @@
           if (textarea) existing.text = textarea.value;
           customData.set('imageExplosion', existing);
           refreshFeatureIfActive('imageExplosion', getUserName(), existing.text, existing.images);
-          autoSaveState();
         }
       });
-      document.getElementById("backBtn").onclick = () => { window.location.href = "preview.html"; };
+      document.getElementById("backBtn").onclick = () => {
+        const wId = typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null;
+        window.location.href = wId ? `preview.html?view=${encodeURIComponent(wId)}` : "preview.html";
+      };
 
       // Text editing mode
       let editModeActive = false;
@@ -8771,42 +9280,28 @@
           const currentViewId = urlParams.get('view') || urlParams.get('restore') || (typeof userDataObj !== 'undefined' ? userDataObj?.websiteId : null);
           const isPremium = (currentViewId && sessionStorage.getItem(`premium_${currentViewId}`) === 'true') || sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' || urlParams.get('_v') === 'c' || urlParams.get('action') === 'payment-success';
 
-          uploadPendingLocalMedia(html, config, isPremium, doc2).then(uploaded => {
-            let finalHtml = uploaded.html || html;
+          uploadPendingLocalMedia(html, config, isPremium).then(uploaded => {
+            const finalHtml = uploaded.html || html;
             const finalConfig = uploaded.config || config;
 
-            if (uploaded && uploaded.replacements) {
-              for (const [blobUrl, cloudUrl] of uploaded.replacements.entries()) {
-                finalHtml = finalHtml.split(blobUrl).join(cloudUrl);
-              }
-            }
-
-            const apiBase = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
-              ? window.APP_CONFIG.API_BASE_URL
-              : (API_BASE || window.location.origin);
-
-            return fetch(apiBase + '/api/config', {
+            return fetch((API_BASE || '') + '/api/config', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ html: finalHtml, config: finalConfig, isPremium, websiteId: currentViewId })
-            }).then(r => {
+            });
+          })
+            .then(r => {
               if (!r.ok) {
+                // Check if it's a size issue
                 if (r.status === 413) {
                   throw new Error('Page too large for server');
                 }
-                throw new Error('Server error: ' + r.status);
+                throw new Error('Server error');
               }
               return r.json();
-            }).then(data => ({ data, finalHtml, finalConfig }));
-          })
-            .then(({ data, finalHtml, finalConfig }) => {
-              if (data && data.id) {
-                // Cache locally for faster opening on current machine
-                try {
-                  localStorage.setItem('final_magic_' + data.id, finalHtml);
-                  localStorage.setItem('magic_config_' + data.id, JSON.stringify(finalConfig));
-                } catch(e) {}
-
+            })
+            .then(data => {
+              if (data.id) {
                 // Save customization state before navigating
                 saveCustomizationState(data.id);
 
@@ -8825,21 +9320,23 @@
                 if (isFest) target += `&festival=1&sender=${sender}`;
                 window.location.href = target;
               } else {
-                throw new Error('No ID returned from server');
+                throw new Error('No ID returned');
               }
             })
             .catch((err) => {
-              console.error("Server save failed:", err);
-              const errMsg = currentLang === 'hi'
-                ? "वेबसाइट सर्वर पर सेव नहीं हो सकी। कृपया इंटरनेट कनेक्शन जांचें और दोबारा कोशिश करें।"
-                : (err.message === 'Page too large for server' 
-                    ? "Page size exceeds server limit. Please use fewer images." 
-                    : "Could not save website to server. Please check your internet connection and try again.");
-              showModal(errMsg);
-              if (btn) {
-                btn.classList.remove('generating');
-                const span = btn.querySelector('span');
-                if (span) span.textContent = currentLang === 'hi' ? 'पुनः प्रयास करें' : 'Try Again';
+              console.error("Server save failed, falling back to local storage", err);
+              const fallbackId = Math.random().toString(36).substring(2, 12);
+              if (err.message === 'Page too large for server' || !saveLocally(fallbackId)) {
+                linkInput.value = currentLang === 'hi' ? "त्रुटि: शेयर करने के लिए पेज बहुत बड़ा" : "Error: Page too large to share";
+                showModal(currentLang === 'hi' ? "पेज अपने आप शेयर करने के लिए बहुत बड़ा है। कुछ फीचर्स बंद करें या कम इमेज यूज करें।" : "The page is too large to share automatically. Try disabling some features or using fewer images.");
+              } else {
+                const template = (localStorage.getItem("selectedTemplate") || "").toLowerCase();
+                const ev = getEventData().event || '';
+                const isFest = /festival/i.test(template) || ev === 'festival';
+                const sender = encodeURIComponent(getUserName() || '');
+                let target = `share.html?view=${fallbackId}`;
+                if (isFest) target += `&festival=1&sender=${sender}`;
+                window.location.href = target;
               }
             })
             .finally(() => {
@@ -9105,16 +9602,13 @@
         };
 
         if (planKey === 'free') {
-          if (activeFeatures.length > 0) {
-            const listLabels = Array.from(new Set(activeFeatures.map(f => featureLabelMap[f] || f)));
-            showFeatureNoticeModal(
-              '⚠️ Features Not Included in Free Plan',
-              listLabels,
-              'To proceed with the FREE Plan (24h link), please click "✏️ Back to Edit" (Stage 1) to turn off these active features, or upgrade to a Premium plan to keep them.',
-              false
-            );
-            return false;
-          }
+          showFeatureNoticeModal(
+            '⚠️ Free Plan Discontinued',
+            ['Please select Starter, Pro, Pro+, or Infinity plan'],
+            'Free website creation has ended. Choose any of our affordable plans to save and share your surprise.',
+            true
+          );
+          return false;
         } else if (planKey === 'starter') {
           if (activePro.length > 0) {
             const reqList = Array.from(new Set(activePro.map(f => featureLabelMap[f] || f)));
@@ -9164,6 +9658,8 @@
         });
       }
 
+      window._pendingLocalFiles = window._pendingLocalFiles || new Map();
+
       async function saveWebsiteConfigToServer(isPremium = false, explicitId = null) {
         try {
           // Auto-disable pencil editing tool before saving generated website
@@ -9184,7 +9680,15 @@
             cleanupEditModeArtifacts(doc);
           }
 
-          let initialConfig = {
+          // 1. Upload any pending local blob media FIRST to convert blob URLs into permanent cloud URLs
+          if (typeof uploadAllPendingMedia === 'function') {
+            const uploadResult = await uploadAllPendingMedia(isPremium);
+            if (!uploadResult || !uploadResult.success) {
+              throw new Error('Media upload to cloud storage was cancelled or failed.');
+            }
+          }
+
+          let finalConfig = {
             activeFeatures: Array.from(activeFeatureStates.entries()),
             customData: Array.from(customData.entries()),
             template: localStorage.getItem('selectedTemplate') || '',
@@ -9210,10 +9714,6 @@
           if (typeof cleanupEditModeArtifacts === 'function') {
             cleanupEditModeArtifacts(docClone);
           }
-
-          // 1. Upload ALL pending local blob and data media to cloud storage FIRST, updating docClone & config
-          const uploadedMedia = await uploadPendingLocalMedia('', initialConfig, isPremium, docClone);
-          const finalConfig = uploadedMedia.config || initialConfig;
 
           // Re-enable features in preview iframe
           debouncedRefreshAll();
@@ -9450,18 +9950,63 @@
             docClone.body.insertBefore(runtimeEl, docClone.body.firstChild);
           }
 
+          // Performance: Add Preconnect hints for CDN and Fonts
+          if (docClone.head) {
+            const preconnectUrls = [
+              'https://nmwbuegvqfcbutvhqkam.supabase.co',
+              'https://fonts.googleapis.com',
+              'https://fonts.gstatic.com',
+              'https://cdnjs.cloudflare.com'
+            ];
+            preconnectUrls.forEach(url => {
+              if (!docClone.head.querySelector(`link[rel="preconnect"][href="${url}"]`)) {
+                const lk = docClone.createElement('link');
+                lk.rel = 'preconnect';
+                lk.href = url;
+                if (url.includes('gstatic')) lk.crossOrigin = 'anonymous';
+                docClone.head.insertBefore(lk, docClone.head.firstChild);
+              }
+            });
+          }
+
+          // Performance: Ensure all images have lazy loading and async decoding
+          docClone.querySelectorAll('img').forEach(img => {
+            if (!img.getAttribute('loading')) img.setAttribute('loading', 'lazy');
+            if (!img.getAttribute('decoding')) img.setAttribute('decoding', 'async');
+          });
+
           let html = '<!DOCTYPE html>\n' + docClone.documentElement.outerHTML;
           html = html.replace(/<style[^>]*id=["']greeter-inline-edit-style["'][^>]*>[\s\S]*?<\/style>/gi, '');
           html = html.replace(/\scontenteditable=["'](true|false)["']/gi, '');
 
-          if (uploadedMedia && uploadedMedia.replacements) {
-            for (const [blobUrl, cloudUrl] of uploadedMedia.replacements.entries()) {
-              html = html.split(blobUrl).join(cloudUrl);
-            }
-          }
-
           const urlParams = new URLSearchParams(window.location.search);
-          const websiteId = explicitId || urlParams.get('view') || urlParams.get('restore') || null;
+          const websiteId = explicitId || (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || urlParams.get('view') || urlParams.get('restore') || null;
+
+          const pinInput = document.getElementById('checkoutEditPin');
+          const userEnteredPin = pinInput ? pinInput.value.trim() : '';
+          const cachedPin = websiteId ? localStorage.getItem('creator_pin_' + websiteId) : null;
+          const editPin = userEnteredPin || window._verifiedEditPin || cachedPin || null;
+
+          if (!editPin || !/^\d{4,6}$/.test(String(editPin).trim())) {
+            const inlineCheckout = document.getElementById('inlineCheckout');
+            if (inlineCheckout && inlineCheckout.style.display === 'none') {
+              if (typeof window.revealInlineCheckout === 'function') window.revealInlineCheckout();
+            }
+            const pinCard = document.getElementById('checkoutPinCard');
+            if (pinCard) {
+              pinCard.style.borderColor = '#ef4444';
+              pinCard.style.background = 'rgba(239, 68, 68, 0.08)';
+            }
+            if (pinInput) {
+              pinInput.style.borderColor = '#ef4444';
+              pinInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+              pinInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              pinInput.focus();
+            }
+            const pinErr = document.getElementById('checkoutPinError');
+            if (pinErr) pinErr.style.display = 'flex';
+            throw new Error('Mandatory Edit PIN required: Please enter a 4–6 digit numeric PIN.');
+          }
 
           const apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
             ? window.APP_CONFIG.API_BASE_URL
@@ -9469,28 +10014,56 @@
 
           const response = await fetch(`${apiBaseUrl}/api/config`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(editPin ? { 'x-edit-pin': editPin } : {})
+            },
             body: JSON.stringify({
               html,
               config: finalConfig,
               isPremium,
               paymentStatus: isPremium ? 'paid' : 'pending_payment',
-              websiteId
+              websiteId,
+              editPin
             })
           });
 
           if (!response.ok) {
+            if (response.status === 403) {
+              const errData = await response.json().catch(() => ({}));
+              if (errData.code === 'PIN_REQUIRED') {
+                if (typeof window.showPinUnlockModal === 'function') {
+                  window.showPinUnlockModal(websiteId);
+                }
+                throw new Error(errData.error || 'Edit PIN required to save changes to this website.');
+              }
+            }
             throw new Error(`Server returned ${response.status}`);
           }
 
           const data = await response.json();
           if (data && data.id) {
+            window._activeWebsiteId = data.id;
+            localStorage.setItem('activeCustomizerWebsiteId', data.id);
+            try {
+              const ud = JSON.parse(localStorage.getItem('userData') || '{}');
+              ud.websiteId = data.id;
+              localStorage.setItem('userData', JSON.stringify(ud));
+              sessionStorage.setItem('userData', JSON.stringify(ud));
+            } catch (e) {}
+
             try {
               localStorage.setItem('final_magic_' + data.id, html);
-              localStorage.setItem('magic_config_' + data.id, JSON.stringify(finalConfig));
+              localStorage.setItem('magic_config_' + data.id, JSON.stringify(config));
+              if (editPin) {
+                localStorage.setItem('creator_pin_' + data.id, editPin);
+                window._verifiedEditPin = editPin;
+              }
               if (isPremium) {
                 localStorage.setItem(`premium_${data.id}`, 'true');
                 sessionStorage.setItem(`premium_${data.id}`, 'true');
+                localStorage.setItem(`pro_plan_${data.id}`, 'true');
+                sessionStorage.setItem(`pro_plan_${data.id}`, 'true');
               }
               // Save to recent websites list for quick access in /edit portal
               try {
@@ -9501,7 +10074,8 @@
                   recipientName: (typeof getUserName === 'function' ? getUserName() : '') || (config && config.userName) || 'Special Person',
                   eventType: (config && config.eventType) || 'wishing',
                   updatedAt: new Date().toISOString(),
-                  isPremium: !!isPremium
+                  isPremium: !!isPremium,
+                  hasEditPin: !!(data.hasEditPin || editPin)
                 });
                 localStorage.setItem('greeter_my_websites', JSON.stringify(filtered.slice(0, 15)));
               } catch (listErr) {}
@@ -9526,6 +10100,55 @@
         const planToValidate = (window.activePlan && window.activePlan.plan) ? window.activePlan.plan : (activePlan ? activePlan.plan : 'pro');
         if (typeof checkFeatureCompliance === 'function' && !checkFeatureCompliance(planToValidate)) return;
 
+        // ══════════ MANDATORY PIN VALIDATION ══════════
+        const pinInput = document.getElementById('checkoutEditPin');
+        const pinError = document.getElementById('checkoutPinError');
+        const pinErrorText = document.getElementById('checkoutPinErrorText');
+        const pinCard = document.getElementById('checkoutPinCard');
+        const userEnteredPin = pinInput ? pinInput.value.trim() : '';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let websiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || urlParams.get('view') || urlParams.get('restore');
+        const cachedPin = websiteId ? localStorage.getItem('creator_pin_' + websiteId) : null;
+        const effectivePin = userEnteredPin || window._verifiedEditPin || cachedPin;
+
+        if (!effectivePin || !/^\d{4,6}$/.test(String(effectivePin).trim())) {
+          // Make sure checkout details card is revealed so user sees the PIN input
+          const inlineCheckout = document.getElementById('inlineCheckout');
+          if (inlineCheckout && inlineCheckout.style.display === 'none') {
+            if (typeof window.revealInlineCheckout === 'function') window.revealInlineCheckout();
+          }
+
+          if (pinError && pinErrorText) {
+            pinErrorText.textContent = !effectivePin
+              ? 'Please enter a 4–6 digit Edit PIN before proceeding.'
+              : 'Edit PIN must be between 4 and 6 digits (numbers only).';
+            pinError.style.display = 'flex';
+          }
+          if (pinCard) {
+            pinCard.style.borderColor = '#ef4444';
+            pinCard.style.background = 'rgba(239, 68, 68, 0.08)';
+          }
+          if (pinInput) {
+            pinInput.style.borderColor = '#ef4444';
+            pinInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+            pinInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            pinInput.focus();
+          }
+          return; // STOP EXECUTION! Do not process without PIN!
+        }
+
+        // Reset error feedback if valid
+        if (pinError) pinError.style.display = 'none';
+        if (pinInput) {
+          pinInput.style.borderColor = '#10b981';
+          pinInput.style.boxShadow = 'none';
+        }
+        if (pinCard) {
+          pinCard.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          pinCard.style.background = 'rgba(16, 185, 129, 0.05)';
+        }
+
         const btn = document.getElementById('finalPayBtn');
         const originalText = btn ? btn.innerHTML : '';
 
@@ -9534,17 +10157,27 @@
         const email = emailInput ? emailInput.value.trim() : '';
         const phone = phoneInput ? phoneInput.value.trim() : '';
 
-        const urlParams = new URLSearchParams(window.location.search);
-        let websiteId = urlParams.get('view') || urlParams.get('restore');
-
         try {
+          const isAlreadyPaid = !!(
+            window.isPremiumUser ||
+            window.isPremium ||
+            (websiteId && sessionStorage.getItem(`premium_${websiteId}`) === 'true') ||
+            (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
+            (websiteId && sessionStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
+            (websiteId && localStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
+            urlParams.get('_v') === 'c' ||
+            urlParams.get('action') === 'payment-success'
+          );
+
           if (btn) {
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Website & Media...';
+            btn.innerHTML = isAlreadyPaid
+              ? '<i class="fas fa-spinner fa-spin"></i> Updating Website...'
+              : '<i class="fas fa-spinner fa-spin"></i> Saving Website & Media...';
             btn.disabled = true;
           }
 
-          // 1. STRICT SAVE VERIFICATION FIRST: DO NOT REDIRECT OR OPEN PAYMENT UNTIL WEBSITE IS SAVED PROPERLY
-          const saveRes = await saveWebsiteConfigToServer(false, websiteId);
+          // 1. SAVE EXACTLY ONCE WITH APPROPRIATE STATUS
+          const saveRes = await saveWebsiteConfigToServer(isAlreadyPaid, websiteId);
           if (!saveRes || !saveRes.success || !saveRes.id) {
             alert('Website Error: Could not save website draft to server before payment. Payment checkout has been aborted. Please check your internet connection and try again.');
             if (btn) {
@@ -9555,27 +10188,19 @@
           }
 
           websiteId = saveRes.id;
+          window._activeWebsiteId = websiteId;
+          localStorage.setItem('activeCustomizerWebsiteId', websiteId);
 
-          // BYPASS PAYMENT for already-paid websites: save update and go directly to share page
-          const isAlreadyPaid = !!(
-            window.isPremiumUser ||
-            window.isPremium ||
-            sessionStorage.getItem(`premium_${websiteId}`) === 'true' ||
-            (saveRes.slug) // has a custom slug = already paid
-          );
-          if (isAlreadyPaid) {
-            if (btn) {
-              btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating Website...';
-            }
-            // Save as premium directly
-            const premSaveRes = await saveWebsiteConfigToServer(true, websiteId);
-            if (premSaveRes && premSaveRes.success) {
-              sessionStorage.setItem(`premium_${websiteId}`, 'true');
-              window.isPremium = true;
-              window.isPremiumUser = true;
-              window.location.href = `/generated/share.html?view=${websiteId}&payment=success&updated=true`;
-              return;
-            }
+          // BYPASS PAYMENT for already-paid websites: go directly to share page without redundant second save
+          if (isAlreadyPaid || saveRes.slug) {
+            sessionStorage.setItem(`premium_${websiteId}`, 'true');
+            localStorage.setItem(`premium_${websiteId}`, 'true');
+            sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            window.isPremium = true;
+            window.isPremiumUser = true;
+            window.location.href = `/generated/share.html?view=${websiteId}&payment=success&updated=true`;
+            return;
           }
 
           if (btn) {
@@ -9589,6 +10214,7 @@
             sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
             localStorage.setItem('isPremium', 'true');
             localStorage.setItem(`premium_${websiteId}`, 'true');
+            localStorage.setItem(`pro_plan_${websiteId}`, 'true');
             window.isPremium = true;
             window.isPremiumUser = true;
             window.location.href = `/generated/share.html?view=${websiteId}&payment=success`;
@@ -9793,22 +10419,45 @@
         pills.forEach(pill => {
           const planKey = pill.dataset.plan;
           let p = 1.99;
+          let orig = '';
           if (selectedCurrency === 'INR') {
-            if (planKey === 'starter') p = 29; else if (planKey === 'pro') p = 49; else if (planKey === 'pro_plus') p = 99; else if (planKey === 'forever') p = 299;
+            if (planKey === 'starter') { p = 49; orig = '₹99'; }
+            else if (planKey === 'pro') { p = 99; orig = '₹199'; }
+            else if (planKey === 'pro_plus') { p = 149; orig = '₹299'; }
+            else if (planKey === 'forever') { p = 299; orig = '₹599'; }
           } else if (selectedCurrency === 'GBP') {
-            if (planKey === 'starter') p = 0.99; else if (planKey === 'pro') p = 1.49; else if (planKey === 'pro_plus') p = 2.99; else if (planKey === 'forever') p = 5.99;
+            if (planKey === 'starter') { p = 0.99; orig = '£1.99'; }
+            else if (planKey === 'pro') { p = 1.49; orig = '£2.99'; }
+            else if (planKey === 'pro_plus') { p = 2.99; orig = '£4.99'; }
+            else if (planKey === 'forever') { p = 5.99; orig = '£9.99'; }
           } else if (selectedCurrency === 'CAD') {
-            if (planKey === 'starter') p = 1.49; else if (planKey === 'pro') p = 2.49; else if (planKey === 'pro_plus') p = 4.49; else if (planKey === 'forever') p = 8.99;
+            if (planKey === 'starter') { p = 1.49; orig = 'CA$2.99'; }
+            else if (planKey === 'pro') { p = 2.49; orig = 'CA$4.99'; }
+            else if (planKey === 'pro_plus') { p = 4.49; orig = 'CA$8.99'; }
+            else if (planKey === 'forever') { p = 8.99; orig = 'CA$16.99'; }
           } else if (selectedCurrency === 'AUD') {
-            if (planKey === 'starter') p = 1.49; else if (planKey === 'pro') p = 2.99; else if (planKey === 'pro_plus') p = 4.99; else if (planKey === 'forever') p = 9.99;
+            if (planKey === 'starter') { p = 1.49; orig = 'A$2.99'; }
+            else if (planKey === 'pro') { p = 2.99; orig = 'A$5.99'; }
+            else if (planKey === 'pro_plus') { p = 4.99; orig = 'A$9.99'; }
+            else if (planKey === 'forever') { p = 9.99; orig = 'A$19.99'; }
           } else if (selectedCurrency === 'AED') {
-            if (planKey === 'starter') p = 3.99; else if (planKey === 'pro') p = 6.99; else if (planKey === 'pro_plus') p = 12.99; else if (planKey === 'forever') p = 29.99;
+            if (planKey === 'starter') { p = 3.99; orig = 'AED 7.99'; }
+            else if (planKey === 'pro') { p = 6.99; orig = 'AED 13.99'; }
+            else if (planKey === 'pro_plus') { p = 12.99; orig = 'AED 24.99'; }
+            else if (planKey === 'forever') { p = 29.99; orig = 'AED 59.99'; }
           } else if (selectedCurrency === 'PKR') {
-            if (planKey === 'starter') p = 99; else if (planKey === 'pro') p = 149; else if (planKey === 'pro_plus') p = 299; else if (planKey === 'forever') p = 799;
+            if (planKey === 'starter') { p = 99; orig = 'PKR 199'; }
+            else if (planKey === 'pro') { p = 149; orig = 'PKR 299'; }
+            else if (planKey === 'pro_plus') { p = 299; orig = 'PKR 599'; }
+            else if (planKey === 'forever') { p = 799; orig = 'PKR 1599'; }
           } else {
-            if (planKey === 'starter') p = 0.99; else if (planKey === 'pro') p = 1.99; else if (planKey === 'pro_plus') p = 3.49; else if (planKey === 'forever') p = 6.99;
+            if (planKey === 'starter') { p = 0.99; orig = '$1.99'; }
+            else if (planKey === 'pro') { p = 1.99; orig = '$3.99'; }
+            else if (planKey === 'pro_plus') { p = 3.49; orig = '$6.99'; }
+            else if (planKey === 'forever') { p = 6.99; orig = '$12.99'; }
           }
           pill.dataset.computedPrice = p;
+          pill.dataset.computedOrigPrice = orig;
           const priceSpan = pill.querySelector('.pill-price');
           if (priceSpan) priceSpan.textContent = `${symbol}${p}`;
         });
@@ -9816,13 +10465,19 @@
         const selectedPill = switcher.querySelector('.plan-pill.sel') || pills[1];
         if (selectedPill) {
           const planKey = selectedPill.dataset.plan;
-          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 49 : 1.99);
+          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 99 : 1.99);
+          const orig = selectedPill.dataset.computedOrigPrice || '';
           activePlan = { plan: planKey, price: p, days: +selectedPill.dataset.days, label: selectedPill.dataset.label };
 
           const pBig = document.getElementById('priceBig');
           const pPeriod = document.getElementById('pricePeriod');
+          const pOrig = document.getElementById('priceOrig');
           if (pBig) pBig.textContent = `${symbol}${p}`;
           if (pPeriod) pPeriod.textContent = `for ${activePlan.label}`;
+          if (pOrig) {
+            pOrig.textContent = orig;
+            pOrig.style.display = orig ? 'inline' : 'none';
+          }
 
           const cmpSub = document.getElementById('cmpSubtitle');
           if (cmpSub) cmpSub.textContent = `Keep the moment alive for ${activePlan.label}`;
@@ -9843,6 +10498,11 @@
 
           const proceedToPayBtnText = document.getElementById('proceedToPayBtnText');
           if (proceedToPayBtnText) proceedToPayBtnText.textContent = `Continue with ${planTitle} – ${symbol}${p}`;
+
+          const upiBox = document.getElementById('upiTrustBadges');
+          if (upiBox) {
+            upiBox.style.display = selectedCurrency === 'INR' ? 'block' : 'none';
+          }
 
           // Update Custom URL Feature item UI according to plan
           const urlRow = document.getElementById('featCustomUrl');
@@ -9904,6 +10564,10 @@
           inlineCheckout.style.display = 'block';
           setTimeout(() => {
             inlineCheckout.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const pinInput = document.getElementById('checkoutEditPin');
+            if (pinInput && !pinInput.value) {
+              setTimeout(() => pinInput.focus(), 250);
+            }
           }, 40);
         }
         if (proceedBtn) {
@@ -9962,6 +10626,58 @@
           finalBtn.onclick = (e) => {
             if (e) e.preventDefault();
             window.handleFinalPay();
+          };
+        }
+
+        // Live input validation & formatting for Creator Edit PIN
+        const checkoutPin = document.getElementById('checkoutEditPin');
+        if (checkoutPin) {
+          checkoutPin.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+            const err = document.getElementById('checkoutPinError');
+            const card = document.getElementById('checkoutPinCard');
+            if (this.value.length >= 4 && this.value.length <= 6) {
+              if (err) err.style.display = 'none';
+              this.style.borderColor = '#10b981';
+              this.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.15)';
+              if (card) {
+                card.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                card.style.background = 'rgba(16, 185, 129, 0.05)';
+              }
+            } else {
+              this.style.boxShadow = 'none';
+              if (this.value.length > 0 && this.value.length < 4) {
+                if (err) {
+                  const errText = document.getElementById('checkoutPinErrorText');
+                  if (errText) errText.textContent = 'PIN must be at least 4 digits.';
+                  err.style.display = 'flex';
+                }
+                this.style.borderColor = '#ef4444';
+              } else {
+                this.style.borderColor = 'var(--card-border)';
+                if (card) {
+                  card.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                  card.style.background = 'rgba(245, 158, 11, 0.06)';
+                }
+              }
+            }
+          });
+        }
+
+        // Direct click event binding for PIN toggle buttons
+        const toggleCheckoutBtn = document.getElementById('toggleCheckoutPinBtn');
+        if (toggleCheckoutBtn) {
+          toggleCheckoutBtn.onclick = function (e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            window.togglePinVisibility('checkoutEditPin', this);
+          };
+        }
+
+        const toggleUnlockBtn = document.getElementById('toggleUnlockPinBtn');
+        if (toggleUnlockBtn) {
+          toggleUnlockBtn.onclick = function (e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            window.togglePinVisibility('pinUnlockInput', this);
           };
         }
 
@@ -10543,6 +11259,39 @@
         </button>
         <button class="notice-btn notice-btn-primary" id="noticeModalUpgradeBtn" onclick="selectCardMode('prem'); closeFeatureNoticeModal();">
           <span>👑 Upgrade to Pro</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 3 MEDIA UPLOAD PROGRESS MODAL -->
+  <div id="mediaUploadModal" class="media-upload-modal-overlay" style="display: none;">
+    <div class="media-upload-card">
+      <div class="upload-icon-pulse" id="uploadModalIcon">
+        <i class="fas fa-cloud-upload-alt"></i>
+      </div>
+      <h3 class="upload-modal-title" id="uploadModalTitle">Uploading Media to Cloud ✨</h3>
+      <p class="upload-modal-status" id="uploadModalStatus">Preparing files for your magical website...</p>
+
+      <div class="upload-progress-container" id="uploadProgressContainer">
+        <div class="upload-progress-bar">
+          <div class="upload-progress-fill" id="uploadProgressFill" style="width: 0%;"></div>
+        </div>
+        <div class="upload-progress-info">
+          <span id="uploadProgressFile">Connecting...</span>
+          <span id="uploadProgressPct">0%</span>
+        </div>
+      </div>
+
+      <div class="upload-error-box" id="uploadErrorBox" style="display: none;">
+        <i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>
+        <span id="uploadErrorMsg">Upload failed. Please check your connection.</span>
+      </div>
+
+      <div class="upload-modal-actions" id="uploadModalActions" style="display: none;">
+        <button type="button" class="upload-modal-btn btn-secondary" id="uploadCancelBtn">Cancel</button>
+        <button type="button" class="upload-modal-btn btn-primary" id="uploadRetryBtn">
+          <i class="fas fa-redo"></i> Retry Upload
         </button>
       </div>
     </div>

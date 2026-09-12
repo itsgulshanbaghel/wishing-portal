@@ -160,7 +160,8 @@
             transform-origin: right;
         }
 
-        #curtain.open .left {
+        #curtain.open{pointer-events:none !important;}
+#curtain.open .left {
             transform: translateX(-110%);
         }
 
@@ -248,6 +249,7 @@
             font-size: clamp(2rem, 8vw, 3.5rem);
             background: linear-gradient(45deg, #ff0080, #ff8c00, #00f0ff);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -269,25 +271,10 @@
             transform: scale(0.97);
         }
 
-        .controls {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            display: flex;
-            gap: 12px;
-            z-index: 1000;
-        }
+        .controls{position:fixed;top:15px;right:15px;display:flex;gap:10px;z-index:100005 !important;pointer-events:auto !important;}
 
-        .ctrl {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            font-size: 1.2rem;
-            font-weight: bold;
-            touch-action: manipulation;
-        }
+        .ctrl{background:rgba(255,255,255,0.25);padding:8px 14px;border-radius:30px;cursor:pointer;backdrop-filter:blur(10px);user-select:none;font-size:1.1rem;box-shadow:0 4px 15px rgba(0,0,0,0.3);transition:transform .2s, background .2s;pointer-events:auto !important;}
+.ctrl:hover{transform:scale(1.1);background:rgba(255,255,255,0.4);}
 
         .flash {
             position: fixed;
@@ -495,12 +482,12 @@
     <div class="flash" id="flash"></div>
 
     <div class="controls">
-        <div class="ctrl" onclick="toggleMusic()">🎵</div>
-        <div class="ctrl" onclick="toggleDay()">🌙</div>
+        <div class="ctrl" id="musicCtrl" onclick="toggleMusic(event)" title="Play / Pause Music">🎵</div>
+        <div class="ctrl" id="dayCtrl" onclick="toggleDay(event)" title="Toggle Theme">🌙</div>
     </div>
 
     <audio id="song" preload="auto">
-        <source src="Happy Birthday short.mp3" type="audio/mpeg">
+        <source src="/assets/Happy Birthday short.mp3" type="audio/mpeg">
     </audio>
     <audio id="boomSound" src="sound.weba" preload="auto"></audio>
     <audio id="drumRoll" preload="auto">
@@ -712,10 +699,15 @@ May all your dreams come true. May your life be as beautiful and wonderful as yo
         });
 
         // ========== CURTAIN + WELCOME TYPING (no water/swan/balloons) ==========
-        function openCurtain() {
-            const curtain = document.getElementById("curtain");
-            const drum = document.getElementById("drumRoll");
-            drum.currentTime = 0; drum.play();
+        function openCurtain(){
+ const curtain = document.getElementById("curtain");
+ const drum = document.getElementById("drumRoll");
+ if (drum && !userPausedMusic) {
+   drum.currentTime = 0;
+   drum.play().catch(()=>{});
+ }
+ audioUnlocked = true;
+ updateMusicUI();
             audioUnlocked = true;
             const video = document.getElementById("memVideo");
             const galleryCheck = document.getElementById("gallerySection");
@@ -749,10 +741,7 @@ May all your dreams come true. May your life be as beautiful and wonderful as yo
                     welcomeTypingDone = true;
                     enableScrollIfComplete();
                     const drum = document.getElementById("drumRoll");
-                    drum.pause(); drum.currentTime = 0;
-                    playCount = 0;
-                    song.currentTime = 0;
-                    song.play();
+                    drum.pause(); drum.currentTime = 0; playCount = 0; if (!userPausedMusic) { song.currentTime = 0; song.play().catch(function(){}); } updateMusicUI();
                     for (let j = 0; j < 8; j++) {
                         setTimeout(() => {
                             const bf = document.createElement("div");
@@ -776,18 +765,50 @@ May all your dreams come true. May your life be as beautiful and wonderful as yo
         resize();
         window.onresize = resize;
         let audioUnlocked = false;
-        let playCount = 0;
-        let songLoopUntilBomb = false;
-        const song = document.getElementById("song");
-        song.addEventListener("ended", () => {
-            if (songLoopUntilBomb) {
-                song.currentTime = 0;
-                song.play();
-                return;
-            }
-            playCount++;
-            if (playCount < 3) { song.currentTime = 0; song.play(); }
-        });
+let playCount = 0;
+let songLoopUntilBomb = false;
+let userPausedMusic = false;
+const song = document.getElementById("song");
+const drum = document.getElementById("drumRoll");
+const DEFAULT_BG_AUDIO = '/assets/Happy Birthday short.mp3';
+const userAudioSrc = userData.bgMusic || userData.audioUrl || userData.musicUrl || userData.song || userData.audio || (userData.magicMusic && (userData.magicMusic.text || userData.magicMusic.src));
+
+if (userAudioSrc && typeof userAudioSrc === 'string' && userAudioSrc.trim()) {
+  const targetSrc = userAudioSrc.trim();
+  song.src = targetSrc;
+  song.onerror = function() {
+    console.warn('[birthday20.html] User audio failed to load (' + targetSrc + '), falling back to default:', DEFAULT_BG_AUDIO);
+    song.onerror = null;
+    song.src = DEFAULT_BG_AUDIO;
+    song.load();
+  };
+} else {
+  song.src = DEFAULT_BG_AUDIO;
+}
+
+if (song) {
+  song.addEventListener("play", updateMusicUI);
+  song.addEventListener("pause", updateMusicUI);
+  song.addEventListener("ended", () => {
+    if (userPausedMusic) return;
+    if (songLoopUntilBomb) {
+      song.currentTime = 0;
+      song.play().catch(function(){});
+      return;
+    }
+    playCount++;
+    if (playCount < 3 && !userPausedMusic) {
+      song.currentTime = 0;
+      song.play().catch(function(){});
+    }
+  });
+}
+
+if (drum) {
+  drum.addEventListener("play", updateMusicUI);
+  drum.addEventListener("pause", updateMusicUI);
+  drum.addEventListener("ended", updateMusicUI);
+}
         let particles = [];
         class P {
             constructor(x, y, c, tx = null, ty = null) {
@@ -937,8 +958,57 @@ May all your dreams come true. May your life be as beautiful and wonderful as yo
         setInterval(() => { const d = document.createElement("div"); d.className = "colorDrop"; d.style.left = Math.random() * 100 + "vw"; d.style.background = `hsl(${Math.random() * 360},100%,60%)`; d.style.animationDuration = (3 + Math.random() * 3) + "s"; document.body.appendChild(d); setTimeout(() => d.remove(), 6000); }, 200);
         function createHeart() { const h = document.createElement("div"); h.className = "heart"; h.innerHTML = "💖"; h.style.left = Math.random() * 100 + "vw"; h.style.animationDuration = (4 + Math.random() * 3) + "s"; document.body.appendChild(h); setTimeout(() => h.remove(), 3000); }
         window.addEventListener("scroll", () => { for (let i = 0; i < 4; i++) createHeart(); });
-        function toggleMusic() { song.paused ? song.play() : song.pause(); }
-        function toggleDay() { document.body.classList.toggle("day"); }
+
+function isAudioPlaying() {
+  const s = document.getElementById("song");
+  const d = document.getElementById("drumRoll");
+  const m = document.getElementById("magic-bg-audio");
+  return (s && !s.paused) || (d && !d.paused) || (m && !m.paused);
+}
+
+function updateMusicUI() {
+  const btn = document.getElementById("musicCtrl");
+  if (!btn) return;
+  if (isAudioPlaying()) {
+    btn.innerHTML = "🎵";
+    btn.setAttribute("title", "Pause Music");
+    btn.style.opacity = "1";
+  } else {
+    btn.innerHTML = "🔇";
+    btn.setAttribute("title", "Play Music");
+    btn.style.opacity = "0.75";
+  }
+}
+
+function toggleMusic(e) {
+  if (e) {
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.preventDefault) e.preventDefault();
+  }
+  const s = document.getElementById("song");
+  const d = document.getElementById("drumRoll");
+  const m = document.getElementById("magic-bg-audio");
+
+  if (isAudioPlaying()) {
+    userPausedMusic = true;
+    if (s && !s.paused) s.pause();
+    if (d && !d.paused) d.pause();
+    if (m && !m.paused) m.pause();
+  } else {
+    userPausedMusic = false;
+    if (s) s.play().catch(function(){});
+    if (m) m.play().catch(function(){});
+  }
+  updateMusicUI();
+}
+
+function toggleDay(e) {
+  if (e) {
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.preventDefault) e.preventDefault();
+  }
+  document.body.classList.toggle("day");
+}
 
         // ========== BLOW CANDLE (face mesh, no water/swan) ==========
         const blowOverlay = document.getElementById("blowOverlay");

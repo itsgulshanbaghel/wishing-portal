@@ -1,2 +1,14 @@
 # Cloudflare Redirects Configuration
 # Custom URL routing is handled by worker.js
+/edit          /edit.html          200
+/pricing       /Pricing.html       200
+/Pricing       /Pricing.html       200
+/why-greeter   /WhyGreeter.html    200
+/WhyGreeter    /WhyGreeter.html    200
+/about-us      /AboutUs.html       200
+/AboutUs       /AboutUs.html       200
+/contact-us    /ContactUs.html     200
+/ContactUs     /ContactUs.html     200
+/privacy       /privacy.html       200
+/terms         /terms&cond.html    200
+

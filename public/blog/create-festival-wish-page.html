@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta name="google-adsense-account" content="ca-pub-8043014881280685">
@@ -201,7 +201,6 @@
             <ul>
               <li><a href="../create" id="exploreTemplates">Create</a></li>
               <li><a href="../WhyGreeter" id="exploreFeatures">Why Greeter</a></li>
-              <li><a href="../index.html#stepsHeader" id="exploreShowcase">How it Works</a></li>
               <li><a href="../AboutUs" id="explorePricing">About Us</a></li>
             </ul>
           </div>
@@ -277,7 +276,7 @@
         ],
         footerBrand: "Create unforgettable, interactive surprises for birthdays, proposals, anniversaries and festivals — no coding needed.",
         exploreTitle: "Explore",
-        exploreLinks: ["Create", "Why Greeter", "How it Works", "About Us"],
+        exploreLinks: ["Create", "Why Greeter", "About Us"],
         supportTitle: "Support",
         supportLinks: ["Help Center", "Privacy Policy", "Terms of Use", "Contact"],
         followTitle: "Follow us",
@@ -319,7 +318,7 @@
         ],
         footerBrand: "जन्मदिन, प्रपोज़ल, सालगिरह और त्योहारों के लिए यादगार, इंटरैक्टिव सरप्राइज़ बनाएं — बिना कोडिंग के।",
         exploreTitle: "एक्सप्लोर करें",
-        exploreLinks: ["बनाएं", "ग्रीटर क्यों?", "यह कैसे काम करता है", "हमारे बारे में"],
+        exploreLinks: ["\u092c\u0928\u093e\u090f\u0902", "\u0917\u094d\u0930\u0940\u091f\u0930 \u0915\u094d\u092f\u094b\u0902?", "\u0939\u092e\u093e\u0930\u0947 \u092c\u093e\u0930\u0947 \u092e\u0947\u0902"],
         supportTitle: "सहायता",
         supportLinks: ["सहायता केंद्र", "गोपनीयता नीति", "उपयोग की शर्तें", "संपर्क करें"],
         followTitle: "फॉलो करें",
@@ -377,7 +376,7 @@
       document.getElementById('followTitle').innerText = t.followTitle;
       document.getElementById('copyrightText').innerText = t.copyright;
       
-      const exploreLinks = ['exploreTemplates', 'exploreFeatures', 'exploreShowcase', 'explorePricing'];
+      const exploreLinks = ['exploreTemplates', 'exploreFeatures', 'explorePricing'];
       t.exploreLinks.forEach((text, idx) => { if (document.getElementById(exploreLinks[idx])) document.getElementById(exploreLinks[idx]).innerText = text; });
       const supportLinks = ['supportHelp', 'supportPrivacy', 'supportTerms', 'supportContact'];
       t.supportLinks.forEach((text, idx) => { if (document.getElementById(supportLinks[idx])) document.getElementById(supportLinks[idx]).innerText = text; });
