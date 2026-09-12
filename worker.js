@@ -11,7 +11,7 @@ export default {
     const pathSegments = path.split('/').filter(Boolean);
     const isSlugRequest = pathSegments.length === 1 && 
                           !pathSegments[0].includes('.') &&
-                          !['api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 'create', 'privacy', 'pricing', 'aboutus', 'contactus', 'whygreeter', 'edit'].some(s => pathSegments[0].toLowerCase().startsWith(s)) &&
+                          !['api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 'create', 'privacy', 'pricing', 'about', 'contact', 'why', 'whygreeter', 'edit', 'terms'].some(s => pathSegments[0].toLowerCase().startsWith(s)) &&
                           pathSegments[0] !== 'favicon.ico' &&
                           pathSegments[0] !== 'robots.txt' &&
                           pathSegments[0] !== 'sitemap.xml';
@@ -100,6 +100,38 @@ export default {
           headers: { 'Content-Type': 'application/json' }
         });
       }
+    }
+
+    // Canonical case redirects for SEO & asset consistency
+    const canonicalRedirects = {
+      '/pricing': '/Pricing',
+      '/about-us': '/AboutUs',
+      '/aboutus': '/AboutUs',
+      '/why-greeter': '/WhyGreeter',
+      '/whygreeter': '/WhyGreeter',
+      '/contact-us': '/ContactUs',
+      '/contactus': '/ContactUs'
+    };
+
+    if (canonicalRedirects[path]) {
+      return Response.redirect(`${url.origin}${canonicalRedirects[path]}${url.search}`, 301);
+    }
+
+    // Clean static routes resolution (serves HTML directly without redirect loops)
+    const cleanRoutes = {
+      '/edit': '/edit.html',
+      '/Pricing': '/Pricing.html',
+      '/AboutUs': '/AboutUs.html',
+      '/WhyGreeter': '/WhyGreeter.html',
+      '/ContactUs': '/ContactUs.html',
+      '/privacy': '/privacy.html',
+      '/terms': '/terms.html',
+      '/terms&cond': '/terms&cond.html'
+    };
+
+    if (cleanRoutes[path] && env.ASSETS) {
+      const assetUrl = new URL(cleanRoutes[path], request.url);
+      return env.ASSETS.fetch(new Request(assetUrl, request));
     }
 
     // Serve static assets from public folder via Cloudflare Workers Assets binding (0 CPU, free global CDN)
