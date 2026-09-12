@@ -182,7 +182,6 @@ const corsOptions = {
 
 // Apply CORS for all routes — must come before all route definitions
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
 // Security headers with Helmet
 app.use(helmet({
