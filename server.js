@@ -160,8 +160,21 @@ const corsOptions = {
     }
     return callback(new Error(`CORS blocked: ${origin}`));
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'x-edit-pin',
+    'X-Edit-Pin',
+    'x-admin-key',
+    'X-Admin-Key',
+    'x-client-id',
+    'x-client-secret',
+    'x-api-version',
+    'Accept',
+    'Origin'
+  ],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -169,6 +182,7 @@ const corsOptions = {
 
 // Apply CORS for all routes — must come before all route definitions
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Security headers with Helmet
 app.use(helmet({
