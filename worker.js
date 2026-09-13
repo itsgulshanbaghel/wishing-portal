@@ -1,9 +1,52 @@
-// Cloudflare Worker script handling assets and custom slug redirects with Edge Caching
+const EDGE_PRICING = {
+  IN: {
+    currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India', country: 'IN',
+    plans: { starter: { amount: 49 }, pro: { amount: 99 }, pro_plus: { amount: 149 }, forever: { amount: 299 } }
+  },
+  GB: {
+    currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom', country: 'GB',
+    plans: { starter: { amount: 0.99 }, pro: { amount: 1.99 }, pro_plus: { amount: 3.49 }, forever: { amount: 6.99 } }
+  },
+  CA: {
+    currency: 'CAD', symbol: 'CA$', gateway: 'paypal', paypalCurrency: 'CAD', countryName: 'Canada', country: 'CA',
+    plans: { starter: { amount: 1.49 }, pro: { amount: 2.99 }, pro_plus: { amount: 4.99 }, forever: { amount: 9.99 } }
+  },
+  AU: {
+    currency: 'AUD', symbol: 'A$', gateway: 'paypal', paypalCurrency: 'AUD', countryName: 'Australia', country: 'AU',
+    plans: { starter: { amount: 1.49 }, pro: { amount: 2.99 }, pro_plus: { amount: 4.99 }, forever: { amount: 9.99 } }
+  },
+  AE: {
+    currency: 'AED', symbol: 'AED ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'UAE', country: 'AE',
+    plans: { starter: { amount: 3.99 }, pro: { amount: 6.99 }, pro_plus: { amount: 12.99 }, forever: { amount: 29.99 } }
+  },
+  PK: {
+    currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan', country: 'PK',
+    plans: { starter: { amount: 99 }, pro: { amount: 149 }, pro_plus: { amount: 299 }, forever: { amount: 799 } }
+  },
+  US: {
+    currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'United States', country: 'US',
+    plans: { starter: { amount: 0.99 }, pro: { amount: 1.99 }, pro_plus: { amount: 3.49 }, forever: { amount: 6.99 } }
+  }
+};
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    // Instant Cloudflare Edge Geo-Pricing (<5ms direct from edge)
+    if (path === '/api/geo-pricing' || path === '/api/payment/detect-price') {
+      const country = (request.cf?.country || request.headers.get('cf-ipcountry') || 'IN').toUpperCase();
+      const pricing = EDGE_PRICING[country] || (country === 'IN' ? EDGE_PRICING.IN : EDGE_PRICING.US);
+      return new Response(JSON.stringify({ success: true, ...pricing, country }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
 
     const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-4aui.onrender.com';
 
@@ -21,9 +64,15 @@ export default {
       console.log(`[Worker] Proxying request: ${path} to ${backendUrl}`);
 
       try {
+        const reqHeaders = new Headers(request.headers);
+        if (request.cf?.country) reqHeaders.set('cf-ipcountry', request.cf.country);
+        if (request.cf?.city) reqHeaders.set('cf-ipcity', encodeURIComponent(request.cf.city));
+        const clientIp = request.headers.get('cf-connecting-ip') || '';
+        if (clientIp) reqHeaders.set('x-forwarded-for', clientIp);
+
         const response = await fetch(backendUrl, {
           method: request.method,
-          headers: request.headers,
+          headers: reqHeaders,
           body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
           redirect: 'manual'
         });

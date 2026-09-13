@@ -2980,7 +2980,7 @@
         // 1. Instant Timezone / Browser Locale Check (Instant detection for local testing & India users)
         const tz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat) ? (Intl.DateTimeFormat().resolvedOptions().timeZone || '') : '';
         const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-        const isIndiaLocal = tz.includes('Kolkata') || tz.includes('Calcutta') || lang.includes('en-in') || lang.includes('hi') || lang.includes('ta') || lang.includes('te');
+        const isIndiaLocal = (new Date().getTimezoneOffset() === -330) || tz.includes('Kolkata') || tz.includes('Calcutta') || lang.includes('en-in') || lang.includes('hi') || lang.includes('ta') || lang.includes('te');
 
         if (isIndiaLocal) {
           selectedCurrency = 'INR';

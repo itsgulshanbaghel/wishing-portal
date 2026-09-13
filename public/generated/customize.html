@@ -9623,7 +9623,17 @@
       };
 
       // Stage 3 Pricing Handlers & Currency Detection
-      let selectedCurrency = sessionStorage.getItem('detected_currency') || localStorage.getItem('detected_currency') || 'USD';
+      const isISTEnv = (new Date().getTimezoneOffset() === -330) ||
+        (Intl.DateTimeFormat().resolvedOptions().timeZone || '').includes('Calcutta') ||
+        (Intl.DateTimeFormat().resolvedOptions().timeZone || '').includes('Kolkata') ||
+        (navigator.language || '').toLowerCase().includes('in') ||
+        (navigator.language || '').toLowerCase().includes('hi');
+
+      let initialCurrency = sessionStorage.getItem('detected_currency') || localStorage.getItem('detected_currency');
+      if (!initialCurrency) {
+        initialCurrency = isISTEnv ? 'INR' : 'USD';
+      }
+      let selectedCurrency = initialCurrency;
       window.selectedCurrency = selectedCurrency;
       let activePlan = { plan: 'pro', price: selectedCurrency === 'INR' ? 99 : 1.99, days: 30, label: '30 Days' };
 
@@ -9633,10 +9643,14 @@
           selectedCurrency = cached;
           window.selectedCurrency = cached;
           updatePricingUI();
+        } else if (isISTEnv) {
+          selectedCurrency = 'INR';
+          window.selectedCurrency = 'INR';
+          updatePricingUI();
         }
 
         try {
-          // 1. Try server geo-pricing
+          // 1. Try Cloudflare Edge / Server geo-pricing (<5ms)
           const serverRes = await fetch('/api/geo-pricing').catch(() => null);
           if (serverRes && serverRes.ok) {
             const data = await serverRes.json().catch(() => null);
@@ -9677,7 +9691,9 @@
         // 3. Timezone / language fallback
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
         const lang = (navigator.language || '').toLowerCase();
-        if (tz.includes('Calcutta') || tz.includes('Kolkata') || lang.includes('in') || lang.includes('hi')) {
+        const offset = new Date().getTimezoneOffset();
+
+        if (offset === -330 || tz.includes('Calcutta') || tz.includes('Kolkata') || lang.includes('in') || lang.includes('hi')) {
           selectedCurrency = 'INR';
         } else if (tz.includes('London') || lang.includes('gb')) {
           selectedCurrency = 'GBP';

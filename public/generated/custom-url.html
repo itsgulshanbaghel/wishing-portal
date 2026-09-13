@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -2235,13 +2235,13 @@
         let pricing = geoPricing.default;
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-        if (timezone && (
+        if (new Date().getTimezoneOffset() === -330 || (timezone && (
           timezone.indexOf('Asia/Kolkata') !== -1 ||
           timezone.indexOf('Asia/Colombo') !== -1 ||
           timezone.indexOf('Asia/Calcutta') !== -1 ||
           timezone === 'Asia/Kolkata' ||
           timezone === 'Asia/Calcutta'
-        )) {
+        ))) {
           pricing = geoPricing.IN;
         } else if (timezone && timezone.indexOf('Europe/') !== -1) {
           if (timezone.indexOf('Europe/London') !== -1) {
