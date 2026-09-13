@@ -48,7 +48,13 @@ export default {
       });
     }
 
-    const BACKEND_URL = env.BACKEND_URL || 'https://wishing-portal-4aui.onrender.com';
+    // 🚀 Multi-Backend Pool (Distributes load & auto-fails over if one is sleeping/down)
+    const configuredBackends = env.BACKEND_URLS 
+      ? env.BACKEND_URLS.split(',').map(u => u.trim()).filter(Boolean)
+      : (env.BACKEND_URL ? [env.BACKEND_URL] : [
+          'https://wishing-portal-4aui.onrender.com',
+          'https://wishing-portal-backup.onrender.com'
+        ]);
 
     const isApiRequest = path.startsWith('/api/');
     const pathSegments = path.split('/').filter(Boolean);
@@ -59,10 +65,25 @@ export default {
                           pathSegments[0] !== 'robots.txt' &&
                           pathSegments[0] !== 'sitemap.xml';
 
-    if (isSlugRequest || isApiRequest) {
-      const backendUrl = `${BACKEND_URL}${path}${url.search}`;
-      console.log(`[Worker] Proxying request: ${path} to ${backendUrl}`);
+    // ⚡ 1. Cloudflare Edge Caching for Read/Slug/Config Requests (<10ms global delivery)
+    const isEdgeCacheable = request.method === 'GET' && (
+      isSlugRequest || 
+      path.startsWith('/api/config/') || 
+      path.startsWith('/api/templates') ||
+      path.startsWith('/api/custom-url/check/')
+    );
 
+    const edgeCache = caches.default;
+    if (isEdgeCacheable) {
+      const cachedResponse = await edgeCache.match(request);
+      if (cachedResponse) {
+        const responseWithHeader = new Response(cachedResponse.body, cachedResponse);
+        responseWithHeader.headers.set('X-Edge-Cache', 'HIT');
+        return responseWithHeader;
+      }
+    }
+
+    if (isSlugRequest || isApiRequest) {
       try {
         const reqHeaders = new Headers(request.headers);
         if (request.cf?.country) reqHeaders.set('cf-ipcountry', request.cf.country);
@@ -70,12 +91,59 @@ export default {
         const clientIp = request.headers.get('cf-connecting-ip') || '';
         if (clientIp) reqHeaders.set('x-forwarded-for', clientIp);
 
-        const response = await fetch(backendUrl, {
-          method: request.method,
-          headers: reqHeaders,
-          body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
-          redirect: 'manual'
-        });
+        // Pre-buffer request body if not GET/HEAD so we can retry on backup backend if needed
+        let reqBody = null;
+        if (request.method !== 'GET' && request.method !== 'HEAD') {
+          reqBody = await request.arrayBuffer();
+        }
+
+        // Shuffle / start at random backend for load balancing
+        const startIdx = Math.floor(Math.random() * configuredBackends.length);
+        const orderedBackends = [
+          ...configuredBackends.slice(startIdx),
+          ...configuredBackends.slice(0, startIdx)
+        ];
+
+        let response = null;
+        let lastError = null;
+        let winningBackend = configuredBackends[0];
+
+        for (const currentOrigin of orderedBackends) {
+          try {
+            const backendUrl = `${currentOrigin}${path}${url.search}`;
+            console.log(`[Worker] Attempting proxy to: ${backendUrl}`);
+
+            const controller = new AbortController();
+            // 8.5s timeout per backend attempt to quickly failover if sleeping/cold-starting
+            const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+            const res = await fetch(backendUrl, {
+              method: request.method,
+              headers: reqHeaders,
+              body: reqBody ? reqBody.slice(0) : undefined,
+              redirect: 'manual',
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            // If backend returned 502/503/504 (cold start crash/sleeping), try next backend in pool
+            if (res.status >= 502 && res.status <= 504 && orderedBackends.length > 1) {
+              console.warn(`[Worker] Backend ${currentOrigin} returned ${res.status}. Auto-failing over to next backend...`);
+              continue;
+            }
+
+            response = res;
+            winningBackend = currentOrigin;
+            break;
+          } catch (fetchErr) {
+            console.warn(`[Worker] Failed contacting ${currentOrigin} (${fetchErr.name}):`, fetchErr.message);
+            lastError = fetchErr;
+          }
+        }
+
+        if (!response) {
+          throw lastError || new Error('All backend servers unreachable');
+        }
 
         // 1. Handle dynamic slug redirects with Edge Caching
         if (response.status >= 300 && response.status < 400) {
@@ -83,23 +151,29 @@ export default {
           if (locationHeader) {
             let targetLocation = locationHeader;
             try {
-              const locUrl = new URL(locationHeader, BACKEND_URL);
-              if (locUrl.hostname === new URL(BACKEND_URL).hostname) {
+              const locUrl = new URL(locationHeader, winningBackend);
+              if (locUrl.hostname === new URL(winningBackend).hostname) {
                 targetLocation = locUrl.pathname + locUrl.search + locUrl.hash;
               }
             } catch (e) {}
 
             console.log(`[Worker] Forwarding redirect to: ${targetLocation}`);
-            return new Response(null, {
+            const redirectResp = new Response(null, {
               status: response.status,
               statusText: response.statusText,
               headers: {
                 'Location': targetLocation,
                 'Cache-Control': isSlugRequest
                   ? 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400'
-                  : 'no-cache, no-store, must-revalidate, max-age=0'
+                  : 'no-cache, no-store, must-revalidate, max-age=0',
+                'X-Backend-Origin': winningBackend
               }
             });
+
+            if (isEdgeCacheable && ctx && ctx.waitUntil) {
+              ctx.waitUntil(edgeCache.put(request, redirectResp.clone()));
+            }
+            return redirectResp;
           }
         }
 
@@ -116,7 +190,6 @@ export default {
         const originCacheControl = response.headers.get('Cache-Control');
 
         if (!originCacheControl) {
-          // Default: sensitive/dynamic API requests are not cached unless specified by origin
           if (path.startsWith('/api/payment') || path.startsWith('/api/admin') || path.startsWith('/api/upload') || request.method !== 'GET') {
             responseHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
           } else {
@@ -124,13 +197,23 @@ export default {
           }
         }
 
-        return new Response(response.body, {
+        responseHeaders.set('X-Backend-Origin', winningBackend);
+
+        const finalResponse = new Response(response.body, {
           status: response.status,
           statusText: response.statusText,
           headers: responseHeaders
         });
+
+        // Store successful GET responses in Cloudflare Edge Cache
+        if (isEdgeCacheable && response.status === 200 && ctx && ctx.waitUntil) {
+          finalResponse.headers.set('X-Edge-Cache', 'MISS');
+          ctx.waitUntil(edgeCache.put(request, finalResponse.clone()));
+        }
+
+        return finalResponse;
       } catch (error) {
-        console.error('[Worker] Proxy error:', error);
+        console.error('[Worker] Proxy error across all origins:', error);
 
         if (!isApiRequest && env.ASSETS) {
           try {
@@ -143,7 +226,7 @@ export default {
 
         return new Response(JSON.stringify({ 
           error: 'Backend unavailable', 
-          message: 'The server is currently under maintenance. Please try again soon.' 
+          message: 'The server is currently waking up or under maintenance. Please retry in a few seconds.' 
         }), {
           status: 503,
           headers: { 'Content-Type': 'application/json' }
