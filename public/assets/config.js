@@ -6,22 +6,15 @@
  */
 
 const CONFIG = {
-  // Production Backend URL (Render Web Service)
-  API_BASE_URL: 'https://wishing-portal-4aui.onrender.com',
+  // Production Backend URL: Uses current origin (thegreeter.in) so Cloudflare Worker proxies and load-balances
+  API_BASE_URL: (typeof window !== 'undefined' && window.location) ? window.location.origin : '',
   ADDITIONAL_API_BASE_URL: null,
 
   // Google Analytics 4 Measurement ID
-  // Replace 'G-XXXXXXXXXX' with your actual GA4 Measurement ID from https://analytics.google.com
   GA_MEASUREMENT_ID: 'G-XXXXXXXXXX'
 };
 
-// Auto-detect if we are on Localhost (for development)
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-  CONFIG.API_BASE_URL = window.location.origin;
-}
-
-// If accessing directly from backend URL itself, use same origin
-if (window.location.hostname.includes('onrender.com') || window.location.hostname.includes('vercel.app')) {
+if (typeof window !== 'undefined' && window.location) {
   CONFIG.API_BASE_URL = window.location.origin;
 }
 
