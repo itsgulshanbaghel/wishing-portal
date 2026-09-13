@@ -2006,11 +2006,16 @@ app.post('/api/payment/create-order', async (req, res) => {
       }
     } catch (e) { }
 
-    // Determine effective gateway: respect explicit client gateway/currency or geo-IP detection
+    // Determine effective gateway: geo-IP is the single source of truth.
+    // If the server detected India (INR), ALWAYS use Cashfree — ignore any client-supplied
+    // gateway/currency overrides to prevent bypassing local payment rails.
     const reqGateway = (req.body.gateway || '').toLowerCase().trim();
     const reqCurrency = (req.body.currency || '').toUpperCase().trim();
-    const effectiveGateway = (reqGateway === 'paypal' || (reqCurrency && reqCurrency !== 'INR') || (currency && currency !== 'INR')) ? 'paypal' : gateway;
-    const targetCurrency = paypalCurrency || (reqCurrency && reqCurrency !== 'INR' ? reqCurrency : 'USD');
+    const isIndiaUser = (currency === 'INR'); // server-side geo-IP decision
+    const effectiveGateway = isIndiaUser
+      ? 'cashfree'  // India: always Cashfree, client override ignored
+      : (reqGateway === 'paypal' || (reqCurrency && reqCurrency !== 'INR') || (currency && currency !== 'INR') ? 'paypal' : gateway);
+    const targetCurrency = isIndiaUser ? 'INR' : (paypalCurrency || (reqCurrency && reqCurrency !== 'INR' ? reqCurrency : 'USD'));
 
     // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
     if (effectiveGateway === 'paypal') {
