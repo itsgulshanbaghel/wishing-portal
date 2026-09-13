@@ -9469,12 +9469,26 @@
       window.showScreen = function (screenNum, e) {
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
         if (screenNum === 2) {
+          // Auto-save current customization state before launching fresh full preview
+          if (typeof autoSaveState === 'function') autoSaveState();
+
           // Auto-disable pencil editing tool when opening full preview
           if (typeof window.disableEditMode === 'function') {
             window.disableEditMode();
           } else if (typeof window.toggleEditMode === 'function') {
             window.toggleEditMode(null, false);
           }
+
+          // Reset interactive feature states so curtains, lock, countdown, welcome typing load fresh
+          const countdownActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('countdown') : false;
+          const lockActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('lock') : false;
+          const curtainActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('curtainReveal') : false;
+          const welcomeActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('welcomeTyping') : false;
+
+          window.countdownFinished = !countdownActive;
+          window.lockUnlocked = !lockActive;
+          window.curtainOpened = !curtainActive;
+          window.welcomeFinished = !welcomeActive;
         }
         const bodyEl = document.body;
         const topBar = document.getElementById('fullPreviewTopBar');
@@ -9488,6 +9502,11 @@
           if (stage2) stage2.style.display = 'none';
           if (stage3) stage3.style.display = 'none';
           window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          // Reload template preview iframe with fresh timestamp so all features (curtains, lock, music, animations) load from the start
+          if (typeof loadSelectedTemplate === 'function') {
+            loadSelectedTemplate();
+          }
         } else {
           bodyEl.classList.remove('stage-screen2');
           if (topBar) topBar.style.display = 'none';

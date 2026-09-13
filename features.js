@@ -568,6 +568,14 @@
                     d.documentElement.appendChild(cd);
                 }
 
+                // Ensure secret letter envelope is hidden while curtains are closed
+                const existingEnv = d.getElementById("magic-old-letter-envelope");
+                if (existingEnv) {
+                    existingEnv.style.opacity = "0";
+                    existingEnv.style.visibility = "hidden";
+                    existingEnv.style.pointerEvents = "none";
+                }
+
                 const btn = cd.querySelector("#curtain-open-btn");
                 let opened = false;
                 const openCurtains = () => {
@@ -588,6 +596,16 @@
                             w.scrollTo({ top: 0, behavior: 'smooth' });
                         }
                     } catch (err) { }
+
+                    // Reveal secret letter 1.5s after curtain starts opening
+                    setTimeout(() => {
+                        const envEl = d.getElementById("magic-old-letter-envelope");
+                        if (envEl) {
+                            envEl.style.opacity = "1";
+                            envEl.style.visibility = "visible";
+                            envEl.style.pointerEvents = "auto";
+                        }
+                    }, 1500);
 
                     // Dispatch curtainOpened immediately as the user opens curtains
                     // so the welcome screen appears right behind the opening curtains!
@@ -1498,37 +1516,69 @@
                 audio.preload = 'auto';
                 audio.style.display = 'none';
                 d.body.appendChild(audio);
-                const env = d.createElement("div"); env.id = "magic-old-letter-envelope"; env.innerHTML = "\u2709\uFE0F";
-                env.style.cssText = "position:fixed; bottom:25px; left:25px; font-size:55px; cursor:pointer; z-index:2147484000; background:#fff; border-radius:50%; width:75px; height:75px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(0,0,0,0.4); transition:0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid #ffd700; opacity:0; visibility:hidden;";
-                env.onmouseenter = () => env.style.transform = "scale(1.15) rotate(5deg)"; env.onmouseleave = () => env.style.transform = "scale(1)";
 
-                // Show envelope only after curtains are opened and welcome message has disappeared
+                const env = d.createElement("div"); 
+                env.id = "magic-old-letter-envelope"; 
+                env.innerHTML = "\u2709\uFE0F";
+                env.style.cssText = "position:fixed; bottom:25px; left:25px; font-size:55px; cursor:pointer; z-index:1000; background:#fff; border-radius:50%; width:75px; height:75px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(0,0,0,0.4); transition:0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid #ffd700; opacity:0; visibility:hidden; pointer-events:none;";
+                env.onmouseenter = () => env.style.transform = "scale(1.15) rotate(5deg)"; 
+                env.onmouseleave = () => env.style.transform = "scale(1)";
+
                 const showEnvelope = () => {
+                    if (!d || !d.body) return;
+                    if (!d.getElementById("magic-old-letter-envelope")) {
+                        d.body.appendChild(env);
+                    }
                     env.style.opacity = "1";
                     env.style.visibility = "visible";
-                    d.body.appendChild(env);
+                    env.style.pointerEvents = "auto";
                 };
 
-                // Check if curtains exist - if so, wait for them to open
+                // Check if curtains or lock or countdown overlays are currently blocking
                 const curtain = d.getElementById("magic-curtain-reveal-root");
-                if (curtain) {
-                    // Wait for curtain to open
-                    const curtainHandler = () => {
-                        window.removeEventListener('curtainOpened', curtainHandler);
-                        // Now wait for welcome message to finish (approximately 6-7 seconds total)
-                        window.oldPaperLetterTimeout = setTimeout(showEnvelope, 7000);
+                const lock = d.getElementById("lock-overlay");
+                const countdown = d.getElementById("magic-countdown-overlay");
+                const welcome = d.getElementById("magic-welcome-typing-root");
+
+                const isCurtainBlocking = curtain && !curtain._isOpening && !curtain.classList.contains('open') && curtain.style.display !== 'none';
+                const isLockBlocking = !!lock;
+                const isCountdownBlocking = !!countdown;
+
+                if (isCurtainBlocking || isLockBlocking || isCountdownBlocking) {
+                    // Append in hidden state
+                    d.body.appendChild(env);
+
+                    const onStageProgress = () => {
+                        const cur = d.getElementById("magic-curtain-reveal-root");
+                        const lk = d.getElementById("lock-overlay");
+                        const cd = d.getElementById("magic-countdown-overlay");
+                        if ((cur && !cur._isOpening && !cur.classList.contains('open') && cur.style.display !== 'none') || lk || cd) {
+                            return; // still blocked
+                        }
+                        window.oldPaperLetterTimeout = setTimeout(showEnvelope, 1500);
                     };
-                    window.addEventListener('curtainOpened', curtainHandler);
-                } else {
-                    // No curtains, check if welcome message exists
-                    const welcomeOverlay = d.getElementById("magic-welcome-typing-root");
-                    if (welcomeOverlay) {
-                        // Wait for welcome message to finish
-                        window.oldPaperLetterTimeout = setTimeout(showEnvelope, 7000);
-                    } else {
-                        // No welcome message either, show immediately
-                        showEnvelope();
+
+                    if (w && typeof w.addEventListener === 'function') {
+                        w.addEventListener('curtainOpened', onStageProgress);
+                        w.addEventListener('lockUnlocked', onStageProgress);
+                        w.addEventListener('countdownFinished', onStageProgress);
                     }
+                    if (d && typeof d.addEventListener === 'function') {
+                        d.addEventListener('curtainOpened', onStageProgress);
+                        d.addEventListener('lockUnlocked', onStageProgress);
+                        d.addEventListener('countdownFinished', onStageProgress);
+                    }
+                } else if (welcome) {
+                    d.body.appendChild(env);
+                    const onWelcomeDone = () => {
+                        window.oldPaperLetterTimeout = setTimeout(showEnvelope, 1000);
+                    };
+                    if (w && typeof w.addEventListener === 'function') w.addEventListener('welcomeTypingFinished', onWelcomeDone);
+                    if (d && typeof d.addEventListener === 'function') d.addEventListener('welcomeTypingFinished', onWelcomeDone);
+                    window.oldPaperLetterTimeout = setTimeout(showEnvelope, 3500);
+                } else {
+                    // No blocking overlay, show immediately
+                    showEnvelope();
                 }
                 const modal = d.createElement("div"); modal.id = "magic-letter-modal"; modal.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:2147484100; display:flex; align-items:center; justify-content:center; visibility:hidden; opacity:0; transition:0.4s; padding:20px;";
                 const card = d.createElement("div");

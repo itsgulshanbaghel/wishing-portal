@@ -2218,9 +2218,9 @@
             const data = await res.json();
             if (data.success) {
               selectedCurrency = data.currency;
-              // The detect-price endpoint returns a plans object; use starter plan amount
-              selectedAmount = (data.plans && data.plans.starter && data.plans.starter.amount) || data.amount || 49;
-              selectedGateway = data.gateway || 'cashfree';
+              // The detect-price endpoint returns a plans object; use custom_url plan amount
+              selectedAmount = (data.plans && (data.plans.custom_url?.amount || data.plans.starter?.amount)) || data.amount || (data.currency === 'INR' ? 29 : 0.99);
+              selectedGateway = data.gateway || (data.currency === 'INR' ? 'cashfree' : 'paypal');
               geoPriceAmount.textContent = isPremiumUser ? 'FREE' : `${data.symbol}${selectedAmount}`;
               updateCheckoutUI();
               updatePayBtnState();
@@ -2589,6 +2589,7 @@
         const payload = {
           websiteId: websiteId,
           slug: slugInput.value,
+          plan: 'custom_url',
           amount: selectedAmount,
           currency: selectedCurrency,
           customerDetails,
