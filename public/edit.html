@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1837,6 +1837,21 @@
           chip.innerHTML = `<i class="fas ${fInfo.icon}"></i> ${fInfo.label}`;
           chipsContainer.appendChild(chip);
         });
+      }
+
+      // Cache verified paid plan in local & session storage
+      if (data.isPremium || data.plan) {
+        try {
+          const resolvedPlan = (data.plan || 'pro').toLowerCase().trim();
+          sessionStorage.setItem('premium_' + data.websiteId, 'true');
+          localStorage.setItem('premium_' + data.websiteId, 'true');
+          sessionStorage.setItem('purchased_plan_' + data.websiteId, resolvedPlan);
+          localStorage.setItem('purchased_plan_' + data.websiteId, resolvedPlan);
+          if (resolvedPlan !== 'starter') {
+            sessionStorage.setItem('pro_plan_' + data.websiteId, 'true');
+            localStorage.setItem('pro_plan_' + data.websiteId, 'true');
+          }
+        } catch (e) {}
       }
 
       // Action Buttons

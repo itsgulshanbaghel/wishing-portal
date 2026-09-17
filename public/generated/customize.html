@@ -3662,7 +3662,7 @@
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill sel" data-price="99" data-days="30" data-label="30 Days" data-plan="pro">
+              <button class="plan-pill sel" data-price="79" data-days="30" data-label="30 Days" data-plan="pro">
                 <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
                 <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro</span>
                 <span class="pill-period">30 Days</span>
@@ -3690,7 +3690,7 @@
               </div>
               <div class="cmp-price-row">
                 <span class="cmp-price-orig" id="priceOrig">₹199</span>
-                <span class="cmp-price-big" id="priceBig">₹99</span>
+                <span class="cmp-price-big" id="priceBig">₹79</span>
                 <span class="cmp-price-period" id="pricePeriod">for 30 Days</span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
@@ -3708,14 +3708,6 @@
               </li>
               <li class="feat-item star" style="display: flex; align-items: center;">
                 <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>🚫 100% Ad-Free &amp; High-Speed Hosting</span>
-                <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
-              </li>
-              <li class="feat-item star" style="display: flex; align-items: center;">
-                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>🎵 Background Music &amp; Voice Note Integration</span>
-                <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
-              </li>
-              <li class="feat-item star" style="display: flex; align-items: center;">
-                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>📸 HD Photo Memories &amp; Floating Rain Effects</span>
                 <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
               </li>
               <li class="feat-item star" style="display: flex; align-items: center;">
@@ -5393,7 +5385,7 @@
             sessionStorage.setItem(`purchased_plan_${websiteId}`, resolvedPlan);
             localStorage.setItem(`purchased_plan_${websiteId}`, resolvedPlan);
           }
-          if (serverData.isPremium || (serverData.metadata && serverData.metadata.isPremium)) {
+          if (serverData.isPremium || (serverData.metadata && serverData.metadata.isPremium) || (serverData.payment && (serverData.payment.status === 'PAID' || serverData.payment.status === 'COMPLETED')) || (resolvedPlan && resolvedPlan !== 'free')) {
             window.isPremiumUser = true;
             window.isPremium = true;
             sessionStorage.setItem(`premium_${websiteId}`, 'true');
@@ -5409,6 +5401,8 @@
           if (serverData.slug || (serverData.metadata && serverData.metadata.slug)) {
             window._existingSlug = serverData.slug || serverData.metadata.slug;
           }
+          if (typeof window.updateHubSummary === 'function') window.updateHubSummary();
+          if (typeof updatePricingUI === 'function') updatePricingUI();
 
           // Restore userData from config, ensuring websiteId is firmly attached
           if (config.userData) {
@@ -9439,6 +9433,29 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
+      window.isPurchasedWebsite = function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const websiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || urlParams.get('view') || urlParams.get('restore');
+        const currentPaidPlan = window.purchasedPlan || (websiteId ? sessionStorage.getItem(`purchased_plan_${websiteId}`) : null) || (websiteId ? localStorage.getItem(`purchased_plan_${websiteId}`) : null);
+        
+        const activeFeatures = typeof getActivePremiumFeatures === 'function' ? getActivePremiumFeatures() : [];
+        const hasProFeatures = activeFeatures.some(f => ['virtualCake', 'virtualHug', 'addMusicSection'].includes(f));
+        const requiresProUpgrade = (currentPaidPlan === 'starter' && hasProFeatures);
+
+        const isPaid = !requiresProUpgrade && !!(
+          window.isPremiumUser ||
+          window.isPremium ||
+          (websiteId && sessionStorage.getItem(`premium_${websiteId}`) === 'true') ||
+          (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
+          (websiteId && sessionStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
+          (websiteId && localStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
+          urlParams.get('_v') === 'c' ||
+          urlParams.get('action') === 'payment-success' ||
+          (urlParams.get('src') === 'edit' && (currentPaidPlan || window.isPremiumUser || window.isPremium))
+        );
+        return isPaid;
+      };
+
       window.updateHubSummary = function () {
         const uData = typeof getEventData === 'function' ? getEventData() : {};
         const recipientName = uData.recipientName || uData.name || (typeof getUserName === 'function' ? getUserName() : '') || 'Someone Special';
@@ -9462,6 +9479,52 @@
             elFeatures.innerHTML = '<span style="color: #10b981; font-weight:700;">Standard</span>';
           } else {
             elFeatures.innerHTML = `<span style="color: #7b5df6; font-weight:800;">✨ ${activeFeatures.length} Active</span>`;
+          }
+        }
+
+        // Dynamically configure Stage 1, Stage 2, and Stage 3 buttons for purchased vs new websites
+        const isPaid = typeof window.isPurchasedWebsite === 'function' && window.isPurchasedWebsite();
+        const hubPub = document.getElementById('hubPublishBtn');
+        const hubBadge = document.querySelector('#stage2PublishHub .hub-badge');
+        const hubTitle = document.querySelector('#stage2PublishHub .hub-title');
+        const hubSub = document.querySelector('#stage2PublishHub .hub-subtitle');
+        const genBtnText = document.getElementById('generateBtnText');
+        const fpPub = document.getElementById('proceedToPublishBtn');
+
+        if (isPaid) {
+          if (hubBadge) hubBadge.innerHTML = '✨ STEP 2 · REVIEW &amp; UPDATE';
+          if (hubTitle) hubTitle.textContent = 'Review & Update Your Surprise';
+          if (hubSub) hubSub.textContent = 'Double-check your updated details below, launch full-screen preview to test your website, or save & update your live website.';
+          if (hubPub) {
+            hubPub.innerHTML = '<span>🚀 Save &amp; Update Website</span> <i class="fas fa-check-circle" style="margin-left: 6px;"></i>';
+            hubPub.onclick = (e) => {
+              if (e) e.preventDefault();
+              window.handleFinalPay();
+            };
+          }
+          if (genBtnText) genBtnText.textContent = 'Next: Review & Update';
+          if (fpPub) {
+            fpPub.innerHTML = '<span>🚀 Save &amp; Update Website</span>';
+            fpPub.onclick = () => {
+              showScreen(1);
+              window.handleFinalPay();
+            };
+          }
+        } else {
+          if (hubBadge) hubBadge.innerHTML = '✨ STEP 2 OF 3 · VERIFY &amp; PUBLISH';
+          if (hubTitle) hubTitle.textContent = 'Review & Finalize Your Surprise';
+          if (hubSub) hubSub.textContent = 'Double-check your customized details below, launch full-screen preview to test your website, or proceed directly to publish.';
+          if (hubPub) {
+            hubPub.innerHTML = '<span>🚀 Proceed to Publish &amp; Share</span> <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>';
+            hubPub.onclick = () => showStage(3);
+          }
+          if (genBtnText) genBtnText.textContent = 'Next: Preview & Publish';
+          if (fpPub) {
+            fpPub.innerHTML = '<span>🚀 Proceed to Publish</span>';
+            fpPub.onclick = () => {
+              showScreen(1);
+              showStage(2);
+            };
           }
         }
       };
@@ -10216,6 +10279,7 @@
 
         if (!effectivePin || !/^\d{4,6}$/.test(String(effectivePin).trim())) {
           // Make sure checkout details card is revealed so user sees the PIN input
+          if (typeof window.showStage === 'function') window.showStage(3);
           const inlineCheckout = document.getElementById('inlineCheckout');
           if (inlineCheckout && inlineCheckout.style.display === 'none') {
             if (typeof window.revealInlineCheckout === 'function') window.revealInlineCheckout();
@@ -10529,7 +10593,7 @@
           let orig = '';
           if (selectedCurrency === 'INR') {
             if (planKey === 'starter') { p = 49; orig = '₹99'; }
-            else if (planKey === 'pro') { p = 99; orig = '₹199'; }
+            else if (planKey === 'pro') { p = 79; orig = '₹199'; }
             else if (planKey === 'pro_plus') { p = 149; orig = '₹299'; }
             else if (planKey === 'forever') { p = 299; orig = '₹599'; }
           } else if (selectedCurrency === 'GBP') {
@@ -10572,7 +10636,7 @@
         const selectedPill = switcher.querySelector('.plan-pill.sel') || pills[1];
         if (selectedPill) {
           const planKey = selectedPill.dataset.plan;
-          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 99 : 1.99);
+          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 79 : 1.99);
           const orig = selectedPill.dataset.computedOrigPrice || '';
           activePlan = { plan: planKey, price: p, days: +selectedPill.dataset.days, label: selectedPill.dataset.label };
 
@@ -10600,11 +10664,50 @@
           else if (planKey === 'pro_plus') planTitle = 'Pro+';
           else if (planKey === 'forever') planTitle = 'Infinity';
 
+          const isPurchased = typeof window.isPurchasedWebsite === 'function' && window.isPurchasedWebsite();
+          const finalPayBtn = document.getElementById('finalPayBtn');
+          const proceedBtn = document.getElementById('proceedToPayBtn');
           const finalPayBtnText = document.getElementById('finalPayBtnText');
-          if (finalPayBtnText) finalPayBtnText.textContent = `Pay ${symbol}${p} Securely (${planTitle})`;
-
           const proceedToPayBtnText = document.getElementById('proceedToPayBtnText');
-          if (proceedToPayBtnText) proceedToPayBtnText.textContent = `Continue with ${planTitle} – ${symbol}${p}`;
+
+          if (isPurchased) {
+            if (finalPayBtnText) finalPayBtnText.textContent = `Save & Update Website`;
+            if (proceedToPayBtnText) proceedToPayBtnText.textContent = `Save & Update Website`;
+            if (proceedBtn) {
+              proceedBtn.innerHTML = `<i class="fas fa-check-circle"></i> <span id="proceedToPayBtnText">Save & Update Website</span>`;
+              proceedBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+              proceedBtn.onclick = (e) => {
+                if (e) e.preventDefault();
+                window.handleFinalPay();
+              };
+            }
+            if (finalPayBtn) {
+              finalPayBtn.innerHTML = `<i class="fas fa-check-circle" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Save & Update Website</span>`;
+            }
+            const s3Title = document.querySelector('#stage3Pricing .step2-title');
+            const s3Sub = document.querySelector('#stage3Pricing .step2-sub');
+            const s3Badge = document.querySelector('#stage3Pricing .step2-header span');
+            if (s3Title) s3Title.textContent = 'Save Updates to Your Live Website';
+            if (s3Sub) s3Sub.textContent = `Your website has an active plan (${activePlan.label}). Click below to save your changes immediately without any extra charge.`;
+            if (s3Badge) s3Badge.textContent = '✨ ACTIVE WEBSITE';
+          } else {
+            if (finalPayBtnText) finalPayBtnText.textContent = `Pay ${symbol}${p} Securely (${planTitle})`;
+            if (proceedToPayBtnText) proceedToPayBtnText.textContent = `Continue with ${planTitle} – ${symbol}${p}`;
+            if (proceedBtn) {
+              proceedBtn.innerHTML = `<i class="fas fa-crown"></i> <span id="proceedToPayBtnText">Continue with ${planTitle} – ${symbol}${p}</span>`;
+              proceedBtn.style.background = 'linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%)';
+              proceedBtn.onclick = (e) => window.revealInlineCheckout(e);
+            }
+            if (finalPayBtn) {
+              finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} Securely (${planTitle})</span>`;
+            }
+            const s3Title = document.querySelector('#stage3Pricing .step2-title');
+            const s3Sub = document.querySelector('#stage3Pricing .step2-sub');
+            const s3Badge = document.querySelector('#stage3Pricing .step2-header span');
+            if (s3Title) s3Title.textContent = 'Make Your Surprise Truly Unforgettable';
+            if (s3Sub) s3Sub.textContent = 'Select how long you want your personalized surprise website to remain live, interactive, and ad-free.';
+            if (s3Badge) s3Badge.textContent = '✨ SELECT YOUR PLAN';
+          }
 
 
           // Update Custom URL Feature item UI according to plan
@@ -10695,14 +10798,34 @@
         if (hubEdit) hubEdit.onclick = () => showStage(1);
 
         const hubPub = document.getElementById('hubPublishBtn');
-        if (hubPub) hubPub.onclick = () => showStage(3);
+        if (hubPub) {
+          hubPub.onclick = (e) => {
+            if (typeof window.isPurchasedWebsite === 'function' && window.isPurchasedWebsite()) {
+              if (e) e.preventDefault();
+              window.handleFinalPay();
+            } else {
+              showStage(3);
+            }
+          };
+        }
 
         // Full Screen Preview Top Bar Controls
         const fpBack = document.getElementById('backToEditBtn');
         if (fpBack) fpBack.onclick = () => { showScreen(1); showStage(1); };
 
         const fpPub = document.getElementById('proceedToPublishBtn');
-        if (fpPub) fpPub.onclick = () => { showScreen(1); showStage(2); };
+        if (fpPub) {
+          fpPub.onclick = () => {
+            showScreen(1);
+            if (typeof window.isPurchasedWebsite === 'function' && window.isPurchasedWebsite()) {
+              window.handleFinalPay();
+            } else {
+              showStage(2);
+            }
+          };
+        }
+
+        if (typeof window.updateHubSummary === 'function') window.updateHubSummary();
 
         // Stage 3 Pricing Plan Switcher Pills
         const switcher = document.getElementById('planSwitcher');

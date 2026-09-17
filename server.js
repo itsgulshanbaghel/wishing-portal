@@ -960,6 +960,15 @@ app.get('/api/resolve/:identifier', async (req, res) => {
       sbConfig?.hasEditPin
     );
 
+    let paidPlan = sbConfig?.plan || sbConfig?.metadata?.plan || (metadata && metadata.plan) || null;
+    try {
+      const paymentRec = await cockroach.getPaymentByWebsiteId(websiteId).catch(() => null);
+      if (paymentRec && (paymentRec.status === 'PAID' || paymentRec.status === 'COMPLETED')) {
+        paidPlan = (paymentRec.plan || '').toLowerCase().trim();
+        isPremium = true;
+      }
+    } catch (pe) { }
+
     res.set('Cache-Control', 'public, max-age=60, s-maxage=300');
     return res.json({
       found: true,
@@ -970,6 +979,7 @@ app.get('/api/resolve/:identifier', async (req, res) => {
       templateName: resolvedTemplateName,
       features: features.length ? features : (metadata?.features || []),
       isPremium: isPremium || !!metadata?.isPremium,
+      plan: paidPlan || (isPremium ? 'pro' : null),
       hasEditPin,
       createdAt: metadata?.createdAt || crRecord?.created_at || null,
       shareUrl: customSlug ? `${baseUrl}/${customSlug}` : `${baseUrl}/generated/customize.html?view=${websiteId}&_v=c`,
@@ -1300,7 +1310,7 @@ const PRICING_MAP = {
   // Tier 2: Developing (High Volume)
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India',
-    plans: { custom_url: { amount: 29, paypalAmount: 29 }, starter: { amount: 49, paypalAmount: 49 }, pro: { amount: 99, paypalAmount: 99 }, pro_plus: { amount: 149, paypalAmount: 149 }, forever: { amount: 299, paypalAmount: 299 } }
+    plans: { custom_url: { amount: 29, paypalAmount: 29 }, starter: { amount: 49, paypalAmount: 49 }, pro: { amount: 79, paypalAmount: 79 }, pro_plus: { amount: 149, paypalAmount: 149 }, forever: { amount: 299, paypalAmount: 299 } }
   },
   PK: {
     currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',

@@ -1,7 +1,7 @@
 const EDGE_PRICING = {
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India', country: 'IN',
-    plans: { custom_url: { amount: 29 }, starter: { amount: 49 }, pro: { amount: 99 }, pro_plus: { amount: 149 }, forever: { amount: 299 } }
+    plans: { custom_url: { amount: 29 }, starter: { amount: 49 }, pro: { amount: 79 }, pro_plus: { amount: 149 }, forever: { amount: 299 } }
   },
   GB: {
     currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom', country: 'GB',
