@@ -7,13 +7,7 @@
     { "pattern": "thegreeter.in/*", "zone_name": "thegreeter.in" },
     { "pattern": "www.thegreeter.in/*", "zone_name": "thegreeter.in" }
   ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "wishing-portal-db",
-      "database_id": "6f99ef52-d801-425a-9c3e-293776aa7ea3"
-    }
-  ],
+
   "observability": {
     "enabled": true
   },
