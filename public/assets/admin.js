@@ -395,16 +395,34 @@
       if (sec === 'custom-url') {
         loadCustomUrlAnalytics();
       }
+      // Auto-close sidebar on mobile after selecting section
+      const sb = document.getElementById('sidebar');
+      const bd = document.getElementById('sidebarBackdrop');
+      if (sb) sb.classList.remove('open');
+      if (bd) bd.classList.remove('active');
     });
   });
 
-  // Mobile sidebar
-  document.getElementById('hamburgerBtn').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('open');
-  });
-  document.getElementById('sidebarClose').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.remove('open');
-  });
+  // Mobile sidebar & backdrop handlers
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sidebarClose = document.getElementById('sidebarClose');
+  const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+  const sidebarEl = document.getElementById('sidebar');
+
+  if (hamburgerBtn && sidebarEl) {
+    hamburgerBtn.addEventListener('click', () => {
+      const isOpen = sidebarEl.classList.toggle('open');
+      if (sidebarBackdrop) sidebarBackdrop.classList.toggle('active', isOpen);
+    });
+  }
+
+  function closeSidebar() {
+    if (sidebarEl) sidebarEl.classList.remove('open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+  }
+
+  if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
 
   // ── Render All ──
   function renderAll() {

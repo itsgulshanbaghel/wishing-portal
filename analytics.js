@@ -529,8 +529,8 @@ class AnalyticsStore {
           const p = String(plan).toLowerCase();
           if (p === 'starter') {
             plan = 'starter';
-            planName = planName || 'Starter (7 Days)';
-            planDays = planDays || 7;
+            planName = planName || 'Starter (14 Days)';
+            planDays = planDays || 14;
           } else if (p === 'pro') {
             plan = 'pro';
             planName = planName || 'Pro (30 Days)';
@@ -546,42 +546,42 @@ class AnalyticsStore {
           } else if (p === 'custom_url') {
             plan = 'custom_url';
             planName = planName || 'Custom URL';
-            planDays = planDays || 365;
+            planDays = planDays || w.planDays || (isPremium ? 30 : 14);
           }
         }
 
         if (isPremium && !planName) {
           if (payment) {
             const amt = Number(payment.amount);
-            if (amt === 29 || amt === 0.99) {
+            if (amt === 49 || amt === 0.99) {
               plan = 'starter';
-              planName = 'Starter (7 Days)';
-              planDays = 7;
-            } else if (amt === 49 || amt === 1.99) {
+              planName = 'Starter (14 Days)';
+              planDays = 14;
+            } else if (amt === 79 || amt === 1.99) {
               plan = 'pro';
               planName = 'Pro (30 Days)';
               planDays = 30;
-            } else if (amt === 99 || amt === 3.99 || amt === 4.99) {
+            } else if (amt === 149 || amt === 3.49 || amt === 4.99) {
               plan = 'pro_plus';
               planName = 'Pro+ (100 Days)';
               planDays = 100;
-            } else if (amt === 199 || amt === 9.99) {
+            } else if (amt === 299 || amt === 6.99 || amt === 9.99) {
               plan = 'forever';
-              planName = 'Infinity (Lifetime)';
+              planName = 'Forever (Lifetime)';
               planDays = 99999;
             } else {
               plan = 'custom_url';
               planName = 'Custom URL';
-              planDays = 365;
+              planDays = w.planDays || 30;
             }
           } else if (slug) {
             plan = 'custom_url';
             planName = 'Custom URL';
-            planDays = 365;
+            planDays = w.planDays || 30;
           } else {
             plan = 'premium';
             planName = '👑 Premium';
-            planDays = 365;
+            planDays = w.planDays || 30;
           }
         }
 

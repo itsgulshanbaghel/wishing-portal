@@ -3702,31 +3702,34 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
-// 🕒 Vercel Scheduled Cron: Auto-cleanup expired free storage & database records
+// 🕒 Scheduled Cron: Auto-cleanup expired free storage & expired premium records (+6 days grace)
 app.get('/api/cron/cleanup', async (req, res) => {
   try {
-    console.log('[Cron] Starting 36h free media & expired website cleanup...');
-    // 1. Purge expired files from Supabase Project 1 (greeter-free)
+    console.log('[Cron] Starting verified cleanup (36h free + expired premium with 6d grace)...');
+    // 1. Purge expired files from free media storage
     await storage.purgeExpiredFreeFiles();
 
-    // 2. Purge expired free records from CockroachDB free_records table
-    const cockroachDeleted = await cockroach.purgeExpiredFreeRecords();
+    // 2. Purge expired free records with strict payment & slug verification
+    const freeDeleted = await cockroach.purgeExpiredFreeRecords();
 
-    // 3. Clean up expired free website entries in MongoDB (older than 36h)
+    // 3. Purge expired premium records with 6-day grace period (Starter: 20d, Pro: 36d, Pro+: 106d, Forever: never)
+    const premiumExpiredDeleted = await cockroach.purgeExpiredPremiumRecords(6);
+
+    // 4. Clean up expired free website entries in MongoDB (older than 36h) if connected
     const mongoReady = await ensureMongoConnected();
-    let deletedCount = 0;
+    let mongoDeletedCount = 0;
     if (mongoReady) {
       const cutoff = new Date(Date.now() - 36 * 60 * 60 * 1000);
       const result = await Website.deleteMany({ isPremium: false, createdAt: { $lt: cutoff } });
-      deletedCount = result.deletedCount || 0;
-      console.log(`[Cron] Deleted ${deletedCount} expired free website records from MongoDB`);
+      mongoDeletedCount = result.deletedCount || 0;
     }
 
     res.json({
       success: true,
-      message: 'Cleanup completed successfully',
-      deletedWebsites: deletedCount,
-      cockroachDeletedRecords: cockroachDeleted,
+      message: 'Cleanup completed successfully with 6-day grace period protection',
+      freeRecordsPurged: freeDeleted,
+      premiumExpiredPurged: premiumExpiredDeleted,
+      mongoPurged: mongoDeletedCount,
       timestamp: new Date().toISOString()
     });
   } catch (err) {

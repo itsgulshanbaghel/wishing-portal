@@ -238,10 +238,31 @@ async function savePayment(paymentData) {
   return res.success;
 }
 
+function formatPaymentRow(row) {
+  if (!row) return null;
+  let meta = row.metadata;
+  if (typeof meta === 'string') {
+    try { meta = JSON.parse(meta); } catch (_) {}
+  }
+  return {
+    orderId: row.order_id || row.orderId,
+    websiteId: row.website_id || row.websiteId,
+    slug: row.slug,
+    plan: row.plan,
+    planName: row.plan_name || row.planName,
+    amount: row.amount,
+    currency: row.currency,
+    status: row.status,
+    paymentMethod: row.payment_method || row.paymentMethod,
+    createdAt: row.created_at || row.createdAt,
+    metadata: meta
+  };
+}
+
 async function getPaymentByWebsiteId(websiteId) {
   const res = await executeQuery(`SELECT * FROM payments WHERE website_id = ? AND status = 'PAID' LIMIT 1`, [websiteId]);
   if (res.success && res.results.length > 0) {
-    return res.results[0];
+    return formatPaymentRow(res.results[0]);
   }
   return null;
 }
@@ -249,14 +270,14 @@ async function getPaymentByWebsiteId(websiteId) {
 async function getPaymentByOrderId(orderId) {
   const res = await executeQuery(`SELECT * FROM payments WHERE order_id = ? LIMIT 1`, [orderId]);
   if (res.success && res.results.length > 0) {
-    return res.results[0];
+    return formatPaymentRow(res.results[0]);
   }
   return null;
 }
 
-async function getAllPayments(limit = 500) {
+async function getAllPayments(limit = 1000) {
   const res = await executeQuery(`SELECT * FROM payments ORDER BY created_at DESC LIMIT ?`, [limit]);
-  return res.results || [];
+  return (res.results || []).map(formatPaymentRow);
 }
 
 /**
@@ -315,9 +336,97 @@ async function saveFeedback() { return true; }
 async function saveVisitor() { return true; }
 async function incrementGlobalCounter() { return true; }
 async function getGlobalCounters() { return {}; }
+/**
+ * Purge expired free records (>36h) with strict payment and slug verification
+ * Guarantees that no paid or slug-registered website is ever deleted mistakenly.
+ */
 async function purgeExpiredFreeRecords() {
-  const res = await executeQuery(`DELETE FROM free_records WHERE created_at < datetime('now', '-36 hours')`);
-  return res.meta?.changes || 0;
+  const query = `
+    DELETE FROM free_records 
+    WHERE created_at < datetime('now', '-36 hours')
+      AND id NOT IN (SELECT website_id FROM payments WHERE status IN ('PAID', 'COMPLETED') AND website_id IS NOT NULL AND website_id != '')
+      AND id NOT IN (SELECT id FROM premium_records)
+      AND id NOT IN (SELECT website_id FROM custom_slugs WHERE website_id IS NOT NULL);
+  `;
+  const res = await executeQuery(query);
+  const deleted = res.meta?.changes || 0;
+  if (deleted > 0) {
+    console.log(`[D1 Cleanup] Safely purged ${deleted} expired free records (>36h). Zero paid sites affected.`);
+  }
+  return deleted;
+}
+
+/**
+ * Purge expired premium websites after their plan validity + 6-Day Grace Period
+ * - Starter: 14 Days validity -> deleted after 20 Days (14 + 6 grace)
+ * - Pro: 30 Days validity -> deleted after 36 Days (30 + 6 grace)
+ * - Pro+: 100 Days validity -> deleted after 106 Days (100 + 6 grace)
+ * - Forever / Lifetime: Permanent (Never deleted)
+ */
+async function purgeExpiredPremiumRecords(graceDays = 6) {
+  const premiumRes = await executeQuery(`SELECT * FROM premium_records`);
+  const paymentsRes = await executeQuery(`SELECT * FROM payments WHERE status IN ('PAID', 'COMPLETED')`);
+  
+  if (!premiumRes.success || !premiumRes.results || premiumRes.results.length === 0) {
+    return 0;
+  }
+  
+  const paymentsMap = new Map();
+  (paymentsRes.results || []).forEach(p => {
+    if (p.website_id) paymentsMap.set(p.website_id, p);
+  });
+  
+  let deletedCount = 0;
+  const now = Date.now();
+  
+  for (const row of premiumRes.results) {
+    let meta = row.metadata;
+    if (typeof meta === 'string') {
+      try { meta = JSON.parse(meta); } catch (_) {}
+    }
+    
+    const payment = paymentsMap.get(row.id);
+    const plan = (payment?.plan || row.plan || meta?.plan || '').toLowerCase().trim();
+    
+    // Lifetime / Forever plans are NEVER deleted
+    if (plan === 'forever' || plan === 'lifetime' || plan === 'infinity' || (meta?.planDays && Number(meta.planDays) >= 9000)) {
+      continue;
+    }
+    
+    let planDays = 30; // default Pro duration
+    if (plan === 'starter') {
+      planDays = 14;
+    } else if (plan === 'pro') {
+      planDays = 30;
+    } else if (plan === 'pro_plus' || plan === 'proplus') {
+      planDays = 100;
+    } else if (payment?.planDays && !isNaN(Number(payment.planDays))) {
+      planDays = Number(payment.planDays);
+    } else if (meta?.planDays && !isNaN(Number(meta.planDays))) {
+      planDays = Number(meta.planDays);
+    }
+    
+    // Total allowed time before deletion = Plan Validity + 6 Days Grace Period
+    const totalAllowedDays = planDays + graceDays;
+    const maxLifetimeMs = totalAllowedDays * 24 * 60 * 60 * 1000;
+    
+    // Baseline date of purchase or creation
+    let baseDate = null;
+    if (payment?.created_at) baseDate = new Date(payment.created_at);
+    else if (meta?.paidAt) baseDate = new Date(meta.paidAt);
+    else if (row.created_at) baseDate = new Date(row.created_at);
+    
+    if (baseDate && !isNaN(baseDate.getTime())) {
+      const ageMs = now - baseDate.getTime();
+      if (ageMs > maxLifetimeMs) {
+        console.log(`[D1 Cleanup] Purging expired premium site "${row.id}" (Plan: ${plan}, Valid: ${planDays}d + ${graceDays}d grace = ${totalAllowedDays}d, Age: ${Math.round(ageMs / 86400000)}d)`);
+        await deleteWebsiteRecords(row.id);
+        deletedCount++;
+      }
+    }
+  }
+  
+  return deletedCount;
 }
 
 module.exports = {
@@ -342,5 +451,6 @@ module.exports = {
   saveVisitor,
   incrementGlobalCounter,
   getGlobalCounters,
-  purgeExpiredFreeRecords
+  purgeExpiredFreeRecords,
+  purgeExpiredPremiumRecords
 };

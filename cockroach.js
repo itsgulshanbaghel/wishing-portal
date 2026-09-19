@@ -403,6 +403,9 @@ async function getAllWebsites() {
  * Custom Slug Management in CockroachDB
  */
 async function saveCustomSlug(slug, websiteId) {
+  if (d1.isD1Configured) {
+    return await d1.saveCustomSlug(slug, websiteId);
+  }
   const pool = poolFree || poolPremium;
   if (!pool) return false;
 
@@ -427,6 +430,9 @@ async function saveCustomSlug(slug, websiteId) {
 }
 
 async function getCustomSlug(slug) {
+  if (d1.isD1Configured) {
+    return await d1.getCustomSlug(slug);
+  }
   const pool = poolFree || poolPremium;
   if (!pool) return null;
 
@@ -451,6 +457,9 @@ async function getCustomSlug(slug) {
  * Payments Logging in CockroachDB
  */
 async function savePayment(paymentData) {
+  if (d1.isD1Configured) {
+    return await d1.savePayment(paymentData);
+  }
   const pool = poolFree || poolPremium;
   if (!pool) return false;
 
@@ -696,6 +705,9 @@ async function saveVisitor(visitorData) {
  * Get all payments from CockroachDB for Admin Panel
  */
 async function getAllPayments(limit = 500, statusFilter = null) {
+  if (d1.isD1Configured) {
+    return await d1.getAllPayments(limit);
+  }
   const pool = poolFree || poolPremium;
   if (!pool) return [];
   try {
@@ -723,6 +735,9 @@ async function getAllPayments(limit = 500, statusFilter = null) {
  * Get a single PAID payment record by websiteId (fast indexed lookup)
  */
 async function getPaymentByWebsiteId(websiteId) {
+  if (d1.isD1Configured) {
+    return await d1.getPaymentByWebsiteId(websiteId);
+  }
   const pool = poolFree || poolPremium;
   if (!pool || !websiteId) return null;
   try {
@@ -746,6 +761,9 @@ async function getPaymentByWebsiteId(websiteId) {
  * Get a single payment record by orderId or paypalOrderId
  */
 async function getPaymentByOrderId(orderId) {
+  if (d1.isD1Configured) {
+    return await d1.getPaymentByOrderId(orderId);
+  }
   const pool = poolFree || poolPremium;
   if (!pool || !orderId) return null;
   try {
@@ -770,6 +788,9 @@ async function getPaymentByOrderId(orderId) {
  * Get custom slug by websiteId (reverse lookup)
  */
 async function getCustomSlugByWebsiteId(websiteId) {
+  if (d1.isD1Configured) {
+    return await d1.getCustomSlugByWebsiteId(websiteId);
+  }
   const pool = poolFree || poolPremium;
   if (!pool || !websiteId) return null;
   try {
@@ -786,6 +807,9 @@ async function getCustomSlugByWebsiteId(websiteId) {
  * Get all custom slugs from CockroachDB
  */
 async function getAllCustomSlugs() {
+  if (d1.isD1Configured) {
+    return await d1.getAllCustomSlugs();
+  }
   const pool = poolFree || poolPremium;
   if (!pool) return [];
   try {
@@ -1256,6 +1280,13 @@ async function bulkDeleteWebsiteRecords(websiteIds = []) {
   }
 }
 
+async function purgeExpiredPremiumRecords(graceDays = 6) {
+  if (d1.isD1Configured) {
+    return await d1.purgeExpiredPremiumRecords(graceDays);
+  }
+  return 0;
+}
+
 module.exports = {
   saveRecord,
   getRecord,
@@ -1271,6 +1302,7 @@ module.exports = {
   getPaymentByOrderId,
   getCockroachStats,
   purgeExpiredFreeRecords,
+  purgeExpiredPremiumRecords,
   incrementGlobalCounter,
   getGlobalCounters,
   saveEvent,
