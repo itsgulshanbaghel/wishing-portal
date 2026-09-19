@@ -6,6 +6,8 @@
 
 require('dotenv').config();
 
+const d1 = require('./d1');
+
 let pg = null;
 try {
   pg = require('pg');
@@ -179,6 +181,9 @@ async function ensureTablesExist() {
  * Premium users -> premium_records
  */
 async function saveRecord(websiteId, metadata, isPremium = false) {
+  if (d1.isD1Configured) {
+    return await d1.saveRecord(websiteId, metadata, isPremium);
+  }
   const pool = isPremium ? (poolPremium || poolFree) : (poolFree || poolPremium);
   if (!pool) return false;
 
@@ -237,6 +242,9 @@ async function saveRecord(websiteId, metadata, isPremium = false) {
  * Retrieves a website record from CockroachDB Primary DB
  */
 async function getRecord(websiteId) {
+  if (d1.isD1Configured) {
+    return await d1.getRecord(websiteId);
+  }
   const pools = [poolPremium, poolFree].filter(Boolean);
   if (pools.length === 0) return null;
 
@@ -273,6 +281,9 @@ async function getRecord(websiteId) {
  * Increments view count for a website in CockroachDB
  */
 async function incrementView(websiteId) {
+  if (d1.isD1Configured) {
+    return await d1.incrementView(websiteId);
+  }
   const pools = [poolPremium, poolFree].filter(Boolean);
   if (pools.length === 0) return false;
 
@@ -298,6 +309,9 @@ async function incrementView(websiteId) {
  * Fetch all websites across free_records and premium_records for Admin Dashboard
  */
 async function getAllWebsites() {
+  if (d1.isD1Configured) {
+    return await d1.getAllWebsites();
+  }
   const pool = poolFree || poolPremium;
   if (!pool) return [];
 
