@@ -638,7 +638,7 @@
         },
 
         welcomeTyping: {
-            enable(d, w, userName, customText) {
+            enable(d, w, userName, customText, images, customEmoji, audio, mediaUrl) {
                 if (d.getElementById("magic-welcome-typing-root")) return;
 
                 // Defer welcome typing if countdown, lock, or unopened curtains are active
@@ -761,7 +761,20 @@
                         msgText = typeof def === 'function' ? def(evData.event, evData.festival) : (def || "Welcome");
                     }
 
-                    container.innerHTML = `<h1 style="font-family: 'Great Vibes', cursive; font-size: clamp(3rem, 10vw, 5.5rem); color: #fff !important; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 20px;">Welcome ${escapeHtml(userName)} <span class="magic-emoji">\uD83D\uDC96</span></h1><p id="magic-typing-welcome-msg" style="margin-top: 20px; font-size: clamp(1.5rem, 5vw, 2.2rem); color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-family: 'Poppins', sans-serif;"></p>`;
+                    const DEFAULT_WELCOME_MEDIA = '/assets/media/1000009888.webm';
+                    let mediaSource = (mediaUrl !== undefined && mediaUrl !== '') ? mediaUrl : ((typeof images === 'string' && images) ? images : (images && images.length ? images[0] : '')) || (typeof customEmoji === 'string' && customEmoji.startsWith('/assets/media') ? customEmoji : '') || DEFAULT_WELCOME_MEDIA;
+                    if (mediaSource === 'none' || mediaSource === 'null' || mediaSource === false) {
+                        mediaSource = '';
+                    }
+                    let mediaHtml = '';
+                    if (mediaSource) {
+                        if (mediaSource.match(/\.(webm|mp4|mov)$/i)) {
+                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><video class="magic-welcome-media" src="${escapeHtml(mediaSource)}" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width: min(94vw, 560px); height: auto; max-height: clamp(200px, 35vh, 400px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: magicHeartBeat 3s infinite ease-in-out;"></video></div>`;
+                        } else {
+                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><img class="magic-welcome-media" src="${escapeHtml(mediaSource)}" alt="Welcome animation" style="width: min(94vw, 520px); height: auto; max-height: clamp(190px, 33vh, 360px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; animation: magicHeartBeat 3s infinite ease-in-out;" /></div>`;
+                        }
+                    }
+                    container.innerHTML = mediaHtml + `<h1 style="font-family: 'Great Vibes', cursive; font-size: clamp(2.4rem, 8vw, 4.8rem); color: #fff !important; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 15px;">Welcome ${escapeHtml(userName)} <span class="magic-emoji">\uD83D\uDC96</span></h1><p id="magic-typing-welcome-msg" style="margin-top: 15px; font-size: clamp(1.3rem, 4.5vw, 2rem); color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-family: 'Poppins', sans-serif;"></p>`;
                     overlay.appendChild(container);
                     d.body.appendChild(overlay);
                     const msgPara = container.querySelector("#magic-typing-welcome-msg");
@@ -2402,7 +2415,7 @@
         },
 
         countdown: {
-            enable(d, w, userName, customText) {
+            enable(d, w, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl) {
                 if (!customText) return {};
                 const parseLocalTime = (str) => {
                     const parts = str.split('T');
@@ -2435,7 +2448,7 @@
 
                 const overlay = d.createElement("div");
                 overlay.id = "magic-countdown-overlay";
-                overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(45deg, #090214, #2a0b4e, #090214); background-size:200% 200%; z-index:2147483650; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit', sans-serif; color:white; backdrop-filter:blur(15px); transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); animation: bgShift 10s ease infinite;";
+                overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(45deg, #090214, #2a0b4e, #090214); background-size:200% 200%; z-index:2147483650; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit', sans-serif; color:white; backdrop-filter:blur(15px); transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); animation: bgShift 10s ease infinite; padding: 20px 15px; box-sizing: border-box; overflow-y: auto;";
 
                 // Add styles for rich animations
                 const style = d.createElement('style');
@@ -2443,13 +2456,13 @@
               @keyframes bgShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
               @keyframes pulseGlow { 0% { box-shadow: 0 0 15px rgba(255,215,0,0.1); transform: translateY(0); } 50% { box-shadow: 0 10px 30px rgba(255,215,0,0.3); transform: translateY(-5px); border-color: rgba(255,215,0,0.6); } 100% { box-shadow: 0 0 15px rgba(255,215,0,0.1); transform: translateY(0); } }
               @keyframes numberPop { 0% { transform: scale(1); text-shadow: 0 0 10px rgba(255,215,0,0.3); } 50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(255,255,255,0.8); color: #fff; } 100% { transform: scale(1); text-shadow: 0 0 10px rgba(255,215,0,0.3); } }
-              @keyframes floatIcon { 0% { transform: translateY(0) rotate(-5deg); filter: drop-shadow(0 0 15px rgba(255,215,0,0.4)); } 50% { transform: translateY(-15px) rotate(5deg); filter: drop-shadow(0 0 30px rgba(255,215,0,0.8)); } 100% { transform: translateY(0) rotate(-5deg); filter: drop-shadow(0 0 15px rgba(255,215,0,0.4)); } }
+              @keyframes floatIcon { 0% { transform: translateY(0) rotate(-3deg); filter: drop-shadow(0 0 20px rgba(255,215,0,0.4)); } 50% { transform: translateY(-10px) rotate(3deg); filter: drop-shadow(0 0 35px rgba(255,215,0,0.8)); } 100% { transform: translateY(0) rotate(-3deg); filter: drop-shadow(0 0 20px rgba(255,215,0,0.4)); } }
               .countdown-unit {
-                  background: rgba(255, 255, 255, 0.04);
-                  border: 1px solid rgba(255, 215, 0, 0.2);
+                  background: rgba(255, 255, 255, 0.05);
+                  border: 1px solid rgba(255, 215, 0, 0.25);
                   border-radius: 20px;
-                  padding: 20px 15px;
-                  min-width: 90px;
+                  padding: clamp(14px, 2.5vh, 22px) clamp(12px, 2.2vw, 20px);
+                  min-width: clamp(72px, 19vw, 110px);
                   text-align: center;
                   backdrop-filter: blur(12px);
                   animation: pulseGlow 3s infinite ease-in-out;
@@ -2460,7 +2473,7 @@
               .countdown-unit:nth-child(2) { animation-delay: 0.5s; }
               .countdown-unit:nth-child(3) { animation-delay: 1s; }
               .countdown-unit:nth-child(4) { animation-delay: 1.5s; }
-              .num-val { display: inline-block; }
+              .num-val { display: inline-block; font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 800; color: #ffd700; text-shadow: 0 0 12px rgba(255,215,0,0.35); font-variant-numeric: tabular-nums; }
               .num-val.changed { animation: numberPop 0.5s ease-out; }
             `;
                 overlay.appendChild(style);
@@ -2470,18 +2483,47 @@
                 unlockAudio.volume = 0.5;
                 overlay.appendChild(unlockAudio);
 
+                const DEFAULT_PORTAL_MEDIA = '/assets/media/72c9cd1c-0372-4837-a25d-7d1a68cb9e92-1_all_3565.webm';
+                let mediaSource = (mediaUrl !== undefined && mediaUrl !== '') ? mediaUrl : ((typeof images === 'string' && images) ? images : (images && images.length ? images[0] : '')) || (typeof customText === 'object' ? customText.mediaUrl : '') || (typeof audio === 'string' && (audio.endsWith('.webm') || audio.endsWith('.png') || audio.endsWith('.mp4') || audio.endsWith('.webp')) ? audio : '') || DEFAULT_PORTAL_MEDIA;
+                if (mediaSource === 'none' || mediaSource === 'null' || mediaSource === false) {
+                    mediaSource = '';
+                }
                 const decor = d.createElement("div");
-                decor.innerHTML = "&#x23F3;";
-                decor.style.cssText = "font-size: 4rem; margin-bottom: 15px; animation: floatIcon 4s ease-in-out infinite;";
+                decor.className = "magic-countdown-decor-wrap";
+                if (mediaSource) {
+                    decor.style.cssText = "margin-bottom: clamp(10px, 2vh, 18px); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 100%; flex-shrink: 0;";
+                    if (mediaSource.match(/\.(webm|mp4|mov)$/i)) {
+                        const vid = d.createElement('video');
+                        vid.className = "magic-countdown-media";
+                        vid.src = mediaSource;
+                        vid.autoplay = true;
+                        vid.loop = true;
+                        vid.muted = true;
+                        vid.setAttribute('playsinline', '');
+                        vid.setAttribute('preload', 'auto');
+                        vid.style.cssText = "width: min(94vw, 560px); height: auto; max-height: clamp(200px, 36vh, 420px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: floatIcon 4s ease-in-out infinite;";
+                        decor.appendChild(vid);
+                    } else {
+                        const img = d.createElement('img');
+                        img.className = "magic-countdown-media";
+                        img.src = mediaSource;
+                        img.alt = "Countdown animation";
+                        img.style.cssText = "width: min(94vw, 520px); height: auto; max-height: clamp(190px, 34vh, 380px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; animation: floatIcon 4s ease-in-out infinite;";
+                        decor.appendChild(img);
+                    }
+                } else {
+                    decor.innerHTML = "&#x23F3;";
+                    decor.style.cssText = "font-size: 4rem; margin-bottom: 15px; animation: floatIcon 4s ease-in-out infinite;";
+                }
                 overlay.appendChild(decor);
 
                 const title = d.createElement('div');
-                title.style.cssText = "font-size: clamp(2rem, 6vw, 3rem); font-family: 'Great Vibes', cursive; margin-bottom: 35px; text-align: center; background: linear-gradient(to right, #ffd700, #ff8c00, #ffd700); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 5px 15px rgba(255,140,0,0.3)); animation: bgShift 4s linear infinite;";
+                title.style.cssText = "font-size: clamp(1.8rem, 5vw, 3rem); font-family: 'Great Vibes', cursive; margin-bottom: clamp(15px, 3vh, 30px); text-align: center; background: linear-gradient(to right, #ffd700, #ff8c00, #ffd700); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 5px 15px rgba(255,140,0,0.3)); animation: bgShift 4s linear infinite; flex-shrink: 0;";
                 title.innerText = window.currentLang === 'hi' ? 'सरप्राइज खुलने में...' : 'Surprise Unlocks In...';
                 overlay.appendChild(title);
 
                 const timerContainer = d.createElement('div');
-                timerContainer.style.cssText = "display:flex; gap:18px; margin-bottom:45px; flex-wrap:wrap; justify-content:center; perspective: 1000px;";
+                timerContainer.style.cssText = "display:flex; gap: clamp(10px, 2.5vw, 20px); margin-bottom: clamp(20px, 3.5vh, 40px); flex-wrap:wrap; justify-content:center; perspective: 1000px; max-width: 100%; flex-shrink: 0;";
                 overlay.appendChild(timerContainer);
 
                 const createTimeUnit = (label) => {
@@ -2489,10 +2531,9 @@
                     unitBox.className = "countdown-unit";
                     const num = d.createElement('div');
                     num.className = "num-val";
-                    num.style.cssText = "font-size:3rem; font-weight:800; color:#ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-variant-numeric: tabular-nums;";
                     num.innerText = "00";
                     const lbl = d.createElement('div');
-                    lbl.style.cssText = "font-size:0.85rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.7); margin-top:8px; font-weight: 600;";
+                    lbl.style.cssText = "font-size: clamp(0.75rem, 1.8vw, 0.9rem); text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.75); margin-top:8px; font-weight: 600;";
                     lbl.innerText = label;
                     unitBox.appendChild(num);
                     unitBox.appendChild(lbl);
@@ -2506,7 +2547,7 @@
                 const secondsNum = createTimeUnit(window.currentLang === 'hi' ? "सेकंड" : "Seconds");
 
                 const subtitle = d.createElement('div');
-                subtitle.style.cssText = "font-size:1.2rem; color:rgba(255,255,255,0.85); text-align:center; max-width:80%; line-height:1.6; font-weight: 300; background: rgba(0,0,0,0.2); padding: 10px 25px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05);";
+                subtitle.style.cssText = "font-size: clamp(0.95rem, 2.5vw, 1.2rem); color:rgba(255,255,255,0.85); text-align:center; max-width:85%; line-height:1.5; font-weight: 300; background: rgba(0,0,0,0.25); padding: 8px 22px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;";
                 subtitle.innerHTML = window.currentLang === 'hi' ? 'कुछ बहुत ही खास के लिए तैयार हो जाइए! &#x1F31F;' : 'Get ready for something truly special! &#x1F31F;';
                 overlay.appendChild(subtitle);
 

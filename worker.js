@@ -266,9 +266,22 @@ export default {
       return env.ASSETS.fetch(new Request(assetUrl, request));
     }
 
-    // Serve static assets from public folder via Cloudflare Workers Assets binding (0 CPU, free global CDN)
+    // Serve static assets from public folder via Cloudflare Workers Assets binding (0 CPU, 100% free unlimited global CDN)
     if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
+      const assetRes = await env.ASSETS.fetch(request);
+      // For media, fonts, images, scripts, add edge & browser caching headers
+      if (assetRes.status === 200 && path.match(/\.(webm|mp4|mov|webp|png|jpg|jpeg|gif|svg|woff2|woff|ttf|mp3|css|js|ico|avif)$/i)) {
+        const headers = new Headers(assetRes.headers);
+        headers.set('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
+        headers.set('CDN-Cache-Control', 'max-age=31536000');
+        headers.set('X-Served-By', 'Cloudflare-Edge-Assets');
+        return new Response(assetRes.body, {
+          status: assetRes.status,
+          statusText: assetRes.statusText,
+          headers
+        });
+      }
+      return assetRes;
     }
 
     return new Response('Not found', { status: 404 });

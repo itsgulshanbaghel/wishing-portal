@@ -55,6 +55,133 @@
   <script src="/assets/config.js"></script>
 
   <style>
+    /* ---------- MEDIA / ANIMATION THEME PRESET SELECTOR ---------- */
+    .media-preset-section {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      background: rgba(123, 93, 246, 0.03);
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    .media-preset-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .media-preset-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent-solid);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .media-preset-grid {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 6px 2px 10px;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+    }
+    .media-preset-grid::-webkit-scrollbar {
+      height: 5px;
+    }
+    .media-preset-grid::-webkit-scrollbar-thumb {
+      background: rgba(123, 93, 246, 0.35);
+      border-radius: 4px;
+    }
+    .media-preset-card {
+      flex: 0 0 100px;
+      min-width: 100px;
+      scroll-snap-align: start;
+      background: var(--bg-secondary);
+      border: 1.5px solid var(--card-border);
+      border-radius: 12px;
+      padding: 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      user-select: none;
+      box-sizing: border-box;
+    }
+    .media-preset-card:hover {
+      transform: translateY(-2px) scale(1.02);
+      border-color: var(--accent-solid);
+      box-shadow: 0 6px 14px var(--glow);
+    }
+    .media-preset-card.active {
+      border-color: var(--accent-solid);
+      background: rgba(123, 93, 246, 0.1);
+      box-shadow: 0 0 0 2px var(--accent-solid), 0 6px 18px var(--glow);
+    }
+    .media-preset-thumb-wrap {
+      width: 100%;
+      height: 60px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 5px;
+    }
+    .media-preset-thumb-wrap video,
+    .media-preset-thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    .media-preset-none-icon {
+      font-size: 1.6rem;
+      opacity: 0.6;
+    }
+    .media-preset-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .media-preset-card.active .media-preset-name {
+      color: var(--accent-solid);
+      font-weight: 700;
+    }
+    .media-preset-active-check {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: var(--accent-gradient);
+      color: white;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      font-size: 8px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    .media-preset-card.active .media-preset-active-check {
+      display: flex;
+    }
     /* ---------- ORIGINAL VARIABLES + MOBILE RESIZER EXTENSIONS ---------- */
     :root {
       --bg-primary: #f9f7ff;
@@ -5786,7 +5913,7 @@
           const runStages = () => {
             if (isCountdownRunning()) {
               const data = customData.get('countdown') || {};
-              applyFeature('countdown', true, name, data.text || "", data.images || [], data.emoji || "");
+              applyFeature('countdown', true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
 
               applyFeature('lock', false);
               applyFeature('curtainReveal', false);
@@ -5855,7 +5982,7 @@
 
             if (welcomeActive && !window.welcomeFinished) {
               const data = customData.get('welcomeTyping') || {};
-              applyFeature('welcomeTyping', true, name, data.text || "", data.images || [], data.emoji || "");
+              applyFeature('welcomeTyping', true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
 
               window._welcomeFinishedHandler = () => {
                 window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
@@ -5898,19 +6025,19 @@
         }, 30);
       }
       function refreshAll() { debouncedRefreshAll(); }
-      function refreshFeatureIfActive(id, userName, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl) {
+      function refreshFeatureIfActive(id, userName, text, images, emoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl) {
         if (activeFeatureStates.get(id)) {
-          // Disable first to tear down the existing DOM section, then re-enable with updated data.
-          // This is needed because features.js enable() checks if the section already exists and returns early.
           const doc = getIframeDocument();
           const win = doc ? (document.getElementById("frame")?.contentWindow) : null;
           if (doc && win && FEATURE_MAP && FEATURE_MAP[id]?.disable) {
             try { FEATURE_MAP[id].disable(doc, win); } catch (e) {}
           }
+          const curData = customData.get(id) || {};
+          const effMediaUrl = (mediaUrl !== undefined) ? mediaUrl : (curData.mediaUrl || "");
           if (id === 'addMusicSection') {
             applyFeature(id, true, userName, text, images, emoji, audio || "", spotifyEmbedUrl || "", youtubeEmbedUrl || "", instagramEmbedUrl || "");
           } else {
-            applyFeature(id, true, userName, text, images, emoji, audio || "");
+            applyFeature(id, true, userName, text, images, emoji, audio || "", "", "", "", effMediaUrl);
           }
         }
         adjustIframePadding(activeFeatureStates);
@@ -6795,12 +6922,101 @@
         }
       }).catch(e => console.error("Magic API error", e));
 
+      
+      const DEFAULT_COUNTDOWN_MEDIA = '/assets/media/72c9cd1c-0372-4837-a25d-7d1a68cb9e92-1_all_3565.webm';
+      const DEFAULT_WELCOME_MEDIA = '/assets/media/1000009888.webm';
+      const MEDIA_PRESETS = [
+        { id: 'sparkle-magic', title: 'Sparkle Magic', titleHi: 'स्पार्कल्स', icon: '✨', type: 'video', url: '/assets/media/1000009888.webm' },
+        { id: 'grand-festival', title: 'Grand Festive', titleHi: 'ग्रांड फेस्टिवल', icon: '🎊', type: 'video', url: '/assets/media/72c9cd1c-0372-4837-a25d-7d1a68cb9e92-1_all_3565.webm' },
+        { id: 'magical-burst', title: 'Magical Burst', titleHi: 'मैजिक बर्स्ट', icon: '💥', type: 'video', url: '/assets/media/1000009889.webm' },
+        { id: 'golden-fireworks', title: 'Golden Glow', titleHi: 'गोल्डन ग्लो', icon: '🎆', type: 'video', url: '/assets/media/1000009890.webm' },
+        { id: 'party-glitz', title: 'Party Glitz', titleHi: 'पार्टी ग्लिट्ज़', icon: '🎉', type: 'video', url: '/assets/media/1000009891.webm' },
+        { id: 'celebration-dream', title: 'Dream Stream', titleHi: 'ड्रीम स्ट्रीम', icon: '💫', type: 'video', url: '/assets/media/1000009892.webm' },
+        { id: 'starlight-glow', title: 'Starlight Glow', titleHi: 'स्टारलाइट', icon: '⭐', type: 'video', url: '/assets/media/1000009894.webm' },
+        { id: 'none', title: 'None', titleHi: 'कोई नहीं', icon: '🚫', type: 'none', url: 'none' }
+      ];
+
+      function createMediaPresetSelector(featureId, initialUrl, onSelect) {
+        const wrap = document.createElement("div");
+        wrap.className = "media-preset-section";
+        const isHi = (currentLang === 'hi');
+
+        const header = document.createElement("div");
+        header.className = "media-preset-header";
+        header.innerHTML = `
+          <span class="media-preset-title"><i class="fas fa-play-circle"></i> ${isHi ? '🎬 विजुअल थीम / ऐनिमेशन' : '🎬 Visual Animation / Theme'}</span>
+        `;
+        wrap.appendChild(header);
+
+        const defaultUrl = (featureId === 'welcomeTyping') ? DEFAULT_WELCOME_MEDIA : DEFAULT_COUNTDOWN_MEDIA;
+        let activeUrl = (initialUrl !== undefined && initialUrl !== '') ? initialUrl : defaultUrl;
+        const grid = document.createElement("div");
+        grid.className = "media-preset-grid";
+
+        MEDIA_PRESETS.forEach(preset => {
+          const card = document.createElement("div");
+          card.className = "media-preset-card";
+          if (activeUrl === preset.url || (!activeUrl && preset.url === defaultUrl)) {
+            card.classList.add("active");
+          }
+
+          const thumbWrap = document.createElement("div");
+          thumbWrap.className = "media-preset-thumb-wrap";
+
+          if (preset.type === 'video') {
+            const vid = document.createElement("video");
+            vid.src = preset.url;
+            vid.muted = true;
+            vid.loop = true;
+            vid.playsInline = true;
+            vid.preload = 'metadata';
+            vid.play().catch(() => {});
+            card.onmouseenter = () => vid.play().catch(() => {});
+            card.onmouseleave = () => vid.play().catch(() => {});
+            thumbWrap.appendChild(vid);
+          } else {
+            const noneIcon = document.createElement("span");
+            noneIcon.className = "media-preset-none-icon";
+            noneIcon.innerText = "🚫";
+            thumbWrap.appendChild(noneIcon);
+          }
+
+          const check = document.createElement("span");
+          check.className = "media-preset-active-check";
+          check.innerHTML = '<i class="fas fa-check"></i>';
+          card.appendChild(check);
+
+          const name = document.createElement("div");
+          name.className = "media-preset-name";
+          name.innerText = isHi ? preset.titleHi : preset.title;
+          name.title = isHi ? preset.titleHi : preset.title;
+
+          card.appendChild(thumbWrap);
+          card.appendChild(name);
+
+          card.onclick = (e) => {
+            e.stopPropagation();
+            grid.querySelectorAll('.media-preset-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            activeUrl = preset.url;
+            if (typeof onSelect === 'function') {
+              onSelect(preset.url);
+            }
+          };
+
+          grid.appendChild(card);
+        });
+
+        wrap.appendChild(grid);
+        return wrap;
+      }
+
       const FEATURES_CATALOG = [
         { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
       ];
       const noCustomizeIds = new Set(["curtainReveal", "fireworksClick", "bombExplosion", "addMusicSection"]);
 
-      function applyFeature(id, enable, userName, customText = "", images = [], customEmoji = "", audio = "", spotifyEmbedUrl = "", youtubeEmbedUrl = "", instagramEmbedUrl = "") {
+      function applyFeature(id, enable, userName, customText = "", images = [], customEmoji = "", audio = "", spotifyEmbedUrl = "", youtubeEmbedUrl = "", instagramEmbedUrl = "", mediaUrl = "") {
         const f = document.getElementById("frame");
         const doc = getIframeDocument();
         const win = f ? f.contentWindow : null;
@@ -6814,6 +7030,8 @@
           if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
           else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion") feature.enable(doc, win, userName, customText, images);
           else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
+          else if (id === "countdown") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
+          else if (id === "welcomeTyping") feature.enable(doc, win, userName, customText, images, customEmoji, audio, mediaUrl);
           else feature.enable(doc, win, userName, customText, audio);
 
           if (window.shouldScrollToFeatureId && window.scrollToElement) {
@@ -6932,6 +7150,17 @@
               }
               textarea.value = existingText || def;
               customPanel.appendChild(textarea);
+              if (id === "welcomeTyping") {
+                const welcomeMediaWrap = createMediaPresetSelector('welcomeTyping', customData.get('welcomeTyping')?.mediaUrl || '', (selUrl) => {
+                  const ex = customData.get('welcomeTyping') || {};
+                  ex.mediaUrl = selUrl;
+                  customData.set('welcomeTyping', ex);
+                  const nameVal = getUserName();
+                  refreshFeatureIfActive('welcomeTyping', nameVal, ex.text || textarea.value, ex.images, ex.emoji, ex.audio, "", "", "", selUrl);
+                  autoSaveState();
+                });
+                customPanel.appendChild(welcomeMediaWrap);
+              }
               textarea.addEventListener('input', () => {
                 const ex = customData.get(id) || {};
                 ex.text = textarea.value;
@@ -7646,6 +7875,16 @@
                 <div class="countdown-preview-timer" style="font-family:'Outfit', sans-serif; font-size:1.1rem; font-weight:700; color:var(--text-primary);">00d 00h 00m 00s</div>
               `;
               mainContainer.appendChild(livePreview);
+
+              const countdownMediaWrap = createMediaPresetSelector('countdown', customData.get('countdown')?.mediaUrl || '', (selUrl) => {
+                const ex = customData.get('countdown') || {};
+                ex.mediaUrl = selUrl;
+                customData.set('countdown', ex);
+                const nameVal = getUserName();
+                refreshFeatureIfActive('countdown', nameVal, timeInput.value, ex.images, ex.emoji, ex.audio, "", "", "", selUrl);
+                autoSaveState();
+              });
+              mainContainer.appendChild(countdownMediaWrap);
 
               customPanel.appendChild(mainContainer);
 
@@ -9944,7 +10183,7 @@
 
           const data = customData.get('countdown') || {};
           if (window.FEATURE_MAP.countdown) {
-            window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
           }
           window._countdownFinishedHandler = () => {
             window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
@@ -10007,7 +10246,7 @@
         if (welcomeActive && !window.welcomeFinished) {
           const data = customData.get('welcomeTyping') || {};
           if (window.FEATURE_MAP.welcomeTyping) {
-            window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.mediaUrl || "");
           }
           window._welcomeFinishedHandler = () => {
             window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
@@ -11240,7 +11479,7 @@
 
           const data = customData.get('countdown') || {};
           if (window.FEATURE_MAP.countdown) {
-            window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
           }
           window._countdownFinishedHandler = () => {
             window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
@@ -11303,7 +11542,7 @@
         if (welcomeActive && !window.welcomeFinished) {
           const data = customData.get('welcomeTyping') || {};
           if (window.FEATURE_MAP.welcomeTyping) {
-            window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.mediaUrl || "");
           }
           window._welcomeFinishedHandler = () => {
             window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);

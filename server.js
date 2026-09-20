@@ -3696,8 +3696,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
-    } else if (filePath.match(/\.(js|css|webp|png|jpg|jpeg|gif|svg|woff2|woff|ttf|mp3)$/)) {
-      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+    } else if (filePath.match(/\.(js|css|webp|png|jpg|jpeg|gif|svg|woff2|woff|ttf|mp3|webm|mp4|mov|ico|avif)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
     }
   }
 }));
