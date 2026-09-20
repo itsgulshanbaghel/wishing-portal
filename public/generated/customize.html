@@ -4511,7 +4511,7 @@
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
           featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
           featImageExplosion: "\uD83D\uDCA5 Magic Photo", featFinalSurprise: "\uD83C\uDF89 Final Message",
-          featVirtualCake: "🎂 Virtual Cake Celebration", featVirtualHug: "🤗 Virtual Hug Animation",
+          featVirtualCake: "🎂 Virtual Cake Celebration", featVirtualHug: "🤗 Virtual Hug Animation", featNamedBirthdayCard: "🐼 Cute Birthday Poster",
           featAddMusicSection: "\uD83C\uDFB5 Add Music", featMagicMusic: "🎵 Background Music", featVoiceNote: "🎙️ Voice Note", featCountdown: "⏳ Surprise Countdown", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
           uploadImages: "\uD83D\uDCF7 Upload Images", alertCopy: "Link copied!", alertGenerateFirst: "Generate the link first!",
           alertPreviewNotReady: "Preview not ready", shareInsta: "\uD83D\uDCF7 Copy this link to share on Instagram:",
@@ -4583,7 +4583,7 @@
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
           featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
           featImageExplosion: "💥 मैजिक फोटो", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
-          featVirtualCake: "🎂 वर्चुअल केक सेलिब्रेशन", featVirtualHug: "🤗 वर्चुअल हग (Virtual Hug)",
+          featVirtualCake: "🎂 वर्चुअल केक सेलिब्रेशन", featVirtualHug: "🤗 वर्चुअल हग (Virtual Hug)", featNamedBirthdayCard: "🐼 नाम वाला बर्थडे पोस्टर",
           featAddMusicSection: "🎧 गाना लगाए", featMagicMusic: "🎵 बैकग्राउंड म्यूजिक", featVoiceNote: "🎙️ वॉइस नोट", featCountdown: "⏳ सरप्राइज़ काउंटडाउन", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
           uploadImages: "📷 तस्वीरें अपलोड करें", alertCopy: "लिंक कॉपी हो गया!", alertGenerateFirst: "पहले लिंक जेनरेट करें!",
           alertPreviewNotReady: "प्रीव्यू तैयार नहीं है", shareInsta: "📷 इंस्टाग्राम पर शेयर करने के लिए यह लिंक कॉपी करें:",
@@ -5812,6 +5812,18 @@
               timeInput.dispatchEvent(new Event("input"));
             }
           }
+
+          // Restore media preset active selection (welcomeTyping, countdown, finalSurprise)
+          if (data.mediaUrl && customPanel) {
+            const cards = customPanel.querySelectorAll('.media-preset-card');
+            const presetList = (id === 'finalSurprise') ? FINAL_SURPRISE_PRESETS : MEDIA_PRESETS;
+            cards.forEach((card, idx) => {
+              if (presetList[idx] && presetList[idx].url === data.mediaUrl) {
+                cards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+              }
+            });
+          }
         });
       }
 
@@ -6005,6 +6017,8 @@
                 const data = customData.get(id) || {};
                 if (id === 'addMusicSection') {
                   applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+                } else if (id === 'finalSurprise') {
+                  applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
                 } else {
                   applyFeature(id, true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "");
                 }
@@ -6101,6 +6115,7 @@
           (featureId === 'voicenote' && elementId === 'magic-voice-note-section') ||
           (featureId === 'virtualcake' && elementId === 'magic-virtual-cake-section') ||
           (featureId === 'virtualhug' && elementId === 'magic-virtual-hug-section') ||
+          (featureId === 'namedbirthdaycard' && elementId === 'magic-named-birthday-card-section') ||
           (featureId === 'giftboxopen' && elementId === 'magic-gift-section')
         );
 
@@ -6927,6 +6942,8 @@
       
       const DEFAULT_COUNTDOWN_MEDIA = '/assets/media/72c9cd1c-0372-4837-a25d-7d1a68cb9e92-1_all_3565.webm';
       const DEFAULT_WELCOME_MEDIA = '/assets/media/1000009888.webm';
+      const DEFAULT_FINAL_SURPRISE_MEDIA = '/assets/media/Final1.png';
+
       const MEDIA_PRESETS = [
         { id: 'sparkle-magic', title: 'Sparkle Magic', titleHi: 'स्पार्कल्स', icon: '✨', type: 'video', url: '/assets/media/1000009888.webm' },
         { id: 'grand-festival', title: 'Grand Festive', titleHi: 'ग्रांड फेस्टिवल', icon: '🎊', type: 'video', url: '/assets/media/72c9cd1c-0372-4837-a25d-7d1a68cb9e92-1_all_3565.webm' },
@@ -6938,24 +6955,45 @@
         { id: 'none', title: 'None', titleHi: 'कोई नहीं', icon: '🚫', type: 'none', url: 'none' }
       ];
 
+      const FINAL_SURPRISE_PRESETS = [
+        { id: 'final-1', title: 'Final 1', titleHi: 'फाइनल 1', icon: '💖', type: 'image', url: '/assets/media/Final1.png' },
+        { id: 'final-2', title: 'Final 2', titleHi: 'फाइनल 2', icon: '✨', type: 'image', url: '/assets/media/Final2.png' },
+        { id: 'final-3', title: 'Final 3', titleHi: 'फाइनल 3', icon: '🌟', type: 'image', url: '/assets/media/Final3.png' },
+        { id: 'final-4', title: 'Final 4', titleHi: 'फाइनल 4', icon: '🎉', type: 'image', url: '/assets/media/Final4.png' },
+        { id: 'none', title: 'None', titleHi: 'कोई नहीं', icon: '🚫', type: 'none', url: 'none' }
+      ];
+
       function createMediaPresetSelector(featureId, initialUrl, onSelect) {
         const wrap = document.createElement("div");
         wrap.className = "media-preset-section";
         const isHi = (currentLang === 'hi');
 
+        let presets = MEDIA_PRESETS;
+        let defaultUrl = DEFAULT_COUNTDOWN_MEDIA;
+        let headerTitle = isHi ? '🎬 विजुअल थीम / ऐनिमेशन' : '🎬 Visual Animation / Theme';
+        let headerIcon = 'fas fa-play-circle';
+
+        if (featureId === 'welcomeTyping') {
+          defaultUrl = DEFAULT_WELCOME_MEDIA;
+        } else if (featureId === 'finalSurprise') {
+          presets = FINAL_SURPRISE_PRESETS;
+          defaultUrl = DEFAULT_FINAL_SURPRISE_MEDIA;
+          headerTitle = isHi ? '🖼️ फाइनल मैसेज इमेज' : '🖼️ Final Message Image';
+          headerIcon = 'fas fa-image';
+        }
+
         const header = document.createElement("div");
         header.className = "media-preset-header";
         header.innerHTML = `
-          <span class="media-preset-title"><i class="fas fa-play-circle"></i> ${isHi ? '🎬 विजुअल थीम / ऐनिमेशन' : '🎬 Visual Animation / Theme'}</span>
+          <span class="media-preset-title"><i class="${headerIcon}"></i> ${headerTitle}</span>
         `;
         wrap.appendChild(header);
 
-        const defaultUrl = (featureId === 'welcomeTyping') ? DEFAULT_WELCOME_MEDIA : DEFAULT_COUNTDOWN_MEDIA;
         let activeUrl = (initialUrl !== undefined && initialUrl !== '') ? initialUrl : defaultUrl;
         const grid = document.createElement("div");
         grid.className = "media-preset-grid";
 
-        MEDIA_PRESETS.forEach(preset => {
+        presets.forEach(preset => {
           const card = document.createElement("div");
           card.className = "media-preset-card";
           if (activeUrl === preset.url || (!activeUrl && preset.url === defaultUrl)) {
@@ -6976,6 +7014,13 @@
             card.onmouseenter = () => vid.play().catch(() => {});
             card.onmouseleave = () => vid.play().catch(() => {});
             thumbWrap.appendChild(vid);
+          } else if (preset.type === 'image') {
+            const img = document.createElement("img");
+            img.src = preset.url;
+            img.alt = preset.title;
+            img.loading = "lazy";
+            img.style.cssText = "width: 100%; height: 100%; object-fit: contain; padding: 4px; box-sizing: border-box;";
+            thumbWrap.appendChild(img);
           } else {
             const noneIcon = document.createElement("span");
             noneIcon.className = "media-preset-none-icon";
@@ -7014,7 +7059,7 @@
       }
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
       ];
       const noCustomizeIds = new Set(["curtainReveal", "fireworksClick", "bombExplosion", "addMusicSection"]);
 
@@ -7034,6 +7079,7 @@
           else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
           else if (id === "countdown") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
           else if (id === "welcomeTyping") feature.enable(doc, win, userName, customText, images, customEmoji, audio, mediaUrl);
+          else if (id === "finalSurprise") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
           else feature.enable(doc, win, userName, customText, audio);
 
           if (window.shouldScrollToFeatureId && window.scrollToElement) {
@@ -7044,6 +7090,10 @@
             const hugSection = doc.getElementById('magic-virtual-hug-section');
             if (hugSection && (window.shouldScrollToFeatureId === 'virtualHug' || window.shouldScrollToFeatureId === 'virtualhug')) {
               window.scrollToElement(doc, hugSection);
+            }
+            const namedCardSection = doc.getElementById('magic-named-birthday-card-section');
+            if (namedCardSection && (window.shouldScrollToFeatureId === 'namedBirthdayCard' || window.shouldScrollToFeatureId === 'namedbirthdaycard')) {
+              window.scrollToElement(doc, namedCardSection);
             }
           }
         }
@@ -7066,7 +7116,7 @@
         const actualCategories = {
           [t.catOpening]: ["countdown", "lock", "curtainReveal", "welcomeTyping", "fireworksText"],
           [t.catFloral]: ["flowerRain", "flyingSwans"],
-          [t.catPlayful]: ["balloonParty", "virtualCake", "virtualHug", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "scratchReveal"],
+          [t.catPlayful]: ["balloonParty", "virtualCake", "virtualHug", "namedBirthdayCard", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "scratchReveal"],
           [t.catHeart]: ["textFormation", "memoryTimeline", "heartsOnScroll", "oldPaperLetter", "hugSkyLetter", "floatingPolaroids"],
           [t.catFinale]: ["finalSurprise", "addMusicSection", "magicMusic", "voiceNote"]
         };
@@ -7117,7 +7167,7 @@
             const customPanel = hasCustom ? document.createElement("div") : null;
             if (customPanel) customPanel.className = "custom-panel";
             let textarea = null, emojiInput = null, previewDiv = null;
-            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualCake", "virtualHug"].includes(id))) {
+            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualCake", "virtualHug", "namedBirthdayCard"].includes(id))) {
               textarea = document.createElement("textarea"); textarea.placeholder = t.placeholderText; textarea.setAttribute('data-placeholder-key', 'text');
               if (id === "lock") textarea.placeholder = currentLang === 'en' ? "Set the Password here (e.g. 1234)" : "यहाँ पासवर्ड दर्ज करें (उदा. 1234)";
               let def = "";
@@ -7139,7 +7189,7 @@
               else if (id === "hugSkyLetter") def = t.defaultHugSkyLetter(name, ev);
               else if (id === "floatingPolaroids") def = t.defaultFloatingPolaroids(ev);
               else if (id === "imageExplosion") def = t.defaultFloatingPolaroids(ev); // Reuse polaroid default or add new
-              else if (id === "floatingBalloonsNamed") def = name;
+              else if (id === "floatingBalloonsNamed" || id === "namedBirthdayCard") def = name;
               else if (id === "virtualCake") def = currentLang === 'hi' ? `हैप्पी बर्थडे ${name}!` : `Happy Birthday, ${name}!`;
               else if (id === "virtualHug") def = currentLang === 'hi' ? `जब भी आपको एक मुस्कान, सुकून या प्यार भरे साथ की ज़रूरत हो — यह प्यारा सा हग हमेशा आपके लिए है। दूरियां चाहे जितनी हों, आप हमेशा दिल के करीब हैं! 🤗` : `Whenever you need a smile, a little comfort, or a gentle reminder of how special you are — this warm hug is always here for you. Distance means so little when you mean so much! 🤗`;
 
@@ -7150,7 +7200,7 @@
                 ex.text = def;
                 customData.set(id, ex);
               }
-              textarea.value = existingText || def;
+              textarea.value = (existingText !== undefined && existingText !== null) ? existingText : def;
               customPanel.appendChild(textarea);
               if (id === "welcomeTyping") {
                 const welcomeMediaWrap = createMediaPresetSelector('welcomeTyping', customData.get('welcomeTyping')?.mediaUrl || '', (selUrl) => {
@@ -7158,10 +7208,20 @@
                   ex.mediaUrl = selUrl;
                   customData.set('welcomeTyping', ex);
                   const nameVal = getUserName();
-                  refreshFeatureIfActive('welcomeTyping', nameVal, ex.text || textarea.value, ex.images, ex.emoji, ex.audio, "", "", "", selUrl);
+                  refreshFeatureIfActive('welcomeTyping', nameVal, (ex.text !== undefined ? ex.text : textarea.value), ex.images, ex.emoji, ex.audio, "", "", "", selUrl);
                   autoSaveState();
                 });
                 customPanel.appendChild(welcomeMediaWrap);
+              } else if (id === "finalSurprise") {
+                const finalMediaWrap = createMediaPresetSelector('finalSurprise', customData.get('finalSurprise')?.mediaUrl || '', (selUrl) => {
+                  const ex = customData.get('finalSurprise') || {};
+                  ex.mediaUrl = selUrl;
+                  customData.set('finalSurprise', ex);
+                  const nameVal = getUserName();
+                  refreshFeatureIfActive('finalSurprise', nameVal, (ex.text !== undefined ? ex.text : textarea.value), ex.images, ex.emoji, ex.audio, "", "", "", selUrl);
+                  autoSaveState();
+                });
+                customPanel.appendChild(finalMediaWrap);
               }
               textarea.addEventListener('input', () => {
                 const ex = customData.get(id) || {};
@@ -7172,7 +7232,7 @@
                   window.lockUnlocked = false;
                 }
                 const nameVal = getUserName();
-                refreshFeatureIfActive(id, nameVal, ex.text, ex.images, ex.emoji);
+                refreshFeatureIfActive(id, nameVal, ex.text, ex.images, ex.emoji, ex.audio, ex.spotifyEmbedUrl, ex.youtubeEmbedUrl, ex.instagramEmbedUrl, ex.mediaUrl);
                 autoSaveState();
               });
             }
@@ -8232,12 +8292,15 @@
                 const spotifyEmbedUrl = existingData.spotifyEmbedUrl || "";
                 const youtubeEmbedUrl = existingData.youtubeEmbedUrl || "";
                 const instagramEmbedUrl = existingData.instagramEmbedUrl || "";
-                const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl };
+                const mediaUrl = existingData.mediaUrl || "";
+                const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl };
                 customData.set(id, storeData);
                 if (['countdown', 'lock', 'curtainReveal', 'welcomeTyping'].includes(id)) {
                   debouncedRefreshAll();
                 } else if (id === 'addMusicSection') {
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
+                } else if (id === 'finalSurprise') {
+                  applyFeature(id, true, nameVal, customText, images, emojiVal, audio, "", "", "", mediaUrl);
                 } else {
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio);
                 }
@@ -10584,6 +10647,8 @@
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
                 } else if (id === "addMusicSection") {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+                } else if (id === "finalSurprise") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
                 } else {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "");
                 }
@@ -11907,6 +11972,8 @@
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
                 } else if (id === "addMusicSection") {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.spotifyEmbedUrl || "", data.youtubeEmbedUrl || "", data.instagramEmbedUrl || "");
+                } else if (id === "finalSurprise") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
                 } else {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "");
                 }

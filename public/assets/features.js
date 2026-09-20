@@ -27,6 +27,14 @@
             } else {
                 container.appendChild(sectionElement);
             }
+        } else if (sectionElement.id === 'magic-virtual-hug-section') {
+            const namedPoster = doc.getElementById('magic-named-birthday-card-section');
+            const anchor = (namedPoster && namedPoster.parentNode === container) ? namedPoster : (finalMessage || cta);
+            if (anchor && anchor.parentNode === container) {
+                container.insertBefore(sectionElement, anchor);
+            } else {
+                container.appendChild(sectionElement);
+            }
         } else {
             const anchor = finalMessage || cta;
             if (anchor && anchor.parentNode === container) {
@@ -359,10 +367,199 @@
         }, (petalCount * 30) + 3800);
     }
 
+    // Global runner for Cute Birthday Poster Celebration
+    function triggerNamedCardCelebration(sectionEl, e) {
+        const section = (sectionEl && sectionEl.nodeType === 1) ? sectionEl : (typeof document !== 'undefined' ? document.getElementById('magic-named-birthday-card-section') : null);
+        const d = (section && section.ownerDocument) || (typeof document !== 'undefined' ? document : null);
+        const w = (d && d.defaultView) || (typeof window !== 'undefined' ? window : null);
+        if (!d || !section) return;
+
+        const cardWrap = section.querySelector('.magic-named-card-wrap') || d.getElementById('magic-named-card-wrap');
+        const badge = section.querySelector('.magic-named-card-badge');
+
+        if (cardWrap) {
+            cardWrap.classList.remove('bounce');
+            void cardWrap.offsetWidth;
+            cardWrap.classList.add('bounce');
+        }
+        if (badge) {
+            badge.classList.remove('bouncing');
+            void badge.offsetWidth;
+            badge.classList.add('bouncing');
+        }
+
+        // Play celebration audio
+        let audioEl = d.getElementById('magic-named-card-audio');
+        if (!audioEl) {
+            audioEl = d.createElement('audio');
+            audioEl.id = 'magic-named-card-audio';
+            audioEl.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+            audioEl.preload = 'auto';
+            audioEl.volume = 0.6;
+            audioEl.style.display = 'none';
+            (d.body || d.head)?.appendChild(audioEl);
+        }
+        if (audioEl) {
+            audioEl.currentTime = 0;
+            audioEl.play().catch(() => {});
+        }
+
+        // Calculate celebration center origin (from badge or card center)
+        let originX = 0.5;
+        let originY = 0.6;
+        const originTarget = badge || cardWrap || section;
+        if (originTarget && typeof originTarget.getBoundingClientRect === 'function') {
+            const rect = originTarget.getBoundingClientRect();
+            const winW = (w ? w.innerWidth : 360) || 360;
+            const winH = (w ? w.innerHeight : 640) || 640;
+            originX = Math.max(0.1, Math.min(0.9, (rect.left + rect.width / 2) / winW));
+            originY = Math.max(0.1, Math.min(0.9, (rect.top + rect.height / 2) / winH));
+        }
+
+        // Multi-stage confetti cannon burst
+        ensureConfetti((cfn) => {
+            if (!cfn) return;
+            const festiveColors = ['#ff4b72', '#ffd700', '#00b4d8', '#ff8c00', '#ff69b4', '#a0e7e5', '#b4f8c8', '#fbe7c6', '#9c88ff'];
+            // 1. Center fountain explosion
+            cfn({
+                particleCount: 85,
+                spread: 90,
+                startVelocity: 42,
+                origin: { x: originX, y: originY },
+                colors: festiveColors,
+                zIndex: 999999
+            });
+            // 2. Left side cannon
+            setTimeout(() => {
+                cfn({
+                    particleCount: 55,
+                    angle: 60,
+                    spread: 75,
+                    startVelocity: 48,
+                    origin: { x: Math.max(0.05, originX - 0.22), y: Math.min(0.85, originY + 0.05) },
+                    colors: festiveColors,
+                    zIndex: 999999
+                });
+            }, 120);
+            // 3. Right side cannon
+            setTimeout(() => {
+                cfn({
+                    particleCount: 55,
+                    angle: 120,
+                    spread: 75,
+                    startVelocity: 48,
+                    origin: { x: Math.min(0.95, originX + 0.22), y: Math.min(0.85, originY + 0.05) },
+                    colors: festiveColors,
+                    zIndex: 999999
+                });
+            }, 240);
+            // 4. Star & sparkle pop
+            setTimeout(() => {
+                cfn({
+                    particleCount: 45,
+                    spread: 120,
+                    startVelocity: 35,
+                    shapes: ['star', 'circle'],
+                    scalar: 1.25,
+                    origin: { x: originX, y: Math.max(0.2, originY - 0.1) },
+                    colors: ['#ffd700', '#ff69b4', '#ffffff', '#ff9f43', '#00d2d3'],
+                    zIndex: 999999
+                });
+            }, 360);
+        });
+
+        // Glowing shockwave ripple expanding from the button
+        if (section) {
+            const shockwave = d.createElement('div');
+            shockwave.style.cssText = `
+                position: absolute;
+                top: ${badge ? (badge.offsetTop + badge.offsetHeight / 2) : (section.offsetHeight * 0.85)}px;
+                left: 50%;
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                border: 3px solid rgba(255, 215, 0, 0.85);
+                box-shadow: 0 0 25px rgba(255, 105, 180, 0.7), inset 0 0 15px rgba(255, 215, 0, 0.6);
+                pointer-events: none;
+                z-index: 20;
+                animation: namedShockwaveExpand 0.9s ease-out forwards;
+            `;
+            section.appendChild(shockwave);
+            setTimeout(() => shockwave.remove(), 950);
+        }
+
+        // Scatter 22 cute floating celebratory particles & emojis across 360 degrees
+        const emojis = ['🎉', '✨', '🎈', '💖', '🍰', '🍓', '⭐', '🐼', '🐻', '🎊', '🎀', '💫', '🧁', '🌟', '🥳', '🎂'];
+        const hostContainer = section || d.body;
+        const spawnX = badge ? (badge.offsetLeft + badge.offsetWidth / 2) : (section.offsetWidth / 2);
+        const spawnY = badge ? (badge.offsetTop + badge.offsetHeight / 2) : (section.offsetHeight * 0.82);
+
+        for (let i = 0; i < 22; i++) {
+            const particle = d.createElement('div');
+            const emoji = emojis[i % emojis.length];
+            const angle = (i / 22) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
+            const distance = 80 + Math.random() * 140;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance - (40 + Math.random() * 50); // Biased upwards
+            const rot = (Math.random() * 360 - 180) + 'deg';
+            const size = 18 + Math.random() * 16;
+            const duration = 1.3 + Math.random() * 0.6;
+            const delay = Math.random() * 0.12;
+
+            particle.innerText = emoji;
+            particle.style.cssText = `
+                position: absolute;
+                left: ${spawnX}px;
+                top: ${spawnY}px;
+                font-size: ${size}px;
+                pointer-events: none;
+                z-index: 25;
+                user-select: none;
+                -webkit-user-select: none;
+                --tx: ${tx}px;
+                --ty: ${ty}px;
+                --rot: ${rot};
+                animation: namedCelebrationScatter ${duration}s cubic-bezier(0.12, 0.85, 0.32, 1) ${delay}s forwards;
+            `;
+            hostContainer.appendChild(particle);
+            setTimeout(() => particle.remove(), (duration + delay) * 1000 + 200);
+        }
+
+        // Glowing light spark particle dots
+        for (let j = 0; j < 14; j++) {
+            const spark = d.createElement('div');
+            const sparkAngle = Math.random() * Math.PI * 2;
+            const sparkDist = 60 + Math.random() * 110;
+            const stx = Math.cos(sparkAngle) * sparkDist + 'px';
+            const sty = (Math.sin(sparkAngle) * sparkDist - 30) + 'px';
+            const sparkColor = ['#ffd700', '#ff69b4', '#00f2fe', '#ff9ff3', '#feca57'][j % 5];
+            const sparkSize = 6 + Math.random() * 8;
+
+            spark.style.cssText = `
+                position: absolute;
+                left: ${spawnX}px;
+                top: ${spawnY}px;
+                width: ${sparkSize}px;
+                height: ${sparkSize}px;
+                background: ${sparkColor};
+                border-radius: 50%;
+                box-shadow: 0 0 10px ${sparkColor}, 0 0 20px #fff;
+                pointer-events: none;
+                z-index: 24;
+                --stx: ${stx};
+                --sty: ${sty};
+                animation: namedSparkleBurst ${0.9 + Math.random() * 0.4}s ease-out forwards;
+            `;
+            hostContainer.appendChild(spark);
+            setTimeout(() => spark.remove(), 1400);
+        }
+    }
+
     if (typeof window !== 'undefined') {
         window.triggerBlowAndCutCake = triggerBlowAndCutCake;
         window.triggerCakeSliceTap = triggerCakeSliceTap;
         window.triggerVirtualHug = triggerVirtualHug;
+        window.triggerNamedCardCelebration = triggerNamedCardCelebration;
     }
 
     const featureMap = {
@@ -769,9 +966,9 @@
                     let mediaHtml = '';
                     if (mediaSource) {
                         if (mediaSource.match(/\.(webm|mp4|mov)$/i)) {
-                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><video class="magic-welcome-media" src="${escapeHtml(mediaSource)}" autoplay loop muted playsinline webkit-playsinline preload="auto" controlsList="nodownload noplaybackrate nofullscreen" disablePictureInPicture disableRemotePlayback draggable="false" oncontextmenu="return false;" style="width: min(94vw, 560px); height: auto; max-height: clamp(200px, 35vh, 400px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: magicHeartBeat 3s infinite ease-in-out;"></video></div>`;
+                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><video class="magic-welcome-media" src="${escapeHtml(mediaSource)}" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width: min(94vw, 560px); height: auto; max-height: clamp(200px, 35vh, 400px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: magicHeartBeat 3s infinite ease-in-out;"></video></div>`;
                         } else {
-                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><img class="magic-welcome-media" src="${escapeHtml(mediaSource)}" alt="Welcome animation" draggable="false" oncontextmenu="return false;" style="width: min(94vw, 520px); height: auto; max-height: clamp(190px, 33vh, 360px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; animation: magicHeartBeat 3s infinite ease-in-out;" /></div>`;
+                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><img class="magic-welcome-media" src="${escapeHtml(mediaSource)}" alt="Welcome animation" style="width: min(94vw, 520px); height: auto; max-height: clamp(190px, 33vh, 360px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; animation: magicHeartBeat 3s infinite ease-in-out;" /></div>`;
                         }
                     }
                     container.innerHTML = mediaHtml + `<h1 style="font-family: 'Great Vibes', cursive; font-size: clamp(2.4rem, 8vw, 4.8rem); color: #fff !important; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 15px;">Welcome ${escapeHtml(userName)} <span class="magic-emoji">\uD83D\uDC96</span></h1><p id="magic-typing-welcome-msg" style="margin-top: 15px; font-size: clamp(1.3rem, 4.5vw, 2rem); color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-family: 'Poppins', sans-serif;"></p>`;
@@ -1803,16 +2000,16 @@
         },
 
         finalSurprise: {
-            enable(d, w, userName, customText) {
+            enable(d, w, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl) {
                 if (d.getElementById("magic-final-surprise-section")) return;
                 const section = d.createElement("section"); section.id = "magic-final-surprise-section"; section.style.cssText = "padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 24px); text-align: center; margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center;";
-                const audio = d.createElement('audio');
-                audio.id = 'finalSurpriseAudio';
-                audio.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
-                audio.preload = 'auto';
-                audio.volume = 0.7;
-                audio.style.display = 'none';
-                d.body.appendChild(audio);
+                const audioEl = d.createElement('audio');
+                audioEl.id = 'finalSurpriseAudio';
+                audioEl.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+                audioEl.preload = 'auto';
+                audioEl.volume = 0.7;
+                audioEl.style.display = 'none';
+                d.body.appendChild(audioEl);
                 const btn = d.createElement("button"); btn.innerText = "\u2728 Final Message \u2728";
                 btn.style.cssText = "background:linear-gradient(135deg, #ffd700, #ff8c00); color:white; border:none; padding:20px 45px; border-radius:80px; font-weight:bold; font-size:1.4rem; cursor:pointer; box-shadow:0 15px 35px rgba(255,140,0,0.4); transition:0.3s; text-transform:uppercase; letter-spacing:1px;";
                 btn.onmouseenter = () => { btn.style.transform = "scale(1.08) translateY(-5px)"; btn.style.boxShadow = "0 20px 45px rgba(255,140,0,0.6)"; };
@@ -1824,30 +2021,66 @@
                         finalAudio.currentTime = 0;
                         finalAudio.volume = 0.7;
                         finalAudio.play().catch(e => console.log('Final message audio failed:', e));
-                    } else {
-                        console.log('Final message audio element not found');
                     }
 
-                    let m = customText;
-                    if (!m) {
-                        m = "You are truly One in Millions 💖";
+                    let m = (customText !== undefined && customText !== null) ? customText : "You are truly One in Millions 💖";
+
+                    const DEFAULT_FINAL_MEDIA = '/assets/media/Final1.png';
+                    let mediaSource = (mediaUrl !== undefined && mediaUrl !== '') ? mediaUrl : ((typeof images === 'string' && images) ? images : (images && images.length ? images[0] : '')) || (typeof customEmoji === 'string' && customEmoji.startsWith('/assets/media') ? customEmoji : '') || DEFAULT_FINAL_MEDIA;
+                    if (mediaSource === 'none' || mediaSource === 'null' || mediaSource === false) {
+                        mediaSource = '';
                     }
+
                     d.body.classList.add('magic-noscroll');
                     const overlay = d.createElement("div");
                     overlay.id = "magic-final-message-root";
-                    overlay.style.cssText = "position: fixed; inset: 0; background: radial-gradient(circle at center, #6a0000, #2a0000); z-index: 2147483646; pointer-events: none; transition: opacity 1.5s ease; opacity: 1;";
+                    overlay.style.cssText = "position: fixed; inset: 0; background: radial-gradient(circle at center, #6a0000, #2a0000); z-index: 2147483646; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 1.5s ease; opacity: 1; cursor: pointer; padding: 20px; box-sizing: border-box;";
+                    
                     const container = d.createElement("div");
-                    container.style.cssText = "position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transform: scale(0.5); opacity: 0; transition: transform 4s ease, opacity 4s ease;";
-                    container.innerHTML = `<h1 style="font-family: 'Great Vibes', cursive; font-size: clamp(2rem, 8vw, 4rem); color: #fff !important; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 20px; text-align: center; word-wrap: break-word; max-width: 90vw;">${escapeHtml(m)}</h1>`;
+                    container.style.cssText = "display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transform: scale(0.5); opacity: 0; transition: transform 3.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2s ease; max-width: 94vw;";
+                    
+                    let mediaHtml = '';
+                    if (mediaSource) {
+                        if (mediaSource.match(/\.(webm|mp4|mov)$/i)) {
+                            mediaHtml = `<div class="magic-final-media-wrap" style="margin-bottom: clamp(14px, 3vh, 24px); display: flex; justify-content: center; align-items: center; width: 100%;"><video class="magic-final-media" src="${escapeHtml(mediaSource)}" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width: min(90vw, 480px); height: auto; max-height: clamp(160px, 32vh, 320px); object-fit: contain; filter: drop-shadow(0 0 35px rgba(255,215,0,0.6)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: magicHeartBeat 3s infinite ease-in-out;"></video></div>`;
+                        } else {
+                            mediaHtml = `<div class="magic-final-media-wrap" style="margin-bottom: clamp(14px, 3vh, 24px); display: flex; justify-content: center; align-items: center; width: 100%;"><img class="magic-final-media" src="${escapeHtml(mediaSource)}" alt="Final message decor" style="width: min(90vw, 440px); height: auto; max-height: clamp(160px, 32vh, 320px); object-fit: contain; filter: drop-shadow(0 0 35px rgba(255,215,0,0.6)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: magicHeartBeat 3s infinite ease-in-out;" /></div>`;
+                        }
+                    }
+
+                    let textHtml = '';
+                    if (m && typeof m === 'string' && m.trim().length > 0) {
+                        textHtml = `<h1 style="font-family: 'Great Vibes', cursive; font-size: clamp(2rem, 7.5vw, 3.8rem); color: #fff !important; text-shadow: 0 0 25px rgba(255,255,255,0.6); margin-top: 10px; margin-bottom: 20px; text-align: center; word-wrap: break-word; max-width: 90vw; line-height: 1.3;">${escapeHtml(m)}</h1>`;
+                    }
+
+                    container.innerHTML = mediaHtml + textHtml;
                     overlay.appendChild(container);
                     d.body.appendChild(overlay);
-                    setTimeout(() => { container.style.transform = "scale(1.2)"; container.style.opacity = "1"; }, 100);
-                    setTimeout(() => { overlay.style.opacity = "0"; setTimeout(() => { overlay?.remove(); d.body.classList.remove('magic-noscroll'); }, 1500); }, 5000);
+
+                    // Trigger celebration confetti
+                    ensureConfetti((cfn) => {
+                        if (cfn) {
+                            try { cfn({ particleCount: 70, spread: 80, origin: { y: 0.6 } }); } catch(e) {}
+                        }
+                    });
+
+                    setTimeout(() => { container.style.transform = "scale(1.12)"; container.style.opacity = "1"; }, 100);
+
+                    const closeOverlay = () => {
+                        overlay.style.opacity = "0";
+                        setTimeout(() => {
+                            overlay.remove();
+                            d.body.classList.remove('magic-noscroll');
+                        }, 1000);
+                    };
+
+                    overlay.onclick = closeOverlay;
+                    setTimeout(closeOverlay, 6500);
                 };
 
                 section.appendChild(btn); insertSectionBeforeFinal(d, section); scrollToElement(d, section); return { listeners: [{ target: btn, type: "click", handler: btn.onclick }] };
             },
-            disable(d) { d?.getElementById("magic-final-surprise-section")?.remove(); const audio = d?.getElementById("finalSurpriseAudio"); if (audio) audio.remove(); }
+            disable(d) { d?.getElementById("magic-final-surprise-section")?.remove(); const audio = d?.getElementById("finalSurpriseAudio"); if (audio) audio.remove(); d?.getElementById("magic-final-message-root")?.remove(); }
         },
 
         magicMusic: {
@@ -2501,21 +2734,14 @@
                         vid.muted = true;
                         vid.setAttribute('playsinline', '');
                         vid.setAttribute('preload', 'auto');
-                        vid.setAttribute('controlsList', 'nodownload noplaybackrate nofullscreen');
-                        vid.setAttribute('disablePictureInPicture', '');
-                        vid.setAttribute('disableRemotePlayback', '');
-                        vid.setAttribute('draggable', 'false');
-                        vid.oncontextmenu = (e) => { e.preventDefault(); return false; };
-                        vid.style.cssText = "width: min(94vw, 560px); height: auto; max-height: clamp(200px, 36vh, 420px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: floatIcon 4s ease-in-out infinite;";
+                        vid.style.cssText = "width: min(94vw, 560px); height: auto; max-height: clamp(200px, 36vh, 420px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: floatIcon 4s ease-in-out infinite;";
                         decor.appendChild(vid);
                     } else {
                         const img = d.createElement('img');
                         img.className = "magic-countdown-media";
                         img.src = mediaSource;
                         img.alt = "Countdown animation";
-                        img.setAttribute('draggable', 'false');
-                        img.oncontextmenu = (e) => { e.preventDefault(); return false; };
-                        img.style.cssText = "width: min(94vw, 520px); height: auto; max-height: clamp(190px, 34vh, 380px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; animation: floatIcon 4s ease-in-out infinite;";
+                        img.style.cssText = "width: min(94vw, 520px); height: auto; max-height: clamp(190px, 34vh, 380px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; animation: floatIcon 4s ease-in-out infinite;";
                         decor.appendChild(img);
                     }
                 } else {
@@ -3061,6 +3287,340 @@
             disable(d) {
                 d?.getElementById("magic-image-explosion-section")?.remove();
                 const audio = d?.getElementById("crackersAudio");
+                if (audio) audio.remove();
+            }
+        },
+        namedBirthdayCard: {
+            enable(d, w, userName, customText) {
+                if (d.getElementById("magic-named-birthday-card-section")) return;
+
+                if (!d.getElementById('magic-custom-fonts')) {
+                    const link = d.createElement('link');
+                    link.id = 'magic-custom-fonts';
+                    link.rel = 'stylesheet';
+                    link.href = 'https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800;900&family=Outfit:wght@600;700;800;900&family=Poppins:wght@600;700;800&family=Caveat:wght@700&display=swap';
+                    (d.head || d.body)?.appendChild(link);
+                }
+
+                if (!d.getElementById('magic-named-card-styles')) {
+                    const style = d.createElement('style');
+                    style.id = 'magic-named-card-styles';
+                    style.textContent = `
+                        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800;900&family=Outfit:wght@600;700;800;900&family=Caveat:wght@700&family=Poppins:wght@600;700;800&display=swap');
+
+                        @keyframes namedCardFloat {
+                            0%, 100% { transform: translateY(0) rotate(0deg); }
+                            50% { transform: translateY(-8px) rotate(0.6deg); }
+                        }
+                        @keyframes namedCardBounce {
+                            0% { transform: scale(1); }
+                            30% { transform: scale(1.08) rotate(-2deg); }
+                            60% { transform: scale(0.96) rotate(1deg); }
+                            100% { transform: scale(1) rotate(0deg); }
+                        }
+                        @keyframes namedHeartPop {
+                            0% { transform: scale(0) translateY(0); opacity: 1; }
+                            100% { transform: scale(1.4) translateY(-60px) rotate(20deg); opacity: 0; }
+                        }
+                        @keyframes namedAuraPulse {
+                            0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.75; }
+                            100% { transform: translate(-50%, -50%) scale(1.18); opacity: 1; }
+                        }
+                        @keyframes namedSparkleFloat1 {
+                            0%, 100% { transform: translateY(0) rotate(0deg) scale(0.95); opacity: 0.85; }
+                            50% { transform: translateY(-7px) rotate(12deg) scale(1.15); opacity: 1; filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.9)); }
+                        }
+                        @keyframes namedSparkleFloat2 {
+                            0%, 100% { transform: translateY(0) rotate(0deg) scale(0.95); opacity: 0.85; }
+                            50% { transform: translateY(-6px) rotate(-10deg) scale(1.12); opacity: 1; filter: drop-shadow(0 0 6px rgba(255, 105, 180, 0.8)); }
+                        }
+                        @keyframes namedBadgePulse {
+                            0%, 100% { transform: scale(1); }
+                            50% { transform: scale(1.04); }
+                        }
+                        @keyframes namedBadgeBounce {
+                            0% { transform: scale(1); }
+                            25% { transform: scale(0.88); }
+                            50% { transform: scale(1.12); }
+                            75% { transform: scale(0.96); }
+                            100% { transform: scale(1); }
+                        }
+                        @keyframes namedCelebrationScatter {
+                            0% {
+                                transform: translate(0, 0) scale(0.2) rotate(0deg);
+                                opacity: 1;
+                                filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8));
+                            }
+                            45% {
+                                opacity: 1;
+                                transform: translate(calc(var(--tx) * 0.75), calc(var(--ty) * 0.75 - 25px)) scale(1.3) rotate(calc(var(--rot) * 0.5));
+                            }
+                            100% {
+                                transform: translate(var(--tx), calc(var(--ty) + 40px)) scale(0.5) rotate(var(--rot));
+                                opacity: 0;
+                                filter: drop-shadow(0 0 12px rgba(255, 105, 180, 0));
+                            }
+                        }
+                        @keyframes namedSparkleBurst {
+                            0% {
+                                transform: translate(0, 0) scale(0);
+                                opacity: 1;
+                            }
+                            60% {
+                                opacity: 1;
+                                transform: translate(var(--stx), var(--sty)) scale(1.5);
+                            }
+                            100% {
+                                transform: translate(calc(var(--stx) * 1.2), calc(var(--sty) * 1.2)) scale(0);
+                                opacity: 0;
+                            }
+                        }
+                        @keyframes namedShockwaveExpand {
+                            0% {
+                                transform: translate(-50%, -50%) scale(0.2);
+                                opacity: 0.9;
+                                border-width: 4px;
+                            }
+                            100% {
+                                transform: translate(-50%, -50%) scale(2.4);
+                                opacity: 0;
+                                border-width: 1px;
+                            }
+                        }
+                        .magic-named-card-bg-aura {
+                            position: absolute;
+                            top: 45%;
+                            left: 50%;
+                            width: 125%;
+                            height: 125%;
+                            transform: translate(-50%, -50%);
+                            background: radial-gradient(circle, rgba(255, 215, 0, 0.26) 0%, rgba(255, 140, 185, 0.22) 38%, rgba(255, 220, 235, 0.08) 65%, transparent 75%);
+                            pointer-events: none;
+                            z-index: 0;
+                            animation: namedAuraPulse 5s ease-in-out infinite alternate;
+                        }
+                        .magic-named-card-orb {
+                            position: absolute;
+                            border-radius: 50%;
+                            pointer-events: none;
+                            filter: blur(40px);
+                            z-index: 0;
+                            opacity: 0.6;
+                        }
+                        .magic-named-card-orb-1 {
+                            width: 160px;
+                            height: 160px;
+                            background: rgba(255, 182, 193, 0.65);
+                            top: -30px;
+                            left: -30px;
+                        }
+                        .magic-named-card-orb-2 {
+                            width: 170px;
+                            height: 170px;
+                            background: rgba(255, 220, 120, 0.6);
+                            bottom: -30px;
+                            right: -30px;
+                        }
+                        .magic-named-card-orb-3 {
+                            width: 130px;
+                            height: 130px;
+                            background: rgba(180, 235, 255, 0.55);
+                            top: 40%;
+                            right: -25px;
+                        }
+                        .magic-named-card-wrap {
+                            position: relative;
+                            width: 100%;
+                            max-width: 440px;
+                            aspect-ratio: 1200 / 1310;
+                            margin: 0 auto;
+                            cursor: pointer;
+                            user-select: none;
+                            -webkit-user-select: none;
+                            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
+                            filter: drop-shadow(0 15px 35px rgba(255, 105, 180, 0.35));
+                            animation: namedCardFloat 4s ease-in-out infinite;
+                            z-index: 1;
+                        }
+                        .magic-named-card-wrap:hover {
+                            transform: scale(1.03) translateY(-4px);
+                            filter: drop-shadow(0 22px 50px rgba(255, 105, 180, 0.55));
+                        }
+                        .magic-named-card-wrap.bounce {
+                            animation: namedCardBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                        }
+                        .magic-named-card-img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: contain;
+                            display: block;
+                            pointer-events: none;
+                        }
+                        .magic-named-card-banner-text {
+                            position: absolute;
+                            top: 27.2%;
+                            left: 23%;
+                            width: 54%;
+                            height: 8.8%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                            pointer-events: none;
+                            z-index: 2;
+                            box-sizing: border-box;
+                            padding: 0 4px;
+                        }
+                        .magic-named-card-banner-inner {
+                            font-family: 'Fredoka', 'Outfit', 'Caveat', 'Poppins', 'Comic Neue', cursive, sans-serif !important;
+                            font-weight: 800;
+                            color: #4a2818 !important;
+                            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 0 10px rgba(255, 235, 204, 0.9);
+                            letter-spacing: 0.5px;
+                            line-height: 1.1;
+                            word-break: break-word;
+                            max-width: 100%;
+                            max-height: 100%;
+                            overflow: hidden;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2;
+                            -webkit-box-orient: vertical;
+                        }
+                        .magic-named-card-badge {
+                            margin-top: clamp(12px, 1.8vh, 18px);
+                            padding: 8px 24px;
+                            background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 238, 215, 0.95));
+                            border: 1.5px solid rgba(255, 255, 255, 0.95);
+                            border-radius: 50px;
+                            color: #6a2e15;
+                            font-family: 'Fredoka', 'Poppins', 'Outfit', sans-serif;
+                            font-size: clamp(0.85rem, 2.9vw, 1rem);
+                            font-weight: 800;
+                            letter-spacing: 0.5px;
+                            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.18), inset 0 1px 1px #fff;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 6px;
+                            cursor: pointer;
+                            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+                            z-index: 1;
+                            animation: namedBadgePulse 2.8s infinite ease-in-out;
+                            user-select: none;
+                            -webkit-user-select: none;
+                        }
+                        .magic-named-card-badge:hover {
+                            transform: scale(1.06) translateY(-2px);
+                            box-shadow: 0 12px 28px rgba(255, 140, 0, 0.32);
+                        }
+                        .magic-named-card-badge.bouncing {
+                            animation: namedBadgeBounce 0.5s ease !important;
+                        }
+                    `;
+                    d.head.appendChild(style);
+                }
+
+                const section = d.createElement("section");
+                section.id = "magic-named-birthday-card-section";
+                section.style.cssText = "position: relative; padding: clamp(22px, 3.2vw, 36px) clamp(16px, 2.5vw, 26px); text-align: center; margin: clamp(1.8rem, 3vw, 2.6rem) auto; width: 92%; max-width: 520px; box-sizing: border-box; align-self: center; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.94) 0%, rgba(255, 245, 235, 0.88) 45%, rgba(255, 232, 242, 0.82) 100%); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border-radius: clamp(28px, 4vw, 42px); border: 2.5px solid rgba(255, 255, 255, 0.85); box-shadow: 0 20px 50px rgba(255, 105, 180, 0.22), 0 0 35px rgba(255, 215, 0, 0.18), inset 0 2px 4px rgba(255, 255, 255, 0.95), inset 0 -2px 6px rgba(255, 192, 203, 0.25); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease;";
+
+                let nameText = (customText !== undefined && customText !== null) ? customText : (userName || "Birthday Star");
+                if (typeof nameText === 'string') nameText = nameText.trim();
+
+                let fontSizeStyle = 'font-size: clamp(1.15rem, 5.2vw, 1.85rem);';
+                if (nameText.length > 22) {
+                    fontSizeStyle = 'font-size: clamp(0.72rem, 3vw, 1.1rem);';
+                } else if (nameText.length > 15) {
+                    fontSizeStyle = 'font-size: clamp(0.82rem, 3.8vw, 1.3rem);';
+                } else if (nameText.length > 10) {
+                    fontSizeStyle = 'font-size: clamp(0.95rem, 4.4vw, 1.55rem);';
+                }
+
+                // Decorative ambient colored orbs
+                const orb1 = d.createElement("div");
+                orb1.className = "magic-named-card-orb magic-named-card-orb-1";
+                section.appendChild(orb1);
+
+                const orb2 = d.createElement("div");
+                orb2.className = "magic-named-card-orb magic-named-card-orb-2";
+                section.appendChild(orb2);
+
+                const orb3 = d.createElement("div");
+                orb3.className = "magic-named-card-orb magic-named-card-orb-3";
+                section.appendChild(orb3);
+
+                // Ambient glowing background aura
+                const aura = d.createElement("div");
+                aura.className = "magic-named-card-bg-aura";
+                section.appendChild(aura);
+
+                // Decorative corner elements matching the cute birthday theme
+                const iconTL = d.createElement("div");
+                iconTL.style.cssText = "position: absolute; top: 12px; left: 16px; font-size: 1.35rem; pointer-events: none; z-index: 1; animation: namedSparkleFloat1 3.8s ease-in-out infinite;";
+                iconTL.innerText = "🎈";
+                section.appendChild(iconTL);
+
+                const iconTR = d.createElement("div");
+                iconTR.style.cssText = "position: absolute; top: 12px; right: 16px; font-size: 1.35rem; pointer-events: none; z-index: 1; animation: namedSparkleFloat2 4.2s ease-in-out infinite 0.5s;";
+                iconTR.innerText = "🎁";
+                section.appendChild(iconTR);
+
+                const iconBL = d.createElement("div");
+                iconBL.style.cssText = "position: absolute; bottom: 14px; left: 16px; font-size: 1.25rem; pointer-events: none; z-index: 1; animation: namedSparkleFloat2 3.6s ease-in-out infinite 1s;";
+                iconBL.innerText = "💖";
+                section.appendChild(iconBL);
+
+                const iconBR = d.createElement("div");
+                iconBR.style.cssText = "position: absolute; bottom: 14px; right: 16px; font-size: 1.25rem; pointer-events: none; z-index: 1; animation: namedSparkleFloat1 4s ease-in-out infinite 1.5s;";
+                iconBR.innerText = "✨";
+                section.appendChild(iconBR);
+
+                const cardWrap = d.createElement("div");
+                cardWrap.className = "magic-named-card-wrap";
+                cardWrap.id = "magic-named-card-wrap";
+
+                const textHtml = nameText ? `<div class="magic-named-card-banner-text"><span class="magic-named-card-banner-inner" style="${fontSizeStyle}">${escapeHtml(nameText)}</span></div>` : '';
+
+                cardWrap.innerHTML = `
+                    <img class="magic-named-card-img" src="/assets/media/BName.png" alt="Happy Birthday" />
+                    ${textHtml}
+                `;
+
+                // Interactive badge
+                const isHi = (window.currentLang === 'hi');
+                const badgeText = isHi ? "✨ सेलिब्रेट करने के लिए टैप करें ✨" : "✨ Tap to Celebrate ✨";
+                const badge = d.createElement("div");
+                badge.className = "magic-named-card-badge";
+                badge.innerHTML = badgeText;
+
+                // Add audio element for celebratory tap
+                const tapAudio = d.createElement('audio');
+                tapAudio.id = 'magic-named-card-audio';
+                tapAudio.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+                tapAudio.preload = 'auto';
+                tapAudio.volume = 0.6;
+                tapAudio.style.display = 'none';
+                d.body.appendChild(tapAudio);
+
+                const handleTap = (e) => {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    triggerNamedCardCelebration(section, e);
+                };
+
+                cardWrap.addEventListener('click', handleTap);
+                badge.addEventListener('click', handleTap);
+                section.appendChild(cardWrap);
+                section.appendChild(badge);
+                insertSectionBeforeFinal(d, section);
+                scrollToElement(d, section);
+
+                return { listeners: [{ target: cardWrap, type: 'click', handler: handleTap }, { target: badge, type: 'click', handler: handleTap }] };
+            },
+            disable(d) {
+                d?.getElementById("magic-named-birthday-card-section")?.remove();
+                const audio = d?.getElementById("magic-named-card-audio");
                 if (audio) audio.remove();
             }
         },
@@ -4203,6 +4763,17 @@
                 e.preventDefault();
                 e.stopPropagation();
                 triggerVirtualHug(section || doc);
+                return;
+            }
+
+            // 4. Cute Birthday Poster: "Tap to Celebrate" Badge or Poster Card
+            const namedBadge = target.closest ? (target.closest('.magic-named-card-badge') || target.closest('#magic-named-card-wrap') || target.closest('.magic-named-card-wrap')) : null;
+            if (namedBadge) {
+                const doc = namedBadge.ownerDocument || document;
+                const section = namedBadge.closest('#magic-named-birthday-card-section') || doc.getElementById('magic-named-birthday-card-section');
+                e.preventDefault();
+                e.stopPropagation();
+                triggerNamedCardCelebration(section || doc, e);
                 return;
             }
         };

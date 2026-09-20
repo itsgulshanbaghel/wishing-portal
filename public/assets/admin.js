@@ -711,6 +711,8 @@
     'floatingmemories': 'Floating Memories',
     'finalsurprise': 'Final Message',
     'finalmessage': 'Final Message',
+    'namedbirthdaycard': 'Named Birthday Card',
+    'namedbirthdayposter': 'Named Birthday Card',
     'magicmusic': 'Add Music',
     'addmusic': 'Add Music',
     'addmusicsection': 'Embed Music Section'
