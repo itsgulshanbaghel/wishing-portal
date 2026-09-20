@@ -769,9 +769,9 @@
                     let mediaHtml = '';
                     if (mediaSource) {
                         if (mediaSource.match(/\.(webm|mp4|mov)$/i)) {
-                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><video class="magic-welcome-media" src="${escapeHtml(mediaSource)}" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width: min(94vw, 560px); height: auto; max-height: clamp(200px, 35vh, 400px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: magicHeartBeat 3s infinite ease-in-out;"></video></div>`;
+                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><video class="magic-welcome-media" src="${escapeHtml(mediaSource)}" autoplay loop muted playsinline webkit-playsinline preload="auto" controlsList="nodownload noplaybackrate nofullscreen" disablePictureInPicture disableRemotePlayback draggable="false" oncontextmenu="return false;" style="width: min(94vw, 560px); height: auto; max-height: clamp(200px, 35vh, 400px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: magicHeartBeat 3s infinite ease-in-out;"></video></div>`;
                         } else {
-                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><img class="magic-welcome-media" src="${escapeHtml(mediaSource)}" alt="Welcome animation" style="width: min(94vw, 520px); height: auto; max-height: clamp(190px, 33vh, 360px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; animation: magicHeartBeat 3s infinite ease-in-out;" /></div>`;
+                            mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><img class="magic-welcome-media" src="${escapeHtml(mediaSource)}" alt="Welcome animation" draggable="false" oncontextmenu="return false;" style="width: min(94vw, 520px); height: auto; max-height: clamp(190px, 33vh, 360px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; animation: magicHeartBeat 3s infinite ease-in-out;" /></div>`;
                         }
                     }
                     container.innerHTML = mediaHtml + `<h1 style="font-family: 'Great Vibes', cursive; font-size: clamp(2.4rem, 8vw, 4.8rem); color: #fff !important; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 15px;">Welcome ${escapeHtml(userName)} <span class="magic-emoji">\uD83D\uDC96</span></h1><p id="magic-typing-welcome-msg" style="margin-top: 15px; font-size: clamp(1.3rem, 4.5vw, 2rem); color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-family: 'Poppins', sans-serif;"></p>`;
@@ -2501,14 +2501,21 @@
                         vid.muted = true;
                         vid.setAttribute('playsinline', '');
                         vid.setAttribute('preload', 'auto');
-                        vid.style.cssText = "width: min(94vw, 560px); height: auto; max-height: clamp(200px, 36vh, 420px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: floatIcon 4s ease-in-out infinite;";
+                        vid.setAttribute('controlsList', 'nodownload noplaybackrate nofullscreen');
+                        vid.setAttribute('disablePictureInPicture', '');
+                        vid.setAttribute('disableRemotePlayback', '');
+                        vid.setAttribute('draggable', 'false');
+                        vid.oncontextmenu = (e) => { e.preventDefault(); return false; };
+                        vid.style.cssText = "width: min(94vw, 560px); height: auto; max-height: clamp(200px, 36vh, 420px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: floatIcon 4s ease-in-out infinite;";
                         decor.appendChild(vid);
                     } else {
                         const img = d.createElement('img');
                         img.className = "magic-countdown-media";
                         img.src = mediaSource;
                         img.alt = "Countdown animation";
-                        img.style.cssText = "width: min(94vw, 520px); height: auto; max-height: clamp(190px, 34vh, 380px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; animation: floatIcon 4s ease-in-out infinite;";
+                        img.setAttribute('draggable', 'false');
+                        img.oncontextmenu = (e) => { e.preventDefault(); return false; };
+                        img.style.cssText = "width: min(94vw, 520px); height: auto; max-height: clamp(190px, 34vh, 380px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; animation: floatIcon 4s ease-in-out infinite;";
                         decor.appendChild(img);
                     }
                 } else {

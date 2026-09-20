@@ -547,6 +547,7 @@
       };
 
       function applyLanguage() {
+        if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
         let t = translations[currentLang];
         document.getElementById('gardenBadge').innerText = t.gardenBadge;
         document.getElementById('heroTitle').innerText = t.heroTitle;
@@ -571,6 +572,7 @@
       try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
 
       function refreshAll() {
+        if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
         applyLanguage();
         if (userData.name) {
           document.getElementById('heroTitle').innerText = (currentLang === 'hi' ? 'जन्मदिन मुबारक, ' : 'Happy Birthday, ') + userData.name;
@@ -589,10 +591,13 @@
         }
       }
 
-      refreshAll();
+      if (typeof window === 'undefined' || !window.__IS_GENERATED_PAGE__) {
+        refreshAll();
+      }
 
       // Listen for storage changes
       window.addEventListener('storage', (e) => {
+        if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
         if (e.key === 'greeter_lang') {
           currentLang = e.newValue || 'en';
           refreshAll();

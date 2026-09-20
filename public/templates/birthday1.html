@@ -552,6 +552,7 @@
             const toastMsgDiv = document.getElementById('toastMsg');
 
             function applyLanguageAndData() {
+                if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
                 t = translations[lang];
                 // hero
                 heroTitleEl.innerText = t.heroTitle + ', ' + userName;
@@ -621,10 +622,10 @@
             // book flip
             const bookDiv = document.getElementById('book');
             if (bookDiv) {
-                bookDiv.addEventListener('click', (e) => {
+                bookDiv.onclick = function(e) {
                     e.stopPropagation();
                     bookDiv.classList.toggle('flipped');
-                });
+                };
             }
 
             // confetti celebration + toast message
@@ -654,6 +655,7 @@
 
             // watch for language changes (storage or focus)
             function refreshLanguage() {
+                if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
                 const newLang = getLang();
                 if (newLang !== lang) {
                     lang = newLang;
@@ -673,6 +675,7 @@
             }
 
             window.addEventListener('storage', (e) => {
+                if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
                 if (e.key === 'greeter_lang' || e.key === 'customizer_lang' || e.key === 'userData') {
                     refreshLanguage();
                     // reload gallery if memories changed
@@ -696,6 +699,7 @@
             });
 
             window.addEventListener('focus', () => {
+                if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
                 const newLangCheck = getLang();
                 if (newLangCheck !== lang) {
                     lang = newLangCheck;
@@ -721,15 +725,17 @@
 
             // initial load of gallery and texts
             loadGallery();
-            applyLanguageAndData();
-            // override story/wish from userData if present (since apply uses default story from translations but we want custom)
-            if (userStory && storyBodyEl) storyBodyEl.innerText = userStory;
-            if (userWish && wishTextEl) wishTextEl.innerText = userWish;
-            if (insideMsgEl && userStory) insideMsgEl.innerText = userStory.length > 140 ? userStory.substring(0, 137) + '...' : userStory;
+            if (typeof window === 'undefined' || !window.__IS_GENERATED_PAGE__) {
+                applyLanguageAndData();
+                // override story/wish from userData if present (since apply uses default story from translations but we want custom)
+                if (userStory && storyBodyEl) storyBodyEl.innerText = userStory;
+                if (userWish && wishTextEl) wishTextEl.innerText = userWish;
+                if (insideMsgEl && userStory) insideMsgEl.innerText = userStory.length > 140 ? userStory.substring(0, 137) + '...' : userStory;
 
-            // small extra: update inside sign from userData custom note? not required but nice.
-            if (userData.customNote) {
-                insideSignEl.innerText = userData.customNote;
+                // small extra: update inside sign from userData custom note? not required but nice.
+                if (userData.customNote) {
+                    insideSignEl.innerText = userData.customNote;
+                }
             }
         })();
     </script>

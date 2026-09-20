@@ -4736,15 +4736,17 @@
         return { event: 'birthday', name: 'Loved One' };
       }
       function getUserName() {
-        if (window._sharedUserName) return window._sharedUserName;
+        if (window._sharedUserName && window._sharedUserName !== 'Loved One' && window._sharedUserName !== 'Special One') return window._sharedUserName;
 
-        // After personalization (especially on festival sites via CTA), read the freshest name from the live preview iframe
+        const storedName = localStorage.getItem('userDataName') || sessionStorage.getItem('userDataName');
+        if (storedName && storedName !== 'Loved One' && storedName !== 'Special One') return storedName;
+
+        // Read freshest name from live preview iframe
         try {
           const f = document.getElementById('frame');
           if (f && f.contentWindow) {
             const cw = f.contentWindow;
 
-            // Preferred: the exposed getter (updated after personalize)
             if (typeof cw.getUserName === 'function') {
               const liveName = cw.getUserName();
               if (liveName && liveName !== 'Loved One' && liveName !== 'Special One') {
@@ -4752,7 +4754,6 @@
               }
             }
 
-            // Fallback: directly from the magic config object inside the iframe (doPersonalize updates this)
             if (cw._magicConfig && cw._magicConfig.userName) {
               const cfgName = cw._magicConfig.userName;
               if (cfgName && cfgName !== 'Loved One' && cfgName !== 'Special One') {
@@ -4762,7 +4763,8 @@
           }
         } catch (e) { }
 
-        return getEventData().name || "Loved One";
+        const ev = getEventData();
+        return ev.recipientName || ev.name || window._sharedUserName || "Loved One";
       }
       let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null, isFrameLoaded = false, isPageInitializing = true;
 
@@ -8366,6 +8368,12 @@
           iframeDoc.head.appendChild(style);
         }
         refreshAll();
+        // Restore user custom text edits directly onto the template DOM
+        if (typeof window.restoreCustomDomEdits === 'function' && iframeDoc) {
+          window.restoreCustomDomEdits(iframeDoc);
+          setTimeout(() => window.restoreCustomDomEdits(iframeDoc), 60);
+          setTimeout(() => window.restoreCustomDomEdits(iframeDoc), 200);
+        }
         // Add drag drop to iframe content
         if (iframeDoc) {
           iframeDoc.addEventListener('dragover', (e) => {
@@ -8528,6 +8536,244 @@
         window.location.href = wId ? `preview.html?view=${encodeURIComponent(wId)}` : "preview.html";
       };
 
+      // Sleek floating toast notification for editor operations
+      function showEditorToast(msg, icon = 'fas fa-check-circle') {
+        let toast = document.getElementById('editorLiveToast');
+        if (!toast) {
+          toast = document.createElement('div');
+          toast.id = 'editorLiveToast';
+          toast.style.cssText = `
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(26, 16, 37, 0.94);
+            color: #ffffff;
+            padding: 11px 22px;
+            border-radius: 9999px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100000;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.18);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Inter', system-ui, sans-serif;
+          `;
+          document.body.appendChild(toast);
+        }
+        toast.innerHTML = `<i class="${icon}" style="color: #a78bfa; font-size: 1rem;"></i> <span>${msg}</span>`;
+        requestAnimationFrame(() => {
+          toast.style.opacity = '1';
+          toast.style.transform = 'translateX(-50%) translateY(0)';
+        });
+        clearTimeout(window._toastTimeout);
+        window._toastTimeout = setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(-50%) translateY(20px)';
+        }, 2500);
+      }
+
+      // Restore user custom text edits directly onto the template DOM
+      window.restoreCustomDomEdits = function(targetDoc) {
+        const doc = targetDoc || getIframeDocument();
+        if (!doc || !doc.body) return;
+        try {
+          const raw = localStorage.getItem('greeter_custom_dom_texts');
+          if (!raw) return;
+          const texts = JSON.parse(raw);
+          if (!texts || typeof texts !== 'object') return;
+          for (const [key, val] of Object.entries(texts)) {
+            if (val === undefined || val === null || val === '') continue;
+            let el = null;
+            if (key.startsWith('.') || key.startsWith('#')) {
+              el = doc.querySelector(key);
+            } else {
+              el = doc.getElementById(key);
+            }
+            if (el) {
+              el.innerHTML = val;
+            }
+          }
+        } catch(e) {
+          console.warn('Error restoring custom DOM edits:', e);
+        }
+      };
+
+      // Synchronize live DOM edits from iframe back into state (userData, customData, etc.)
+      function syncDomEditsToState(targetDoc, notify = false) {
+        const doc = targetDoc || getIframeDocument();
+        if (!doc || !doc.body) return;
+        try {
+          let hasChanges = false;
+          let currentEventData = getEventData();
+          let currentName = getUserName();
+
+          // 1. Capture and save all custom text nodes by ID and key selectors into greeter_custom_dom_texts
+          const customDomTexts = {};
+          const trackIds = [
+            'heroTitle', 'nameSub', 'bookTitle', 'insideMsg', 'insideSign',
+            'storyTop', 'storyBody', 'wishHead', 'wishText', 'celBtn',
+            'floatingText', 'letterText', 'scratchMessage', 'musicCustomMessage'
+          ];
+          trackIds.forEach(id => {
+            const el = doc.getElementById(id);
+            if (el && el.innerHTML) {
+              customDomTexts[id] = el.innerHTML;
+            }
+          });
+          ['.story-top', '.inside-sign', '.inside-message', '.hero-subtitle', '.story-body', '.wish-text'].forEach(sel => {
+            const el = doc.querySelector(sel);
+            if (el && !el.id && el.innerHTML) {
+              customDomTexts[sel] = el.innerHTML;
+            }
+          });
+          try {
+            localStorage.setItem('greeter_custom_dom_texts', JSON.stringify(customDomTexts));
+            sessionStorage.setItem('greeter_custom_dom_texts', JSON.stringify(customDomTexts));
+          } catch(e) {}
+
+          // 2. Clean Recipient Name Detection without capturing whole sentences
+          const nameSelectors = [
+            '.name-sub', 'div.name-sub', 'span.name-sub',
+            '.recipient-name', '.recipientName', '.user-name',
+            '[data-name]', '.vh-name', '.vc-title'
+          ];
+          for (const sel of nameSelectors) {
+            const el = doc.querySelector(sel);
+            if (el && el.innerText && el.innerText.trim()) {
+              let text = el.innerText.trim();
+              // Clean common prefixes
+              text = text.replace(/^(dear|for|to|a special wish for|special wish for|happy birthday to|happy anniversary to|happy birthday|happy anniversary)[:,\s]+/i, '').trim();
+              if (text.includes(',')) {
+                text = text.split(',')[0].trim();
+              }
+              text = text.replace(/['’]s\s+(birthday|anniversary|book|celebration).*$/i, '').trim();
+              text = text.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}✨🎉🎂💖❤️!.*]+/gu, '').trim();
+              // Only accept clean 1-3 word names (< 25 chars)
+              if (text && text.length > 0 && text.length < 25 && text.split(/\s+/).length <= 3 && text !== 'Loved One' && text !== 'Special One') {
+                if (text !== currentName) {
+                  currentName = text;
+                  window._sharedUserName = text;
+                  localStorage.setItem('userDataName', text);
+                  sessionStorage.setItem('userDataName', text);
+                  currentEventData.name = text;
+                  currentEventData.recipientName = text;
+                  hasChanges = true;
+                }
+                break;
+              }
+            }
+          }
+
+          // 3. Story / Message Detection
+          const storySelectors = ['.story-body', '#storyBody', '#insideMsg', '.inside-message', '.letter-text'];
+          for (const sel of storySelectors) {
+            const el = doc.querySelector(sel);
+            if (el && el.innerText && el.innerText.trim()) {
+              const text = el.innerText.trim();
+              if (text && text !== currentEventData.story) {
+                currentEventData.story = text;
+                hasChanges = true;
+                break;
+              }
+            }
+          }
+
+          // 4. Wish Text Detection
+          const wishSelectors = ['#wishText', '.wish-text', 'div.wish-text', '.custom-wishes'];
+          for (const sel of wishSelectors) {
+            const el = doc.querySelector(sel);
+            if (el && el.innerText && el.innerText.trim()) {
+              const text = el.innerText.trim();
+              if (text && text !== currentEventData.wishes) {
+                currentEventData.wishes = text;
+                hasChanges = true;
+                break;
+              }
+            }
+          }
+
+          // 5. Card inside sign
+          const signEl = doc.querySelector('#insideSign, .inside-sign');
+          if (signEl && signEl.innerText && signEl.innerText.trim()) {
+            const text = signEl.innerText.trim();
+            if (text && text !== currentEventData.customNote) {
+              currentEventData.customNote = text;
+              hasChanges = true;
+            }
+          }
+
+          // 6. Feature Text Detection
+          // Welcome typing
+          const welcomeEl = doc.querySelector('#magic-welcome-section .welcome-message, #magic-welcome-section .welcome-text');
+          if (welcomeEl && welcomeEl.innerText && welcomeEl.innerText.trim()) {
+            const txt = welcomeEl.innerText.trim();
+            const existing = customData.get('welcomeTyping') || {};
+            if (existing.text !== txt) {
+              customData.set('welcomeTyping', Object.assign({}, existing, { text: txt }));
+              hasChanges = true;
+            }
+          }
+
+          // Countdown header/text
+          const cdEl = doc.querySelector('#magic-countdown-section .cd-title, #magic-countdown-section .countdown-header');
+          if (cdEl && cdEl.innerText && cdEl.innerText.trim()) {
+            const txt = cdEl.innerText.trim();
+            const existing = customData.get('countdown') || {};
+            if (existing.title !== txt) {
+              customData.set('countdown', Object.assign({}, existing, { title: txt }));
+              hasChanges = true;
+            }
+          }
+
+          // Scratch Reveal
+          const scratchEl = doc.querySelector('#magic-scratch-section .scratch-message, #magic-scratch-section #scratchMessage');
+          if (scratchEl && scratchEl.innerText && scratchEl.innerText.trim()) {
+            const txt = scratchEl.innerText.trim();
+            const existing = customData.get('scratchReveal') || {};
+            if (existing.text !== txt) {
+              customData.set('scratchReveal', Object.assign({}, existing, { text: txt }));
+              hasChanges = true;
+            }
+          }
+
+          // Music section custom message
+          const musicEl = doc.querySelector('#magic-music-section #musicCustomMessage, #magic-music-section .music-message');
+          if (musicEl && musicEl.innerText && musicEl.innerText.trim()) {
+            const txt = musicEl.innerText.trim();
+            const existing = customData.get('addMusicSection') || {};
+            if (existing.text !== txt) {
+              customData.set('addMusicSection', Object.assign({}, existing, { text: txt }));
+              hasChanges = true;
+            }
+          }
+
+          if (hasChanges) {
+            try {
+              localStorage.setItem('userData', JSON.stringify(currentEventData));
+              sessionStorage.setItem('userData', JSON.stringify(currentEventData));
+            } catch(e) {}
+            if (doc.defaultView) {
+              try {
+                if (doc.defaultView._magicConfig) doc.defaultView._magicConfig.userName = currentName;
+                doc.defaultView.getUserName = () => currentName;
+              } catch(e) {}
+            }
+            if (typeof autoSaveState === 'function') autoSaveState();
+            if (typeof updateHubSummary === 'function') updateHubSummary();
+          }
+        } catch(err) {
+          console.warn('syncDomEditsToState error:', err);
+        }
+      }
+
       // Text editing mode
       let editModeActive = false;
       let editModeBeforeLock = false;
@@ -8572,6 +8818,7 @@
         if (btn) btn.classList.remove('active');
         const d = targetDoc || getIframeDocument();
         if (d) {
+          syncDomEditsToState(d, true);
           cleanupEditModeArtifacts(d);
         }
       };
@@ -8610,7 +8857,7 @@
                 user-select: text !important;
                 -webkit-user-select: text !important;
               }
-              h1, h2, h3, h4, h5, h6, p, span, .hero-title, .name-sub, .inside-message, .inside-sign, .story-top, .story-body, .wish-head, .wish-text, .book-title, .book-subtitle, .editable {
+              h1, h2, h3, h4, h5, h6, p, span, .hero-title, .name-sub, .inside-message, .inside-sign, .story-top, .story-body, .wish-head, .wish-text, .book-title, .book-subtitle, .editable, [data-editable] {
                 cursor: text !important;
                 user-select: text !important;
                 -webkit-user-select: text !important;
@@ -8636,7 +8883,16 @@
               el.contentEditable = 'true';
               el.setAttribute('spellcheck', 'false');
             });
+
+            // Attach live input listener
+            if (!doc._hasLiveEditListener) {
+              doc._hasLiveEditListener = true;
+              doc.addEventListener('input', () => {
+                syncDomEditsToState(doc, false);
+              }, { passive: true });
+            }
           } else {
+            syncDomEditsToState(doc, true);
             cleanupEditModeArtifacts(doc);
           }
         }
@@ -8644,11 +8900,11 @@
         const btn = document.getElementById('editToggleBtn');
         if (btn) btn.classList.toggle('active', editModeActive);
 
-        if (typeof showModal === 'function' && typeof forceState !== 'boolean') {
+        if (typeof forceState !== 'boolean') {
           if (editModeActive) {
-            showModal(currentLang === 'hi' ? "✏️ टेक्स्ट एडिटिंग चालू है! प्रीव्यू में किसी भी टेक्स्ट पर क्लिक करके सीधे एडिट करें।" : "✏️ Text editing enabled! Click on any text inside the preview to edit.");
+            showEditorToast(currentLang === 'hi' ? "✏️ टेक्स्ट एडिटिंग चालू है! प्रीव्यू में किसी भी टेक्स्ट पर क्लिक करके सीधे एडिट करें।" : "✏️ Text editing enabled! Click on any text inside the preview to edit.", "fas fa-pencil-alt");
           } else {
-            showModal(currentLang === 'hi' ? "🔒 टेक्स्ट एडिटिंग बंद कर दी गई है।" : "🔒 Text editing disabled.");
+            showEditorToast(currentLang === 'hi' ? "✨ टेक्स्ट बदलाव सेव हो गए हैं।" : "✨ Text changes updated & saved!", "fas fa-check-circle");
           }
         }
       };
@@ -8806,6 +9062,9 @@
           } else if (typeof window.toggleEditMode === 'function') {
             window.toggleEditMode(null, false);
           }
+          if (typeof syncDomEditsToState === 'function') {
+            syncDomEditsToState(doc, false);
+          }
           if (typeof cleanupEditModeArtifacts === 'function') {
             cleanupEditModeArtifacts(doc);
           }
@@ -8821,6 +9080,11 @@
           if (typeof cleanupEditModeArtifacts === 'function') {
             cleanupEditModeArtifacts(doc);
           }
+
+          // Ensure cards/books/envelopes start closed in DOM snapshot
+          try {
+            doc.querySelectorAll('.flipped, .book.flipped, #book.flipped, .flip-card.flipped, .secret-envelope.open, #secretEnvelope.open, #envelope.open').forEach(el => el.classList.remove('flipped', 'open'));
+          } catch(e) {}
 
           // Scroll iframe to top so shared page always loads from the starting section
           try { if (frame.contentWindow) frame.contentWindow.scrollTo(0, 0); } catch (e) { }
@@ -8847,9 +9111,6 @@
             refreshAll();
             return;
           }
-
-          // Prevent the template script from overwriting edited text in the generated HTML
-          html = html.replace(/applyLanguage\w*\(\);/g, '');
 
           const mobileFixStyles = `
 <style>
@@ -9060,6 +9321,22 @@
             head.appendChild(meta);
           }
           meta.content = "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes";
+
+          // Early guard script to prevent template scripts from overwriting customized DOM elements
+          const guardScript = doc2.createElement('script');
+          guardScript.textContent = `
+            window.__IS_GENERATED_PAGE__ = true;
+            window.applyLanguageAndData = function() {};
+            window.applyLanguage = function() {};
+            window.applyLang = function() {};
+            window.updateLanguage = function() {};
+            window.updateUI = function() {};
+            window.updateDefaultMemoryCaptions = function() {};
+            window.fullUIRefresh = function() {};
+            window.refreshLanguage = function() {};
+            window.syncLanguage = function() {};
+          `;
+          head.insertBefore(guardScript, head.firstChild);
 
           const s1 = doc2.createElement('script'); s1.textContent = langScript.replace(/<\/?script>/g, '');
           const s2 = doc2.createElement('script'); s2.textContent = scrollTopScript.replace(/<\/?script>/g, '');
@@ -9764,16 +10041,20 @@
 
       window.showScreen = function (screenNum, e) {
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        const doc = getIframeDocument();
         if (screenNum === 2) {
-          // Auto-save current customization state before launching fresh full preview
-          if (typeof autoSaveState === 'function') autoSaveState();
-
-          // Auto-disable pencil editing tool when opening full preview
+          // Auto-sync DOM edits and disable edit mode before opening full preview
+          if (doc && typeof syncDomEditsToState === 'function') {
+            syncDomEditsToState(doc, true);
+          }
           if (typeof window.disableEditMode === 'function') {
-            window.disableEditMode();
+            window.disableEditMode(doc);
           } else if (typeof window.toggleEditMode === 'function') {
             window.toggleEditMode(null, false);
           }
+
+          // Auto-save current customization state
+          if (typeof autoSaveState === 'function') autoSaveState();
 
           // Reset interactive feature states so curtains, lock, countdown, welcome typing load fresh
           const countdownActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('countdown') : false;
@@ -9785,6 +10066,22 @@
           window.lockUnlocked = !lockActive;
           window.curtainOpened = !curtainActive;
           window.welcomeFinished = !welcomeActive;
+
+          // Clean & disable all active feature DOM elements in preview iframe so they re-render fresh in initial state
+          const f = document.getElementById("frame");
+          const win = f ? f.contentWindow : null;
+          if (doc && typeof activeFeatureStates !== 'undefined' && FEATURE_MAP) {
+            for (let [id, active] of activeFeatureStates.entries()) {
+              if (FEATURE_MAP[id] && FEATURE_MAP[id].disable) {
+                try { FEATURE_MAP[id].disable(doc, win); } catch (err) {}
+              }
+            }
+            // Ensure cards, books, envelopes are un-flipped and closed in starting preview state
+            try {
+              doc.querySelectorAll('.flipped, .book.flipped, #book.flipped, .flip-card.flipped, .secret-envelope.open, #secretEnvelope.open, #envelope.open').forEach(el => el.classList.remove('flipped', 'open'));
+            } catch(e) {}
+          }
+          try { if (win) win.scrollTo(0, 0); } catch(e) {}
         }
         const bodyEl = document.body;
         const topBar = document.getElementById('fullPreviewTopBar');
@@ -9799,9 +10096,9 @@
           if (stage3) stage3.style.display = 'none';
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
-          // Reload template preview iframe with fresh timestamp so all features (curtains, lock, music, animations) load from the start
-          if (typeof loadSelectedTemplate === 'function') {
-            loadSelectedTemplate();
+          // Re-trigger animations smoothly on the current DOM without destroying user text edits via iframe reload
+          if (typeof debouncedRefreshAll === 'function') {
+            debouncedRefreshAll();
           }
         } else {
           bodyEl.classList.remove('stage-screen2');
@@ -10062,6 +10359,10 @@
             throw new Error('Preview iframe is showing share page instead of template');
           }
 
+          if (typeof syncDomEditsToState === 'function') {
+            syncDomEditsToState(doc, false);
+          }
+
           if (typeof cleanupEditModeArtifacts === 'function') {
             cleanupEditModeArtifacts(doc);
           }
@@ -10100,6 +10401,10 @@
           if (typeof cleanupEditModeArtifacts === 'function') {
             cleanupEditModeArtifacts(docClone);
           }
+          // Ensure cards/books/envelopes start closed in DOM snapshot
+          try {
+            docClone.querySelectorAll('.flipped, .book.flipped, #book.flipped, .flip-card.flipped, .secret-envelope.open, #secretEnvelope.open, #envelope.open').forEach(el => el.classList.remove('flipped', 'open'));
+          } catch(e) {}
 
           // Re-enable features in preview iframe
           debouncedRefreshAll();
@@ -10353,6 +10658,24 @@
                 docClone.head.insertBefore(lk, docClone.head.firstChild);
               }
             });
+          }
+
+          // Early guard script to prevent template scripts from overwriting customized DOM elements
+          if (docClone.head) {
+            const guardScript = docClone.createElement('script');
+            guardScript.textContent = `
+              window.__IS_GENERATED_PAGE__ = true;
+              window.applyLanguageAndData = function() {};
+              window.applyLanguage = function() {};
+              window.applyLang = function() {};
+              window.updateLanguage = function() {};
+              window.updateUI = function() {};
+              window.updateDefaultMemoryCaptions = function() {};
+              window.fullUIRefresh = function() {};
+              window.refreshLanguage = function() {};
+              window.syncLanguage = function() {};
+            `;
+            docClone.head.insertBefore(guardScript, docClone.head.firstChild);
           }
 
           // Performance: Ensure all images have lazy loading and async decoding
@@ -11331,7 +11654,7 @@
             cfgObj = (typeof storedConfig === 'string') ? JSON.parse(storedConfig || '{}') : (storedConfig || {});
           } catch(e) {}
 
-          const isCorruptShareHtml = typeof storedHtml === 'string' && (storedHtml.includes('Your Website is Ready') || storedHtml.includes('share.html') || storedHtml.includes('unpaidLockOverlay'));
+          const isCorruptShareHtml = typeof storedHtml === 'string' && (storedHtml.includes('Your Website is Ready') || (storedHtml.includes('<title>Share Your Surprise') && storedHtml.includes('qr-code-styling')));
 
           if (isCorruptShareHtml || !storedHtml) {
             console.warn('[applySharedView] Stored HTML contains share UI artifact. Auto-recovering template...');
@@ -11410,6 +11733,15 @@
   const config = ${JSON.stringify(cfgObj).replace(/`/g, '\\`').replace(/\${/g, '\\\${')};
   window._magicConfig = config;
   window.__IS_GENERATED_PAGE__ = true;
+  window.applyLanguageAndData = function() {};
+  window.applyLanguage = function() {};
+  window.applyLang = function() {};
+  window.updateLanguage = function() {};
+  window.updateUI = function() {};
+  window.updateDefaultMemoryCaptions = function() {};
+  window.fullUIRefresh = function() {};
+  window.refreshLanguage = function() {};
+  window.syncLanguage = function() {};
   if (config && config.userData) {
     try {
       localStorage.setItem('userData', JSON.stringify(config.userData));
@@ -11622,6 +11954,15 @@
 })();
 </` + `script>
 `;
+            // Strip any legacy duplicate setupInteractiveElements that may have been baked into stored HTML
+            storedHtml = storedHtml.replace(/function setupInteractiveElements\(\)[\s\S]*?setupInteractiveElements\(\);\s*(}\s*)?/g, '');
+            // Clean lingering flipped class in stored HTML if saved previously while open
+            storedHtml = storedHtml.replace(/class=["']([^"']*\b)flipped(\b[^"']*)["']/gi, function(match, p1, p2) {
+              const cleaned = (p1 + p2).replace(/\s+/g, ' ').trim();
+              return cleaned ? `class="${cleaned}"` : '';
+            });
+            // Heal any legacy corrupted function declarations from earlier regex replacements
+            storedHtml = storedHtml.replace(/\bfunction\s*\{/g, 'function _dummyLegacyHandler() {');
             if (storedHtml.includes('<head>')) {
               storedHtml = storedHtml.replace('<head>', '<head>' + bootstrapScript);
             } else {
