@@ -845,21 +845,26 @@ class AnalyticsStore {
   // ── Helper to Delete Cloudinary Configs & Image Assets ──
   async _deleteCloudinaryWebsiteAssets(cloud, websiteId) {
     if (!cloud || !websiteId) return;
+    const cleanId = String(websiteId).replace(/\.json$/i, '').trim();
     try {
       await Promise.allSettled([
-        cloud.uploader.destroy(`configs/${websiteId}`, { resource_type: 'raw' }),
-        cloud.api.delete_resources_by_prefix(`configs/${websiteId}`, { resource_type: 'raw' }),
-        cloud.uploader.destroy(`og-images/${websiteId}`, { resource_type: 'image' }),
-        cloud.uploader.destroy(`images/${websiteId}`, { resource_type: 'image' }),
-        cloud.uploader.destroy(`photos/${websiteId}`, { resource_type: 'image' }),
-        cloud.uploader.destroy(`websites/${websiteId}`, { resource_type: 'image' }),
-        cloud.api.delete_resources_by_prefix(`og-images/${websiteId}`, { resource_type: 'image' }),
-        cloud.api.delete_resources_by_prefix(`images/${websiteId}`, { resource_type: 'image' }),
-        cloud.api.delete_resources_by_prefix(`photos/${websiteId}`, { resource_type: 'image' }),
-        cloud.api.delete_resources_by_prefix(`websites/${websiteId}`, { resource_type: 'image' })
+        cloud.uploader.destroy(`configs/${cleanId}`, { resource_type: 'raw' }),
+        cloud.api.delete_resources_by_prefix(`configs/${cleanId}`, { resource_type: 'raw' }),
+        cloud.uploader.destroy(`og-images/${cleanId}`, { resource_type: 'image' }),
+        cloud.uploader.destroy(`images/${cleanId}`, { resource_type: 'image' }),
+        cloud.uploader.destroy(`photos/${cleanId}`, { resource_type: 'image' }),
+        cloud.uploader.destroy(`websites/${cleanId}`, { resource_type: 'image' }),
+        cloud.uploader.destroy(`qr/${cleanId}`, { resource_type: 'image' }),
+        cloud.uploader.destroy(`audio/${cleanId}`, { resource_type: 'video' }),
+        cloud.api.delete_resources_by_prefix(`og-images/${cleanId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`images/${cleanId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`photos/${cleanId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`websites/${cleanId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`qr/${cleanId}`, { resource_type: 'image' }),
+        cloud.api.delete_resources_by_prefix(`audio/${cleanId}`, { resource_type: 'video' })
       ]);
     } catch (err) {
-      console.warn(`[Analytics] Cloudinary asset deletion warning for ${websiteId}:`, err.message);
+      console.warn(`[Analytics] Cloudinary asset deletion warning for ${cleanId}:`, err.message);
     }
   }
 
@@ -867,17 +872,18 @@ class AnalyticsStore {
   async deleteWebsite(websiteId, force = false, cloudinaryRef = null) {
     try {
       const cockroach = require('./cockroach');
+      const d1 = require('./d1');
       const storage = require('./storage');
       const { Website, Event, Feedback, CustomSlug, Payment } = require('./models');
       const mongoose = require('mongoose');
 
       const cleanId = String(websiteId).replace(/\.json$/i, '').trim();
 
-      // 1. Check if website is Premium / Paid in CockroachDB or Supabase
+      // 1. Check if website is Premium / Paid in D1, CockroachDB or Storage
       const record = await cockroach.getRecord(cleanId).catch(() => null);
       let isPremium = !!(record && (record.isPremium || record.is_premium));
 
-      // Also check Supabase Storage config if record wasn't in CockroachDB
+      // Also check Storage config if record wasn't marked in DB
       if (!isPremium) {
         try {
           const sbConfig = await storage.readWebsiteConfig(cleanId);
@@ -895,13 +901,24 @@ class AnalyticsStore {
         };
       }
 
-      // 2. Delete from CockroachDB tables
+      // 2. Delete from D1 database
+      let d1Deleted = false;
+      if (d1.isD1Configured) {
+        try {
+          const d1Res = await d1.deleteWebsiteRecords(cleanId);
+          d1Deleted = d1Res?.success || false;
+        } catch (d1Err) {
+          console.warn(`[Analytics] D1 delete error for ${cleanId}:`, d1Err.message);
+        }
+      }
+
+      // 3. Delete from CockroachDB tables
       const crDeleteRes = await cockroach.deleteWebsiteRecords(cleanId).catch(() => ({ success: false, deletedCount: 0 }));
 
-      // 3. Delete from Supabase Storage (JSON configs + associated media)
+      // 4. Delete from Cloudflare R2 & Supabase Storage (JSON configs + associated media files)
       const sbDeleteRes = await storage.deleteWebsiteConfig(cleanId);
 
-      // 4. Delete Cloudinary Raw Config & Image Assets (legacy safety)
+      // 5. Delete Cloudinary Raw Config & Image Assets (legacy safety)
       const cloud = cloudinaryRef || require('cloudinary').v2;
       let cloudinaryDeleted = false;
       try {
@@ -909,7 +926,7 @@ class AnalyticsStore {
         cloudinaryDeleted = true;
       } catch (cErr) {}
 
-      // 5. Clean up local configs/ folder if present
+      // 6. Clean up local configs/ & uploads/ folder if present
       try {
         const fs = require('fs');
         const path = require('path');
@@ -917,9 +934,16 @@ class AnalyticsStore {
         if (fs.existsSync(localPath)) {
           fs.unlinkSync(localPath);
         }
+        const uploadsDir = path.join(__dirname, 'public', 'uploads');
+        if (fs.existsSync(uploadsDir)) {
+          const files = fs.readdirSync(uploadsDir);
+          files.filter(f => f.includes(cleanId)).forEach(f => {
+            try { fs.unlinkSync(path.join(uploadsDir, f)); } catch (_) {}
+          });
+        }
       } catch (fsErr) {}
 
-      // 6. Safe non-blocking MongoDB cleanup (only if connected, prevents 10s command buffering timeout)
+      // 7. Safe non-blocking MongoDB cleanup (only if connected, prevents 10s command buffering timeout)
       if (mongoose.connection && mongoose.connection.readyState === 1) {
         try {
           await Promise.allSettled([
@@ -932,14 +956,15 @@ class AnalyticsStore {
         } catch (mErr) {}
       }
 
-      console.log(`[Analytics] Deleted website ${cleanId}: cockroach=${crDeleteRes?.deletedCount || 0}, supabaseFree=${sbDeleteRes.freeDeleted}, supabasePrem=${sbDeleteRes.premiumDeleted}`);
+      console.log(`[Analytics] Permanently deleted website ${cleanId}: d1=${d1Deleted}, cockroach=${crDeleteRes?.deletedCount || 0}, r2=${sbDeleteRes.r2Deleted}, supabaseFree=${sbDeleteRes.freeDeleted}, supabasePrem=${sbDeleteRes.premiumDeleted}, mediaPurged=${sbDeleteRes.mediaFilesPurged || 0}`);
 
       return {
         success: true,
         websiteId: cleanId,
         isPremium,
+        d1Deleted,
         cockroachDeleted: crDeleteRes?.deletedCount || 0,
-        supabaseDeleted: sbDeleteRes,
+        storageDeleted: sbDeleteRes,
         cloudinaryDeleted
       };
     } catch (err) {
@@ -1016,11 +1041,15 @@ class AnalyticsStore {
       let totalDeletedCount = 0;
 
       if (idsToDelete.length > 0) {
-        // Bulk delete from CockroachDB
+        // Bulk delete from D1 and CockroachDB
+        const d1 = require('./d1');
+        if (d1 && d1.isD1Configured) {
+          try { await d1.bulkDeleteWebsiteRecords(idsToDelete); } catch (_) {}
+        }
         const crRes = await cockroach.bulkDeleteWebsiteRecords(idsToDelete).catch(() => ({ deletedCount: 0 }));
         totalDeletedCount = crRes?.deletedCount || idsToDelete.length;
 
-        // Delete from Supabase Storage concurrently in batches
+        // Delete from Storage (R2, Supabase, Cloudinary, local disk) concurrently in batches
         const chunkSize = 10;
         for (let i = 0; i < idsToDelete.length; i += chunkSize) {
           const chunk = idsToDelete.slice(i, i + chunkSize);

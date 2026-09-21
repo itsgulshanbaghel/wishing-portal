@@ -1840,9 +1840,11 @@
       }
 
       // Cache verified paid plan in local & session storage
-      if (data.isPremium || data.plan) {
-        try {
-          const resolvedPlan = (data.plan || 'pro').toLowerCase().trim();
+      try {
+        const rawPlan = (data.plan || '').toLowerCase().trim();
+        const isGenuinelyPaid = !!data.isPremium && rawPlan !== 'free' && rawPlan !== '';
+        if (isGenuinelyPaid) {
+          const resolvedPlan = rawPlan || 'pro';
           sessionStorage.setItem('premium_' + data.websiteId, 'true');
           localStorage.setItem('premium_' + data.websiteId, 'true');
           sessionStorage.setItem('purchased_plan_' + data.websiteId, resolvedPlan);
@@ -1850,9 +1852,20 @@
           if (resolvedPlan !== 'starter') {
             sessionStorage.setItem('pro_plan_' + data.websiteId, 'true');
             localStorage.setItem('pro_plan_' + data.websiteId, 'true');
+          } else {
+            sessionStorage.removeItem('pro_plan_' + data.websiteId);
+            localStorage.removeItem('pro_plan_' + data.websiteId);
           }
-        } catch (e) {}
-      }
+        } else {
+          // Unpaid website: safely clear any stale paid markers for this website ID
+          sessionStorage.removeItem('premium_' + data.websiteId);
+          localStorage.removeItem('premium_' + data.websiteId);
+          sessionStorage.removeItem('pro_plan_' + data.websiteId);
+          localStorage.removeItem('pro_plan_' + data.websiteId);
+          sessionStorage.removeItem('purchased_plan_' + data.websiteId);
+          localStorage.removeItem('purchased_plan_' + data.websiteId);
+        }
+      } catch (e) {}
 
       // Action Buttons
       const templateParam = data.templateName ? `&template=${encodeURIComponent(data.templateName)}` : '';

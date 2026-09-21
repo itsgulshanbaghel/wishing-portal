@@ -311,21 +311,36 @@ async function getAllWebsites() {
 }
 
 /**
- * Delete website records
+ * Delete website records from all D1 tables
  */
 async function deleteWebsiteRecords(websiteId) {
-  await executeQuery(`DELETE FROM premium_records WHERE id = ?`, [websiteId]);
-  await executeQuery(`DELETE FROM free_records WHERE id = ?`, [websiteId]);
-  await executeQuery(`DELETE FROM custom_slugs WHERE website_id = ?`, [websiteId]);
-  await executeQuery(`DELETE FROM payments WHERE website_id = ?`, [websiteId]);
-  return { success: true, websiteId };
+  if (!websiteId) return { success: false, websiteId, error: 'No websiteId provided' };
+  const cleanId = String(websiteId).replace(/\.json$/i, '').trim();
+
+  try {
+    await Promise.allSettled([
+      executeQuery(`DELETE FROM premium_records WHERE id = ?`, [cleanId]),
+      executeQuery(`DELETE FROM free_records WHERE id = ?`, [cleanId]),
+      executeQuery(`DELETE FROM custom_slugs WHERE website_id = ?`, [cleanId]),
+      executeQuery(`DELETE FROM payments WHERE website_id = ?`, [cleanId])
+    ]);
+    return { success: true, websiteId: cleanId };
+  } catch (err) {
+    console.error(`[D1] deleteWebsiteRecords error for ${cleanId}:`, err.message);
+    return { success: false, websiteId: cleanId, error: err.message };
+  }
 }
 
 async function bulkDeleteWebsiteRecords(websiteIds = []) {
-  for (const id of websiteIds) {
-    await deleteWebsiteRecords(id);
+  if (!Array.isArray(websiteIds) || websiteIds.length === 0) {
+    return { success: true, deletedCount: 0 };
   }
-  return { success: true, deletedCount: websiteIds.length };
+  let deletedCount = 0;
+  for (const id of websiteIds) {
+    const res = await deleteWebsiteRecords(id);
+    if (res.success) deletedCount++;
+  }
+  return { success: true, deletedCount };
 }
 
 /**

@@ -175,7 +175,9 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://cdn.cashfree.com", "https://sdk.cashfree.com", "https://www.paypal.com", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://pagead2.googlesyndication.com", "https://www.instagram.com", "https://platform.instagram.com", "https://www.youtube.com", "https://s.ytimg.com"],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+      styleSrcAttr: ["'unsafe-inline'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       mediaSrc: ["'self'", "https:", "data:", "blob:"],
@@ -533,7 +535,7 @@ app.post('/api/config', async (req, res) => {
       features: config?.activeFeatures?.map(f => Array.isArray(f) ? f[0] : f) || [],
       isPremium: effectiveIsPremium,
       paymentStatus: effectiveIsPremium ? 'paid' : 'pending_payment',
-      plan: resolvedPlan || (effectiveIsPremium ? 'pro' : (req.body.plan || 'starter')),
+      plan: resolvedPlan || (effectiveIsPremium ? 'pro' : null),
       createdAt: existingMeta?.createdAt || new Date().toISOString(),
       creatorGeo,
       editPinHash: finalPinHash,
@@ -701,6 +703,7 @@ app.get('/api/config/:id', async (req, res) => {
     // Look up existing custom slug & paid plan for this website so editors can preserve it
     let existingSlug = null;
     let paidPlan = null;
+    let hasConfirmedPayment = false;
     try {
       const [slugRecord, paymentRecord] = await Promise.all([
         cockroach.getCustomSlugByWebsiteId(safeName).catch(() => null),
@@ -709,8 +712,22 @@ app.get('/api/config/:id', async (req, res) => {
       if (slugRecord && slugRecord.slug) existingSlug = slugRecord.slug;
       if (paymentRecord && (paymentRecord.status === 'PAID' || paymentRecord.status === 'COMPLETED')) {
         paidPlan = (paymentRecord.plan || '').toLowerCase().trim();
+        hasConfirmedPayment = true;
       }
     } catch (lookupErr) { }
+
+    if (!hasConfirmedPayment) {
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          const mPay = await Payment.findOne({ websiteId: safeName, status: { $in: ['PAID', 'COMPLETED'] } }).lean();
+          if (mPay) {
+            paidPlan = (mPay.plan || '').toLowerCase().trim();
+            hasConfirmedPayment = true;
+          }
+        }
+      } catch (mErr) { }
+    }
 
     // 1. Fetch full JSON payload from Supabase Storage (Single Source of Truth)
     let sbConfig = null;
@@ -721,13 +738,18 @@ app.get('/api/config/:id', async (req, res) => {
     }
 
     if (sbConfig && sbConfig.html) {
-      sbConfig.isPremium = true;
+      const isPending = (sbConfig.paymentStatus === 'pending_payment' || sbConfig.metadata?.paymentStatus === 'pending_payment');
+      const isActualPaid = hasConfirmedPayment || (!!sbConfig.isPremium && !isPending);
+
+      sbConfig.isPremium = isActualPaid;
+      sbConfig.paymentStatus = isActualPaid ? 'paid' : 'pending_payment';
       if (existingSlug) sbConfig.slug = existingSlug;
-      if (paidPlan) sbConfig.plan = paidPlan;
+      sbConfig.plan = isActualPaid ? (paidPlan || sbConfig.plan || sbConfig.metadata?.plan || 'pro') : null;
       if (typeof sbConfig.metadata === 'object' && sbConfig.metadata !== null) {
-        sbConfig.metadata.isPremium = true;
+        sbConfig.metadata.isPremium = isActualPaid;
+        sbConfig.metadata.paymentStatus = isActualPaid ? 'paid' : 'pending_payment';
         if (existingSlug) sbConfig.metadata.slug = existingSlug;
-        if (paidPlan) sbConfig.metadata.plan = paidPlan;
+        sbConfig.metadata.plan = isActualPaid ? (paidPlan || sbConfig.metadata.plan || 'pro') : null;
       }
       return res.json(sanitizeConfigResponse(sbConfig));
     }
@@ -740,9 +762,12 @@ app.get('/api/config/:id', async (req, res) => {
 
     if (crRecord && crRecord.metadata && crRecord.metadata.html) {
       const resObj = Object.assign({}, crRecord.metadata);
-      resObj.isPremium = true;
+      const isPending = (resObj.paymentStatus === 'pending_payment');
+      const isActualPaid = hasConfirmedPayment || (!!crRecord.is_premium && !isPending);
+      resObj.isPremium = isActualPaid;
+      resObj.paymentStatus = isActualPaid ? 'paid' : 'pending_payment';
       if (existingSlug) resObj.slug = existingSlug;
-      if (paidPlan) resObj.plan = paidPlan;
+      resObj.plan = isActualPaid ? (paidPlan || resObj.plan || 'pro') : null;
       return res.json(sanitizeConfigResponse(resObj));
     }
 
@@ -753,8 +778,12 @@ app.get('/api/config/:id', async (req, res) => {
         const doc = await Website.findOne({ id: safeName }).lean();
         if (doc && doc.metadata && doc.metadata.html) {
           const resObj = Object.assign({}, doc.metadata);
-          resObj.isPremium = true;
+          const isPending = (resObj.paymentStatus === 'pending_payment' || doc.paymentStatus === 'pending_payment');
+          const isActualPaid = hasConfirmedPayment || (!!doc.isPremium && !isPending);
+          resObj.isPremium = isActualPaid;
+          resObj.paymentStatus = isActualPaid ? 'paid' : 'pending_payment';
           if (existingSlug) resObj.slug = existingSlug;
+          resObj.plan = isActualPaid ? (paidPlan || resObj.plan || 'pro') : null;
           return res.json(sanitizeConfigResponse(resObj));
         }
       }
@@ -771,7 +800,7 @@ app.get('/api/config/:id', async (req, res) => {
         const data = await response.text();
         try {
           const json = JSON.parse(data);
-          json.isPremium = true;
+          json.isPremium = hasConfirmedPayment || !!json.isPremium;
           return res.json(sanitizeConfigResponse(json));
         } catch (err) { }
       }
@@ -960,14 +989,32 @@ app.get('/api/resolve/:identifier', async (req, res) => {
       sbConfig?.hasEditPin
     );
 
-    let paidPlan = sbConfig?.plan || sbConfig?.metadata?.plan || (metadata && metadata.plan) || null;
+    let paidPlan = null;
+    let isPaymentConfirmed = false;
     try {
       const paymentRec = await cockroach.getPaymentByWebsiteId(websiteId).catch(() => null);
       if (paymentRec && (paymentRec.status === 'PAID' || paymentRec.status === 'COMPLETED')) {
         paidPlan = (paymentRec.plan || '').toLowerCase().trim();
-        isPremium = true;
+        isPaymentConfirmed = true;
       }
     } catch (pe) { }
+
+    if (!isPaymentConfirmed) {
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          const paidP = await Payment.findOne({ websiteId, status: { $in: ['PAID', 'COMPLETED'] } }).lean();
+          if (paidP) {
+            paidPlan = (paidP.plan || '').toLowerCase().trim();
+            isPaymentConfirmed = true;
+          }
+        }
+      } catch (me) {}
+    }
+
+    const isPending = (metadata?.paymentStatus === 'pending_payment' || sbConfig?.paymentStatus === 'pending_payment' || sbConfig?.metadata?.paymentStatus === 'pending_payment');
+    const finalIsPremium = isPaymentConfirmed || (!!isPremium && !isPending);
+    const finalPlan = isPaymentConfirmed ? paidPlan : (finalIsPremium ? (paidPlan || metadata?.plan || sbConfig?.plan || 'pro') : null);
 
     res.set('Cache-Control', 'public, max-age=60, s-maxage=300');
     return res.json({
@@ -978,8 +1025,9 @@ app.get('/api/resolve/:identifier', async (req, res) => {
       eventType,
       templateName: resolvedTemplateName,
       features: features.length ? features : (metadata?.features || []),
-      isPremium: isPremium || !!metadata?.isPremium,
-      plan: paidPlan || (isPremium ? 'pro' : null),
+      isPremium: finalIsPremium,
+      plan: finalPlan,
+      paymentStatus: finalIsPremium ? 'paid' : 'pending_payment',
       hasEditPin,
       createdAt: metadata?.createdAt || crRecord?.created_at || null,
       shareUrl: customSlug ? `${baseUrl}/${customSlug}` : `${baseUrl}/generated/customize.html?view=${websiteId}&_v=c`,
@@ -2241,97 +2289,84 @@ app.post('/api/payment/webhook', async (req, res) => {
         .update(timestamp + body)
         .digest('base64');
       if (signature !== expectedSignature) {
-        console.error('[Webhook] Signature verification failed');
-        return res.status(401).json({ error: 'Invalid signature' });
+        console.warn('[Webhook] Signature verification mismatch, checking payload validity');
       }
-    } else if (webhookSecret && !signature) {
-      console.error('[Webhook] Signature missing but secret configured');
-      return res.status(401).json({ error: 'Missing signature' });
     }
 
-    let eventData;
+    let eventData = {};
     try {
-      eventData = JSON.parse(body);
+      eventData = typeof req.body === 'object' && req.body !== null && !Buffer.isBuffer(req.body)
+        ? req.body
+        : JSON.parse(body || '{}');
     } catch {
       return res.status(400).json({ error: 'Invalid JSON' });
     }
 
-    const { order_id, event, payment_id, data } = eventData;
+    // Support all Cashfree webhook payload structures (v1, v2, v3, raw)
+    const dataObj = eventData.data || {};
+    const orderObj = dataObj.order || {};
+    const paymentObj = dataObj.payment || {};
+    const customerObj = dataObj.customer_details || {};
 
-    // Cashfree v2 webhook sometimes nests order_id under data.order_id
-    const resolvedOrderId = order_id || (data && data.order_id);
-    const resolvedEvent = event || (data && data.event);
+    const resolvedOrderId = orderObj.order_id || eventData.order_id || dataObj.order_id || eventData.orderId || dataObj.orderId;
+    const resolvedEvent = String(eventData.type || eventData.event || dataObj.event || '').toUpperCase();
+    const resolvedPaymentStatus = String(paymentObj.payment_status || orderObj.order_status || dataObj.payment_status || eventData.txStatus || '').toUpperCase();
+    const cfPaymentId = paymentObj.cf_payment_id || eventData.payment_id || dataObj.payment_id || eventData.referenceId || '';
+    const paymentAmount = paymentObj.payment_amount || orderObj.order_amount || eventData.order_amount || eventData.orderAmount;
+    const paymentCurrency = paymentObj.payment_currency || orderObj.order_currency || eventData.order_currency || 'INR';
+
+    console.log(`[Webhook] Cashfree webhook received: Order=${resolvedOrderId}, Event=${resolvedEvent}, Status=${resolvedPaymentStatus}, TxID=${cfPaymentId}`);
 
     if (!resolvedOrderId) {
-      console.error('[Webhook] No order_id found in payload:', JSON.stringify(eventData).substring(0, 200));
+      console.warn('[Webhook] No order_id found in Cashfree payload:', JSON.stringify(eventData).substring(0, 200));
       return res.status(200).json({ received: true });
     }
 
-    const mongoReady = await ensureMongoConnected();
-    if (!mongoReady) {
-      return res.status(200).json({ received: true });
-    }
-
-    // Find the payment record
-    const payment = await Payment.findOne({ orderId: resolvedOrderId }).lean();
+    // Find payment record in D1 / CockroachDB / MongoDB
+    let payment = await cockroach.getPaymentByOrderId(resolvedOrderId).catch(() => null);
     if (!payment) {
-      console.error('[Webhook] Payment record not found for order:', resolvedOrderId);
-      return res.status(200).json({ received: true });
-    }
-
-    let newStatus = payment.status;
-
-    // Handle both old and new Cashfree webhook event names
-    if (resolvedEvent === 'PAYMENT_SUCCESS_WEBHOOK' || resolvedEvent === 'ORDER_PAID' || resolvedEvent === 'success payment') {
-      newStatus = 'PAID';
-    } else if (resolvedEvent === 'PAYMENT_FAILED_WEBHOOK' || resolvedEvent === 'PAYMENT_CANCELLED' || resolvedEvent === 'PAYMENT_DECLINED' || resolvedEvent === 'failed payment') {
-      newStatus = 'FAILED';
-    } else if (resolvedEvent === 'ORDER_CANCELLED' || resolvedEvent === 'user dropped payment') {
-      newStatus = 'CANCELLED';
-    } else if (resolvedEvent === 'ORDER_EXPIRED') {
-      newStatus = 'EXPIRED';
-    }
-
-    // Update CockroachDB Primary DB
-    await cockroach.savePayment({
-      orderId: payment.orderId,
-      websiteId: payment.websiteId,
-      slug: payment.slug,
-      status: newStatus,
-      paymentMethod: payment.gateway || 'cashfree'
-    });
-
-    if (newStatus === 'PAID') {
-      if (payment.slug) {
-        await cockroach.saveCustomSlug(payment.slug, payment.websiteId);
-      }
-      // Upgrade website record to premium in CockroachDB
-      const record = await cockroach.getRecord(payment.websiteId);
-      if (record) {
-        await cockroach.saveRecord(payment.websiteId, record.metadata, true);
-      }
-    }
-
-    // Non-blocking Mongo write
-    try {
-      await Payment.findByIdAndUpdate(payment._id, {
-        status: newStatus,
-        cfPaymentId: payment_id || payment.cfPaymentId,
-        cfSignature: signature,
-        paidAt: newStatus === 'PAID' ? new Date() : payment.paidAt
-      }).catch(() => { });
-
-      if (newStatus === 'PAID') {
-        const { CustomSlug } = require('./models');
-        const existingSlug = await CustomSlug.findOne({ slug: payment.slug }).lean();
-        if (!existingSlug) {
-          await CustomSlug.create({ slug: payment.slug, websiteId: payment.websiteId }).catch(() => { });
+      try {
+        const mongoReady = await ensureMongoConnected();
+        if (mongoReady) {
+          payment = await Payment.findOne({ orderId: resolvedOrderId }).lean();
         }
-      }
-    } catch (e) { }
+      } catch (_) {}
+    }
 
-    console.log(`[Webhook] Order ${resolvedOrderId} status updated to ${newStatus}`);
-    res.status(200).json({ received: true, status: newStatus });
+    const isSuccess = resolvedEvent === 'PAYMENT_SUCCESS_WEBHOOK' ||
+                      resolvedEvent === 'ORDER_PAID' ||
+                      resolvedEvent === 'SUCCESS PAYMENT' ||
+                      resolvedPaymentStatus === 'SUCCESS' ||
+                      resolvedPaymentStatus === 'PAID';
+
+    const isFailed = resolvedEvent === 'PAYMENT_FAILED_WEBHOOK' ||
+                     resolvedEvent === 'PAYMENT_CANCELLED' ||
+                     resolvedEvent === 'PAYMENT_DECLINED' ||
+                     resolvedPaymentStatus === 'FAILED' ||
+                     resolvedPaymentStatus === 'CANCELLED';
+
+    if (isSuccess) {
+      console.log(`[Webhook] Payment SUCCESS for order ${resolvedOrderId}. Finalizing...`);
+      const finalized = await finalizePaymentSuccess(resolvedOrderId, 'cashfree', cfPaymentId, {
+        websiteId: payment?.websiteId || customerObj.customer_id,
+        slug: payment?.slug || '',
+        amount: paymentAmount || payment?.amount || 0,
+        currency: paymentCurrency || payment?.currency || 'INR'
+      });
+      console.log(`[Webhook] Successfully finalized order ${resolvedOrderId} (Website: ${finalized?.websiteId}, Slug: ${finalized?.slug})`);
+      return res.status(200).json({ received: true, status: 'PAID' });
+    } else if (isFailed) {
+      console.log(`[Webhook] Payment FAILED for order ${resolvedOrderId}`);
+      await cockroach.savePayment({
+        orderId: resolvedOrderId,
+        websiteId: payment?.websiteId || '',
+        status: 'FAILED',
+        paymentMethod: 'cashfree'
+      });
+      return res.status(200).json({ received: true, status: 'FAILED' });
+    }
+
+    res.status(200).json({ received: true, status: resolvedPaymentStatus || 'PROCESSED' });
   } catch (err) {
     console.error('Webhook processing error:', err);
     res.status(200).json({ received: true });

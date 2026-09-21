@@ -1307,18 +1307,19 @@
       const deleteBtn = card.querySelector('.single-delete-btn');
       deleteBtn.addEventListener('click', async () => {
         const siteId = w.id;
-        const isPrem = w.isPremium;
+        const isPrem = Boolean(w.isPremium);
 
-        let confirmMsg = `Are you sure you want to permanently delete website "${siteId}"?\n\nThis action will delete tracking events, feedback, custom slugs, and stored Supabase & Cloudinary configurations.`;
+        let confirmMsg = `Are you sure you want to permanently delete website "${siteId}"?\n\nThis action will completely remove the website from Cloudflare D1, CockroachDB, R2, Supabase, Cloudinary, and delete all uploaded photos, audio, custom slugs, payments, and analytics.`;
         if (isPrem) {
-          confirmMsg = `⚠️ WARNING: Website "${siteId}" is a PREMIUM / PAID website!\n\nDeleting it will destroy paid records, custom URL mappings, and all analytics.\n\nAre you ABSOLUTELY sure you want to FORCE delete this site?`;
+          confirmMsg = `⚠️ WARNING: Website "${siteId}" is a PREMIUM / PAID website!\n\nThis will permanently destroy the paid website, custom slugs, photos, audio, payment history, and all analytics.\n\nAre you ABSOLUTELY sure you want to FORCE delete this site?`;
         }
 
         if (confirm(confirmMsg)) {
           try {
             deleteBtn.disabled = true;
             deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const res = await apiFetch(`/api/admin/website/${encodeURIComponent(siteId)}${isPrem ? '?force=true' : ''}`, { method: 'DELETE' });
+            let res = await apiFetch(`/api/admin/website/${encodeURIComponent(siteId)}?force=true`, { method: 'DELETE' });
+            
             if (res && res.success) {
               card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
               card.style.opacity = '0';

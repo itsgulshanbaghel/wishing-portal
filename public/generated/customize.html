@@ -5502,25 +5502,45 @@
           }
 
           // Store premium status, purchased plan, and slug
+          const serverPaymentStatus = (serverData.paymentStatus || (serverData.metadata && serverData.metadata.paymentStatus) || '').toLowerCase();
+          const isPendingPayment = serverPaymentStatus === 'pending_payment' || serverPaymentStatus === 'unpaid';
+
           const resolvedPlan = (serverData.plan || (serverData.metadata && serverData.metadata.plan) || '').toLowerCase().trim();
-          if (resolvedPlan) {
-            window.purchasedPlan = resolvedPlan;
-            sessionStorage.setItem(`purchased_plan_${websiteId}`, resolvedPlan);
-            localStorage.setItem(`purchased_plan_${websiteId}`, resolvedPlan);
-          }
-          if (serverData.isPremium || (serverData.metadata && serverData.metadata.isPremium) || (serverData.payment && (serverData.payment.status === 'PAID' || serverData.payment.status === 'COMPLETED')) || (resolvedPlan && resolvedPlan !== 'free')) {
+          const isGenuinelyPaid = !isPendingPayment && !!(
+            (serverData.payment && (serverData.payment.status === 'PAID' || serverData.payment.status === 'COMPLETED')) ||
+            (serverData.isPremium && resolvedPlan && resolvedPlan !== 'free')
+          );
+
+          if (isGenuinelyPaid) {
+            window._isExplicitUnpaid = false;
+            const finalPlan = (resolvedPlan && resolvedPlan !== 'free') ? resolvedPlan : 'pro';
+            window.purchasedPlan = finalPlan;
+            sessionStorage.setItem(`purchased_plan_${websiteId}`, finalPlan);
+            localStorage.setItem(`purchased_plan_${websiteId}`, finalPlan);
             window.isPremiumUser = true;
             window.isPremium = true;
             sessionStorage.setItem(`premium_${websiteId}`, 'true');
             localStorage.setItem(`premium_${websiteId}`, 'true');
-            if (resolvedPlan && resolvedPlan !== 'starter') {
+            if (finalPlan !== 'starter') {
               sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
               localStorage.setItem(`pro_plan_${websiteId}`, 'true');
-            } else if (resolvedPlan === 'starter') {
+            } else {
               sessionStorage.removeItem(`pro_plan_${websiteId}`);
               localStorage.removeItem(`pro_plan_${websiteId}`);
             }
+          } else {
+            window._isExplicitUnpaid = true;
+            window.purchasedPlan = null;
+            window.isPremiumUser = false;
+            window.isPremium = false;
+            sessionStorage.removeItem(`premium_${websiteId}`);
+            localStorage.removeItem(`premium_${websiteId}`);
+            sessionStorage.removeItem(`pro_plan_${websiteId}`);
+            localStorage.removeItem(`pro_plan_${websiteId}`);
+            sessionStorage.removeItem(`purchased_plan_${websiteId}`);
+            localStorage.removeItem(`purchased_plan_${websiteId}`);
           }
+
           if (serverData.slug || (serverData.metadata && serverData.metadata.slug)) {
             window._existingSlug = serverData.slug || serverData.metadata.slug;
           }
@@ -5648,7 +5668,7 @@
       };
 
       window.handlePinUnlock = async function(e) {
-        if (e) e.preventDefault();
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
         const input = document.getElementById('pinUnlockInput');
         const btn = document.getElementById('pinUnlockSubmitBtn');
         const errDiv = document.getElementById('pinUnlockError');
@@ -5657,7 +5677,7 @@
         if (!pin) return;
 
         const urlParams = new URLSearchParams(window.location.search);
-        const websiteId = urlParams.get('restore') || urlParams.get('view');
+        const websiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || urlParams.get('restore') || urlParams.get('view');
 
         if (btn) {
           btn.disabled = true;
@@ -5674,7 +5694,9 @@
           const data = await res.json();
           if (data && data.valid) {
             window._verifiedEditPin = pin;
-            localStorage.setItem('creator_pin_' + websiteId, pin);
+            if (websiteId) {
+              localStorage.setItem('creator_pin_' + websiteId, pin);
+            }
             const overlay = document.getElementById('pinUnlockOverlay');
             if (overlay) overlay.style.display = 'none';
             const checkoutPin = document.getElementById('checkoutEditPin');
@@ -5682,7 +5704,8 @@
           } else {
             if (errDiv) {
               errDiv.style.display = 'flex';
-              errDiv.querySelector('span').innerText = data.error || 'Incorrect Edit PIN. Please try again.';
+              const span = errDiv.querySelector('span');
+              if (span) span.innerText = data.error || 'Incorrect Edit PIN. Please try again.';
             }
             if (input) {
               input.focus();
@@ -5692,7 +5715,8 @@
         } catch (err) {
           if (errDiv) {
             errDiv.style.display = 'flex';
-            errDiv.querySelector('span').innerText = 'Connection error. Please try again.';
+            const span = errDiv.querySelector('span');
+            if (span) span.innerText = 'Connection error. Please try again.';
           }
         } finally {
           if (btn) {
@@ -5701,6 +5725,15 @@
           }
         }
       };
+
+      const pinUnlockFormEl = document.getElementById('pinUnlockForm');
+      if (pinUnlockFormEl) {
+        pinUnlockFormEl.addEventListener('submit', window.handlePinUnlock);
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        const f = document.getElementById('pinUnlockForm');
+        if (f) f.addEventListener('submit', window.handlePinUnlock);
+      });
 
       function loadCustomizationState() {
         try {
@@ -10006,27 +10039,30 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
-      window.isPurchasedWebsite = function () {
+      window.getWebsitePaidStatus = function () {
         const urlParams = new URLSearchParams(window.location.search);
         const websiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || urlParams.get('view') || urlParams.get('restore');
-        const currentPaidPlan = window.purchasedPlan || (websiteId ? sessionStorage.getItem(`purchased_plan_${websiteId}`) : null) || (websiteId ? localStorage.getItem(`purchased_plan_${websiteId}`) : null);
-        
-        const activeFeatures = typeof getActivePremiumFeatures === 'function' ? getActivePremiumFeatures() : [];
-        const hasProFeatures = activeFeatures.some(f => ['virtualCake', 'virtualHug', 'addMusicSection'].includes(f));
-        const requiresProUpgrade = (currentPaidPlan === 'starter' && hasProFeatures);
+        if (window._isExplicitUnpaid) {
+          return { isPaid: false, plan: null, websiteId: websiteId };
+        }
+        let currentPaidPlan = window.purchasedPlan || (websiteId ? sessionStorage.getItem(`purchased_plan_${websiteId}`) : null) || (websiteId ? localStorage.getItem(`purchased_plan_${websiteId}`) : null) || null;
+        if (currentPaidPlan) currentPaidPlan = currentPaidPlan.toLowerCase().trim();
+        if (currentPaidPlan === 'free') currentPaidPlan = null;
 
-        const isPaid = !requiresProUpgrade && !!(
-          window.isPremiumUser ||
-          window.isPremium ||
-          (websiteId && sessionStorage.getItem(`premium_${websiteId}`) === 'true') ||
-          (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
-          (websiteId && sessionStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
-          (websiteId && localStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
-          urlParams.get('_v') === 'c' ||
+        const isExplicitPaid = !window._isExplicitUnpaid && !!(
           urlParams.get('action') === 'payment-success' ||
-          (urlParams.get('src') === 'edit' && (currentPaidPlan || window.isPremiumUser || window.isPremium))
+          (currentPaidPlan && currentPaidPlan !== 'free' && ((websiteId && sessionStorage.getItem(`premium_${websiteId}`) === 'true') || (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true')))
         );
-        return isPaid;
+
+        return {
+          isPaid: isExplicitPaid,
+          plan: isExplicitPaid ? (currentPaidPlan || 'pro') : null,
+          websiteId: websiteId
+        };
+      };
+
+      window.isPurchasedWebsite = function () {
+        return window.getWebsitePaidStatus().isPaid;
       };
 
       window.updateHubSummary = function () {
@@ -10056,7 +10092,12 @@
         }
 
         // Dynamically configure Stage 1, Stage 2, and Stage 3 buttons for purchased vs new websites
-        const isPaid = typeof window.isPurchasedWebsite === 'function' && window.isPurchasedWebsite();
+        const paidStatus = typeof window.getWebsitePaidStatus === 'function' ? window.getWebsitePaidStatus() : { isPaid: false, plan: null };
+        const isPaid = paidStatus.isPaid;
+        const currentPlanKey = (paidStatus.plan || 'pro').toLowerCase();
+        const planDisplayNames = { starter: 'Starter', pro: 'Pro', pro_plus: 'Pro+', forever: 'Infinity' };
+        const currentPlanTitle = planDisplayNames[currentPlanKey] || 'Pro';
+
         const hubPub = document.getElementById('hubPublishBtn');
         const hubBadge = document.querySelector('#stage2PublishHub .hub-badge');
         const hubTitle = document.querySelector('#stage2PublishHub .hub-title');
@@ -10065,22 +10106,19 @@
         const fpPub = document.getElementById('proceedToPublishBtn');
 
         if (isPaid) {
-          if (hubBadge) hubBadge.innerHTML = '✨ STEP 2 · REVIEW &amp; UPDATE';
-          if (hubTitle) hubTitle.textContent = 'Review & Update Your Surprise';
-          if (hubSub) hubSub.textContent = 'Double-check your updated details below, launch full-screen preview to test your website, or save & update your live website.';
+          if (hubBadge) hubBadge.innerHTML = '✨ STEP 2 OF 3 · REVIEW &amp; UPDATE';
+          if (hubTitle) hubTitle.textContent = 'Review & Finalize Your Surprise';
+          if (hubSub) hubSub.textContent = `Your website is active on the ${currentPlanTitle} plan. Double-check your details below, launch full-screen preview to test, or continue to review plans, upgrade, or save updates.`;
           if (hubPub) {
-            hubPub.innerHTML = '<span>🚀 Save &amp; Update Website</span> <i class="fas fa-check-circle" style="margin-left: 6px;"></i>';
-            hubPub.onclick = (e) => {
-              if (e) e.preventDefault();
-              window.handleFinalPay();
-            };
+            hubPub.innerHTML = '<span>🚀 Continue to Plan &amp; Update</span> <i class="fas fa-arrow-right" style="margin-left: 6px;"></i>';
+            hubPub.onclick = () => showStage(3);
           }
-          if (genBtnText) genBtnText.textContent = 'Next: Review & Update';
+          if (genBtnText) genBtnText.textContent = 'Next: Review & Plan';
           if (fpPub) {
-            fpPub.innerHTML = '<span>🚀 Save &amp; Update Website</span>';
+            fpPub.innerHTML = '<span>🚀 Continue to Plan &amp; Update</span>';
             fpPub.onclick = () => {
               showScreen(1);
-              window.handleFinalPay();
+              showStage(3);
             };
           }
         } else {
@@ -10945,31 +10983,26 @@
         const phone = phoneInput ? phoneInput.value.trim() : '';
 
         try {
-          const currentPaidPlan = window.purchasedPlan || (websiteId ? sessionStorage.getItem(`purchased_plan_${websiteId}`) : null);
-          const activeFeatures = typeof getActivePremiumFeatures === 'function' ? getActivePremiumFeatures() : [];
-          const hasProFeatures = activeFeatures.some(f => ['virtualCake', 'virtualHug', 'addMusicSection'].includes(f));
-          const requiresProUpgrade = (currentPaidPlan === 'starter' && hasProFeatures);
+          const targetPlan = (window.activePlan && window.activePlan.plan) ? window.activePlan.plan : (activePlan ? activePlan.plan : 'pro');
+          const paidStatus = typeof window.getWebsitePaidStatus === 'function' ? window.getWebsitePaidStatus() : { isPaid: false, plan: null };
+          const isFreeUpdate = !!(paidStatus.isPaid && paidStatus.plan && (paidStatus.plan === targetPlan));
 
-          const isAlreadyPaid = !requiresProUpgrade && !!(
-            window.isPremiumUser ||
-            window.isPremium ||
-            (websiteId && sessionStorage.getItem(`premium_${websiteId}`) === 'true') ||
-            (websiteId && localStorage.getItem(`premium_${websiteId}`) === 'true') ||
-            (websiteId && sessionStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
-            (websiteId && localStorage.getItem(`pro_plan_${websiteId}`) === 'true') ||
-            urlParams.get('_v') === 'c' ||
-            urlParams.get('action') === 'payment-success'
-          );
+          if (email) {
+            try { localStorage.setItem('checkout_email', email); } catch(e){}
+          }
+          if (phone) {
+            try { localStorage.setItem('checkout_phone', phone); } catch(e){}
+          }
 
           if (btn) {
-            btn.innerHTML = isAlreadyPaid
+            btn.innerHTML = isFreeUpdate
               ? '<i class="fas fa-spinner fa-spin"></i> Updating Website...'
               : '<i class="fas fa-spinner fa-spin"></i> Saving Website & Media...';
             btn.disabled = true;
           }
 
-          // 1. SAVE EXACTLY ONCE WITH APPROPRIATE STATUS
-          const saveRes = await saveWebsiteConfigToServer(isAlreadyPaid, websiteId);
+          // 1. SAVE TO SERVER: isPremium is true only for free update on already paid plan
+          const saveRes = await saveWebsiteConfigToServer(isFreeUpdate, websiteId);
           if (!saveRes || !saveRes.success || !saveRes.id) {
             alert('Website Error: Could not save website draft to server before payment. Payment checkout has been aborted. Please check your internet connection and try again.');
             if (btn) {
@@ -10983,18 +11016,24 @@
           window._activeWebsiteId = websiteId;
           localStorage.setItem('activeCustomizerWebsiteId', websiteId);
 
-          // BYPASS PAYMENT for already-paid websites: go directly to share page without redundant second save
-          if (isAlreadyPaid || saveRes.slug) {
+          // Free update flow for already paid website keeping same plan:
+          if (isFreeUpdate) {
             sessionStorage.setItem(`premium_${websiteId}`, 'true');
             localStorage.setItem(`premium_${websiteId}`, 'true');
-            sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
-            localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            sessionStorage.setItem(`purchased_plan_${websiteId}`, targetPlan);
+            localStorage.setItem(`purchased_plan_${websiteId}`, targetPlan);
+            if (targetPlan !== 'starter') {
+              sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
+              localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            }
             window.isPremium = true;
             window.isPremiumUser = true;
+            window.purchasedPlan = targetPlan;
             window.location.href = `/generated/share.html?view=${websiteId}&payment=success&updated=true`;
             return;
           }
 
+          // Upgrade or New Payment flow:
           if (btn) {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening Payment Gateway...';
           }
@@ -11003,12 +11042,17 @@
           if (isLocalhost) {
             sessionStorage.setItem('isPremium', 'true');
             sessionStorage.setItem(`premium_${websiteId}`, 'true');
-            sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            sessionStorage.setItem(`purchased_plan_${websiteId}`, targetPlan);
             localStorage.setItem('isPremium', 'true');
             localStorage.setItem(`premium_${websiteId}`, 'true');
-            localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            localStorage.setItem(`purchased_plan_${websiteId}`, targetPlan);
+            if (targetPlan !== 'starter') {
+              sessionStorage.setItem(`pro_plan_${websiteId}`, 'true');
+              localStorage.setItem(`pro_plan_${websiteId}`, 'true');
+            }
             window.isPremium = true;
             window.isPremiumUser = true;
+            window.purchasedPlan = targetPlan;
             window.location.href = `/generated/share.html?view=${websiteId}&payment=success`;
             return;
           }
@@ -11016,7 +11060,7 @@
           const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
           const reqBody = {
             websiteId,
-            plan: planToValidate,
+            plan: targetPlan,
             email,
             phone,
             gateway: window.selectedGateway || undefined,
@@ -11088,16 +11132,25 @@
           const data = await res.json();
 
           if (data.status === 'PAID' || data.status === 'success' || data.status === 'completed') {
+            const confirmedPlan = (data.plan || 'pro').toLowerCase();
             sessionStorage.setItem('isPremium', 'true');
             localStorage.setItem('isPremium', 'true');
             if (targetWebsiteId) {
               sessionStorage.setItem(`premium_${targetWebsiteId}`, 'true');
               localStorage.setItem(`premium_${targetWebsiteId}`, 'true');
-              sessionStorage.setItem(`pro_plan_${targetWebsiteId}`, 'true');
-              localStorage.setItem(`pro_plan_${targetWebsiteId}`, 'true');
+              sessionStorage.setItem(`purchased_plan_${targetWebsiteId}`, confirmedPlan);
+              localStorage.setItem(`purchased_plan_${targetWebsiteId}`, confirmedPlan);
+              if (confirmedPlan !== 'starter') {
+                sessionStorage.setItem(`pro_plan_${targetWebsiteId}`, 'true');
+                localStorage.setItem(`pro_plan_${targetWebsiteId}`, 'true');
+              } else {
+                sessionStorage.removeItem(`pro_plan_${targetWebsiteId}`);
+                localStorage.removeItem(`pro_plan_${targetWebsiteId}`);
+              }
             }
             window.isPremium = true;
             window.isPremiumUser = true;
+            window.purchasedPlan = confirmedPlan;
             // Website was already saved before payment; server marks it premium in finalizePaymentSuccess
 
             const overlay = document.getElementById('paymentVerificationOverlay');
@@ -11107,7 +11160,7 @@
                   <i class="fas fa-check" style="color:white; font-size:28px;"></i>
                 </div>
                 <h3 style="font-size:20px; font-weight:800; color:#10b981; margin-bottom: 6px;">Payment Confirmed!</h3>
-                <p style="font-size:14px; color:#ccc;">Your website is upgraded to PRO! Redirecting to share page...</p>
+                <p style="font-size:14px; color:#ccc;">Your website is upgraded & published! Redirecting to share page...</p>
               `;
             }
 
@@ -11119,8 +11172,13 @@
           } else {
             const isExplicitDrop = ['CANCELLED', 'FAILED', 'USER_DROPPED', 'TERMINATED', 'EXPIRED'].includes(String(data.status).toUpperCase());
             pollCount++;
-            if (!isExplicitDrop && pollCount < 4) {
-              setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 1500);
+            if (!isExplicitDrop && pollCount < 10) {
+              const overlay = document.getElementById('paymentVerificationOverlay');
+              if (overlay) {
+                const subText = overlay.querySelector('p');
+                if (subText) subText.textContent = `Confirming transaction with gateway (attempt ${pollCount} of 10)...`;
+              }
+              setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 2000);
             } else {
               const overlay = document.getElementById('paymentVerificationOverlay');
               if (overlay) overlay.style.display = 'none';
@@ -11142,8 +11200,13 @@
         } catch (e) {
           console.error('Payment status check error:', e);
           pollCount++;
-          if (pollCount < 4) {
-            setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 1500);
+          if (pollCount < 10) {
+            const overlay = document.getElementById('paymentVerificationOverlay');
+            if (overlay) {
+              const subText = overlay.querySelector('p');
+              if (subText) subText.textContent = `Connecting to payment gateway (attempt ${pollCount} of 10)...`;
+            }
+            setTimeout(() => pollPaymentStatus(orderId, targetWebsiteId), 2000);
           } else {
             const overlay = document.getElementById('paymentVerificationOverlay');
             if (overlay) overlay.style.display = 'none';
@@ -11196,6 +11259,9 @@
         }
       }
 
+      const PLAN_RANKS = { starter: 1, pro: 2, pro_plus: 3, forever: 4 };
+      const PLAN_DISPLAY_NAMES = { starter: 'Starter', pro: 'Pro', pro_plus: 'Pro+', forever: 'Infinity' };
+
       function updatePricingUI() {
         const switcher = document.getElementById('planSwitcher');
         if (!switcher) return;
@@ -11207,6 +11273,9 @@
         else if (selectedCurrency === 'AUD') symbol = 'A$';
         else if (selectedCurrency === 'AED') symbol = 'AED ';
         else if (selectedCurrency === 'PKR') symbol = 'PKR ';
+
+        const paidStatus = typeof window.getWebsitePaidStatus === 'function' ? window.getWebsitePaidStatus() : { isPaid: false, plan: null };
+        const activePaidPlanKey = paidStatus.isPaid ? (paidStatus.plan || 'pro').toLowerCase() : null;
 
         pills.forEach(pill => {
           const planKey = pill.dataset.plan;
@@ -11252,9 +11321,34 @@
           pill.dataset.computedOrigPrice = orig;
           const priceSpan = pill.querySelector('.pill-price');
           if (priceSpan) priceSpan.textContent = `${symbol}${p}`;
+
+          // Active Plan Badge on pill
+          let activeBadge = pill.querySelector('.pill-active-badge');
+          if (activePaidPlanKey && planKey === activePaidPlanKey) {
+            if (!activeBadge) {
+              activeBadge = document.createElement('span');
+              activeBadge.className = 'pill-active-badge';
+              activeBadge.setAttribute('style', 'position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; font-size: 0.55rem; font-weight: 900; padding: 2px 7px; border-radius: 10px; letter-spacing: 0.3px; white-space: nowrap; z-index: 2;');
+              activeBadge.textContent = 'ACTIVE';
+              pill.appendChild(activeBadge);
+            }
+          } else if (activeBadge) {
+            activeBadge.remove();
+          }
         });
 
-        const selectedPill = switcher.querySelector('.plan-pill.sel') || pills[1];
+        // If paid and no pill selected, select active paid plan pill by default
+        let selectedPill = switcher.querySelector('.plan-pill.sel');
+        if (!selectedPill) {
+          if (activePaidPlanKey) {
+            selectedPill = switcher.querySelector(`.plan-pill[data-plan="${activePaidPlanKey}"]`);
+          }
+          if (!selectedPill) {
+            selectedPill = pills[1] || pills[0];
+          }
+          if (selectedPill) selectedPill.classList.add('sel');
+        }
+
         if (selectedPill) {
           const planKey = selectedPill.dataset.plan;
           const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 79 : 1.99);
@@ -11274,28 +11368,23 @@
           const cmpSub = document.getElementById('cmpSubtitle');
           if (cmpSub) cmpSub.textContent = `Keep the moment alive for ${activePlan.label}`;
 
-          const validityChip = document.getElementById('validityChip');
-          if (validityChip) validityChip.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Active ${activePlan.label} · 100% Ad-Free`;
-
           const featValidityText = document.getElementById('featValidityText');
           if (featValidityText) featValidityText.textContent = `📅 Guaranteed Active Hosting for ${activePlan.label}`;
 
-          let planTitle = 'Pro';
-          if (planKey === 'starter') planTitle = 'Starter';
-          else if (planKey === 'pro_plus') planTitle = 'Pro+';
-          else if (planKey === 'forever') planTitle = 'Infinity';
-
-          const isPurchased = typeof window.isPurchasedWebsite === 'function' && window.isPurchasedWebsite();
+          const planTitle = PLAN_DISPLAY_NAMES[planKey] || 'Pro';
           const finalPayBtn = document.getElementById('finalPayBtn');
           const proceedBtn = document.getElementById('proceedToPayBtn');
           const finalPayBtnText = document.getElementById('finalPayBtnText');
           const proceedToPayBtnText = document.getElementById('proceedToPayBtnText');
+          const validityChip = document.getElementById('validityChip');
+          const s3Title = document.querySelector('#stage3Pricing .step2-title');
+          const s3Sub = document.querySelector('#stage3Pricing .step2-sub');
+          const s3Badge = document.querySelector('#stage3Pricing .step2-header span');
 
-          if (isPurchased) {
-            if (finalPayBtnText) finalPayBtnText.textContent = `Save & Update Website`;
-            if (proceedToPayBtnText) proceedToPayBtnText.textContent = `Save & Update Website`;
+          if (paidStatus.isPaid && activePaidPlanKey && planKey === activePaidPlanKey) {
+            // Free update of current active plan
             if (proceedBtn) {
-              proceedBtn.innerHTML = `<i class="fas fa-check-circle"></i> <span id="proceedToPayBtnText">Save & Update Website</span>`;
+              proceedBtn.innerHTML = `<i class="fas fa-check-circle"></i> <span id="proceedToPayBtnText">Save &amp; Update Website (${planTitle} Active)</span>`;
               proceedBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
               proceedBtn.onclick = (e) => {
                 if (e) e.preventDefault();
@@ -11303,17 +11392,48 @@
               };
             }
             if (finalPayBtn) {
-              finalPayBtn.innerHTML = `<i class="fas fa-check-circle" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Save & Update Website</span>`;
+              finalPayBtn.innerHTML = `<i class="fas fa-check-circle" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Save &amp; Update Website</span>`;
             }
-            const s3Title = document.querySelector('#stage3Pricing .step2-title');
-            const s3Sub = document.querySelector('#stage3Pricing .step2-sub');
-            const s3Badge = document.querySelector('#stage3Pricing .step2-header span');
+            if (validityChip) validityChip.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Current Plan: ${planTitle} (${activePlan.label}) · 100% Ad-Free`;
             if (s3Title) s3Title.textContent = 'Save Updates to Your Live Website';
-            if (s3Sub) s3Sub.textContent = `Your website has an active plan (${activePlan.label}). Click below to save your changes immediately without any extra charge.`;
-            if (s3Badge) s3Badge.textContent = '✨ ACTIVE WEBSITE';
+            if (s3Sub) s3Sub.textContent = `Your website is active on the ${planTitle} plan. Click below to save your changes immediately without any extra charge, or select a higher tier above to upgrade.`;
+            if (s3Badge) s3Badge.textContent = '✨ ACTIVE PLAN · FREE UPDATES';
+          } else if (paidStatus.isPaid && activePaidPlanKey && (PLAN_RANKS[planKey] || 0) > (PLAN_RANKS[activePaidPlanKey] || 0)) {
+            // Plan Upgrade!
+            if (proceedBtn) {
+              proceedBtn.innerHTML = `<i class="fas fa-crown"></i> <span id="proceedToPayBtnText">Upgrade to ${planTitle} – ${symbol}${p}</span>`;
+              proceedBtn.style.background = 'linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%)';
+              proceedBtn.onclick = (e) => window.revealInlineCheckout(e);
+            }
+            if (finalPayBtn) {
+              finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} &amp; Upgrade to ${planTitle}</span>`;
+            }
+            if (validityChip) validityChip.innerHTML = `<i class="fas fa-crown" style="color: #7b5df6;"></i> Upgrade to ${planTitle} · Active for ${activePlan.label}`;
+            if (s3Title) s3Title.textContent = `Upgrade to ${planTitle}`;
+            const curTitle = PLAN_DISPLAY_NAMES[activePaidPlanKey] || 'Starter';
+            if (s3Sub) s3Sub.textContent = `Upgrade from your current ${curTitle} plan to ${planTitle} to unlock longer validity (${activePlan.label}) and full features.`;
+            if (s3Badge) s3Badge.textContent = '👑 PLAN UPGRADE';
+          } else if (paidStatus.isPaid && activePaidPlanKey && (PLAN_RANKS[planKey] || 0) < (PLAN_RANKS[activePaidPlanKey] || 0)) {
+            // Selected a plan lower than active
+            const curTitle = PLAN_DISPLAY_NAMES[activePaidPlanKey] || 'Pro';
+            if (proceedBtn) {
+              proceedBtn.innerHTML = `<i class="fas fa-arrow-left"></i> <span id="proceedToPayBtnText">Switch to Active Plan (${curTitle})</span>`;
+              proceedBtn.style.background = 'linear-gradient(135deg, #64748b 0%, #475569 100%)';
+              proceedBtn.onclick = () => {
+                const curPill = switcher.querySelector(`.plan-pill[data-plan="${activePaidPlanKey}"]`);
+                if (curPill) {
+                  switcher.querySelectorAll('.plan-pill').forEach(p => p.classList.remove('sel'));
+                  curPill.classList.add('sel');
+                  updatePricingUI();
+                }
+              };
+            }
+            if (validityChip) validityChip.innerHTML = `<i class="fas fa-info-circle" style="color: #64748b;"></i> Active Plan: ${curTitle}`;
+            if (s3Title) s3Title.textContent = `Current Plan is ${curTitle}`;
+            if (s3Sub) s3Sub.textContent = `Your website is already active on the higher ${curTitle} plan. Select ${curTitle} to save updates for free, or choose a higher plan to upgrade.`;
+            if (s3Badge) s3Badge.textContent = 'ℹ️ ACTIVE PLAN IS HIGHER';
           } else {
-            if (finalPayBtnText) finalPayBtnText.textContent = `Pay ${symbol}${p} Securely (${planTitle})`;
-            if (proceedToPayBtnText) proceedToPayBtnText.textContent = `Continue with ${planTitle} – ${symbol}${p}`;
+            // New website purchase
             if (proceedBtn) {
               proceedBtn.innerHTML = `<i class="fas fa-crown"></i> <span id="proceedToPayBtnText">Continue with ${planTitle} – ${symbol}${p}</span>`;
               proceedBtn.style.background = 'linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%)';
@@ -11322,16 +11442,13 @@
             if (finalPayBtn) {
               finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} Securely (${planTitle})</span>`;
             }
-            const s3Title = document.querySelector('#stage3Pricing .step2-title');
-            const s3Sub = document.querySelector('#stage3Pricing .step2-sub');
-            const s3Badge = document.querySelector('#stage3Pricing .step2-header span');
+            if (validityChip) validityChip.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Active ${activePlan.label} · 100% Ad-Free`;
             if (s3Title) s3Title.textContent = 'Make Your Surprise Truly Unforgettable';
             if (s3Sub) s3Sub.textContent = 'Select how long you want your personalized surprise website to remain live, interactive, and ad-free.';
             if (s3Badge) s3Badge.textContent = '✨ SELECT YOUR PLAN';
           }
 
-
-          // Update Custom URL Feature item UI according to plan
+          // Update feature items UI
           const urlRow = document.getElementById('featCustomUrl');
           if (urlRow) {
             const icon = urlRow.querySelector('i');
@@ -11345,7 +11462,6 @@
             }
           }
 
-          // Update Virtual Cake Feature item UI according to plan
           const cakeRow = document.getElementById('featVirtualCake');
           if (cakeRow) {
             const icon = cakeRow.querySelector('i');
@@ -11359,7 +11475,6 @@
             }
           }
 
-          // Update Virtual Hug Feature item UI according to plan
           const hugRow = document.getElementById('featVirtualHug');
           if (hugRow) {
             const icon = hugRow.querySelector('i');
@@ -11389,9 +11504,28 @@
         const proceedBtn = document.getElementById('proceedToPayBtn');
         if (inlineCheckout) {
           inlineCheckout.style.display = 'block';
+
+          // Pre-fill PIN if creator PIN is stored
+          const urlParams = new URLSearchParams(window.location.search);
+          const websiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || urlParams.get('view') || urlParams.get('restore');
+          const cachedPin = (websiteId ? localStorage.getItem('creator_pin_' + websiteId) : null) || window._verifiedEditPin || null;
+          const pinInput = document.getElementById('checkoutEditPin');
+          if (pinInput && cachedPin && !pinInput.value) {
+            pinInput.value = cachedPin;
+          }
+
+          // Pre-fill email and phone if stored
+          const emailInput = document.getElementById('checkoutEmail');
+          const phoneInput = document.getElementById('checkoutPhone');
+          if (emailInput && !emailInput.value) {
+            emailInput.value = localStorage.getItem('checkout_email') || '';
+          }
+          if (phoneInput && !phoneInput.value) {
+            phoneInput.value = localStorage.getItem('checkout_phone') || '';
+          }
+
           setTimeout(() => {
             inlineCheckout.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            const pinInput = document.getElementById('checkoutEditPin');
             if (pinInput && !pinInput.value) {
               setTimeout(() => pinInput.focus(), 250);
             }
@@ -11421,12 +11555,8 @@
         const hubPub = document.getElementById('hubPublishBtn');
         if (hubPub) {
           hubPub.onclick = (e) => {
-            if (typeof window.isPurchasedWebsite === 'function' && window.isPurchasedWebsite()) {
-              if (e) e.preventDefault();
-              window.handleFinalPay();
-            } else {
-              showStage(3);
-            }
+            if (e) e.preventDefault();
+            showStage(3);
           };
         }
 
@@ -11438,11 +11568,7 @@
         if (fpPub) {
           fpPub.onclick = () => {
             showScreen(1);
-            if (typeof window.isPurchasedWebsite === 'function' && window.isPurchasedWebsite()) {
-              window.handleFinalPay();
-            } else {
-              showStage(2);
-            }
+            showStage(3);
           };
         }
 
@@ -11748,12 +11874,14 @@
 
             // On-the-fly filtering to support older custom URLs purchased before this change:
             const urlParams = new URLSearchParams(window.location.search);
-            const isPremium = urlParams.get("_v") === "c" || urlParams.get("action") === "payment-success" || localStorage.getItem('isPremium') === 'true' || (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') || window.__DISABLE_NUDGE__;
+            const isPremium = urlParams.get("_v") === "c" || urlParams.get("action") === "payment-success" || (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') || (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') || window.__DISABLE_NUDGE__;
             if (isPremium) {
               window.isPremium = true;
               window.isPremiumUser = true;
-              localStorage.setItem('isPremium', 'true');
-              if (viewId) localStorage.setItem(`premium_${viewId}`, 'true');
+              if (viewId) {
+                localStorage.setItem(`premium_${viewId}`, 'true');
+                sessionStorage.setItem(`premium_${viewId}`, 'true');
+              }
               // 1. Inject CSS to hide all possible CTA sections instantly
               storedHtml = storedHtml.replace('</head>', '<style>#magic-cta-section, .greeter-cta-section, .festival-cta-section { display: none !important; }</style></head>');
               // 2. Prevent the nudge popup timer function from scheduling

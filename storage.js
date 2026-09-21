@@ -602,6 +602,10 @@ async function listSupabaseFilesDetailed() {
  * Delete a website JSON config and all associated media (images, audio, QR codes, OG images)
  * from Cloudflare R2 and Supabase Storage
  */
+/**
+ * Delete a website JSON config and all associated media (images, audio, QR codes, OG images)
+ * from Cloudflare R2, Supabase Storage, and local caches
+ */
 async function deleteWebsiteConfig(id) {
   if (!id) return { r2Deleted: false, freeDeleted: false, premiumDeleted: false, deleted: false, mediaFilesPurged: 0 };
   const rawId = String(id).replace(/\.json$/i, '').trim();
@@ -610,17 +614,42 @@ async function deleteWebsiteConfig(id) {
 
   // 1. Inspect the website config to discover any uploaded photos, images, or audio files
   const referencedMediaFiles = new Set();
+  const referencedCloudinaryIds = new Set();
+
   try {
-    const config = await readWebsiteConfig(rawId);
+    let config = await readWebsiteConfig(rawId);
+    // If not found in R2/Supabase, check D1 or Cockroach for metadata
+    if (!config) {
+      try {
+        const d1 = require('./d1');
+        if (d1.isD1Configured) {
+          const rec = await d1.getRecord(rawId);
+          if (rec && rec.metadata) {
+            config = typeof rec.metadata === 'string' ? JSON.parse(rec.metadata) : rec.metadata;
+          }
+        }
+      } catch (_) {}
+    }
+
     if (config) {
       const configStr = typeof config === 'string' ? config : JSON.stringify(config);
-      // Regex to find media paths in URLs or relative paths: free/<file> or premium/<file>
+
+      // Regex to find R2 / Supabase media paths: free/<file> or premium/<file>
       const mediaMatches = configStr.matchAll(/(?:storage\/v1\/object\/public\/media\/|media\/|https?:\/\/[^\/]+\/)?(free|premium)\/([a-zA-Z0-9_.-]+\.(?:png|jpg|jpeg|webp|gif|svg|mp3|wav|ogg|m4a|mp4|webm|json))/gi);
       for (const m of mediaMatches) {
         const folder = m[1].toLowerCase();
         const fname = m[2];
         if (fname !== fileName && fname !== `${rawId}.json`) {
           referencedMediaFiles.add(`${folder}/${fname}`);
+        }
+      }
+
+      // Regex to find Cloudinary asset public IDs or paths
+      const cloudMatches = configStr.matchAll(/res\.cloudinary\.com\/[^/]+\/(?:image|video|raw)\/upload\/(?:v\d+\/)?([^"'\s?#]+)/gi);
+      for (const cm of cloudMatches) {
+        if (cm[1]) {
+          const publicId = cm[1].replace(/\.[^/.]+$/, ''); // remove extension
+          referencedCloudinaryIds.add(publicId);
         }
       }
     }
@@ -638,9 +667,10 @@ async function deleteWebsiteConfig(id) {
       } catch (_) {}
       try {
         await r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: `${folder}/${rawId}` }));
+        results.r2Deleted = true;
       } catch (_) {}
 
-      // Search & purge associated assets (e.g. qr_*, og_*) matching rawId
+      // Search & purge associated assets (e.g. qr_*, og_*, photos) matching rawId
       try {
         const objs = await listR2Objects(`${folder}/`);
         const matchingAssets = objs.filter(o => o.Key && o.Key.includes(rawId) && o.Key !== `${folder}/${fileName}`);
@@ -743,6 +773,37 @@ async function deleteWebsiteConfig(id) {
     purgeFromSupabase(supabaseFree, 'free'),
     purgeFromSupabase(supabasePremium, 'premium')
   ]);
+
+  // 5. Purge any discovered Cloudinary media
+  if (referencedCloudinaryIds.size > 0 && cloudinary) {
+    for (const cId of referencedCloudinaryIds) {
+      try {
+        await Promise.allSettled([
+          cloudinary.uploader.destroy(cId, { resource_type: 'image' }),
+          cloudinary.uploader.destroy(cId, { resource_type: 'video' }),
+          cloudinary.uploader.destroy(cId, { resource_type: 'raw' })
+        ]);
+        results.mediaFilesPurged++;
+      } catch (_) {}
+    }
+  }
+
+  // 6. Purge local disk configs & uploads matching rawId
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const configPath = path.join(__dirname, 'configs', `${rawId}.json`);
+    if (fs.existsSync(configPath)) {
+      try { fs.unlinkSync(configPath); } catch (_) {}
+    }
+    const uploadsDir = path.join(__dirname, 'public', 'uploads');
+    if (fs.existsSync(uploadsDir)) {
+      const files = fs.readdirSync(uploadsDir);
+      files.filter(f => f.includes(rawId)).forEach(f => {
+        try { fs.unlinkSync(path.join(uploadsDir, f)); results.mediaFilesPurged++; } catch (_) {}
+      });
+    }
+  } catch (_) {}
 
   results.freeDeleted = freeDel;
   results.premiumDeleted = premDel;
