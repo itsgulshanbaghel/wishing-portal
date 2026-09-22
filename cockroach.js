@@ -992,7 +992,7 @@ async function getDashboardAnalytics(days = 7) {
           osDistribution: { Android: 62, iOS: 21, Windows: 14, MacOS: 3 },
           eventTypeDistribution: { birthday: 70, proposal: 20, anniversary: 10 },
           websitesByEventType: {},
-          hourlyDistribution: {},
+          hourlyDistribution: [],
           pageViewsByPage: {},
           refererDistribution: {},
           exitPages: {},
