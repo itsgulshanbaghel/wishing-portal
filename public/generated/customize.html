@@ -5024,6 +5024,32 @@
         });
       }
 
+      // Recursive utility to cleanly replace blob URLs across all keys/nested arrays in state objects
+      function deepReplaceBlobUrl(target, targetBlob, replacementUrl) {
+        if (!target || !targetBlob || !replacementUrl) return false;
+        let replaced = false;
+        if (Array.isArray(target)) {
+          for (let i = 0; i < target.length; i++) {
+            if (typeof target[i] === 'string' && target[i].includes(targetBlob)) {
+              target[i] = target[i].split(targetBlob).join(replacementUrl);
+              replaced = true;
+            } else if (typeof target[i] === 'object' && target[i] !== null) {
+              if (deepReplaceBlobUrl(target[i], targetBlob, replacementUrl)) replaced = true;
+            }
+          }
+        } else if (typeof target === 'object' && target !== null) {
+          for (const key of Object.keys(target)) {
+            if (typeof target[key] === 'string' && target[key].includes(targetBlob)) {
+              target[key] = target[key].split(targetBlob).join(replacementUrl);
+              replaced = true;
+            } else if (typeof target[key] === 'object' && target[key] !== null) {
+              if (deepReplaceBlobUrl(target[key], targetBlob, replacementUrl)) replaced = true;
+            }
+          }
+        }
+        return replaced;
+      }
+
       // ══════════ INDEXEDDB PERSISTENT MEDIA STORAGE MANAGER ══════════
       const MediaStorageManager = {
         dbName: 'greeter_media_cache',
@@ -5150,17 +5176,10 @@
             const freshBlob = URL.createObjectURL(item.file);
             window._pendingLocalFiles.set(freshBlob, item.file);
 
-            // Replace oldBlob with freshBlob in customData
+            // Replace oldBlob with freshBlob in customData (all keys: images, text, audio, mediaUrl, etc.)
             if (typeof customData !== 'undefined') {
               for (let [featId, featVal] of customData.entries()) {
-                if (featVal && Array.isArray(featVal.images)) {
-                  if (featVal.images.includes(oldBlob)) {
-                    featVal.images = featVal.images.map(u => (u === oldBlob ? freshBlob : u));
-                    stateChanged = true;
-                  }
-                }
-                if (featVal && featVal.text === oldBlob) {
-                  featVal.text = freshBlob;
+                if (deepReplaceBlobUrl(featVal, oldBlob, freshBlob)) {
                   stateChanged = true;
                 }
               }
@@ -5248,6 +5267,7 @@
 
             const xhr = new XMLHttpRequest();
             xhr.open('POST', `${apiBaseUrl}/api/upload-media`, true);
+            xhr.timeout = 45000; // 45s timeout
 
             xhr.upload.onprogress = (evt) => {
               if (evt.lengthComputable) {
@@ -5268,18 +5288,23 @@
                   reject(new Error('Invalid response from upload server'));
                 }
               } else {
-                reject(new Error(`Upload failed for "${fileName}" (HTTP ${xhr.status}).`));
+                let errText = '';
+                try {
+                  const errJson = JSON.parse(xhr.responseText);
+                  errText = errJson.error || errJson.message;
+                } catch (_) {}
+                reject(new Error(errText || `Upload failed for "${fileName}" (HTTP ${xhr.status}).`));
               }
             };
 
             xhr.onerror = () => {
               reject(new Error(currentLang === 'hi'
                 ? `नेटवर्क त्रुटि: "${fileName}" अपलोड नहीं हो सका। कृपया इंटरनेट जांचें।`
-                : `Network error: Could not upload "${fileName}". Please check your internet.`));
+                : `Network error: Could not upload "${fileName}". Please check your internet connection.`));
             };
 
             xhr.ontimeout = () => {
-              reject(new Error(`Upload timed out for "${fileName}".`));
+              reject(new Error(`Upload timed out for "${fileName}". Please check your connection and retry.`));
             };
 
             xhr.send(formData);
@@ -5287,6 +5312,7 @@
         };
 
         return new Promise((resolveFinal, rejectFinal) => {
+          window._uploadedMediaMap = window._uploadedMediaMap || new Map();
           const runQueue = async () => {
             if (errorBox) errorBox.style.display = 'none';
             if (actionsEl) actionsEl.style.display = 'none';
@@ -5312,26 +5338,29 @@
                   const result = await uploadSingleFile(blobUrl, file, currentIndex);
                   const { cloudUrl } = result;
 
-                  // Replace in customData
+                  window._uploadedMediaMap.set(blobUrl, cloudUrl);
+
+                  // 1. Deep replace in customData (all keys: images, text, audio, mediaUrl, etc.)
                   if (typeof customData !== 'undefined') {
                     for (let [featId, featVal] of customData.entries()) {
-                      if (featVal && Array.isArray(featVal.images)) {
-                        featVal.images = featVal.images.map(u => (u === blobUrl ? cloudUrl : u));
-                      }
-                      if (featVal && featVal.text === blobUrl) {
-                        featVal.text = cloudUrl;
-                      }
+                      deepReplaceBlobUrl(featVal, blobUrl, cloudUrl);
                     }
                   }
 
-                  // Replace in preview document
+                  // 2. Deep replace in preview document (images, audios, videos, styles, attributes)
                   if (typeof getIframeDocument === 'function') {
                     const doc = getIframeDocument();
                     if (doc) {
-                      const imgs = doc.querySelectorAll(`img[src*="${blobUrl}"]`);
-                      imgs.forEach(img => { img.src = cloudUrl; });
-                      const audios = doc.querySelectorAll(`audio[src*="${blobUrl}"], source[src*="${blobUrl}"]`);
-                      audios.forEach(aud => { aud.src = cloudUrl; });
+                      doc.querySelectorAll(`img[src*="${blobUrl}"]`).forEach(img => { img.src = cloudUrl; });
+                      doc.querySelectorAll(`audio[src*="${blobUrl}"], source[src*="${blobUrl}"]`).forEach(aud => { aud.src = cloudUrl; });
+                      doc.querySelectorAll(`video[src*="${blobUrl}"], video[poster*="${blobUrl}"]`).forEach(vid => {
+                        if (vid.src && vid.src.includes(blobUrl)) vid.src = cloudUrl;
+                        if (vid.poster && vid.poster.includes(blobUrl)) vid.poster = cloudUrl;
+                      });
+                      doc.querySelectorAll(`[style*="${blobUrl}"]`).forEach(el => {
+                        const st = el.getAttribute('style') || '';
+                        el.setAttribute('style', st.split(blobUrl).join(cloudUrl));
+                      });
                     }
                   }
 
@@ -8735,12 +8764,22 @@
             sessionStorage.setItem('greeter_custom_dom_texts', JSON.stringify(customDomTexts));
           } catch(e) {}
 
-          // 2. Clean Recipient Name Detection without capturing whole sentences
+          // 2. Clean Recipient Name Detection with Strict Blacklist & All Template Selectors
           const nameSelectors = [
-            '.name-sub', 'div.name-sub', 'span.name-sub',
-            '.recipient-name', '.recipientName', '.user-name',
-            '[data-name]', '.vh-name', '.vc-title'
+            '#nameSub', '.name-sub', 'div.name-sub', 'span.name-sub', '.name-label',
+            '#nameTag', '.name-tag', '#nameHero', '.name-hero', '#nameLine', '#nameBl',
+            '#nameG', '#namesDuo', '.names-duo', '.recipient-name', '.recipientName',
+            '.user-name', '[data-name]'
           ];
+
+          const blockedPhrases = [
+            'cut the cake', 'virtual cake', 'virtual hug', 'a warm hug', 'a message for you',
+            'celebrate', 'make a wish', 'wish granted', 'happy birthday', 'happy anniversary',
+            'birthday celebration', 'loved one', 'special one', 'special recipient',
+            'wonderful soul', 'brightest star', 'beautiful story', 'memory garden',
+            'our story', 'tap to open', 'with all my love', 'party time', 'extra slice'
+          ];
+
           for (const sel of nameSelectors) {
             const el = doc.querySelector(sel);
             if (el && el.innerText && el.innerText.trim()) {
@@ -8752,8 +8791,12 @@
               }
               text = text.replace(/['’]s\s+(birthday|anniversary|book|celebration).*$/i, '').trim();
               text = text.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}✨🎉🎂💖❤️!.*]+/gu, '').trim();
-              // Only accept clean 1-3 word names (< 25 chars)
-              if (text && text.length > 0 && text.length < 25 && text.split(/\s+/).length <= 3 && text !== 'Loved One' && text !== 'Special One') {
+
+              const lower = text.toLowerCase();
+              const isBlocked = blockedPhrases.some(phrase => lower === phrase || lower.includes(phrase));
+
+              // Only accept clean 1-3 word names (< 25 chars) that are not in the blacklist
+              if (text && text.length > 0 && text.length < 25 && text.split(/\s+/).length <= 3 && !isBlocked) {
                 if (text !== currentName) {
                   currentName = text;
                   window._sharedUserName = text;
@@ -8980,11 +9023,15 @@
               el.setAttribute('spellcheck', 'false');
             });
 
-            // Attach live input listener
+            // Attach live input listener (debounced 300ms to eliminate typing lag and heavy localStorage thrashing)
             if (!doc._hasLiveEditListener) {
               doc._hasLiveEditListener = true;
+              let liveEditDebounceTimer = null;
               doc.addEventListener('input', () => {
-                syncDomEditsToState(doc, false);
+                if (liveEditDebounceTimer) clearTimeout(liveEditDebounceTimer);
+                liveEditDebounceTimer = setTimeout(() => {
+                  syncDomEditsToState(doc, false);
+                }, 300);
               }, { passive: true });
             }
           } else {
@@ -10791,6 +10838,16 @@
           html = html.replace(/<style[^>]*id=["']greeter-inline-edit-style["'][^>]*>[\s\S]*?<\/style>/gi, '');
           html = html.replace(/\scontenteditable=["'](true|false)["']/gi, '');
 
+          // Scrub all known uploaded blob URLs across html string and finalConfig
+          if (window._uploadedMediaMap && window._uploadedMediaMap.size > 0) {
+            for (const [blobUrl, cloudUrl] of window._uploadedMediaMap.entries()) {
+              if (html.includes(blobUrl)) {
+                html = html.split(blobUrl).join(cloudUrl);
+              }
+              deepReplaceBlobUrl(finalConfig, blobUrl, cloudUrl);
+            }
+          }
+
           const urlParams = new URLSearchParams(window.location.search);
           const websiteId = explicitId || (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || urlParams.get('view') || urlParams.get('restore') || null;
 
@@ -10842,8 +10899,8 @@
           });
 
           if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
             if (response.status === 403) {
-              const errData = await response.json().catch(() => ({}));
               if (errData.code === 'PIN_REQUIRED') {
                 if (typeof window.showPinUnlockModal === 'function') {
                   window.showPinUnlockModal(websiteId);
@@ -10862,7 +10919,7 @@
                 throw new Error(errData.error || 'Plan upgrade to Pro required.');
               }
             }
-            throw new Error(`Server returned ${response.status}`);
+            throw new Error(errData.error || errData.message || `Server returned ${response.status}`);
           }
 
           const data = await response.json();
@@ -11004,7 +11061,7 @@
           // 1. SAVE TO SERVER: isPremium is true only for free update on already paid plan
           const saveRes = await saveWebsiteConfigToServer(isFreeUpdate, websiteId);
           if (!saveRes || !saveRes.success || !saveRes.id) {
-            alert('Website Error: Could not save website draft to server before payment. Payment checkout has been aborted. Please check your internet connection and try again.');
+            alert(saveRes?.error ? `Website Save Error: ${saveRes.error}` : 'Website Error: Could not save website draft to server before payment. Payment checkout has been aborted. Please check your internet connection and try again.');
             if (btn) {
               btn.innerHTML = originalText || 'Pay Securely';
               btn.disabled = false;

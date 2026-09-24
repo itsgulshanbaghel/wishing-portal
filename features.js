@@ -973,6 +973,9 @@
                     }
                     container.innerHTML = mediaHtml + `<h1 style="font-family: 'Great Vibes', cursive; font-size: clamp(2.4rem, 8vw, 4.8rem); color: #fff !important; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 15px;">Welcome ${escapeHtml(userName)} <span class="magic-emoji">\uD83D\uDC96</span></h1><p id="magic-typing-welcome-msg" style="margin-top: 15px; font-size: clamp(1.3rem, 4.5vw, 2rem); color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-family: 'Poppins', sans-serif;"></p>`;
                     overlay.appendChild(container);
+                    overlay.style.cursor = "pointer";
+                    overlay.title = (window.currentLang === 'hi') ? "आगे बढ़ने के लिए टैप करें" : "Tap anywhere to continue";
+                    overlay.addEventListener('click', () => { finishWelcome(); });
                     d.body.appendChild(overlay);
                     const msgPara = container.querySelector("#magic-typing-welcome-msg");
 
@@ -1016,12 +1019,14 @@
                                 idx++;
                             } else {
                                 clearInterval(iv);
-                                setTimeout(finishWelcome, 2500);
+                                setTimeout(finishWelcome, 4500); // Generous 4.5s post-typing screen time
                             }
                         }, 65);
+                        overlay._typingIv = iv;
 
-                        // Fail-safe: Guarantee welcome message unfreezes after max 6.5 seconds
-                        setTimeout(finishWelcome, 6500);
+                        // Fail-safe: Guarantee welcome message unfreezes after ample reading duration
+                        const maxWelcomeDuration = Math.max(9500, (msgText.length * 65) + 5000);
+                        setTimeout(finishWelcome, maxWelcomeDuration);
                     }, 100);
 
                     return { intervals: [] };
@@ -1031,7 +1036,8 @@
             },
             disable(d) {
                 const overlay = d?.getElementById("magic-welcome-typing-root");
-                if (overlay) { overlay.remove(); d.body.classList.remove('magic-noscroll'); }
+                if (overlay && overlay._typingIv) clearInterval(overlay._typingIv);
+                if (overlay) { overlay.remove(); d?.body?.classList?.remove('magic-noscroll'); }
                 const audio = d?.getElementById('magic-welcome-audio');
                 if (audio) { audio.pause(); audio.remove(); }
             }
@@ -1273,7 +1279,7 @@
 
         flowerRain: {
             enable(d, w, ce) {
-                if (d.getElementById("magic-flower-rain")) return;
+                this.disable(d);
                 const isEmoji = (s) => /\p{Emoji_Presentation}/u.test(s) || /\p{Emoji}\uFE0F/u.test(s);
                 const emojiStr = (ce && ce.length && isEmoji(ce)) ? ce : "\uD83C\uDF38\uD83C\uDF3B\uD83C\uDF3A\uD83D\uDC90";
                 const emojis = Array.from(emojiStr);
@@ -1284,17 +1290,20 @@
                     f.innerHTML = e; f.style.cssText = `position:absolute; left:${Math.random() * 100}%; top:-30px; font-size:${24 + Math.random() * 20}px; animation:magicFlowerFall 3s linear forwards;`;
                     c.appendChild(f); setTimeout(() => f.remove(), 3000);
                 }, 400);
+                c._interval = iv;
                 if (!d.querySelector("#magic-flower-keyframes")) { const s = d.createElement("style"); s.id = "magic-flower-keyframes"; s.textContent = `@keyframes magicFlowerFall{to{transform:translateY(110vh) rotate(360deg); opacity:0;}}`; d.head.appendChild(s); }
                 return { intervals: [iv] };
             },
-            disable(d) { d?.getElementById("magic-flower-rain")?.remove(); }
+            disable(d) {
+                const el = d?.getElementById("magic-flower-rain");
+                if (el && el._interval) clearInterval(el._interval);
+                el?.remove();
+            }
         },
-
-
 
         flyingSwans: {
             enable(d, w, ce) {
-                if (d.getElementById("magic-swan-container")) return;
+                this.disable(d);
                 const isEmoji = (s) => /\p{Emoji_Presentation}/u.test(s) || /\p{Emoji}\uFE0F/u.test(s);
                 const emojis = (ce && ce.length && isEmoji(ce)) ? Array.from(ce) : ["\uD83D\uDD4A"];
                 const c = d.createElement("div"); c.id = "magic-swan-container"; c.style.cssText = "position:fixed; inset:0; pointer-events:none; z-index:2147483900;";
@@ -1303,20 +1312,26 @@
                     const swan = d.createElement("div"); const em = emojis[Math.floor(Math.random() * emojis.length)]; swan.innerHTML = em; swan.style.cssText = `position:absolute; right:-50px; bottom:${Math.random() * 60 + 10}%; font-size:48px; animation:magicSwanFly 10s linear forwards;`;
                     c.appendChild(swan); setTimeout(() => swan.remove(), 10000);
                 }, 4000);
+                c._interval = iv;
                 if (!d.querySelector("#magic-swan-keyframes")) { const s = d.createElement("style"); s.id = "magic-swan-keyframes"; s.textContent = `@keyframes magicSwanFly{0%{transform:translateX(0); opacity:0;}10%{opacity:1;}100%{transform:translateX(-130vw); opacity:0;}}`; d.head.appendChild(s); }
                 return { intervals: [iv] };
             },
-            disable(d) { d?.getElementById("magic-swan-container")?.remove(); }
+            disable(d) {
+                const el = d?.getElementById("magic-swan-container");
+                if (el && el._interval) clearInterval(el._interval);
+                el?.remove();
+            }
         },
 
         balloonParty: {
             enable(d, w, ce) {
-                if (d.getElementById("magic-balloon-root")) return;
+                this.disable(d);
                 const isEmoji = (s) => /\p{Emoji_Presentation}/u.test(s) || /\p{Emoji}\uFE0F/u.test(s);
                 const em = (ce && ce.length && isEmoji(ce)) ? Array.from(ce)[0] : "\uD83C\uDF88";
                 const c = d.createElement("div"); c.id = "magic-balloon-root"; c.style.cssText = "position:fixed; inset:0; pointer-events:none; z-index:2147483100;";
                 d.body.appendChild(c);
                 const popAudio = d.createElement('audio');
+                popAudio.id = 'magic-balloon-pop-audio';
                 popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
                 popAudio.volume = 0.5;
                 popAudio.preload = 'auto';
@@ -1327,19 +1342,26 @@
                     b.onclick = (e) => { e.stopPropagation(); b.remove(); popAudio.currentTime = 0; popAudio.play().catch(e => console.log('Balloon pop audio failed:', e)); const pop = d.createElement("div"); pop.innerText = "\uD83D\uDCA5"; pop.style.cssText = `position:absolute; left:${b.style.left}; bottom:${b.style.bottom}; font-size:30px;`; c.appendChild(pop); setTimeout(() => pop.remove(), 500); };
                     c.appendChild(b); setTimeout(() => b.remove(), 10000);
                 }, 1800);
+                c._interval = iv;
                 if (!d.querySelector("#magic-balloon-style")) { const s = d.createElement("style"); s.id = "magic-balloon-style"; s.textContent = `@keyframes magicFloatUp{to{transform:translateY(-120vh);}}`; d.head.appendChild(s); }
                 return { intervals: [iv] };
             },
-            disable(d) { d?.getElementById("magic-balloon-root")?.remove(); }
+            disable(d) {
+                const el = d?.getElementById("magic-balloon-root");
+                if (el && el._interval) clearInterval(el._interval);
+                el?.remove();
+                d?.getElementById("magic-balloon-pop-audio")?.remove();
+            }
         },
 
         floatingBalloonsNamed: {
             enable(d, w, userName, customText) {
-                if (d.getElementById("magic-named-balloons")) return;
+                this.disable(d);
                 const nameDisplay = customText || userName;
                 const c = d.createElement("div"); c.id = "magic-named-balloons"; c.style.cssText = "position:fixed; inset:0; pointer-events:none; z-index:2147483100;";
                 d.body.appendChild(c);
                 const popAudio = d.createElement('audio');
+                popAudio.id = 'magic-named-balloon-audio';
                 popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
                 popAudio.volume = 0.5;
                 popAudio.preload = 'auto';
@@ -1355,46 +1377,57 @@
                     balloon.onclick = () => { balloon.remove(); popAudio.currentTime = 0; popAudio.play().catch(e => console.log('Balloon pop audio failed:', e)); const pop = d.createElement("div"); pop.innerText = "\uD83D\uDCA5"; pop.style.cssText = `position:absolute; left:${balloon.style.left}; bottom:${balloon.style.bottom}; font-size:24px;`; c.appendChild(pop); setTimeout(() => pop.remove(), 400); };
                     setTimeout(() => balloon.remove(), 6500);
                 }, 2000);
+                c._interval = iv;
                 if (!d.querySelector("#magicFloatUpKey")) { const s = d.createElement("style"); s.id = "magicFloatUpKey"; s.textContent = `@keyframes magicFloatUp{to{transform:translateY(-120vh);}}`; d.head.appendChild(s); }
                 return { intervals: [iv] };
             },
-            disable(d) { d?.getElementById("magic-named-balloons")?.remove(); }
+            disable(d) {
+                const el = d?.getElementById("magic-named-balloons");
+                if (el && el._interval) clearInterval(el._interval);
+                el?.remove();
+                d?.getElementById("magic-named-balloon-audio")?.remove();
+            }
         },
 
         fireworksClick: {
             enable(d, w) {
-                if (d.getElementById("magic-firework-canvas")) return;
+                this.disable(d, w);
                 const can = d.createElement("canvas"); can.id = "magic-firework-canvas"; can.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483500;";
                 d.body.appendChild(can); const ctx = can.getContext("2d"); let parts = []; let anim = null;
                 const blastAudio = d.createElement('audio');
+                blastAudio.id = 'magic-blast-audio';
                 blastAudio.src = 'https://www.dropbox.com/scl/fi/ehjb0y79mov2gfdh5rnyo/Click-Blast.mp3?rlkey=7du7vkr32l4wrevd8ubygxfua&st=lstqlns4&dl=1';
                 blastAudio.volume = 0.5;
                 blastAudio.preload = 'auto';
                 blastAudio.style.display = 'none';
                 d.body.appendChild(blastAudio);
-                const resize = () => { can.width = w.innerWidth; can.height = w.innerHeight; }; resize(); w.addEventListener("resize", resize);
+                const resize = () => { can.width = (w || window).innerWidth; can.height = (w || window).innerHeight; }; resize(); (w || window).addEventListener("resize", resize);
                 const boom = (x, y) => { for (let i = 0; i < 80; i++) { const angle = Math.random() * Math.PI * 2; const speed = Math.random() * 6 + 2; parts.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1, color: `hsl(${Math.random() * 360},100%,60%)`, size: 3 }); } };
                 const handler = (e) => { boom(e.clientX, e.clientY); blastAudio.currentTime = 0; blastAudio.play().catch(e => console.log('Blast audio failed:', e)); if (anim === null) animate(); };
                 const animate = () => {
                     if (!can.isConnected || !d.getElementById("magic-firework-canvas")) {
-                        w.removeEventListener("resize", resize);
-                        w.document.body.removeEventListener("click", handler);
+                        (w || window).removeEventListener("resize", resize);
+                        (w || window).document?.body?.removeEventListener("click", handler);
                         return;
                     }
                     ctx.clearRect(0, 0, can.width, can.height); let alive = false; for (let i = 0; i < parts.length; i++) { const p = parts[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= 0.02; if (p.life <= 0) { parts.splice(i, 1); i--; continue; } alive = true; ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); ctx.fill(); } if (alive) anim = requestAnimationFrame(animate); else anim = null;
                 };
-                w.document.body.addEventListener("click", handler);
+                (w || window).document?.body?.addEventListener("click", handler);
+                can._cleanup = () => {
+                    (w || window).removeEventListener("resize", resize);
+                    (w || window).document?.body?.removeEventListener("click", handler);
+                    if (anim) cancelAnimationFrame(anim);
+                };
                 return {
-                    listeners: [{ target: w.document.body, type: "click", handler }],
-                    cleanup: () => {
-                        w.removeEventListener("resize", resize);
-                        w.document.body.removeEventListener("click", handler);
-                    }
+                    listeners: [{ target: (w || window).document?.body, type: "click", handler }],
+                    cleanup: can._cleanup
                 };
             },
-            disable(d) {
+            disable(d, w) {
                 const can = d?.getElementById("magic-firework-canvas");
-                if (can) can.remove();
+                if (can && can._cleanup) can._cleanup();
+                can?.remove();
+                d?.getElementById("magic-blast-audio")?.remove();
             }
         },
 
@@ -1494,6 +1527,7 @@
 
         textFormation: {
             enable(d, w, userName, customText) {
+                this.disable(d);
                 if (d.getElementById("magic-typing-card")) return;
                 const card = d.createElement("div");
                 card.id = "magic-typing-card";
@@ -1508,17 +1542,77 @@
                     return typeof def === 'function' ? def(evData.event) : (def || "You are magic!");
                 };
                 const msg = customText || getDef();
-                let idx = 0, iv = null;
+                let idx = 0;
 
-                // Trigger "in the middle" - either by scroll or simple delay
-                setTimeout(() => {
+                // Trigger sequence after welcome screen completes (or after short delay if no welcome screen)
+                const startSequence = () => {
+                    if (!card.isConnected) return;
                     card.style.opacity = "1";
-                    const audio = d.createElement('audio'); audio.id = 'magic-text-formation-audio'; audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1'; audio.loop = true; audio.volume = 0.5; audio.preload = 'auto'; d.body.appendChild(audio); audio.addEventListener('canplay', () => { audio.play().catch(e => console.log('Audio play failed', e)); iv = setInterval(() => { if (idx <= msg.length) { card.innerHTML = msg.substring(0, idx) + (idx % 2 === 0 ? "█" : " "); idx++; } else { clearInterval(iv); const audio = d.getElementById('magic-text-formation-audio'); if (audio) { audio.pause(); audio.remove(); } setTimeout(() => { card.style.opacity = "0"; setTimeout(() => card.remove(), 1000); }, 6000); } }, 70); });
-                }, 3500); // 3.5s delay to avoid welcome message screen
+                    const audio = d.createElement('audio');
+                    audio.id = 'magic-text-formation-audio';
+                    audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1';
+                    audio.loop = true;
+                    audio.volume = 0.5;
+                    audio.preload = 'auto';
+                    d.body.appendChild(audio);
+                    audio.addEventListener('canplay', () => {
+                        audio.play().catch(e => console.log('Audio play failed', e));
+                        const iv = setInterval(() => {
+                            if (!card.isConnected) {
+                                clearInterval(iv);
+                                return;
+                            }
+                            if (idx <= msg.length) {
+                                card.innerHTML = msg.substring(0, idx) + (idx % 2 === 0 ? "█" : " ");
+                                idx++;
+                            } else {
+                                clearInterval(iv);
+                                const a = d.getElementById('magic-text-formation-audio');
+                                if (a) { a.pause(); a.remove(); }
+                                setTimeout(() => {
+                                    if (card.parentNode) {
+                                        card.style.opacity = "0";
+                                        setTimeout(() => card.remove(), 1000);
+                                    }
+                                }, 6000);
+                            }
+                        }, 70);
+                        card._typingInterval = iv;
+                    });
+                };
 
-                return { intervals: [iv] };
+                const welcomeEl = d.getElementById("magic-welcome-typing-root");
+                if (welcomeEl) {
+                    const onWelcomeDone = () => {
+                        window.removeEventListener('welcomeTypingFinished', onWelcomeDone);
+                        if (w && w !== window) w.removeEventListener('welcomeTypingFinished', onWelcomeDone);
+                        if (d && typeof d.removeEventListener === 'function') d.removeEventListener('welcomeTypingFinished', onWelcomeDone);
+                        card._delayTimeout = setTimeout(startSequence, 1200);
+                    };
+                    window.addEventListener('welcomeTypingFinished', onWelcomeDone);
+                    if (w && w !== window) w.addEventListener('welcomeTypingFinished', onWelcomeDone);
+                    if (d && typeof d.addEventListener === 'function') d.addEventListener('welcomeTypingFinished', onWelcomeDone);
+                    // Fallback in case event is missed
+                    card._delayTimeout = setTimeout(startSequence, 11000);
+                } else {
+                    card._delayTimeout = setTimeout(startSequence, 3500);
+                }
+
+                return { cleanup: () => this.disable(d) };
             },
-            disable(d) { d?.getElementById("magic-typing-card")?.remove(); const audio = d?.getElementById('magic-text-formation-audio'); if (audio) { audio.pause(); audio.remove(); } }
+            disable(d) {
+                const card = d?.getElementById("magic-typing-card");
+                if (card) {
+                    if (card._typingInterval) clearInterval(card._typingInterval);
+                    if (card._delayTimeout) clearTimeout(card._delayTimeout);
+                    card.remove();
+                }
+                const audio = d?.getElementById('magic-text-formation-audio');
+                if (audio) {
+                    audio.pause();
+                    audio.remove();
+                }
+            }
         },
 
         scratchReveal: {
@@ -1691,7 +1785,7 @@
 
         heartsOnScroll: {
             enable(d, w, ce) {
-                if (d.getElementById("magic-heart-scroll")) return;
+                this.disable(d, w);
                 const isEmoji = (s) => /\p{Emoji_Presentation}/u.test(s) || /\p{Emoji}\uFE0F/u.test(s);
                 const emoji = (ce && ce.length && isEmoji(ce)) ? Array.from(ce)[0] : "\uD83D\uDC96";
                 const c = d.createElement("div"); c.id = "magic-heart-scroll"; c.style.cssText = "position:fixed; inset:0; pointer-events:none; z-index:2147483400;";
@@ -1703,16 +1797,18 @@
                 };
                 const startRain = () => { for (let i = 0; i < 25; i++) setTimeout(createHeart, i * 80); };
                 let scrollTimeout; const fn = () => { if (scrollTimeout) clearTimeout(scrollTimeout); scrollTimeout = setTimeout(startRain, 50); };
-                w.addEventListener("scroll", fn);
+                (w || window).addEventListener("scroll", fn, { passive: true });
+                c._scrollHandler = fn;
                 if (!d.querySelector("#magic-heart-style")) { const s = d.createElement("style"); s.id = "magic-heart-style"; s.textContent = `@keyframes magicHeartFall{to{transform:translateY(110vh) rotate(25deg); opacity:0;}}`; d.head.appendChild(s); }
                 return {
-                    listeners: [{ target: w, type: "scroll", handler: fn }],
-                    cleanup: () => w.removeEventListener("scroll", fn)
+                    listeners: [{ target: (w || window), type: "scroll", handler: fn }],
+                    cleanup: () => (w || window).removeEventListener("scroll", fn)
                 };
             },
             disable(d, w) {
-                d?.getElementById("magic-heart-scroll")?.remove();
-                if (w) w.removeEventListener("scroll", window._magicHeartScrollHandler); // Extra safety if stored globally
+                const el = d?.getElementById("magic-heart-scroll");
+                if (el && el._scrollHandler) (w || window).removeEventListener("scroll", el._scrollHandler);
+                el?.remove();
             }
         },
 
@@ -1880,6 +1976,7 @@
 
         floatingPolaroids: {
             enable(d, w, userName, customText, images) {
+                this.disable(d);
                 if (d.getElementById("magic-polaroids-section")) return;
                 const lang = window.currentLang || 'en';
                 const trans = window.translations?.[lang] || {};
@@ -1897,6 +1994,7 @@
                 section.appendChild(title);
 
                 const canvas = d.createElement("div");
+                canvas.id = "magic-polaroids-canvas";
                 canvas.style.cssText = "position: absolute; inset: 0; pointer-events: none; overflow: hidden;";
                 section.appendChild(canvas);
 
@@ -1993,10 +2091,18 @@
 
                 // Regular continuous interval (every 2.8s)
                 const iv = setInterval(() => spawnCard(null), 2800);
+                canvas._polaroidInterval = iv;
+                section._polaroidInterval = iv;
 
                 return { intervals: [iv] };
             },
-            disable(d) { d?.getElementById("magic-polaroids-section")?.remove(); }
+            disable(d) {
+                const sec = d?.getElementById("magic-polaroids-section");
+                const canvas = d?.getElementById("magic-polaroids-canvas");
+                if (canvas && canvas._polaroidInterval) clearInterval(canvas._polaroidInterval);
+                if (sec && sec._polaroidInterval) clearInterval(sec._polaroidInterval);
+                sec?.remove();
+            }
         },
 
         finalSurprise: {
@@ -2842,7 +2948,9 @@
                 return { cleanup: () => { clearInterval(intervalId); overlay.remove(); } };
             },
             disable(d) {
-                d?.getElementById("magic-countdown-overlay")?.remove();
+                const overlay = d?.getElementById("magic-countdown-overlay");
+                if (overlay && overlay._timerInterval) clearInterval(overlay._timerInterval);
+                overlay?.remove();
             }
         },
 
@@ -3277,17 +3385,28 @@
                 }, { threshold: 0.2 });
                 observer.observe(section);
 
-                return {
-                    cleanup: () => {
-                        observer.disconnect();
-                        if (interval) clearInterval(interval);
+                const cleanup = () => {
+                    observer.disconnect();
+                    if (interval) {
+                        clearInterval(interval);
+                        interval = null;
                     }
+                };
+                section._cleanup = cleanup;
+
+                return {
+                    cleanup
                 };
             },
             disable(d) {
-                d?.getElementById("magic-image-explosion-section")?.remove();
+                const sec = d?.getElementById("magic-image-explosion-section");
+                if (sec && sec._cleanup) sec._cleanup();
+                sec?.remove();
                 const audio = d?.getElementById("crackersAudio");
-                if (audio) audio.remove();
+                if (audio) {
+                    audio.pause?.();
+                    audio.remove();
+                }
             }
         },
         namedBirthdayCard: {
