@@ -4206,7 +4206,8 @@
           voiceNote: currentLang === 'hi' ? '🎙️ वॉइस नोट (Voice Note)' : '🎙️ Voice Note',
           countdown: currentLang === 'hi' ? '⏳ सरप्राइज काउंटडाउन (Surprise Countdown)' : '⏳ Surprise Countdown',
           virtualCake: currentLang === 'hi' ? '🎂 वर्चुअल केक सेलिब्रेशन (Virtual Cake Celebration)' : '🎂 Virtual Cake Celebration',
-          virtualHug: currentLang === 'hi' ? '🤗 वर्चुअल हग एनिमेशन (Virtual Hug)' : '🤗 Virtual Hug Animation'
+          virtualHug: currentLang === 'hi' ? '🤗 वर्चुअल हग एनिमेशन (Virtual Hug)' : '🤗 Virtual Hug Animation',
+          flowerBouquet: currentLang === 'hi' ? '💐 फ्लावर बुके (Flower Bouquet)' : '💐 Flower Bouquet'
         };
 
         const listItems = activatedFeatures.map(f => `<li style="margin-bottom: 6px; font-weight:700;">${featureNames[f] || f}</li>`).join('');
@@ -4274,7 +4275,7 @@
       };
 
       window.disablePremiumFeaturesAndClose = () => {
-        const premiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown', 'virtualCake', 'virtualHug'];
+        const premiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown', 'virtualCake', 'virtualHug', 'flowerBouquet'];
         premiumFeatures.forEach(id => {
           activeFeatureStates.set(id, false);
           applyFeature(id, false);
@@ -4505,7 +4506,7 @@
           catOpening: "\uD83C\uDFAD Intro", catFloral: "\uD83C\uDF38 Floral & Nature", catPlayful: "\uD83C\uDF88 Playful Interactions",
           catHeart: "\uD83D\uDC8C Heart & Messages", catFinale: "\u2728 Grand Finale",
           featLock: "\uD83D\uDD12 Lock", featCurtainReveal: "\uD83C\uDFAD Curtain Reveal", featWelcomeTyping: "\uD83D\uDCAC Welcome Message", featFireworksText: "\uD83C\uDF86 Fireworks Text",
-          featFlowerRain: "\uD83C\uDF38 Flower Rain", featFlyingSwans: "🕊️ Flying Birds",
+          featFlowerRain: "\uD83C\uDF38 Flower Rain", featFlyingSwans: "🕊️ Flying Birds", featFlowerBouquet: "💐 Flower Bouquet",
           featBalloonParty: "\uD83C\uDF88 Classic Balloons", featFloatingBalloonsNamed: "\uD83C\uDF88 Named Balloons", featFireworksClick: "\u2728 Click Fireworks",
           featBombExplosion: "\uD83D\uDCA3 Bomb", featGiftBoxOpen: "\uD83C\uDF81 Gift Box", featTextFormation: "\u270D\uFE0F Typing Card",
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
@@ -4577,7 +4578,7 @@
           catOpening: "🎭 शुरुआती जादू", catFloral: "🌸 फूल और प्रकृति", catPlayful: "🎈 मस्ती भरे इंटरैक्शन",
           catHeart: "💌 दिल की बातें और संदेश", catFinale: "✨ भव्य समापन",
           featLock: "🔒 लॉक", featCurtainReveal: "🎭 पर्दा", featWelcomeTyping: "💬 स्वागत संदेश", featFireworksText: "🎆 पटाखे वाला टेक्स्ट",
-          featFlowerRain: "🌸 फूलों की बारिश", featFlyingSwans: "🕊️ उड़ते पंछी ",
+          featFlowerRain: "🌸 फूलों की बारिश", featFlyingSwans: "🕊️ उड़ते पंछी", featFlowerBouquet: "💐 फ्लावर बुके",
           featBalloonParty: "🎈 क्लासिक गुब्बारे", featFloatingBalloonsNamed: "🎈 नाम वाले गुब्बारे", featFireworksClick: "✨ क्लिक पर पटाखे",
           featBombExplosion: "💣 बम धमाका", featGiftBoxOpen: "🎁 गिफ्ट बॉक्स", featTextFormation: "✍️ टाइपिंग कार्ड",
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
@@ -6199,7 +6200,7 @@
       let magicLoaded = false;
 
       const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : '';
-      fetch((API_BASE || '') + '/api/magic').then(r => r.json()).then(data => {
+      fetch((API_BASE || '') + '/api/magic?v=' + Date.now()).then(r => r.json()).then(data => {
         try {
           let decoded;
           try {
@@ -7121,7 +7122,7 @@
       }
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "flowerBouquet", nameKey: "featFlowerBouquet" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
       ];
       const noCustomizeIds = new Set(["curtainReveal", "fireworksClick", "bombExplosion", "addMusicSection"]);
 
@@ -7137,6 +7138,7 @@
         if (!enable) { if (feature?.disable) feature.disable(doc, win); return; }
         if (feature?.enable) {
           if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
+          else if (id === "flowerBouquet") feature.enable(doc, win, userName, customText, images, customEmoji);
           else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion") feature.enable(doc, win, userName, customText, images);
           else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
           else if (id === "countdown") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
@@ -7177,7 +7179,7 @@
         container.innerHTML = "";
         const actualCategories = {
           [t.catOpening]: ["countdown", "lock", "curtainReveal", "welcomeTyping", "fireworksText"],
-          [t.catFloral]: ["flowerRain", "flyingSwans"],
+          [t.catFloral]: ["flowerRain", "flyingSwans", "flowerBouquet"],
           [t.catPlayful]: ["balloonParty", "virtualCake", "virtualHug", "namedBirthdayCard", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "scratchReveal"],
           [t.catHeart]: ["textFormation", "memoryTimeline", "heartsOnScroll", "oldPaperLetter", "hugSkyLetter", "floatingPolaroids"],
           [t.catFinale]: ["finalSurprise", "addMusicSection", "magicMusic", "voiceNote"]
@@ -7195,7 +7197,7 @@
             const hasCustom = !noCustomizeIds.has(id);
             const labelSpan = document.createElement("span"); labelSpan.className = "toggle-label"; labelSpan.innerText = featName;
 
-            if (['virtualCake', 'virtualHug', 'addMusicSection'].includes(id)) {
+            if (['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet'].includes(id)) {
               const proBadge = document.createElement("span");
               proBadge.className = "pro-badge-pill";
               proBadge.innerHTML = `<span style="font-size: 0.72rem;">👑</span> <span style="font-size: 0.65rem; font-weight: 900; letter-spacing: 0.5px; color: #fff;">PRO</span>`;
@@ -7229,6 +7231,104 @@
             const customPanel = hasCustom ? document.createElement("div") : null;
             if (customPanel) customPanel.className = "custom-panel";
             let textarea = null, emojiInput = null, previewDiv = null;
+
+            // ── FLOWER BOUQUET custom panel (bouquet picker + message textarea) ──
+            if (id === "flowerBouquet" && hasCustom) {
+              const BOUQUET_COUNT = 28;
+              const existingBouquet = customData.get('flowerBouquet') || {};
+              let selectedBouquetId = existingBouquet.emoji || 'F2';
+
+              // PRO section wrapper
+              const fbWrap = document.createElement('div');
+              fbWrap.style.cssText = 'padding: 10px 0;';
+
+              // Bouquet picker label
+              const fbPickerTitle = document.createElement('div');
+              fbPickerTitle.style.cssText = 'font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-solid); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;';
+              fbPickerTitle.innerHTML = '<i class="fas fa-spa"></i> ' + (currentLang === 'hi' ? 'बुके चुनें' : 'Choose Bouquet');
+              fbWrap.appendChild(fbPickerTitle);
+
+              // Horizontal scrollable bouquet grid
+              const fbGrid = document.createElement('div');
+              fbGrid.className = 'media-preset-grid';
+              fbGrid.style.cssText = 'display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;';
+
+              for (let i = 1; i <= BOUQUET_COUNT; i++) {
+                const bId = 'F' + i;
+                const card = document.createElement('div');
+                card.className = 'media-preset-card' + (selectedBouquetId === bId ? ' active' : '');
+                card.style.cssText = 'flex: 0 0 92px; min-width: 92px; scroll-snap-align: start;';
+                card.setAttribute('data-bouquet-id', bId);
+
+                const thumbWrap = document.createElement('div');
+                thumbWrap.className = 'media-preset-thumb-wrap';
+                thumbWrap.style.cssText = 'height: 84px; background: radial-gradient(circle at 50% 40%, #ffffff, #fff2f6); display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 10px; box-sizing: border-box;';
+
+                const img = document.createElement('img');
+                img.src = '/assets/flowers/' + bId + '.png';
+                img.alt = 'Bouquet ' + bId;
+                img.loading = 'lazy';
+                img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; border-radius: 8px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));';
+                thumbWrap.appendChild(img);
+
+                const check = document.createElement('span');
+                check.className = 'media-preset-active-check';
+                check.innerHTML = '<i class="fas fa-check"></i>';
+                card.appendChild(check);
+
+                const name = document.createElement('div');
+                name.className = 'media-preset-name';
+                name.innerText = bId;
+
+                card.appendChild(thumbWrap);
+                card.appendChild(name);
+
+                card.onclick = (e) => {
+                  e.stopPropagation();
+                  fbGrid.querySelectorAll('.media-preset-card').forEach(c => c.classList.remove('active'));
+                  card.classList.add('active');
+                  selectedBouquetId = bId;
+                  const ex = customData.get('flowerBouquet') || {};
+                  ex.emoji = bId;
+                  if (textarea) ex.text = textarea.value;
+                  customData.set('flowerBouquet', ex);
+                  const nameVal = getUserName();
+                  refreshFeatureIfActive('flowerBouquet', nameVal, ex.text, [], bId);
+                  autoSaveState();
+                };
+
+                fbGrid.appendChild(card);
+              }
+              fbWrap.appendChild(fbGrid);
+
+              // Message textarea for back of card
+              const msgLabel = document.createElement('div');
+              msgLabel.style.cssText = 'font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-solid); margin: 10px 0 6px; display: flex; align-items: center; gap: 6px;';
+              msgLabel.innerHTML = '<i class="fas fa-heart"></i> ' + (currentLang === 'hi' ? 'कार्ड का संदेश (पीछे)' : 'Card Message (Back Side)');
+              fbWrap.appendChild(msgLabel);
+
+              textarea = document.createElement('textarea');
+              textarea.placeholder = currentLang === 'hi' ? 'उदा. प्यार के साथ, माँ की ओर से 🌹' : 'e.g. With love, from Mom 🌹';
+              const nameVal = getUserName();
+              const defMsg = nameVal
+                ? (currentLang === 'hi' ? `प्यारे ${nameVal}, ये फूल आपके लिए 🌹` : `A bouquet of love for ${nameVal} 🌹`)
+                : (currentLang === 'hi' ? 'ये फूल आपके लिए हैं 🌹' : 'A bouquet of love for you 🌹');
+              textarea.value = existingBouquet.text || defMsg;
+              fbWrap.appendChild(textarea);
+
+              textarea.addEventListener('input', () => {
+                const ex = customData.get('flowerBouquet') || {};
+                ex.text = textarea.value;
+                ex.emoji = selectedBouquetId;
+                customData.set('flowerBouquet', ex);
+                const nv = getUserName();
+                refreshFeatureIfActive('flowerBouquet', nv, ex.text, [], ex.emoji);
+                autoSaveState();
+              });
+
+              customPanel.appendChild(fbWrap);
+            }
+
             if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualCake", "virtualHug", "namedBirthdayCard"].includes(id))) {
               textarea = document.createElement("textarea"); textarea.placeholder = t.placeholderText; textarea.setAttribute('data-placeholder-key', 'text');
               if (id === "lock") textarea.placeholder = currentLang === 'en' ? "Set the Password here (e.g. 1234)" : "यहाँ पासवर्ड दर्ज करें (उदा. 1234)";
@@ -9117,7 +9217,7 @@
                       (viewId && sessionStorage.getItem(`pro_plan_${viewId}`) === 'true') ||
                       isPremium; // Any paid/premium user has full PRO access
 
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet'];
         const basicPremiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
 
         // Feature compliance is validated during Stage 3 Plan Selection (checkFeatureCompliance)
@@ -9634,6 +9734,8 @@
         try {
           if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
             feature.enable(document, window, emoji);
+          } else if (id === "flowerBouquet") {
+            feature.enable(document, window, name, text, images, emoji);
           } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
             feature.enable(document, window, name, text, images);
           } else if (id === "magicMusic" || id === "voiceNote") {
@@ -9847,7 +9949,7 @@
         window.refreshAll();
       } else {
         // Fallback: try to load features from API or /features.js
-        fetch((window.APP_CONFIG?.API_BASE_URL || window.location.origin) + '/api/magic')
+        fetch((window.APP_CONFIG?.API_BASE_URL || window.location.origin) + '/api/magic?v=' + Date.now())
           .then(r => r.json())
           .then(data => {
             try {
@@ -10257,7 +10359,7 @@
 
       window.getActivePremiumFeatures = function () {
         const active = [];
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet'];
         const basicPremiumFeatures = ['magicMusic', 'voiceNote', 'countdown', 'lock', 'gallery', 'customUrl'];
 
         if (typeof activeFeatureStates !== 'undefined') {
@@ -10344,13 +10446,14 @@
 
       window.checkFeatureCompliance = function (planKey) {
         const activeFeatures = getActivePremiumFeatures();
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet'];
         const activePro = activeFeatures.filter(f => proFeatures.includes(f));
 
         const featureLabelMap = {
           virtualCake: '🎂 Virtual Cake Celebration (PRO feature)',
           virtualHug: '🤗 Virtual Hug Animation (PRO feature)',
           addMusicSection: '🎵 Add Music (PRO feature)',
+          flowerBouquet: '💐 Flower Bouquet (PRO feature)',
           magicMusic: '🎵 Background Music',
           voiceNote: '🎙️ Voice Note',
           countdown: '⏳ Midnight Surprise Countdown',

@@ -2751,7 +2751,7 @@ let lastFeaturesMtime = 0;
 app.get(['/features.js', '/assets/features.js'], (req, res) => {
   try {
     res.set('Content-Type', 'application/javascript; charset=utf-8');
-    res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    res.set('Cache-Control', 'no-cache, must-revalidate');
     const targetPath = fs.existsSync(path.join(__dirname, 'public', 'features.js'))
       ? path.join(__dirname, 'public', 'features.js')
       : path.join(__dirname, 'features.js');
@@ -2772,7 +2772,7 @@ app.get('/api/magic', (req, res) => {
       cachedMagicBase64 = Buffer.from(features).toString('base64');
       lastFeaturesMtime = mtime;
     }
-    res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({ magic: cachedMagicBase64 });
   } catch (err) {
     console.error("Error reading features:", err);

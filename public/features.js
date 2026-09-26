@@ -2108,7 +2108,7 @@
         finalSurprise: {
             enable(d, w, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl) {
                 if (d.getElementById("magic-final-surprise-section")) return;
-                const section = d.createElement("section"); section.id = "magic-final-surprise-section"; section.style.cssText = "padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 24px); text-align: center; margin: clamp(1.5rem, 2.5vw, 2.2rem) auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center;";
+                const section = d.createElement("section"); section.id = "magic-final-surprise-section"; section.style.cssText = "padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 24px); text-align: center; margin: 50px auto 40px auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center; clear: both; position: relative; z-index: 10;";
                 const audioEl = d.createElement('audio');
                 audioEl.id = 'finalSurpriseAudio';
                 audioEl.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
@@ -4847,6 +4847,335 @@
         }
     };
 
+    // ══════════════════════════════════════════════════════════════════
+    // 🌸 FLOWER BOUQUET – PRO Feature
+    // Full-width slide-in section with flippable bouquet card
+    // ══════════════════════════════════════════════════════════════════
+    featureMap.flowerBouquet = {
+        enable: function (d, w, userName, customText, images, customEmoji) {
+            if (!d || !w) return;
+            injectFontsIfNeeded(d);
+
+            let section = d.getElementById('magic-flower-bouquet-section');
+            if (section) section.remove();
+
+            // Selected bouquet index from customEmoji field (used as bouquet ID)
+            const bouquetId = (customEmoji && customEmoji.trim()) ? customEmoji.trim() : 'F2';
+            // Custom back-of-card message
+            const cardMsg = (customText && customText.trim()) ? customText.trim()
+                : (userName ? `A bouquet of love for ${userName} 🌹` : 'A bouquet of love for you 🌹');
+
+            // Inject or update styles
+            let s = d.getElementById('magic-fb-styles');
+            if (!s) {
+                s = d.createElement('style');
+                s.id = 'magic-fb-styles';
+                (d.head || d.body).appendChild(s);
+            }
+            s.textContent = `
+                @keyframes fb-slide-in {
+                    0% { opacity: 0; transform: translateY(80px) scale(0.95); }
+                    70% { opacity: 1; transform: translateY(-8px) scale(1.01); }
+                    100% { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                @keyframes fb-shimmer {
+                    0% { background-position: -200% center; }
+                    100% { background-position: 200% center; }
+                }
+                @keyframes fb-glow-pulse {
+                    0%, 100% { box-shadow: 0 0 24px rgba(255,120,150,0.35), 0 8px 32px rgba(255,160,100,0.2); }
+                    50% { box-shadow: 0 0 48px rgba(255,120,150,0.65), 0 16px 48px rgba(255,160,100,0.4); }
+                }
+                @keyframes fb-petal-float {
+                    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.85; }
+                    50% { transform: translateY(-14px) rotate(18deg) scale(1.08); opacity: 1; }
+                    100% { transform: translateY(0) rotate(-8deg) scale(0.97); opacity: 0.85; }
+                }
+                @keyframes fb-card-shine {
+                    0% { left: -130%; }
+                    60%, 100% { left: 140%; }
+                }
+                #magic-flower-bouquet-section {
+                    width: 92% !important;
+                    max-width: 580px !important;
+                    min-height: auto !important;
+                    height: auto !important;
+                    margin: 40px auto 60px auto !important;
+                    padding: 40px 24px 36px 24px !important;
+                    text-align: center !important;
+                    border-radius: 36px !important;
+                    background: linear-gradient(145deg, rgba(255,242,250,0.92) 0%, rgba(255,249,235,0.88) 100%) !important;
+                    border: 1.5px solid rgba(255,160,185,0.4) !important;
+                    box-sizing: border-box !important;
+                    animation: fb-slide-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) both, fb-glow-pulse 3.5s ease-in-out 1s infinite !important;
+                    position: relative !important;
+                    overflow: visible !important;
+                    clear: both !important;
+                }
+                .fb-header-label {
+                    font-size: 0.76rem;
+                    font-weight: 800;
+                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                    color: #e85c8a;
+                    margin-bottom: 6px;
+                    opacity: 0.9;
+                    font-family: 'Inter', sans-serif;
+                }
+                .fb-title {
+                    font-family: 'Dancing Script', cursive;
+                    font-size: clamp(1.8rem, 4.5vw, 2.3rem);
+                    font-weight: 700;
+                    color: #c23b6e;
+                    margin-bottom: 22px;
+                    line-height: 1.25;
+                    text-shadow: 0 2px 8px rgba(194, 59, 110, 0.12);
+                }
+                .fb-flip-scene {
+                    width: min(340px, 86vw) !important;
+                    height: 390px !important;
+                    margin: 0 auto 20px auto !important;
+                    perspective: 1200px !important;
+                    cursor: pointer !important;
+                    user-select: none !important;
+                    transition: transform 0.3s ease !important;
+                    position: relative !important;
+                }
+                .fb-flip-scene:hover {
+                    transform: translateY(-4px) scale(1.015);
+                }
+                .fb-flip-card {
+                    width: 100% !important;
+                    height: 100% !important;
+                    position: relative !important;
+                    transform-style: preserve-3d !important;
+                    transition: transform 0.72s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+                    border-radius: 28px !important;
+                }
+                .fb-flip-scene.flipped .fb-flip-card {
+                    transform: rotateY(180deg) !important;
+                }
+                .fb-face {
+                    position: absolute !important;
+                    inset: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    border-radius: 28px !important;
+                    backface-visibility: hidden !important;
+                    -webkit-backface-visibility: hidden !important;
+                    overflow: hidden !important;
+                    box-sizing: border-box !important;
+                }
+                .fb-front {
+                    position: absolute !important;
+                    inset: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    background: radial-gradient(circle at 50% 36%, #ffffff 0%, #fff7fa 55%, #ffeaf2 100%);
+                    border: 2px solid rgba(255, 140, 175, 0.6);
+                    box-shadow: 0 20px 48px rgba(232, 92, 138, 0.22), 0 6px 18px rgba(255, 180, 205, 0.28), inset 0 0 28px rgba(255, 255, 255, 0.9);
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    padding: 20px 20px 40px 20px !important;
+                    box-sizing: border-box !important;
+                }
+                .fb-front::before {
+                    content: '';
+                    position: absolute;
+                    inset: 10px;
+                    border: 1px dashed rgba(255, 150, 180, 0.35);
+                    border-radius: 20px;
+                    pointer-events: none;
+                }
+                .fb-front::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -130%;
+                    width: 60%;
+                    height: 100%;
+                    background: linear-gradient(105deg, transparent 25%, rgba(255,255,255,0.65) 50%, transparent 75%);
+                    animation: fb-card-shine 4s ease 1.5s infinite;
+                    pointer-events: none;
+                    border-radius: 28px;
+                }
+                .fb-front img {
+                    width: 100% !important;
+                    height: 100% !important;
+                    max-width: 100% !important;
+                    max-height: 100% !important;
+                    object-fit: contain !important;
+                    object-position: center center !important;
+                    border-radius: 16px;
+                    display: block !important;
+                    filter: drop-shadow(0 14px 26px rgba(180, 40, 80, 0.22)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+                    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+                    pointer-events: none;
+                }
+                .fb-flip-scene:hover .fb-front img {
+                    transform: scale(1.035);
+                }
+                .fb-front-badge {
+                    position: absolute;
+                    bottom: 12px;
+                    right: 14px;
+                    background: rgba(255, 255, 255, 0.94);
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    border: 1px solid rgba(255, 130, 165, 0.5);
+                    border-radius: 20px;
+                    padding: 5px 12px;
+                    font-size: 0.74rem;
+                    font-weight: 700;
+                    color: #c23b6e;
+                    font-family: 'Inter', sans-serif;
+                    box-shadow: 0 4px 12px rgba(214, 51, 108, 0.16);
+                    pointer-events: none;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    letter-spacing: 0.2px;
+                }
+                .fb-back {
+                    position: absolute !important;
+                    inset: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    background: linear-gradient(150deg, #fff2f8 0%, #fffaf0 50%, #ffeef5 100%);
+                    border: 2px solid rgba(255, 150, 180, 0.55);
+                    box-shadow: 0 16px 36px rgba(255, 95, 140, 0.18), inset 0 0 30px rgba(255, 255, 255, 0.9);
+                    transform: rotateY(180deg) !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    padding: 28px 22px !important;
+                    gap: 14px !important;
+                    box-sizing: border-box !important;
+                }
+                .fb-back::before {
+                    content: '';
+                    position: absolute;
+                    inset: 12px;
+                    border: 1.5px dashed rgba(255, 140, 175, 0.45);
+                    border-radius: 20px;
+                    pointer-events: none;
+                }
+                .fb-back-icon {
+                    font-size: 2.8rem;
+                    animation: fb-petal-float 2.4s ease-in-out infinite;
+                    display: block;
+                    filter: drop-shadow(0 6px 12px rgba(220, 50, 100, 0.2));
+                    z-index: 1;
+                }
+                .fb-back-msg {
+                    font-family: 'Dancing Script', cursive;
+                    font-size: clamp(1.15rem, 3.5vw, 1.45rem);
+                    color: #9c2055;
+                    line-height: 1.45;
+                    font-weight: 700;
+                    text-align: center;
+                    max-width: 90%;
+                    word-break: break-word;
+                    z-index: 1;
+                }
+                .fb-back-hint {
+                    font-size: 0.72rem;
+                    color: #c25983;
+                    font-family: 'Inter', sans-serif;
+                    font-weight: 600;
+                    letter-spacing: 0.4px;
+                    z-index: 1;
+                    opacity: 0.85;
+                }
+                .fb-hint {
+                    font-size: 0.76rem;
+                    color: #b86088;
+                    font-family: 'Inter', sans-serif;
+                    font-weight: 600;
+                    letter-spacing: 0.3px;
+                }
+                .fb-floating-petal {
+                    position: absolute;
+                    font-size: 1.35rem;
+                    pointer-events: none;
+                    animation: fb-petal-float 2.8s ease-in-out infinite;
+                    opacity: 0.75;
+                }
+                `;
+
+            section = d.createElement('section');
+            section.id = 'magic-flower-bouquet-section';
+            section.setAttribute('data-bouquet-id', bouquetId);
+
+            // Decorative floating petals
+            const petalEmojis = ['🌸', '🌺', '🌹', '✨', '💮'];
+            const petalPositions = [
+                { top: '-18px', left: '-10px', delay: '0s' },
+                { top: '-12px', right: '8px', delay: '0.6s' },
+                { bottom: '10px', left: '-14px', delay: '1.1s' },
+                { bottom: '-14px', right: '-8px', delay: '0.3s' },
+            ];
+            petalPositions.forEach((pos, i) => {
+                const p = d.createElement('span');
+                p.className = 'fb-floating-petal';
+                p.innerText = petalEmojis[i % petalEmojis.length];
+                Object.assign(p.style, pos, { animationDelay: pos.delay });
+                section.appendChild(p);
+            });
+
+            section.innerHTML += `
+                <div class="fb-header-label">✨ A Gift For You</div>
+                <div class="fb-title">Flowers for you 💐</div>
+                <div class="fb-flip-scene" id="fb-flip-scene" title="Tap to flip">
+                    <div class="fb-flip-card" id="fb-flip-card">
+                        <div class="fb-face fb-front">
+                            <img src="/assets/flowers/${bouquetId}.png" alt="Flower Bouquet" loading="lazy" onerror="this.src='/assets/flowers/F2.png'">
+                            <span class="fb-front-badge">Tap to flip 🌸</span>
+                        </div>
+                        <div class="fb-face fb-back">
+                            <span class="fb-back-icon">🌹</span>
+                            <div class="fb-back-msg">${cardMsg}</div>
+                            <div class="fb-back-hint">Tap to flip back ↺</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="fb-hint">Tap the bouquet to reveal a special message</div>
+            `;
+
+            if (w.insertSectionBeforeFinal) {
+                w.insertSectionBeforeFinal(d, section);
+            } else {
+                const container = d.getElementById('sections-container') || d.body;
+                const finalMessage = d.getElementById('magic-final-surprise-section');
+                const cta = d.getElementById('magic-cta-section');
+                const anchor = finalMessage || cta;
+                if (anchor && anchor.parentNode === container) {
+                    container.insertBefore(section, anchor);
+                } else {
+                    container.appendChild(section);
+                }
+            }
+
+            // Flip interaction
+            const scene = d.getElementById('fb-flip-scene');
+            if (scene) {
+                scene.addEventListener('click', function () {
+                    scene.classList.toggle('flipped');
+                });
+            }
+
+            const scrollFn = w.scrollToElement || (w.parent && w.parent.scrollToElement);
+            if (scrollFn) scrollFn(d, section);
+        },
+        disable: function (d) {
+            d && d.getElementById('magic-flower-bouquet-section') && d.getElementById('magic-flower-bouquet-section').remove();
+            const s = d && d.getElementById('magic-fb-styles');
+            if (s) s.remove();
+        }
+    };
+
     // Global Event Delegation: Guarantees 100% button interactivity on generated & shared websites
     if (typeof document !== 'undefined') {
         const handleGlobalInteraction = function (e) {
@@ -4893,6 +5222,13 @@
                 e.preventDefault();
                 e.stopPropagation();
                 triggerNamedCardCelebration(section || doc, e);
+                return;
+            }
+
+            // 5. Flower Bouquet: Tap to flip card
+            const flipScene = target.closest ? target.closest('.fb-flip-scene') : null;
+            if (flipScene) {
+                flipScene.classList.toggle('flipped');
                 return;
             }
         };
