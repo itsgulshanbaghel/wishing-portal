@@ -86,10 +86,17 @@ export default {
     if (isSlugRequest || isApiRequest) {
       try {
         const reqHeaders = new Headers(request.headers);
-        if (request.cf?.country) reqHeaders.set('cf-ipcountry', request.cf.country);
-        if (request.cf?.city) reqHeaders.set('cf-ipcity', encodeURIComponent(request.cf.city));
+        const cfCountry = (request.cf?.country || request.headers.get('cf-ipcountry') || '').toUpperCase();
         const clientIp = request.headers.get('cf-connecting-ip') || '';
-        if (clientIp) reqHeaders.set('x-forwarded-for', clientIp);
+        if (cfCountry) {
+          reqHeaders.set('cf-ipcountry', cfCountry);
+          reqHeaders.set('x-user-country', cfCountry);
+        }
+        if (request.cf?.city) reqHeaders.set('cf-ipcity', encodeURIComponent(request.cf.city));
+        if (clientIp) {
+          reqHeaders.set('x-forwarded-for', clientIp);
+          reqHeaders.set('x-real-ip', clientIp);
+        }
 
         // Pre-buffer request body if not GET/HEAD so we can retry on backup backend if needed
         let reqBody = null;

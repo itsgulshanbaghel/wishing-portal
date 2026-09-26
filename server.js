@@ -1374,10 +1374,10 @@ const DEFAULT_PRICING = {
 
 function getGeoPrice(req) {
   try {
-    // 1. Check Cloudflare country header
-    const cfCountry = req.headers['cf-ipcountry'];
+    // 1. Check Cloudflare custom header (passed by worker.js) or cf-ipcountry
+    const cfCountry = (req.headers['x-user-country'] || req.headers['cf-ipcountry'] || '').toUpperCase().trim();
     if (cfCountry && cfCountry !== 'XX') {
-      const code = cfCountry.toUpperCase();
+      const code = cfCountry;
       if (code === 'IN') return { ...PRICING_MAP.IN, country: code };
       if (EUROZONE.includes(code)) {
         return {
@@ -1388,9 +1388,10 @@ function getGeoPrice(req) {
       if (PRICING_MAP[code]) return { ...PRICING_MAP[code], country: code };
     }
 
-    // 2. Check IP geoip lookup
+    // 2. Check IP geoip lookup (using x-real-ip or x-forwarded-for)
+    const clientRealIp = (req.headers['x-real-ip'] || '').trim();
     const forwarded = req.headers['x-forwarded-for'];
-    let ip = forwarded ? forwarded.split(',')[0].trim() : (req.socket && req.socket.remoteAddress) || req.ip || '127.0.0.1';
+    let ip = clientRealIp || (forwarded ? forwarded.split(',')[0].trim() : (req.socket && req.socket.remoteAddress) || req.ip || '127.0.0.1');
     if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
     const isLocal = !ip || ip === '127.0.0.1' || ip === '::1' || ip.includes('localhost');
 
@@ -1994,18 +1995,35 @@ app.post('/api/payment/create-order', async (req, res) => {
 
     // Price determined server-side from geo-IP (single source of truth, never trust client)
     const geoPricing = getGeoPrice(req);
-    const { currency, gateway, paypalCurrency, plans } = geoPricing;
-
-    // Normalize plan key
     const planMeta = getPlanMeta(req.body.plan, false);
     const normPlan = planMeta.plan;
-    const defaultPlans = DEFAULT_PRICING.plans;
-    const planData = (plans && plans[normPlan]) ? plans[normPlan] : (defaultPlans[normPlan] || defaultPlans.pro);
+
+    // Check client requested gateway / currency (e.g. Indian user on VPN choosing Cashfree / UPI)
+    const reqGateway = (req.body.gateway || '').toLowerCase().trim();
+    const reqCurrency = (req.body.currency || '').toUpperCase().trim();
+
+    // Determine effective gateway:
+    // 1. If client explicitly requests Cashfree / INR -> route to Cashfree with immutable INR pricing (handles Indian users on VPN)
+    // 2. If client explicitly requests PayPal (from India or abroad) -> route to PayPal
+    // 3. Otherwise default: India -> Cashfree, International -> PayPal
+    const wantsCashfree = reqGateway === 'cashfree' || reqCurrency === 'INR';
+    const isIndiaGeo = (geoPricing.currency === 'INR');
+    const isIndiaUser = wantsCashfree || (isIndiaGeo && reqGateway !== 'paypal');
+    const effectiveGateway = isIndiaUser ? 'cashfree' : 'paypal';
 
     // IMMUTABLE SERVER PRICING - Overwrite and enforce server-side prices strictly (reject client tampering)
+    const activePricing = isIndiaUser ? PRICING_MAP.IN : (geoPricing.currency === 'INR' ? DEFAULT_PRICING : geoPricing);
+    const defaultPlans = DEFAULT_PRICING.plans;
+    const planData = (activePricing.plans && activePricing.plans[normPlan])
+      ? activePricing.plans[normPlan]
+      : (defaultPlans[normPlan] || defaultPlans.pro);
+
+    const currency = isIndiaUser ? 'INR' : (activePricing.currency || 'USD');
+    const gateway = effectiveGateway;
     const amount = Number(planData.amount);
     const paypalAmount = Number(planData.paypalAmount || planData.amount);
     const orderAmount = amount;
+    const targetCurrency = isIndiaUser ? 'INR' : (activePricing.paypalCurrency || 'USD');
 
     // Upload QR center photo to Supabase Storage if provided as base64
     let finalPhotoUrl = qrCenterPhotoUrl || '';
@@ -2063,17 +2081,6 @@ app.post('/api/payment/create-order', async (req, res) => {
         }).catch(() => { });
       }
     } catch (e) { }
-
-    // Determine effective gateway: geo-IP is the single source of truth.
-    // If the server detected India (INR), ALWAYS use Cashfree — ignore any client-supplied
-    // gateway/currency overrides to prevent bypassing local payment rails.
-    const reqGateway = (req.body.gateway || '').toLowerCase().trim();
-    const reqCurrency = (req.body.currency || '').toUpperCase().trim();
-    const isIndiaUser = (currency === 'INR'); // server-side geo-IP decision
-    const effectiveGateway = isIndiaUser
-      ? 'cashfree'  // India: always Cashfree, client override ignored
-      : (reqGateway === 'paypal' || (reqCurrency && reqCurrency !== 'INR') || (currency && currency !== 'INR') ? 'paypal' : gateway);
-    const targetCurrency = isIndiaUser ? 'INR' : (paypalCurrency || (reqCurrency && reqCurrency !== 'INR' ? reqCurrency : 'USD'));
 
     // ── ROUTE DYNAMICALLY: PAYPAL FOR INTERNATIONAL, CASHFREE FOR INDIA ──
     if (effectiveGateway === 'paypal') {

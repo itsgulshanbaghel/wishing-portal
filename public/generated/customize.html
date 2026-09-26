@@ -10497,37 +10497,51 @@
         initialCurrency = isISTEnv ? 'INR' : 'USD';
       }
       let selectedCurrency = initialCurrency;
+      let selectedGateway = (selectedCurrency === 'INR') ? 'cashfree' : 'paypal';
       window.selectedCurrency = selectedCurrency;
-      let activePlan = { plan: 'pro', price: selectedCurrency === 'INR' ? 99 : 1.99, days: 30, label: '30 Days' };
+      window.selectedGateway = selectedGateway;
+      let activePlan = { plan: 'pro', price: selectedCurrency === 'INR' ? 79 : 1.99, days: 30, label: '30 Days' };
+
+      function updateGatewayToggleUI() {}
 
       async function detectUserLocation() {
         const cached = sessionStorage.getItem('detected_currency') || localStorage.getItem('detected_currency');
         if (cached) {
           selectedCurrency = cached;
+          selectedGateway = (selectedCurrency === 'INR') ? 'cashfree' : 'paypal';
           window.selectedCurrency = cached;
-          updatePricingUI();
+          window.selectedGateway = selectedGateway;
+          if (typeof updatePricingUI === 'function') updatePricingUI();
+          updateGatewayToggleUI();
         } else if (isISTEnv) {
           selectedCurrency = 'INR';
+          selectedGateway = 'cashfree';
           window.selectedCurrency = 'INR';
-          updatePricingUI();
+          window.selectedGateway = 'cashfree';
+          if (typeof updatePricingUI === 'function') updatePricingUI();
+          updateGatewayToggleUI();
         }
 
         try {
-          // 1. Try Cloudflare Edge / Server geo-pricing (<5ms)
-          const serverRes = await fetch('/api/geo-pricing').catch(() => null);
+          // 1. Try Cloudflare Edge detect-price (<10ms)
+          const apiBaseUrl = window.APP_CONFIG?.API_BASE_URL || window.location.origin;
+          const serverRes = await fetch(`${apiBaseUrl}/api/payment/detect-price`).catch(() => null);
           if (serverRes && serverRes.ok) {
             const data = await serverRes.json().catch(() => null);
             if (data && data.success && data.currency) {
               selectedCurrency = data.currency;
-              window.selectedCurrency = data.currency;
+              selectedGateway = data.gateway || (data.currency === 'INR' ? 'cashfree' : 'paypal');
+              window.selectedCurrency = selectedCurrency;
+              window.selectedGateway = selectedGateway;
               sessionStorage.setItem('detected_currency', data.currency);
               localStorage.setItem('detected_currency', data.currency);
-              updatePricingUI();
+              if (typeof updatePricingUI === 'function') updatePricingUI();
+              updateGatewayToggleUI();
               return;
             }
           }
 
-          // 2. Try ipapi.co
+          // 2. Try ipapi.co fallback
           const res = await fetch('https://ipapi.co/json/').catch(() => null);
           if (res && res.ok) {
             const data = await res.json().catch(() => null);
@@ -10540,10 +10554,13 @@
               else if (data.country_code === 'PK') selectedCurrency = 'PKR';
               else selectedCurrency = 'USD';
 
+              selectedGateway = (selectedCurrency === 'INR') ? 'cashfree' : 'paypal';
               window.selectedCurrency = selectedCurrency;
+              window.selectedGateway = selectedGateway;
               sessionStorage.setItem('detected_currency', selectedCurrency);
               localStorage.setItem('detected_currency', selectedCurrency);
-              updatePricingUI();
+              if (typeof updatePricingUI === 'function') updatePricingUI();
+              updateGatewayToggleUI();
               return;
             }
           }
@@ -10572,10 +10589,13 @@
           selectedCurrency = 'USD';
         }
 
+        selectedGateway = (selectedCurrency === 'INR') ? 'cashfree' : 'paypal';
         window.selectedCurrency = selectedCurrency;
+        window.selectedGateway = selectedGateway;
         sessionStorage.setItem('detected_currency', selectedCurrency);
         localStorage.setItem('detected_currency', selectedCurrency);
-        updatePricingUI();
+        if (typeof updatePricingUI === 'function') updatePricingUI();
+        updateGatewayToggleUI();
       }
 
       function loadScript(src) {
