@@ -4155,6 +4155,30 @@
     </div>
   </div>
 
+  <!-- Save Error Modal -->
+  <div class="custom-modal" id="saveErrorModal">
+    <div class="modal-card" style="max-width: 460px; padding: 32px 26px 26px;">
+      <div class="modal-close" id="saveErrorModalClose"><i class="fas fa-times"></i></div>
+      <div class="modal-icon" style="color: #ef4444; font-size: 3.2rem; margin-bottom: 16px;">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <h3 id="saveErrorModalTitle" style="font-size: 1.45rem; font-weight: 800; margin-bottom: 12px; font-family: 'Outfit', sans-serif; color: var(--text-primary);">
+        Save Failed
+      </h3>
+      <div class="modal-message" id="saveErrorModalMsg" style="font-size: 0.96rem; line-height: 1.55; margin-bottom: 22px; color: var(--text-secondary);">
+        We couldn't save your changes right now. Please retry or contact support if the issue persists.
+      </div>
+      <div class="modal-buttons" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+        <button class="modal-button" id="saveErrorRetryBtn" type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+          <i class="fas fa-redo-alt"></i> <span>Retry</span>
+        </button>
+        <a class="modal-button secondary" id="saveErrorContactBtn" href="/ContactUs.html" target="_blank" rel="noopener noreferrer" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+          <i class="fas fa-headset"></i> <span>Contact Us</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <audio id="generateShareAudio"
     src="https://www.dropbox.com/scl/fi/yzsnnfxh7a3eyzmgtnbkx/Generated.mp3?rlkey=xqe3p3l6ax1q4ozkjh7iwi3qo&st=mvdt1go2&dl=1"
     preload="auto"></audio>
@@ -4191,6 +4215,59 @@
           window.closeModal();
         });
       });
+
+      // ---------- SAVE ERROR MODAL ----------
+      const saveErrorModal = document.getElementById('saveErrorModal');
+      const saveErrorRetryBtn = document.getElementById('saveErrorRetryBtn');
+      const saveErrorCloseBtn = document.getElementById('saveErrorModalClose');
+
+      window.showSaveErrorModal = function () {
+        if (!saveErrorModal) return;
+        saveErrorModal.classList.add('show');
+      };
+
+      window.closeSaveErrorModal = function () {
+        if (!saveErrorModal) return;
+        saveErrorModal.classList.remove('show');
+      };
+
+      if (saveErrorCloseBtn) {
+        saveErrorCloseBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.closeSaveErrorModal();
+        });
+      }
+
+      if (saveErrorModal) {
+        saveErrorModal.addEventListener('click', (e) => {
+          if (e.target === saveErrorModal) {
+            window.closeSaveErrorModal();
+          }
+        });
+      }
+
+      if (saveErrorRetryBtn) {
+        saveErrorRetryBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (saveErrorRetryBtn.disabled) return;
+          const origContent = saveErrorRetryBtn.innerHTML;
+          saveErrorRetryBtn.disabled = true;
+          saveErrorRetryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Retrying...</span>';
+
+          try {
+            if (typeof window.handleFinalPay === 'function') {
+              await window.handleFinalPay();
+            }
+          } catch (retryErr) {
+            console.error('[SaveRetry] Failed:', retryErr);
+          } finally {
+            if (saveErrorRetryBtn) {
+              saveErrorRetryBtn.disabled = false;
+              saveErrorRetryBtn.innerHTML = origContent;
+            }
+          }
+        });
+      }
 
       // ---------- PREMIUM UPGRADE MODAL ----------
       const upgradeModal = document.getElementById('upgradeModal');
@@ -11184,12 +11261,20 @@
           // 1. SAVE TO SERVER: isPremium is true only for free update on already paid plan
           const saveRes = await saveWebsiteConfigToServer(isFreeUpdate, websiteId);
           if (!saveRes || !saveRes.success || !saveRes.id) {
-            alert(saveRes?.error ? `Website Save Error: ${saveRes.error}` : 'Website Error: Could not save website draft to server before payment. Payment checkout has been aborted. Please check your internet connection and try again.');
             if (btn) {
               btn.innerHTML = originalText || 'Pay Securely';
               btn.disabled = false;
             }
+            if (typeof window.showSaveErrorModal === 'function') {
+              window.showSaveErrorModal();
+            } else {
+              alert('We couldn\'t save your changes right now. Please retry or contact support if the issue persists.');
+            }
             return; // ABORT PAYMENT COMPLETELY
+          }
+
+          if (typeof window.closeSaveErrorModal === 'function') {
+            window.closeSaveErrorModal();
           }
 
           websiteId = saveRes.id;
