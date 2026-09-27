@@ -769,7 +769,6 @@
         <a href="./" id="navHome">Home</a>
         <a href="create" id="navCreate">Create</a>
         <a href="WhyGreeter" id="navWhy">Why Greeter</a>
-        <a href="Pricing" id="navPricing">Pricing</a>
         <a href="blog" id="navShowcase">Blog</a>
         <a href="ContactUs" id="navContact">Contact Us</a>
       </div>
@@ -1164,7 +1163,7 @@
       document.getElementById('navCreate').innerText = t.nav[1];
       document.getElementById('navWhy').innerText = t.nav[2];
       document.getElementById('navShowcase').innerText = t.nav[3];
-      document.getElementById('navPricing').innerText = t.nav[4];
+      if (document.getElementById('navPricing')) document.getElementById('navPricing').innerText = t.nav[4];
       document.getElementById('signinBtn').innerHTML = `<i class="far fa-user-circle"></i> ${t.signin}`;
       // Privacy policy sections
       document.getElementById('policyTitle').innerText = t.policyTitle;

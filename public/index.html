@@ -6913,7 +6913,6 @@
                 <a href="./" id="navHome">Home</a>
                 <a href="create" id="navCreate">Create</a>
                 <a href="WhyGreeter" id="navWhy">Why Greeter</a>
-                <a href="Pricing" id="navPricing">Pricing</a>
                 <a href="blog" id="navShowcase">Blog</a>
                 <a href="ContactUs" id="navContact">Contact Us</a>
             </div>
@@ -6986,7 +6985,7 @@
 
                 <div class="hero-buttons"><button class="btn-primary" id="btnCreatePerson"><i
                             class="fas fa-user-heart"></i> Create Now</button><button class="btn-demo"
-                        id="btnCreateEvent" style="display:none;"><i class="fas fa-circle-play"></i> See Demo</button>
+                        id="btnCreateEvent" onclick="window.location.href='https://thegreeter.in/demo-raman'"><i class="fas fa-circle-play"></i> See Demo</button>
                 </div>
 
 
@@ -7350,7 +7349,7 @@
 
 
 
-                <div class="proof-number"><span class="counter" data-target="6">0</span><span>k+</span></div>
+                <div class="proof-number"><span class="counter" data-target="60">0</span><span>k+</span></div>
 
 
 
@@ -7586,9 +7585,12 @@
 
         <div class="cta-banner">
             <h2 class="cta-headline" id="ctaHeadline">Ready to create something unforgettable?</h2>
-            <p style="font-size: 1.2rem; margin-bottom: 32px;" id="ctaSub">Join 6000+ people who made their loved ones smile.</p>
-            <a href="create" class="btn-white" id="ctaBtn" onclick="startFlow('personal'); return true;"><i class="fas fa-gem"></i> Start creating — Instant & Ad-Free</a>
-            <p style="margin-top: 24px;" id="ctaFine"><i class="fas fa-lock"></i> 100% Ad-Free · Simple One-Time Plans</p>
+            <p style="font-size: 1.2rem; margin-bottom: 32px;" id="ctaSub">Join 60000+ people who made their loved ones
+                smile.</p>
+            <a href="create" class="btn-white" id="ctaBtn" onclick="startFlow('personal'); return true;"><i
+                    class="fas fa-gem"></i> Start creating — Instant & Ad-Free</a>
+            <p style="margin-top: 24px;" id="ctaFine"><i class="fas fa-lock"></i> 100% Ad-Free · Simple One-Time Plans
+            </p>
         </div>
 
 
@@ -8017,11 +8019,11 @@
 
 
 
-                proof: ["Websites created", "Rating from 3k+ reviews", "Average setup time"],
+                proof: ["Pages Created", "Rating from 3k+ reviews", "Average setup time"],
 
 
 
-                ctaHead: "Ready to create something unforgettable?", ctaSub: "Join 6000+ people who made their loved ones smile.", ctaBtn: "Start creating — Instant & Ad-Free", ctaFine: "100% Ad-Free · Simple One-Time Plans",
+                ctaHead: "Ready to create something unforgettable?", ctaSub: "Join 60000+ people who made their loved ones smile.", ctaBtn: "Start creating — Instant & Ad-Free", ctaFine: "100% Ad-Free · Simple One-Time Plans",
 
 
 
@@ -8104,7 +8106,7 @@
 
 
 
-                ctaHead: "कुछ अनोखा बनाने के लिए तैयार हो?", ctaSub: "6000+ लोगों के साथ जुड़ो जिन्होंने अपनों को खुश कर दिया।", ctaBtn: "अभी बनाना शुरू करो — इंस्टेंट और ऐड-फ्री", ctaFine: "100% ऐड-फ्री · आसान वन-टाइम प्लान",
+                ctaHead: "कुछ अनोखा बनाने के लिए तैयार हो?", ctaSub: "60000+ लोगों के साथ जुड़ो जिन्होंने अपनों को खुश कर दिया।", ctaBtn: "अभी बनाना शुरू करो — इंस्टेंट और ऐड-फ्री", ctaFine: "100% ऐड-फ्री · आसान वन-टाइम प्लान",
 
 
 
@@ -8173,7 +8175,7 @@
             document.getElementById('navHome').innerText = t.nav[0];
             document.getElementById('navCreate').innerText = t.nav[1];
             document.getElementById('navWhy').innerText = t.nav[2];
-            document.getElementById('navPricing').innerText = t.nav[3];
+            if (document.getElementById('navPricing')) document.getElementById('navPricing').innerText = t.nav[3];
             document.getElementById('navShowcase').innerText = t.nav[4];
             if (document.getElementById('navContact')) document.getElementById('navContact').innerText = t.nav[5];
 
@@ -8201,7 +8203,7 @@
 
             document.getElementById('btnCreateEvent').className = 'btn-demo';
             document.getElementById('btnCreateEvent').innerHTML = `<i class="fas fa-circle-play"></i> ${t.btnEvent}`;
-            document.getElementById('btnCreateEvent').setAttribute('onclick', "window.location.href='https://thegreeter.in/generated/customize?view=44k1zhizfy&_v=c&lang=en'");
+            document.getElementById('btnCreateEvent').setAttribute('onclick', "window.location.href='https://thegreeter.in/demo-raman'");
 
 
 
@@ -8758,7 +8760,7 @@
 
         if (btnCreateEvent) {
             btnCreateEvent.addEventListener('click', () => {
-                window.location.href = 'https://thegreeter.in/generated/customize?view=44k1zhizfy&_v=c&lang=en';
+                window.location.href = 'https://thegreeter.in/demo-raman';
             });
         }
 
@@ -8804,7 +8806,7 @@
 
 
 
-                animate(document.getElementById('stat1'), 6, false);
+                animate(document.getElementById('stat1'), 60, false);
 
 
 
