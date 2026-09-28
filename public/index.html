@@ -1299,7 +1299,7 @@
 
 
 
-            padding: 18px 40px;
+            padding: 20px 44px;
 
 
 
@@ -1311,7 +1311,7 @@
 
 
 
-            font-size: 1.1rem;
+            font-size: 1.18rem;
 
 
 
@@ -1399,7 +1399,7 @@
 
 
 
-            padding: 18px 40px;
+            padding: 20px 44px;
 
 
 
@@ -1411,7 +1411,7 @@
 
 
 
-            font-size: 1.1rem;
+            font-size: 1.18rem;
 
 
 
@@ -1495,7 +1495,7 @@
 
 
 
-            padding: 18px 40px;
+            padding: 20px 44px;
 
 
 
@@ -1507,7 +1507,7 @@
 
 
 
-            font-size: 1.1rem;
+            font-size: 1.18rem;
 
 
 
@@ -5564,7 +5564,7 @@
 
 
 
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
 
 
 
@@ -5585,6 +5585,8 @@
 
 
             .logo {
+                min-width: 0;
+                overflow: hidden;
 
 
 
@@ -5836,16 +5838,20 @@
 
 
 
-            .btn-friendship {
+            .btn-friendship,
+
+
+
+            .btn-demo {
                 text-decoration: none;
 
 
 
-                padding: 16px 24px;
+                padding: 18px 32px;
 
 
 
-                font-size: 1.05rem;
+                font-size: 1.12rem;
 
 
 
@@ -5853,7 +5859,7 @@
 
 
 
-                max-width: 400px;
+                max-width: 360px;
 
 
 
@@ -6343,7 +6349,16 @@
 
             }
 
+            .share-float {
+                bottom: 20px;
+                right: 16px;
+            }
 
+            .share-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+            }
 
         }
 
@@ -6497,24 +6512,32 @@
 
 
 
-            .btn-friendship {
+            .btn-friendship,
+
+
+
+            .btn-demo {
                 text-decoration: none;
 
 
 
-                padding: 14px 14px;
+                padding: 16px 32px;
 
 
 
-                font-size: 1rem;
+                font-size: 1.1rem;
 
 
 
-                width: auto;
+                width: 100%;
 
 
 
-                max-width: 280px;
+                max-width: 300px;
+
+
+
+                min-width: 220px;
 
 
 
@@ -6985,7 +7008,8 @@
 
                 <div class="hero-buttons"><button class="btn-primary" id="btnCreatePerson"><i
                             class="fas fa-user-heart"></i> Create Now</button><button class="btn-demo"
-                        id="btnCreateEvent" onclick="window.location.href='https://thegreeter.in/demo-raman'"><i class="fas fa-circle-play"></i> See Demo</button>
+                        id="btnCreateEvent" onclick="window.location.href='https://thegreeter.in/demo-raman'"><i
+                            class="fas fa-circle-play"></i> See Demo</button>
                 </div>
 
 
@@ -7588,7 +7612,7 @@
             <p style="font-size: 1.2rem; margin-bottom: 32px;" id="ctaSub">Join 60000+ people who made their loved ones
                 smile.</p>
             <a href="create" class="btn-white" id="ctaBtn" onclick="startFlow('personal'); return true;"><i
-                    class="fas fa-gem"></i> Start creating — Instant & Ad-Free</a>
+                    class="fas fa-gem"></i> Start Creating</a>
             <p style="margin-top: 24px;" id="ctaFine"><i class="fas fa-lock"></i> 100% Ad-Free · Simple One-Time Plans
             </p>
         </div>
@@ -8023,7 +8047,7 @@
 
 
 
-                ctaHead: "Ready to create something unforgettable?", ctaSub: "Join 60000+ people who made their loved ones smile.", ctaBtn: "Start creating — Instant & Ad-Free", ctaFine: "100% Ad-Free · Simple One-Time Plans",
+                ctaHead: "Ready to create something unforgettable?", ctaSub: "Join 60000+ people who made their loved ones smile.", ctaBtn: "Start Creating", ctaFine: "100% Ad-Free · Simple One-Time Plans",
 
 
 

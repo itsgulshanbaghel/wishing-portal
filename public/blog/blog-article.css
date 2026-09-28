@@ -100,6 +100,18 @@ h1.article-title {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
 }
+.idea-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.idea-header .idea-icon {
+  margin-bottom: 0;
+}
+.idea-header .idea-num {
+  margin-bottom: 0;
+}
 .idea-num {
   display: inline-flex;
   align-items: center;
@@ -462,11 +474,216 @@ h1.article-title {
 
 /* ARTICLE MEDIA QUERIES */
 @media (max-width: 768px) {
-  .share-bar { flex-direction: column; text-align: center; }
-  .share-btns { width: 100%; justify-content: center; }
+  .article-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 4px 48px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden;
+  }
+  .breadcrumb {
+    margin-bottom: 16px !important;
+    font-size: 0.8rem !important;
+    gap: 5px !important;
+    line-height: 1.4 !important;
+    word-break: break-word !important;
+  }
+  .article-hero {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 24px 16px 20px !important;
+    border-radius: 20px !important;
+    margin-bottom: 24px !important;
+    box-sizing: border-box !important;
+  }
+  .hero-emoji {
+    font-size: 2.4rem !important;
+    margin-bottom: 8px !important;
+  }
+  .stat-chips {
+    gap: 6px !important;
+    margin: 12px 0 0 !important;
+    width: 100% !important;
+  }
+  .stat-chip {
+    font-size: 0.76rem !important;
+    padding: 5px 10px !important;
+  }
+  h1.article-title {
+    font-size: clamp(1.38rem, 5.2vw, 1.95rem) !important;
+    line-height: 1.25 !important;
+    margin-bottom: 14px !important;
+    letter-spacing: -0.3px !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  .article-meta {
+    gap: 8px 14px !important;
+    font-size: 0.8rem !important;
+    margin-bottom: 20px !important;
+    padding-bottom: 14px !important;
+    width: 100% !important;
+  }
+  .article-body {
+    font-size: 0.98rem !important;
+    line-height: 1.7 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .article-body p {
+    margin-bottom: 18px !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  .article-body h2 {
+    font-size: 1.25rem !important;
+    margin: 30px 0 14px !important;
+    line-height: 1.35 !important;
+    word-break: break-word !important;
+  }
+  .article-body h3 {
+    font-size: 1.08rem !important;
+    margin: 20px 0 8px !important;
+    word-break: break-word !important;
+  }
+  .idea-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 18px 16px !important;
+    border-radius: 18px !important;
+    margin: 16px 0 !important;
+    box-sizing: border-box !important;
+  }
+  .idea-header {
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+  }
+  .idea-icon {
+    font-size: 1.2rem !important;
+    padding: 6px 10px !important;
+    border-radius: 10px !important;
+    margin-bottom: 0 !important;
+  }
+  .idea-num {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.78rem !important;
+    margin-bottom: 0 !important;
+  }
+  .idea-card h3 {
+    font-size: 1.05rem !important;
+    margin-bottom: 6px !important;
+    line-height: 1.35 !important;
+    word-break: break-word !important;
+  }
+  .idea-card p {
+    font-size: 0.9rem !important;
+    line-height: 1.6 !important;
+  }
+  .inline-cta {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 24px 16px !important;
+    border-radius: 18px !important;
+    margin: 28px 0 !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+  .inline-cta h3 {
+    font-size: 1.18rem !important;
+    margin-bottom: 8px !important;
+  }
+  .inline-cta p {
+    font-size: 0.88rem !important;
+    margin-bottom: 16px !important;
+  }
+  .inline-cta a {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    padding: 12px 16px !important;
+    font-size: 0.9rem !important;
+    box-sizing: border-box !important;
+  }
+  .faq-item {
+    border-radius: 14px !important;
+    margin-bottom: 10px !important;
+  }
+  .faq-question {
+    padding: 14px 16px !important;
+    font-size: 0.92rem !important;
+    gap: 10px !important;
+  }
+  .faq-answer {
+    padding: 0 16px !important;
+    font-size: 0.88rem !important;
+  }
+  .faq-item.open .faq-answer {
+    padding: 0 16px 14px !important;
+  }
+  .share-bar {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex-direction: column !important;
+    text-align: center !important;
+    padding: 18px 14px !important;
+    border-radius: 16px !important;
+    margin-top: 32px !important;
+    gap: 12px !important;
+  }
+  .share-btns {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+  .share-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 10px 12px !important;
+    font-size: 0.82rem !important;
+    box-sizing: border-box !important;
+  }
+  .related {
+    margin-top: 40px !important;
+  }
+  .related h2 {
+    font-size: 1.25rem !important;
+    margin-bottom: 16px !important;
+  }
+  .related-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .related-card {
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    text-align: left !important;
+    gap: 12px !important;
+  }
+  .related-card .emoji {
+    font-size: 1.6rem !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  .related-card h3 {
+    font-size: 0.88rem !important;
+  }
+  #backToTop {
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
 }
-@media (max-width: 600px) {
-  .article-hero { padding: 32px 20px; }
-  .stat-chips { gap: 8px; }
-  .stat-chip { font-size: .8rem; padding: 8px 14px; }
+
+@media (max-width: 400px) {
+  .share-btns {
+    flex-direction: column !important;
+  }
+  .share-btn {
+    width: 100% !important;
+  }
 }
