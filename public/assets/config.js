@@ -11,7 +11,7 @@ const CONFIG = {
   ADDITIONAL_API_BASE_URL: null,
 
   // Google Analytics 4 Measurement ID
-  GA_MEASUREMENT_ID: 'G-XXXXXXXXXX'
+  GA_MEASUREMENT_ID: 'G-9TMLX8CMX4'
 };
 
 if (typeof window !== 'undefined' && window.location) {
