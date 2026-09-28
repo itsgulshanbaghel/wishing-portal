@@ -2029,7 +2029,10 @@
 
         // Verify that this website exists before customization
         try {
-          const res = await fetch(`${API_BASE}/api/config/${websiteId}`);
+          const res = await fetch(`${API_BASE}/api/config/${websiteId}?_t=${Date.now()}`, {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache, no-store' }
+          });
           if (!res.ok) {
             showError('Wishing page not found. Please create one before personalizing its URL.');
             return;

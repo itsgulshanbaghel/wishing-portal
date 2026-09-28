@@ -65,10 +65,12 @@ export default {
                           pathSegments[0] !== 'robots.txt' &&
                           pathSegments[0] !== 'sitemap.xml';
 
-    // ⚡ 1. Cloudflare Edge Caching for Read/Slug/Config Requests (<10ms global delivery)
-    const isEdgeCacheable = request.method === 'GET' && (
+    // ⚡ 1. Cloudflare Edge Caching for Read/Slug/Template Requests (<10ms global delivery)
+    const hasNoCache = request.headers.get('cache-control')?.includes('no-cache') || 
+                       request.headers.get('pragma') === 'no-cache' || 
+                       url.searchParams.has('_t');
+    const isEdgeCacheable = !hasNoCache && request.method === 'GET' && (
       isSlugRequest || 
-      path.startsWith('/api/config/') || 
       path.startsWith('/api/templates') ||
       path.startsWith('/api/custom-url/check/')
     );
@@ -211,6 +213,19 @@ export default {
           statusText: response.statusText,
           headers: responseHeaders
         });
+
+        // Invalidate edge cache if website was updated
+        if (request.method === 'POST' && path === '/api/config' && response.status === 200 && reqBody && ctx && ctx.waitUntil) {
+          try {
+            const bodyStr = new TextDecoder().decode(reqBody);
+            const parsed = JSON.parse(bodyStr);
+            const targetId = parsed.websiteId || parsed.id;
+            if (targetId) {
+              const cacheUrl = new URL(`/api/config/${encodeURIComponent(targetId)}`, request.url);
+              ctx.waitUntil(edgeCache.delete(new Request(cacheUrl)));
+            }
+          } catch (e) {}
+        }
 
         // Store successful GET responses in Cloudflare Edge Cache
         if (isEdgeCacheable && response.status === 200 && ctx && ctx.waitUntil) {

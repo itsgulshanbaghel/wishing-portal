@@ -691,8 +691,8 @@ app.get('/api/config/:id', async (req, res) => {
     const safeName = req.params.id.replace(/[^a-z0-9]/gi, '');
     if (!safeName) return res.status(400).json({ error: 'Invalid ID' });
 
-    // Edge CDN caching: 5 min in browser, 24 hours at Cloudflare/CDN edge
-    res.set('Cache-Control', 'public, max-age=300, s-maxage=86400, stale-while-revalidate=604800');
+    // Real-time config delivery: short edge caching with immediate revalidation so edits appear instantly
+    res.set('Cache-Control', 'public, max-age=0, s-maxage=10, must-revalidate');
 
     const host = req.headers.host || req.headers['x-forwarded-host'] || '';
     const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
