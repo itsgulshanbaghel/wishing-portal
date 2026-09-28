@@ -60,7 +60,7 @@ export default {
     const pathSegments = path.split('/').filter(Boolean);
     const isSlugRequest = pathSegments.length === 1 && 
                           !pathSegments[0].includes('.') &&
-                          !['api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 'create', 'clear', 'privacy', 'pricing', 'about', 'contact', 'why', 'whygreeter', 'edit', 'terms'].some(s => pathSegments[0].toLowerCase().startsWith(s)) &&
+                          !['api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 'create', 'clear', 'privacy', 'pricing', 'about', 'contact', 'why', 'whygreeter', 'edit', 'terms', 'birthday', 'romantic', 'anniversary'].some(s => pathSegments[0].toLowerCase().startsWith(s)) &&
                           pathSegments[0] !== 'favicon.ico' &&
                           pathSegments[0] !== 'robots.txt' &&
                           pathSegments[0] !== 'sitemap.xml';
@@ -281,7 +281,15 @@ export default {
       '/privacy': '/privacy.html',
       '/clear': '/clear.html',
       '/terms': '/terms.html',
-      '/terms&cond': '/terms&cond.html'
+      '/terms&cond': '/terms&cond.html',
+      '/birthday-wishes-website': '/birthday-wishes-website.html',
+      '/birthday-wishes-for-girlfriend': '/birthday-wishes-for-girlfriend.html',
+      '/birthday-wishes-for-boyfriend': '/birthday-wishes-for-boyfriend.html',
+      '/birthday-wishes-for-wife': '/birthday-wishes-for-wife.html',
+      '/birthday-wishes-for-husband': '/birthday-wishes-for-husband.html',
+      '/birthday-wishes-for-best-friend': '/birthday-wishes-for-best-friend.html',
+      '/romantic-proposal-website': '/romantic-proposal-website.html',
+      '/anniversary-wishes-website': '/anniversary-wishes-website.html'
     };
 
     if (cleanRoutes[path] && env.ASSETS) {

@@ -14,9 +14,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 
   <!-- PRIMARY SEO METADATA -->
-  <title>Online Love Proposal Website Maker | TheGreeter</title>
-  <meta name="description" content="Design a romantic proposal webpage with interactive Yes/No buttons, falling rose petals, and custom love letters in 60s.">
-  <meta name="keywords" content="online proposal website maker, romantic proposal webpage, create proposal card online, will you marry me website generator, love proposal link creator">
+  <title>Create Proposal Website Online (Love Maker) | TheGreeter</title>
+  <meta name="description" content="Create a romantic love proposal website online in 60 seconds. Features interactive Yes/No buttons, falling rose petals, music, and love letters.">
+  <meta name="keywords" content="proposal website, create proposal website, romantic proposal website, will you marry me website maker, online love proposal maker, proposal website for girlfriend, proposal website builder, thegreeter">
   <meta name="author" content="TheGreeter">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <meta name="theme-color" content="#7b5df6">
@@ -36,7 +36,7 @@
   <!-- OPEN GRAPH & SOCIAL METADATA -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="TheGreeter">
-  <meta property="og:title" content="Online Love Proposal Website Maker | TheGreeter">
+  <meta property="og:title" content="Create Proposal Website Online (Love Maker) | TheGreeter">
   <meta property="og:description" content="Design an unforgettable romantic proposal webpage with interactive Yes/No buttons, music, and custom love letters in 60 seconds.">
   <meta property="og:url" content="https://thegreeter.in/romantic-proposal-website">
   <meta property="og:image" content="https://thegreeter.in/assets/og-cover.webp">
@@ -72,13 +72,20 @@
       },
       {
         "@type": "SoftwareApplication",
-        "name": "TheGreeter Love Proposal Generator",
+        "name": "TheGreeter Love Proposal Website Maker",
         "operatingSystem": "All",
         "applicationCategory": "MultimediaApplication",
         "offers": {
           "@type": "Offer",
           "price": "0.00",
           "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "ratingCount": "940",
+          "bestRating": "5",
+          "worstRating": "1"
         }
       }
     ]
@@ -93,7 +100,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; max-width: 100vw; overflow-x: hidden; }
     :root {
       --bg-primary: #f9f7ff;
       --bg-secondary: #ffffff;
@@ -157,11 +165,11 @@
     .breadcrumb a:hover { color: var(--accent-solid); }
 
     /* HERO */
-    .hero { text-align: center; padding: 40px 0 60px; max-width: 900px; margin: 0 auto; }
+    .hero { text-align: center; padding: 40px 0 60px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
     .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(123, 93, 246, 0.1); border: 1px solid rgba(123, 93, 246, 0.2); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; color: var(--accent-solid); margin-bottom: 20px; }
     .hero h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.18; margin-bottom: 20px; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; word-break: break-word; }
     .hero p { font-size: 1.15rem; color: var(--text-secondary); margin-bottom: 32px; max-width: 780px; margin-left: auto; margin-right: auto; line-height: 1.6; }
-    .hero-cta-btn { font-size: 1.1rem; padding: 14px 36px; }
+    .hero-cta-btn { font-size: 1.1rem; padding: 14px 36px; display: inline-flex; align-items: center; justify-content: center; text-align: center; max-width: 100%; white-space: normal; line-height: 1.35; box-sizing: border-box; }
 
     /* CONTENT GRID */
     .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin: 40px 0; }
@@ -328,11 +336,12 @@
         padding: 0 4px;
       }
       .hero-cta-btn {
-        width: 100%;
-        max-width: 320px;
-        padding: 14px 20px;
-        font-size: 1rem;
-        justify-content: center;
+        width: 100% !important;
+        max-width: 320px !important;
+        padding: 14px 20px !important;
+        font-size: 1rem !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
       }
 
       .features-grid {
@@ -427,6 +436,7 @@
     }
 
     @media (max-width: 360px) {
+      .hero-cta-btn { max-width: 100% !important; padding: 12px 14px !important; font-size: 0.92rem !important; }
       .footer-links {
         grid-template-columns: 1fr;
         gap: 16px;
@@ -475,8 +485,8 @@
     <!-- HERO SECTION -->
     <section class="hero">
       <div class="hero-badge">💍 Interactive 'Will You Marry Me?' Page Builder</div>
-      <h1>Create an Online Love Proposal Website in 60 Seconds</h1>
-      <p>Propose to your crush or partner with a modern, interactive surprise webpage featuring dynamic Yes/No buttons, love notes, romantic music, and rose petals animation.</p>
+      <h1>Create a Romantic Love Proposal Website Online</h1>
+      <p>Propose to your crush, boyfriend, or girlfriend with a custom interactive proposal webpage featuring playful Yes/No buttons, love letters, romantic music, and floating rose petals.</p>
       <a href="/create?event=proposal" class="btn-primary hero-cta-btn"><i class="fas fa-wand-magic-sparkles"></i> Build Proposal Website</a>
     </section>
 

@@ -940,13 +940,67 @@
 
 
         .nav-links a:hover {
-
-
-
             color: #ff7a2f;
+        }
 
-
-
+        .nav-item-dropdown {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        .nav-drop-btn {
+            text-decoration: none;
+            color: inherit;
+            font-size: 0.95rem;
+            padding: 6px 0;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 600;
+            transition: 0.25s;
+        }
+        .nav-drop-btn:hover {
+            color: #ff7a2f;
+        }
+        .nav-dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            min-width: 220px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 8px;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+        }
+        .nav-item-dropdown:hover .nav-dropdown-content,
+        .nav-item-dropdown:focus-within .nav-dropdown-content {
+            display: flex;
+            flex-direction: column;
+        }
+        .nav-dropdown-content a {
+            color: var(--text-primary) !important;
+            padding: 10px 14px !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem !important;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: background 0.2s, color 0.2s;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .nav-dropdown-content a::after {
+            display: none !important;
+        }
+        .nav-dropdown-content a:hover {
+            background: rgba(123, 93, 246, 0.12);
+            color: var(--accent-solid, #7b5df6) !important;
         }
 
 
@@ -5743,25 +5797,31 @@
 
 
             .nav-links.show {
-
-
-
                 display: flex;
-
-
-
                 opacity: 1;
-
-
-
                 transform: translateY(0);
-
-
-
                 pointer-events: auto;
+            }
 
-
-
+            .nav-item-dropdown {
+                flex-direction: column;
+                width: 100%;
+            }
+            .nav-dropdown-content {
+                position: static;
+                transform: none;
+                display: flex;
+                flex-direction: column;
+                box-shadow: none;
+                background: transparent;
+                border: none;
+                padding: 4px 0 0 0;
+                min-width: 100%;
+            }
+            .nav-dropdown-content a {
+                padding: 6px 12px !important;
+                font-size: 0.88rem !important;
+                justify-content: center;
             }
 
 
@@ -6930,11 +6990,17 @@
 
 
             <div class="nav-links" id="navLinks">
-
-
-
                 <a href="./" id="navHome">Home</a>
                 <a href="create" id="navCreate">Create</a>
+                <div class="nav-item-dropdown" id="navOccasionsDropdown">
+                    <a href="javascript:void(0)" class="nav-drop-btn" id="navOccasionsBtn">Occasions <i class="fas fa-chevron-down" style="font-size: 0.72rem; margin-left: 4px;"></i></a>
+                    <div class="nav-dropdown-content">
+                        <a href="birthday-wishes-website" id="navBirthdayLink">🎂 Birthday Website</a>
+                        <a href="romantic-proposal-website" id="navProposalLink">💍 Proposal Website</a>
+                        <a href="anniversary-wishes-website" id="navAnniversaryLink">💖 Anniversary Website</a>
+                        <a href="festival-greetings-website" id="navFestivalLink">✨ Festival Wishes</a>
+                    </div>
+                </div>
                 <a href="WhyGreeter" id="navWhy">Why Greeter</a>
                 <a href="blog" id="navShowcase">Blog</a>
                 <a href="ContactUs" id="navContact">Contact Us</a>
@@ -7702,13 +7768,16 @@
 
 
                 <div class="footer-links">
-
-
-
                     <div class="footer-col">
-
-
-
+                        <h4 id="occasionsTitle">Occasions</h4>
+                        <ul>
+                            <li><a href="birthday-wishes-website" id="footerBirthday">Birthday Website</a></li>
+                            <li><a href="romantic-proposal-website" id="footerProposal">Proposal Website</a></li>
+                            <li><a href="anniversary-wishes-website" id="footerAnniversary">Anniversary Website</a></li>
+                            <li><a href="festival-greetings-website" id="footerFestival">Festival Wishes</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
                         <h4 id="exploreTitle">Explore</h4>
 
 
@@ -8055,6 +8124,9 @@
 
 
 
+                occasionsNav: "Occasions",
+                occasionsTitle: "Occasions",
+                occasionsLinks: ["Birthday Website", "Proposal Website", "Anniversary Website", "Festival Wishes"],
                 exploreTitle: "Explore", exploreLinks: ["Create", "Why Greeter", "Pricing", "About Us"],
 
 
@@ -8138,6 +8210,9 @@
 
 
 
+                occasionsNav: "अवसर",
+                occasionsTitle: "अवसर",
+                occasionsLinks: ["जन्मदिन वेबसाइट", "प्रपोज़ल वेबसाइट", "सालगिरह वेबसाइट", "त्योहार वेबसाइट"],
                 exploreTitle: "देखिए", exploreLinks: ["बनाएं", "ग्रीटर क्यों", "मूल्य निर्धारण", "हमारे बारे में"],
 
 
@@ -8298,6 +8373,20 @@
             document.getElementById('footerBrandText').innerText = t.footerBrand;
 
 
+
+            if (document.getElementById('navOccasionsBtn')) {
+                document.getElementById('navOccasionsBtn').innerHTML = `${t.occasionsNav} <i class="fas fa-chevron-down" style="font-size: 0.72rem; margin-left: 4px;"></i>`;
+            }
+            if (document.getElementById('occasionsTitle')) {
+                document.getElementById('occasionsTitle').innerText = t.occasionsTitle;
+            }
+            const occasionIds = ['footerBirthday', 'footerProposal', 'footerAnniversary', 'footerFestival'];
+            const navOccasionIds = ['navBirthdayLink', 'navProposalLink', 'navAnniversaryLink', 'navFestivalLink'];
+            const occasionIcons = ['🎂 ', '💍 ', '💖 ', '✨ '];
+            t.occasionsLinks.forEach((txt, i) => {
+                if (document.getElementById(occasionIds[i])) document.getElementById(occasionIds[i]).innerText = txt;
+                if (document.getElementById(navOccasionIds[i])) document.getElementById(navOccasionIds[i]).innerText = occasionIcons[i] + txt;
+            });
 
             document.getElementById('exploreTitle').innerText = t.exploreTitle;
 
