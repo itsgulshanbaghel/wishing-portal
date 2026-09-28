@@ -452,7 +452,7 @@
             let t = TRANSLATIONS[currentLang];
 
             // Load user data (memories, name, custom story/wishes)
-            let userData = { name: null, story: null, wishes: null, memories: [] };
+            let userData = { name: null, story: null, wishes: null, memories: [], proposalFor: null, proposalQuestion: null };
             try {
                 const raw = localStorage.getItem('userData');
                 if (raw) {
@@ -461,6 +461,8 @@
                     userData.story = parsed.story || null;
                     userData.wishes = parsed.wishes || null;
                     userData.memories = Array.isArray(parsed.memories) ? parsed.memories : [];
+                    userData.proposalFor = parsed.proposalFor || null;
+                    userData.proposalQuestion = parsed.proposalQuestion || null;
                 }
             } catch (e) { }
 
@@ -544,10 +546,33 @@
                 letterBodyEl.innerText = currentStory;
                 letterSignEl.innerText = t.letterSign;
                 questionStaticEl.innerText = t.questionStatic;
-                questionNameEl.innerText = t.questionName.replace('{name}', currentName);
+                const pFor = (new URLSearchParams(location.search).get('proposalFor') || userData.proposalFor || '').toLowerCase();
+                const customQ = new URLSearchParams(location.search).get('question') || userData.proposalQuestion;
+                if (customQ) {
+                    let cleanQ = customQ.trim();
+                    if (cleanQ.endsWith('?')) cleanQ = cleanQ.slice(0, -1).trim();
+                    questionNameEl.innerText = `${cleanQ}, ${currentName}? 💍`;
+                } else if (pFor === 'girlfriend') {
+                    questionNameEl.innerText = `Will you be my girlfriend, ${currentName}? 💕`;
+                } else if (pFor === 'boyfriend') {
+                    questionNameEl.innerText = `Will you be my boyfriend, ${currentName}? 💕`;
+                } else if (pFor === 'bestfriend') {
+                    questionNameEl.innerText = `Will you be my best friend, ${currentName}? 💖`;
+                } else if (pFor === 'friend') {
+                    questionNameEl.innerText = `Will you be my friend, ${currentName}? 💖`;
+                } else if (pFor === 'partner') {
+                    questionNameEl.innerText = `Will you be my partner, ${currentName}? 💕`;
+                } else {
+                    questionNameEl.innerText = t.questionName.replace('{name}', currentName);
+                }
                 yesBtn.innerText = t.yesBtn;
                 noBtn.innerText = t.noBtn;
-                celebTitleEl.innerText = t.celebrationTitle;
+
+                if (pFor === 'boyfriend' || pFor === 'husband') celebTitleEl.innerText = 'He said YES! 💖';
+                else if (pFor === 'girlfriend' || pFor === 'wife') celebTitleEl.innerText = 'She said YES! 💖';
+                else if (pFor === 'bestfriend' || pFor === 'friend') celebTitleEl.innerText = 'Proposal Accepted! 💖';
+                else if (pFor === 'partner' || pFor === 'other') celebTitleEl.innerText = 'They said YES! 💖';
+                else celebTitleEl.innerText = t.celebrationTitle;
                 celebMsgEl.innerText = currentWishes;
                 closeCelebBtn.innerText = t.celebrationBtn;
 

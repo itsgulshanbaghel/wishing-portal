@@ -423,6 +423,27 @@
     if (userStory)  letterTextEl.innerText = userStory;
     if (userWishes) celMsgEl.innerText     = userWishes;
 
+    const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+    const customQ = params.get('question') || userData.proposalQuestion;
+    if (customQ) {
+      qTextEl.innerText = customQ;
+    } else if (pFor === 'girlfriend') {
+      qTextEl.innerText = 'Will You Be My Girlfriend?';
+    } else if (pFor === 'boyfriend') {
+      qTextEl.innerText = 'Will You Be My Boyfriend?';
+    } else if (pFor === 'bestfriend') {
+      qTextEl.innerText = 'Will You Be My Best Friend?';
+    } else if (pFor === 'friend') {
+      qTextEl.innerText = 'Will You Be My Friend?';
+    } else if (pFor === 'partner') {
+      qTextEl.innerText = 'Will You Be My Partner?';
+    }
+
+    if (pFor === 'boyfriend' || pFor === 'husband') celTitleEl.innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'He Said Yes! 💖');
+    else if (pFor === 'girlfriend' || pFor === 'wife') celTitleEl.innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'She Said Yes! 💖');
+    else if (pFor === 'bestfriend' || pFor === 'friend') celTitleEl.innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
+    else if (pFor === 'partner' || pFor === 'other') celTitleEl.innerText = (lang === 'hi' ? 'उन्होंने हाँ कह दिया! 💖' : 'They Said Yes! 💖');
+
     // Gallery
     if (userMems.length > 0) {
       const gal = document.getElementById('gallery');

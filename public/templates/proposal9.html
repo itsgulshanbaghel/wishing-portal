@@ -479,7 +479,25 @@
             function apply() {
                 t = T[lang];
                 document.getElementById('tagTxt').textContent = t.tag;
-                document.getElementById('h1').textContent = t.h1;
+                const pFor = (new URLSearchParams(location.search).get('proposalFor') || ud.proposalFor || '').toLowerCase();
+                const customQ = new URLSearchParams(location.search).get('question') || ud.proposalQuestion;
+                if (customQ) {
+                    document.getElementById('h1').textContent = customQ;
+                } else if (pFor === 'girlfriend') {
+                    document.getElementById('h1').textContent = 'Will You Be My Girlfriend?';
+                } else if (pFor === 'boyfriend') {
+                    document.getElementById('h1').textContent = 'Will You Be My Boyfriend?';
+                } else if (pFor === 'wife' || pFor === 'husband') {
+                    document.getElementById('h1').textContent = 'Will You Marry Me?';
+                } else if (pFor === 'bestfriend') {
+                    document.getElementById('h1').textContent = 'Will You Be My Best Friend?';
+                } else if (pFor === 'friend') {
+                    document.getElementById('h1').textContent = 'Will You Be My Friend?';
+                } else if (pFor === 'partner') {
+                    document.getElementById('h1').textContent = 'Will You Be My Partner?';
+                } else {
+                    document.getElementById('h1').textContent = t.h1;
+                }
                 document.getElementById('nameBl').textContent = name;
                 document.getElementById('storyP').textContent = story;
                 document.getElementById('secH').textContent = t.secH;
@@ -489,7 +507,11 @@
                 document.getElementById('yesBtn').textContent = t.yesBtn;
                 document.getElementById('noBtn').textContent = t.noBtn;
                 document.getElementById('celBtn').textContent = t.celBtn;
-                document.getElementById('celH').textContent = t.celH;
+                if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celH').textContent = (lang === 'hi' ? 'उसने हाँ कहा! 🌸' : 'He Said YES! 🌸');
+                else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celH').textContent = (lang === 'hi' ? 'उसने हाँ कहा! 🌸' : 'She Said YES! 🌸');
+                else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celH').textContent = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 🌸' : 'Proposal Accepted! 🌸');
+                else if (pFor === 'partner' || pFor === 'other') document.getElementById('celH').textContent = (lang === 'hi' ? 'उन्होंने हाँ कहा! 🌸' : 'They Said YES! 🌸');
+                else document.getElementById('celH').textContent = t.celH;
                 document.getElementById('celP').textContent = t.celP;
                 buildGal();
             }

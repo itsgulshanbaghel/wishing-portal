@@ -654,7 +654,7 @@
     <!-- celebration modal -->
     <div id="celebrationModal" class="modal-celebrate">
         <div class="cel-ring">💍💖</div>
-        <div class="cel-title">She said YES!</div>
+        <div class="cel-title" id="celTitle">She said YES!</div>
         <div class="cel-sub" id="celSubMsg"></div>
         <button
             style="margin-top:32px; background:transparent; border:1px solid var(--gold); padding:8px 28px; border-radius:40px; color:var(--gold); cursor:pointer; font-family:'Cinzel';"
@@ -748,7 +748,33 @@
             function applyLanguage() {
                 if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
                 t = translations[lang];
-                document.getElementById('heroTitle').innerText = t.heroTitle;
+                const pFor = (new URLSearchParams(location.search).get('proposalFor') || userData.proposalFor || '').toLowerCase();
+                const customQ = new URLSearchParams(location.search).get('question') || userData.proposalQuestion;
+                if (customQ) {
+                    let cleanQ = customQ.trim();
+                    if (cleanQ.endsWith('?')) cleanQ = cleanQ.slice(0, -1).trim();
+                    document.getElementById('heroTitle').innerText = cleanQ + ',';
+                } else if (pFor === 'girlfriend') {
+                    document.getElementById('heroTitle').innerText = 'Will You Be My Girlfriend,';
+                } else if (pFor === 'boyfriend') {
+                    document.getElementById('heroTitle').innerText = 'Will You Be My Boyfriend,';
+                } else if (pFor === 'bestfriend') {
+                    document.getElementById('heroTitle').innerText = 'Will You Be My Best Friend,';
+                } else if (pFor === 'friend') {
+                    document.getElementById('heroTitle').innerText = 'Will You Be My Friend,';
+                } else if (pFor === 'partner') {
+                    document.getElementById('heroTitle').innerText = 'Will You Be My Partner,';
+                } else {
+                    document.getElementById('heroTitle').innerText = t.heroTitle;
+                }
+                const celTitleEl = document.getElementById('celTitle');
+                if (celTitleEl) {
+                    if (pFor === 'boyfriend' || pFor === 'husband') celTitleEl.innerText = 'He said YES! 💖';
+                    else if (pFor === 'girlfriend' || pFor === 'wife') celTitleEl.innerText = 'She said YES! 💖';
+                    else if (pFor === 'bestfriend' || pFor === 'friend') celTitleEl.innerText = 'Proposal Accepted! 💖';
+                    else if (pFor === 'partner' || pFor === 'other') celTitleEl.innerText = 'They said YES! 💖';
+                    else celTitleEl.innerText = 'She said YES!';
+                }
                 document.getElementById('messageText').innerText = storyMsg;
                 document.getElementById('promiseText').innerHTML = t.promiseText.replace('{name}', userName);
                 document.getElementById('yesBtn').innerText = t.yesBtn;

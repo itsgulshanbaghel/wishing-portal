@@ -490,10 +490,32 @@
                 document.getElementById('lBody').textContent = story;
                 document.getElementById('lSign').textContent = t.lSign;
                 document.getElementById('qText').textContent = t.qText;
-                document.getElementById('qName').textContent = t.qName.replace('?', ', ' + name + '?');
+                const pFor = (new URLSearchParams(location.search).get('proposalFor') || ud.proposalFor || '').toLowerCase();
+                const customQ = new URLSearchParams(location.search).get('question') || ud.proposalQuestion;
+                if (customQ) {
+                    let cleanQ = customQ.trim();
+                    if (cleanQ.endsWith('?')) cleanQ = cleanQ.slice(0, -1).trim();
+                    document.getElementById('qName').textContent = `${cleanQ}, ${name}? 💕`;
+                } else if (pFor === 'girlfriend') {
+                    document.getElementById('qName').textContent = `Will you be my girlfriend, ${name}? 💕`;
+                } else if (pFor === 'boyfriend') {
+                    document.getElementById('qName').textContent = `Will you be my boyfriend, ${name}? 💕`;
+                } else if (pFor === 'bestfriend') {
+                    document.getElementById('qName').textContent = `Will you be my best friend, ${name}? 💖`;
+                } else if (pFor === 'friend') {
+                    document.getElementById('qName').textContent = `Will you be my friend, ${name}? 💖`;
+                } else if (pFor === 'partner') {
+                    document.getElementById('qName').textContent = `Will you be my partner, ${name}? 💕`;
+                } else {
+                    document.getElementById('qName').textContent = t.qName.replace('?', ', ' + name + '?');
+                }
                 document.getElementById('yesBtn').textContent = t.yesBtn;
                 document.getElementById('noBtn').textContent = t.noBtn;
-                document.getElementById('celH').textContent = t.celH;
+                if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celH').textContent = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'He said YES! 💖');
+                else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celH').textContent = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'She said YES! 💖');
+                else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celH').textContent = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
+                else if (pFor === 'partner' || pFor === 'other') document.getElementById('celH').textContent = (lang === 'hi' ? 'उन्होंने हाँ कह दिया! 💖' : 'They said YES! 💖');
+                else document.getElementById('celH').textContent = t.celH;
                 document.getElementById('celP').textContent = wishes;
                 buildPols();
             }

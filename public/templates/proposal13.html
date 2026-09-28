@@ -421,9 +421,29 @@
             document.getElementById('reasonsTitle').innerText = t.reasonsTitle;
             document.getElementById('promisesTitle').innerText = t.promisesTitle;
             document.getElementById('preQuestion').innerText = t.preQuestion;
-            document.getElementById('bigQuestion').innerText = t.bigQuestion;
+            const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+            const customQ = params.get('question') || userData.proposalQuestion;
+            if (customQ) {
+                document.getElementById('bigQuestion').innerText = customQ;
+            } else if (pFor === 'girlfriend') {
+                document.getElementById('bigQuestion').innerText = 'Will you be my girlfriend?';
+            } else if (pFor === 'boyfriend') {
+                document.getElementById('bigQuestion').innerText = 'Will you be my boyfriend?';
+            } else if (pFor === 'bestfriend') {
+                document.getElementById('bigQuestion').innerText = 'Will you be my best friend?';
+            } else if (pFor === 'friend') {
+                document.getElementById('bigQuestion').innerText = 'Will you be my friend?';
+            } else if (pFor === 'partner') {
+                document.getElementById('bigQuestion').innerText = 'Will you be my partner?';
+            } else {
+                document.getElementById('bigQuestion').innerText = t.bigQuestion;
+            }
             document.getElementById('yesSimple').innerText = t.yesText;
-            document.getElementById('celebTitleSimple').innerText = t.celebTitleSimple;
+            if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उसने हाँ कहा!' : 'He said yes! 💖');
+            else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उसने हाँ कहा!' : 'She said yes! 💖');
+            else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार!' : 'Proposal accepted! 💖');
+            else if (pFor === 'partner' || pFor === 'other') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उन्होंने हाँ कहा!' : 'They said yes! 💖');
+            else document.getElementById('celebTitleSimple').innerText = t.celebTitleSimple;
             document.getElementById('celebMsgSimple').innerText = userWish || t.celebMsgSimple;
 
             // simple timeline

@@ -444,6 +444,28 @@
             try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
             function refreshUI() {
                 applyLang();
+                const params = new URLSearchParams(location.search);
+                const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+                const customQ = params.get('question') || userData.proposalQuestion;
+                if (customQ) {
+                    document.getElementById('qText').innerText = customQ;
+                } else if (pFor === 'girlfriend') {
+                    document.getElementById('qText').innerText = 'Will you be my girlfriend?';
+                } else if (pFor === 'boyfriend') {
+                    document.getElementById('qText').innerText = 'Will you be my boyfriend?';
+                } else if (pFor === 'bestfriend') {
+                    document.getElementById('qText').innerText = 'Will you be my best friend?';
+                } else if (pFor === 'friend') {
+                    document.getElementById('qText').innerText = 'Will you be my friend?';
+                } else if (pFor === 'partner') {
+                    document.getElementById('qText').innerText = 'Will you be my partner?';
+                }
+
+                if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celTitle').innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'He Said Yes! 💖');
+                else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celTitle').innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'She Said Yes! 💖');
+                else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celTitle').innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
+                else if (pFor === 'partner' || pFor === 'other') document.getElementById('celTitle').innerText = (lang === 'hi' ? 'उन्होंने हाँ कह दिया! 💖' : 'They Said Yes! 💖');
+
                 if (userData.name) document.getElementById('heroTitle').innerText = (lang === 'hi' ? 'मेरी खूबसूरत कली ' : 'My Beautiful Bloom ') + userData.name;
                 if (userData.story) document.getElementById('secretMsg').innerText = userData.story;
                 if (userData.wishes) document.getElementById('celMsg').innerText = userData.wishes;

@@ -485,9 +485,29 @@
             document.getElementById('reasonsCosmicHeading').innerText = t.reasonsHeading;
             document.getElementById('promisesCosmicHeading').innerText = t.promisesHeading;
             document.getElementById('proposalPre').innerText = t.proposalPre;
-            document.getElementById('proposalBigQuestion').innerText = t.proposalQuestion;
+            const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+            const customQ = params.get('question') || userData.proposalQuestion;
+            if (customQ) {
+                document.getElementById('proposalBigQuestion').innerText = customQ;
+            } else if (pFor === 'girlfriend') {
+                document.getElementById('proposalBigQuestion').innerText = 'Will you be my girlfriend?';
+            } else if (pFor === 'boyfriend') {
+                document.getElementById('proposalBigQuestion').innerText = 'Will you be my boyfriend?';
+            } else if (pFor === 'bestfriend') {
+                document.getElementById('proposalBigQuestion').innerText = 'Will you be my best friend?';
+            } else if (pFor === 'friend') {
+                document.getElementById('proposalBigQuestion').innerText = 'Will you be my friend?';
+            } else if (pFor === 'partner') {
+                document.getElementById('proposalBigQuestion').innerText = 'Will you be my partner?';
+            } else {
+                document.getElementById('proposalBigQuestion').innerText = t.proposalQuestion;
+            }
             document.getElementById('yesCosmic').innerText = t.yesText;
-            document.getElementById('cosmicCelebTitle').innerHTML = t.celebTitle;
+            if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उसने हमेशा के लिए हाँ कहा! 💖' : 'He Said Yes to Forever! 💖');
+            else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उसने हमेशा के लिए हाँ कहा! 💖' : 'She Said Yes to Forever! 💖');
+            else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
+            else if (pFor === 'partner' || pFor === 'other') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उन्होंने हमेशा के लिए हाँ कहा! 💖' : 'They Said Yes to Forever! 💖');
+            else document.getElementById('cosmicCelebTitle').innerHTML = t.celebTitle;
             document.getElementById('cosmicCelebMsg').innerText = userWish || t.celebMsgDefault;
 
             // constellation

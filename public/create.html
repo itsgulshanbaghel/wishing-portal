@@ -1968,10 +1968,21 @@
                 <option value="bestfriend">Best Friend 💖</option>
                 <option value="friend">Friend 💖</option>
                 <option value="partner">Partner 💕</option>
+                <option value="other">Other / Custom 💫</option>
               </select>
               <div id="proposalForError" class="error-message" style="display: none;"><i
                   class="fas fa-exclamation-circle"></i>
                 Please select what you're proposing for</div>
+              <div id="proposalQuestionWrapper" style="display: none; margin-top: 12px;">
+                <label id="proposalQuestionLabel" style="font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; justify-content: space-between;">
+                  <span><i class="fas fa-comment-dots"></i> Proposal Question</span>
+                  <span style="font-size: 0.78rem; opacity: 0.75; font-weight: 400;">Customizable</span>
+                </label>
+                <input type="text" id="proposalQuestionInput" placeholder="e.g. Will you be my girlfriend?" autocomplete="off" style="margin-top: 6px;">
+                <div id="proposalQuestionHint" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-info-circle"></i> <span>You can customize this question</span>
+                </div>
+              </div>
             </div>
           </div>
           <div>
@@ -2488,7 +2499,9 @@
           moodOptions: { romantic: "Romantic 😍", funny: "Funny 😂", emotional: "Emotional 🥹", happy: "Happy 😇", roast: "Roast 😈", normal: "Normal 😊" },
           shareMessages: { instaAlert: "📸 Instagram sharing: Copy the link: " },
           proposalForLabel: "Proposal for", proposalForErrorMsg: "Please select what you're proposing for",
-          proposalOptions: { placeholder: "-- Select Relationship --", girlfriend: "Girlfriend 💕", boyfriend: "Boyfriend 💕", wife: "Wife 💍", husband: "Husband 💍", bestfriend: "Best Friend 💖", friend: "Friend 💖", partner: "Partner 💕" },
+          proposalQuestionLabel: "Proposal Question", proposalQuestionHint: "You can customize this question",
+          proposalQuestionPlaceholder: "e.g. Will you be my girlfriend?",
+          proposalOptions: { placeholder: "-- Select Relationship --", girlfriend: "Girlfriend 💕", boyfriend: "Boyfriend 💕", wife: "Wife 💍", husband: "Husband 💍", bestfriend: "Best Friend 💖", friend: "Friend 💖", partner: "Partner 💕", other: "Other / Custom 💫" },
           aiErrors: { quotaExceeded: "⚠️ Please try again after some time.", genericFail: "AI generation failed: ", missingEvent: "🎯 Please select an event first — it helps us set the right mood!", missingMood: "😊 Don't forget to choose a mood for the perfect tone.", missingName: "👤 We need a name to personalize this special message.", missingFestival: "🎉 Which festival are we celebrating? Please enter the name." }
         },
         hi: {
@@ -2504,7 +2517,9 @@
           moodOptions: { romantic: "रोमांटिक 😍", funny: "मज़ाकिया 😂", emotional: "इमोशनल 🥹", happy: "खुश 😇", roast: "रोस्ट 😈", normal: "सामान्य 😊" },
           shareMessages: { instaAlert: "📸 इंस्टाग्राम पर शेयर करने के लिए लिंक कॉपी करें: " },
           proposalForLabel: "किसके लिए प्रपोज़ल", proposalForErrorMsg: "कृपया चुनें कि आप किसे प्रपोज़ कर रहे हैं",
-          proposalOptions: { placeholder: "-- रिश्ता चुनें --", girlfriend: "गर्लफ्रेंड 💕", boyfriend: "बॉयफ्रेंड 💕", wife: "पत्नी 💍", husband: "पति 💍", bestfriend: "बेस्ट फ्रेंड 💖", friend: "दोस्त 💖", partner: "पार्टनर 💕" },
+          proposalQuestionLabel: "प्रपोज़ल प्रश्न", proposalQuestionHint: "आप इस प्रश्न को अपनी पसंद अनुसार बदल सकते हैं",
+          proposalQuestionPlaceholder: "उदा. क्या तुम मेरी गर्लफ्रेंड बनोगी?",
+          proposalOptions: { placeholder: "-- रिश्ता चुनें --", girlfriend: "गर्लफ्रेंड 💕", boyfriend: "बॉयफ्रेंड 💕", wife: "पत्नी 💍", husband: "पति 💍", bestfriend: "बेस्ट फ्रेंड 💖", friend: "दोस्त 💖", partner: "पार्टनर 💕", other: "अन्य / कस्टम 💫" },
           aiErrors: { quotaExceeded: "⚠️ कृपया कुछ समय बाद प्रयास करें।", genericFail: "AI जनरेशन फेल हो गया: ", missingEvent: "🎯 कृपया पहले कोई मौका चुनें — यह सही माहौल बनाने में मदद करता है!", missingMood: "😊 सही टोन के लिए मूड चुनना न भूलें।", missingName: "👤 इस खास संदेश को व्यक्तिगत बनाने के लिए नाम की ज़रूरत है।", missingFestival: "🎉 हम कौन सा त्योहार मना रहे हैं? कृपया नाम बताएं।" }
         }
       };
@@ -2536,6 +2551,12 @@
         document.getElementById('moodError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.moodErrorMsg}`;
         document.getElementById('proposalForLabel').innerHTML = `<i class="fas fa-ring"></i> ${t.proposalForLabel}`;
         document.getElementById('proposalForError').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${t.proposalForErrorMsg}`;
+        const pqLabel = document.getElementById('proposalQuestionLabel');
+        if (pqLabel) pqLabel.innerHTML = `<span><i class="fas fa-comment-dots"></i> ${t.proposalQuestionLabel || 'Proposal Question'}</span><span style="font-size: 0.78rem; opacity: 0.75; font-weight: 400;">Customizable</span>`;
+        const pqHint = document.getElementById('proposalQuestionHint');
+        if (pqHint) pqHint.innerHTML = `<i class="fas fa-info-circle"></i> <span>${t.proposalQuestionHint || 'You can customize this question'}</span>`;
+        const pqInput = document.getElementById('proposalQuestionInput');
+        if (pqInput) pqInput.placeholder = t.proposalQuestionPlaceholder || 'e.g. Will you be my girlfriend?';
         document.getElementById('copyrightText').innerText = t.copyright;
         ['footerTemplates', 'footerFeatures', 'footerShowcase', 'footerHelp', 'footerPrivacy'].forEach((id, idx) => { if (document.getElementById(id)) document.getElementById(id).innerText = t.footer[idx]; });
         for (let i = 1; i < eventSelect.options.length; i++) {
@@ -2608,6 +2629,10 @@
           document.getElementById('proposalForSelect').value = '';
           document.getElementById('proposalForError').style.display = 'none';
           document.getElementById('proposalForSelect').classList.remove('error-border');
+          const qWrap = document.getElementById('proposalQuestionWrapper');
+          if (qWrap) qWrap.style.display = 'none';
+          const qInput = document.getElementById('proposalQuestionInput');
+          if (qInput) qInput.value = '';
         }
         const wishesLabel = document.getElementById('wishesLabel');
         const wishesWrapper = wishesTextarea ? wishesTextarea.parentElement : null;
@@ -2620,6 +2645,29 @@
       const presetEvent = localStorage.getItem('presetEvent');
       if (presetEvent) { for (let i = 0; i < eventSelect.options.length; i++) if (eventSelect.options[i].value === presetEvent) { eventSelect.selectedIndex = i; break; } localStorage.removeItem('presetEvent'); }
       toggleFestivalField();
+
+      const defaultProposalQuestions = {
+        'girlfriend': 'Will you be my girlfriend?',
+        'boyfriend': 'Will you be my boyfriend?',
+        'wife': 'Will you marry me?',
+        'husband': 'Will you marry me?',
+        'bestfriend': 'Will you be my best friend?',
+        'friend': 'Will you be my friend?',
+        'partner': 'Will you be my partner?',
+        'other': 'Will you be mine?'
+      };
+
+      function onProposalForChange() {
+        const val = document.getElementById('proposalForSelect').value;
+        const qWrap = document.getElementById('proposalQuestionWrapper');
+        const qInput = document.getElementById('proposalQuestionInput');
+        if (qWrap && val) {
+          qWrap.style.display = 'block';
+          qInput.value = defaultProposalQuestions[val] || 'Will you marry me?';
+        }
+        if (eventSelect.value === 'proposal') validateProposalWithElement();
+      }
+      document.getElementById('proposalForSelect').addEventListener('change', onProposalForChange);
 
       function validateEventWithElement() {
         const ok = eventSelect.value !== "";
@@ -2657,7 +2705,6 @@
       moodSelect.addEventListener('change', () => validateMoodWithElement());
       nameInput.addEventListener('input', () => validateNameWithElement());
       festivalInput.addEventListener('input', () => { if (eventSelect.value === 'festival') validateFestivalWithElement(); });
-      document.getElementById('proposalForSelect').addEventListener('change', () => { if (eventSelect.value === 'proposal') validateProposalWithElement(); });
 
       function showFirstValidationError() {
         const checks = [validateEventWithElement, validateMoodWithElement, validateNameWithElement, validateFestivalWithElement, validateProposalWithElement];
@@ -2795,6 +2842,7 @@
           const getEventSpecific = (event) => {
             if (event === 'proposal') {
               const proposalFor = document.getElementById('proposalForSelect')?.value;
+              const customQ = document.getElementById('proposalQuestionInput')?.value?.trim();
               const proposalMessages = {
                 'girlfriend': "CRITICAL: You are USER proposing to make this person your GIRLFRIEND. Write a direct relationship proposal asking 'Will you be my girlfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
                 'boyfriend': "CRITICAL: You are USER proposing to make this person your BOYFRIEND. Write a direct relationship proposal asking 'Will you be my boyfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
@@ -2802,9 +2850,14 @@
                 'husband': "CRITICAL: You are USER proposing MARRIAGE to this person (to make them your HUSBAND). Write a direct marriage proposal asking 'Will you marry me?' or similar. Express deep love and desire to spend life together. This must be a marriage proposal FROM you TO them.",
                 'bestfriend': "CRITICAL: You are USER proposing to make this person your BEST FRIEND. Write a direct friendship proposal asking 'Will you be my best friend?' or similar. Express desire for deep friendship and connection. This must be a friendship proposal FROM you TO them.",
                 'friend': "CRITICAL: You are USER proposing to make this person your FRIEND. Write a direct friendship proposal asking 'Will you be my friend?' or similar. Express desire for friendship and connection. This must be a friendship proposal FROM you TO them.",
-                'partner': "CRITICAL: You are USER proposing to make this person your PARTNER. Write a direct relationship proposal asking 'Will you be my partner?' or similar. Express desire for a committed relationship. This must be a relationship proposal FROM you TO them."
+                'partner': "CRITICAL: You are USER proposing to make this person your PARTNER. Write a direct relationship proposal asking 'Will you be my partner?' or similar. Express desire for a committed relationship. This must be a relationship proposal FROM you TO them.",
+                'other': "CRITICAL: You are USER making a special heartfelt proposal. Express genuine affection and propose with sincerity. This must be a proposal FROM you TO them."
               };
-              return proposalMessages[proposalFor] || proposalMessages['friend'];
+              let baseMsg = proposalMessages[proposalFor] || proposalMessages['friend'];
+              if (customQ) {
+                baseMsg += ` Specifically, the question you are asking is: "${customQ}". Make sure the message builds directly up to this proposal question.`;
+              }
+              return baseMsg;
             }
             return '';
           };
@@ -3078,6 +3131,7 @@
           const getEventSpecific = (event) => {
             if (event === 'proposal') {
               const proposalFor = document.getElementById('proposalForSelect')?.value;
+              const customQ = document.getElementById('proposalQuestionInput')?.value?.trim();
               const proposalMessages = {
                 'girlfriend': "CRITICAL: You are the USER proposing to make this person your GIRLFRIEND. Create a direct relationship proposal asking 'Will you be my girlfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
                 'boyfriend': "CRITICAL: You are the USER proposing to make this person your BOYFRIEND. Create a direct relationship proposal asking 'Will you be my boyfriend?' or similar. Express your feelings and desire to be in a romantic relationship. This must be a proposal FROM you TO them.",
@@ -3085,9 +3139,14 @@
                 'husband': "CRITICAL: You are the USER proposing MARRIAGE to this person (to make them your HUSBAND). Create a direct marriage proposal asking 'Will you marry me?' or similar. Express deep love and desire to spend life together. This must be a marriage proposal FROM you TO them.",
                 'bestfriend': "CRITICAL: You are the USER proposing to make this person your BEST FRIEND. Create a direct friendship proposal asking 'Will you be my best friend?' or similar. Express desire for deep friendship and connection. This must be a friendship proposal FROM you TO them.",
                 'friend': "CRITICAL: You are the USER proposing to make this person your FRIEND. Create a direct friendship proposal asking 'Will you be my friend?' or similar. Express desire for friendship and connection. This must be a friendship proposal FROM you TO them.",
-                'partner': "CRITICAL: You are the USER proposing to make this person your PARTNER. Create a direct relationship proposal asking 'Will you be my partner?' or similar. Express desire for a committed relationship. This must be a relationship proposal FROM you TO them."
+                'partner': "CRITICAL: You are the USER proposing to make this person your PARTNER. Create a direct relationship proposal asking 'Will you be my partner?' or similar. Express desire for a committed relationship. This must be a relationship proposal FROM you TO them.",
+                'other': "CRITICAL: You are the USER making a special heartfelt proposal. Express genuine affection and propose with sincerity. This must be a proposal FROM you TO them."
               };
-              return proposalMessages[proposalFor] || proposalMessages['friend'];
+              let baseMsg = proposalMessages[proposalFor] || proposalMessages['friend'];
+              if (customQ) {
+                baseMsg += ` Specifically, the question you are asking is: "${customQ}". Make sure the message builds directly up to this proposal question.`;
+              }
+              return baseMsg;
             }
             return '';
           };
@@ -3659,9 +3718,14 @@
       }, 100);
 
       function collectFormData(extra = {}) {
+        const proposalFor = eventSelect.value === 'proposal' ? (document.getElementById('proposalForSelect')?.value || null) : null;
+        const rawQuestion = eventSelect.value === 'proposal' ? document.getElementById('proposalQuestionInput')?.value?.trim() : null;
+        const proposalQuestion = rawQuestion || (proposalFor ? (defaultProposalQuestions[proposalFor] || 'Will you marry me?') : null);
         return {
           event: eventSelect.value,
           festival: eventSelect.value === 'festival' ? festivalInput.value.trim() : null,
+          proposalFor: proposalFor,
+          proposalQuestion: proposalQuestion,
           mood: moodSelect.value,
           creatingFor: creatingForInput.value.trim() || null,
           name: nameInput.value.trim(),

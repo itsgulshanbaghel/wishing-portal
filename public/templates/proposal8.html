@@ -570,11 +570,21 @@
                 document.getElementById('secS').textContent = t.secS;
                 document.getElementById('wishH').textContent = t.wishH;
                 document.getElementById('wTag').textContent = t.wTag;
-                document.getElementById('wishP').textContent = wishes;
+                const pFor = (new URLSearchParams(location.search).get('proposalFor') || ud.proposalFor || '').toLowerCase();
+                const customQ = new URLSearchParams(location.search).get('question') || ud.proposalQuestion;
+                if (customQ) {
+                    document.getElementById('wishP').textContent = customQ;
+                } else {
+                    document.getElementById('wishP').textContent = wishes;
+                }
                 document.getElementById('yesBtn').textContent = t.yesBtn;
                 document.getElementById('noBtn').textContent = t.noBtn;
                 document.getElementById('celBtn').textContent = t.celBtn;
-                document.getElementById('celH').textContent = t.celH;
+                if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celH').textContent = (lang === 'hi' ? 'उसने हाँ कहा!' : 'HE SAID YES!');
+                else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celH').textContent = (lang === 'hi' ? 'उसने हाँ कहा!' : 'SHE SAID YES!');
+                else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celH').textContent = (lang === 'hi' ? 'प्रपोज़ल स्वीकार!' : 'PROPOSAL ACCEPTED!');
+                else if (pFor === 'partner' || pFor === 'other') document.getElementById('celH').textContent = (lang === 'hi' ? 'उन्होंने हाँ कहा!' : 'THEY SAID YES!');
+                else document.getElementById('celH').textContent = t.celH;
                 document.getElementById('celP').textContent = t.celP;
                 buildGal();
             }

@@ -1127,11 +1127,31 @@
   document.getElementById('letterPS').innerText         = t.letterPS;
   document.getElementById('bqText').innerText           = userStory || t.bq;
   document.getElementById('qLine1').innerText           = t.qLine;
-  document.getElementById('qBig').innerText             = t.qBig;
+  const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+  const customQ = params.get('question') || userData.proposalQuestion;
+  if (customQ) {
+    document.getElementById('qBig').innerText = customQ;
+  } else if (pFor === 'girlfriend') {
+    document.getElementById('qBig').innerText = 'Will you be my girlfriend?';
+  } else if (pFor === 'boyfriend') {
+    document.getElementById('qBig').innerText = 'Will you be my boyfriend?';
+  } else if (pFor === 'bestfriend') {
+    document.getElementById('qBig').innerText = 'Will you be my best friend?';
+  } else if (pFor === 'friend') {
+    document.getElementById('qBig').innerText = 'Will you be my friend?';
+  } else if (pFor === 'partner') {
+    document.getElementById('qBig').innerText = 'Will you be my partner?';
+  } else {
+    document.getElementById('qBig').innerText = t.qBig;
+  }
   document.getElementById('qName').innerText            = t.qName.replace('{name}', userName);
   document.getElementById('yesBtn').innerText           = t.yesBtn;
   document.getElementById('noBtn').innerText            = t.noBtn;
-  document.getElementById('celTitle').innerText         = t.celTitle;
+  if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celTitle').innerText = 'He Said YES! 💖';
+  else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celTitle').innerText = 'She Said YES! 💖';
+  else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celTitle').innerText = 'Proposal Accepted! 💖';
+  else if (pFor === 'partner' || pFor === 'other') document.getElementById('celTitle').innerText = 'They Said YES! 💖';
+  else document.getElementById('celTitle').innerText = t.celTitle;
   document.getElementById('celMsg').innerText           = userWish || t.celMsg;
   document.getElementById('celClose').innerText         = t.celClose;
 
