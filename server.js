@@ -1224,7 +1224,7 @@ app.post('/api/feedback', async (req, res) => {
 
 const RESERVED_SLUGS = new Set([
   'api', 'assets', 'generated', 'blog', 'admin', 'create', 'edit', 'index', 'share', 'privacy',
-  'terms', 'contactus', 'aboutus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
+  'clear', 'terms', 'contactus', 'aboutus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
   'preview', 'customize', 'custom-url', 'login', 'logout', 'dashboard', 'support', 'help',
   'pricing', 'price', 'plans', 'null', 'undefined', 'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
 ]);

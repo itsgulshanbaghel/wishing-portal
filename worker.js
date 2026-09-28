@@ -60,7 +60,7 @@ export default {
     const pathSegments = path.split('/').filter(Boolean);
     const isSlugRequest = pathSegments.length === 1 && 
                           !pathSegments[0].includes('.') &&
-                          !['api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 'create', 'privacy', 'pricing', 'about', 'contact', 'why', 'whygreeter', 'edit', 'terms'].some(s => pathSegments[0].toLowerCase().startsWith(s)) &&
+                          !['api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 'create', 'clear', 'privacy', 'pricing', 'about', 'contact', 'why', 'whygreeter', 'edit', 'terms'].some(s => pathSegments[0].toLowerCase().startsWith(s)) &&
                           pathSegments[0] !== 'favicon.ico' &&
                           pathSegments[0] !== 'robots.txt' &&
                           pathSegments[0] !== 'sitemap.xml';
@@ -279,6 +279,7 @@ export default {
       '/WhyGreeter': '/WhyGreeter.html',
       '/ContactUs': '/ContactUs.html',
       '/privacy': '/privacy.html',
+      '/clear': '/clear.html',
       '/terms': '/terms.html',
       '/terms&cond': '/terms&cond.html'
     };

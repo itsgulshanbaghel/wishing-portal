@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#7b5df6">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
+
+  <!-- Primary SEO -->
+  <title>Clear Site Data — TheGreeter</title>
+  <meta name="description" content="Clear all local site data, cached files, cookies, and offline storage for TheGreeter from your device.">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ==========================================================================
+       CSS Variables & Theme Definitions
+       ========================================================================== */
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #ede7ff 0%, #f6f3fc 50%, #fcfbfe 100%);
+      --bg-card: rgba(255, 255, 255, 0.85);
+      --bg-card-subtle: rgba(246, 243, 253, 0.8);
+      --border-color: rgba(123, 93, 246, 0.12);
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --text-main: #130a21;
+      --text-muted: #5e5274;
+      --text-faint: #8d81a4;
+      --accent-solid: #7b5df6;
+      --accent-gradient: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%);
+      --danger-solid: #ef4444;
+      --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      --danger-bg: rgba(239, 68, 68, 0.08);
+      --danger-border: rgba(239, 68, 68, 0.2);
+      --danger-text: #b91c1c;
+      --success-solid: #10b981;
+      --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --success-bg: rgba(16, 185, 129, 0.08);
+      --success-border: rgba(16, 185, 129, 0.25);
+      --success-text: #047857;
+      --shadow-card: 0 20px 45px -12px rgba(123, 93, 246, 0.12), 0 8px 16px -6px rgba(0, 0, 0, 0.04);
+      --shadow-modal: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+      --modal-overlay: rgba(19, 10, 33, 0.55);
+      --glow-orb: rgba(123, 93, 246, 0.2);
+      --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.dark {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #170d2f 0%, #0c0719 60%, #07040f 100%);
+      --bg-card: rgba(26, 17, 43, 0.82);
+      --bg-card-subtle: rgba(35, 23, 58, 0.7);
+      --border-color: rgba(157, 131, 255, 0.18);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text-main: #f5f3ff;
+      --text-muted: #b7a9d3;
+      --text-faint: #7a6b98;
+      --accent-solid: #8b6ff9;
+      --danger-solid: #f87171;
+      --danger-gradient: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --danger-border: rgba(239, 68, 68, 0.3);
+      --danger-text: #fca5a5;
+      --success-solid: #34d399;
+      --success-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      --success-bg: rgba(16, 185, 129, 0.15);
+      --success-border: rgba(16, 185, 129, 0.35);
+      --success-text: #6ee7b7;
+      --shadow-card: 0 24px 60px -15px rgba(0, 0, 0, 0.6), 0 0 40px rgba(123, 93, 246, 0.1);
+      --shadow-modal: 0 30px 70px -15px rgba(0, 0, 0, 0.8);
+      --modal-overlay: rgba(3, 1, 8, 0.75);
+      --glow-orb: rgba(139, 111, 249, 0.18);
+    }
+
+    /* ==========================================================================
+       Reset & Base Styles
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* Decorative ambient glow orbs */
+    .glow-orb {
+      position: absolute;
+      width: 480px;
+      height: 480px;
+      border-radius: 50%;
+      background: var(--glow-orb);
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+      animation: floatPulse 12s ease-in-out infinite alternate;
+    }
+
+    .glow-orb-top {
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .glow-orb-bottom {
+      bottom: -150px;
+      right: 10%;
+      width: 380px;
+      height: 380px;
+      background: rgba(255, 122, 47, 0.12);
+    }
+
+    @keyframes floatPulse {
+      0% {
+        transform: translateX(-50%) scale(1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateX(-48%) scale(1.12);
+        opacity: 1;
+      }
+    }
+
+    /* ==========================================================================
+       Top Utility Bar (Branding & Theme Toggle)
+       ========================================================================== */
+    .top-bar {
+      width: 100%;
+      max-width: 580px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      z-index: 10;
+    }
+
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      gap: 10px;
+    }
+
+    .brand-link img {
+      height: 36px;
+      width: auto;
+      object-fit: contain;
+      transition: transform 0.2s ease;
+    }
+
+    .brand-link:hover img {
+      transform: scale(1.03);
+    }
+
+    body.dark .logo-light {
+      display: none;
+    }
+
+    body.dark .logo-dark {
+      display: block;
+    }
+
+    body:not(.dark) .logo-light {
+      display: block;
+    }
+
+    body:not(.dark) .logo-dark {
+      display: none;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: var(--transition-smooth);
+    }
+
+    .theme-toggle-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-solid);
+      color: var(--accent-solid);
+    }
+
+    /* ==========================================================================
+       Main Card Container
+       ========================================================================== */
+    .main-card {
+      width: 100%;
+      max-width: 580px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 28px;
+      padding: 38px 36px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-card);
+      position: relative;
+      z-index: 10;
+      transition: var(--transition-smooth);
+    }
+
+    @media (max-width: 540px) {
+      .main-card {
+        padding: 28px 20px;
+        border-radius: 22px;
+      }
+    }
+
+    /* Header Section */
+    .card-header {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .icon-badge {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px;
+      border-radius: 20px;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger-solid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.12);
+      transition: var(--transition-smooth);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .card-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    /* Warning Callout Box */
+    .warning-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+    }
+
+    .warning-icon {
+      color: var(--danger-solid);
+      font-size: 1.2rem;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .warning-content h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--danger-text);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .warning-content p {
+      font-size: 0.84rem;
+      color: var(--danger-text);
+      line-height: 1.45;
+      opacity: 0.95;
+    }
+
+    /* ==========================================================================
+       Storage Inventory List
+       ========================================================================== */
+    .storage-list-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .storage-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .storage-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      transition: var(--transition-smooth);
+    }
+
+    .storage-item:hover {
+      border-color: var(--border-color);
+      transform: translateX(2px);
+    }
+
+    .storage-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .storage-item-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(123, 93, 246, 0.1);
+      color: var(--accent-solid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+    }
+
+    .storage-item-info {
+      text-align: left;
+    }
+
+    .storage-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .storage-desc {
+      font-size: 0.76rem;
+      color: var(--text-faint);
+    }
+
+    .storage-badge {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(123, 93, 246, 0.1);
+      color: var(--accent-solid);
+      white-space: nowrap;
+    }
+
+    /* ==========================================================================
+       Action Buttons
+       ========================================================================== */
+    .action-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-clear {
+      width: 100%;
+      background: var(--danger-gradient);
+      color: #ffffff;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4);
+      transition: var(--transition-smooth);
+    }
+
+    .btn-clear:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px -5px rgba(239, 68, 68, 0.55);
+      filter: brightness(1.04);
+    }
+
+    .btn-clear:active {
+      transform: translateY(0);
+    }
+
+    .btn-back {
+      width: 100%;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      padding: 13px 20px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-back:hover {
+      background: var(--bg-card-subtle);
+      color: var(--text-main);
+      border-color: var(--border-color);
+    }
+
+    /* ==========================================================================
+       Modal Confirmation Dialog
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 32px 28px;
+      box-shadow: var(--shadow-modal);
+      text-align: center;
+      transform: scale(0.92) translateY(10px);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-backdrop.active .modal-box {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-icon-badge {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger-solid);
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 13px 18px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-btn-confirm {
+      background: var(--danger-gradient);
+      color: #ffffff;
+      box-shadow: 0 8px 18px -4px rgba(239, 68, 68, 0.4);
+    }
+
+    .modal-btn-confirm:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .modal-btn-cancel {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    .modal-btn-cancel:hover {
+      background: var(--border-subtle);
+    }
+
+    /* ==========================================================================
+       Success & Progress State Screen
+       ========================================================================== */
+    .success-view {
+      display: none;
+      text-align: center;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .success-icon-badge {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-solid);
+      font-size: 2.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0.6);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .success-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .success-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    /* Cleared checklist */
+    .cleared-checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .cleared-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--success-text);
+    }
+
+    .cleared-item i {
+      color: var(--success-solid);
+      font-size: 0.9rem;
+    }
+
+    /* Countdown & Progress bar */
+    .redirect-box {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .redirect-status {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: var(--border-subtle);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--accent-gradient);
+      transform-origin: left;
+      transition: width 3s linear;
+    }
+
+    .redirect-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .btn-redirect-now {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.84rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-redirect-now:hover {
+      filter: brightness(1.06);
+    }
+
+    .btn-cancel-redirect {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-cancel-redirect:hover {
+      background: var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    /* Error alert (if anything fails) */
+    .error-banner {
+      display: none;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--danger-text);
+      font-size: 0.84rem;
+      margin-bottom: 16px;
+      text-align: left;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Footer Note */
+    .page-footer {
+      margin-top: 24px;
+      font-size: 0.8rem;
+      color: var(--text-faint);
+      text-align: center;
+      z-index: 10;
+    }
+
+    .page-footer a {
+      color: var(--accent-solid);
+      text-decoration: none;
+    }
+
+    .page-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="glow-orb glow-orb-top"></div>
+  <div class="glow-orb glow-orb-bottom"></div>
+
+  <!-- Top bar with brand logo & dark mode toggle -->
+  <header class="top-bar">
+    <a href="/" class="brand-link" title="TheGreeter Homepage">
+      <img src="/assets/Light_logo.webp" alt="TheGreeter Logo" class="logo-light" width="130" height="36">
+      <img src="/assets/Dark_logo.webp" alt="TheGreeter Logo" class="logo-dark" width="130" height="36">
+    </a>
+
+    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle light and dark mode">
+      <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+  </header>
+
+  <!-- Main Card -->
+  <main class="main-card">
+    <!-- Initial State View -->
+    <div id="initialView">
+      <div class="card-header">
+        <div class="icon-badge">
+          <i class="fas fa-trash-alt"></i>
+        </div>
+        <h1 class="card-title">Clear Site Data</h1>
+        <p class="card-subtitle">
+          Reset all stored local data, cached greetings, cookies, and offline assets associated with TheGreeter on this device.
+        </p>
+      </div>
+
+      <!-- Warning Notice -->
+      <div class="warning-box">
+        <i class="fas fa-exclamation-triangle warning-icon"></i>
+        <div class="warning-content">
+          <h4>Permanent Action</h4>
+          <p>This action cannot be undone. All unsaved drafts, temporary preferences, editor cache, and cached media stored locally will be permanently erased.</p>
+        </div>
+      </div>
+
+      <!-- Storage Breakdown Grid -->
+      <div class="storage-list-title">
+        <span>What will be cleared</span>
+        <span id="detectedCount">Detecting...</span>
+      </div>
+
+      <div class="storage-grid">
+        <div class="storage-item">
+          <div class="storage-item-left">
+            <div class="storage-item-icon">
+              <i class="fas fa-database"></i>
+            </div>
+            <div class="storage-item-info">
+              <div class="storage-name">Local Storage</div>
+              <div class="storage-desc">Saved drafts, preferences & local settings</div>
+            </div>
+          </div>
+          <span class="storage-badge" id="badgeLocalStorage">Ready</span>
+        </div>
+
+        <div class="storage-item">
+          <div class="storage-item-left">
+            <div class="storage-item-icon">
+              <i class="fas fa-history"></i>
+            </div>
+            <div class="storage-item-info">
+              <div class="storage-name">Session Storage</div>
+              <div class="storage-desc">Active navigation & temporary form states</div>
+            </div>
+          </div>
+          <span class="storage-badge" id="badgeSessionStorage">Ready</span>
+        </div>
+
+        <div class="storage-item">
+          <div class="storage-item-left">
+            <div class="storage-item-icon">
+              <i class="fas fa-cookie-bite"></i>
+            </div>
+            <div class="storage-item-info">
+              <div class="storage-name">Browser Cookies</div>
+              <div class="storage-desc">Domain cookies and session identifiers</div>
+            </div>
+          </div>
+          <span class="storage-badge" id="badgeCookies">Ready</span>
+        </div>
+
+        <div class="storage-item">
+          <div class="storage-item-left">
+            <div class="storage-item-icon">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <div class="storage-item-info">
+              <div class="storage-name">IndexedDB</div>
+              <div class="storage-desc">Offline application and cached object stores</div>
+            </div>
+          </div>
+          <span class="storage-badge" id="badgeIndexedDB">Ready</span>
+        </div>
+
+        <div class="storage-item">
+          <div class="storage-item-left">
+            <div class="storage-item-icon">
+              <i class="fas fa-cloud-download-alt"></i>
+            </div>
+            <div class="storage-item-info">
+              <div class="storage-name">Cache Storage & Workers</div>
+              <div class="storage-desc">Service workers and offline network caches</div>
+            </div>
+          </div>
+          <span class="storage-badge" id="badgeCacheStorage">Ready</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-group">
+        <button type="button" class="btn-clear" id="btnOpenConfirmModal">
+          <i class="fas fa-trash-can"></i>
+          <span>Clear All Site Data</span>
+        </button>
+        <a href="/create" class="btn-back">
+          <i class="fas fa-arrow-left"></i>
+          <span>Cancel & Return to Creator</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner">
+      <i class="fas fa-circle-exclamation"></i>
+      <span id="errorMessage">An error occurred while clearing some storage items.</span>
+    </div>
+
+    <!-- Success State View (Revealed after clearing) -->
+    <div class="success-view" id="successView">
+      <div class="success-icon-badge">
+        <i class="fas fa-check"></i>
+      </div>
+      <h2 class="success-title">Site Data Cleared!</h2>
+      <p class="success-desc">
+        All site-related storage, cookies, and offline caches have been completely wiped from this device.
+      </p>
+
+      <!-- Checklist of cleared items -->
+      <div class="cleared-checklist">
+        <div class="cleared-item">
+          <span><i class="fas fa-check-circle" style="margin-right: 8px;"></i> Local Storage</span>
+          <span>Cleared</span>
+        </div>
+        <div class="cleared-item">
+          <span><i class="fas fa-check-circle" style="margin-right: 8px;"></i> Session Storage</span>
+          <span>Cleared</span>
+        </div>
+        <div class="cleared-item">
+          <span><i class="fas fa-check-circle" style="margin-right: 8px;"></i> Domain Cookies</span>
+          <span>Expired & Cleared</span>
+        </div>
+        <div class="cleared-item">
+          <span><i class="fas fa-check-circle" style="margin-right: 8px;"></i> IndexedDB Databases</span>
+          <span>Deleted</span>
+        </div>
+        <div class="cleared-item">
+          <span><i class="fas fa-check-circle" style="margin-right: 8px;"></i> Cache Storage & Service Workers</span>
+          <span>Purged & Unregistered</span>
+        </div>
+      </div>
+
+      <!-- Redirect Box with 3-second countdown -->
+      <div class="redirect-box" id="redirectBox">
+        <div class="redirect-status">
+          <i class="fas fa-clock-rotate-left"></i>
+          <span id="redirectCountdownText">Redirecting to homepage in 3s...</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+        <div class="redirect-actions">
+          <a href="/" class="btn-redirect-now" id="btnRedirectNow">
+            <i class="fas fa-home"></i> Go to Homepage Now
+          </a>
+          <button type="button" class="btn-cancel-redirect" id="btnCancelRedirect">
+            <i class="fas fa-times"></i> Cancel Auto-Redirect
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom note -->
+  <footer class="page-footer">
+    <p>© 2026 TheGreeter · <a href="/">Home</a> · <a href="/create">Create</a> · <a href="/privacy">Privacy</a></p>
+  </footer>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-backdrop" id="confirmModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+      <div class="modal-icon-badge">
+        <i class="fas fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="modal-title" id="modalTitle">Are you absolutely sure?</h3>
+      <p class="modal-desc">
+        This will wipe 100% of your local data, offline caches, service workers, and cookies for this site. Any saved drafts and customized settings will be permanently lost.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="btnModalCancel">Keep My Data</button>
+        <button type="button" class="modal-btn modal-btn-confirm" id="btnModalConfirm">Yes, Wipe Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Implementation -->
+  <script>
+    (function () {
+      'use strict';
+
+      // ========================================================================
+      // 1. Theme Management (Light / Dark Mode)
+      // ========================================================================
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const themeIcon = document.getElementById('themeIcon');
+
+      function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+          document.body.classList.add('dark');
+          themeIcon.className = 'fas fa-sun';
+        } else {
+          document.body.classList.remove('dark');
+          themeIcon.className = 'fas fa-moon';
+        }
+      }
+
+      function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        try {
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        } catch (_) {}
+      }
+
+      themeToggleBtn.addEventListener('click', toggleTheme);
+      initTheme();
+
+      // ========================================================================
+      // 2. Storage Inspection & Detection
+      // ========================================================================
+      async function inspectStorage() {
+        let totalItems = 0;
+
+        // Local Storage count
+        try {
+          const lsCount = localStorage.length;
+          totalItems += lsCount;
+          document.getElementById('badgeLocalStorage').textContent = lsCount > 0 ? `${lsCount} items` : 'Empty';
+        } catch (e) {
+          document.getElementById('badgeLocalStorage').textContent = 'Restricted';
+        }
+
+        // Session Storage count
+        try {
+          const ssCount = sessionStorage.length;
+          totalItems += ssCount;
+          document.getElementById('badgeSessionStorage').textContent = ssCount > 0 ? `${ssCount} items` : 'Empty';
+        } catch (e) {
+          document.getElementById('badgeSessionStorage').textContent = 'Restricted';
+        }
+
+        // Cookies count
+        try {
+          const cookies = document.cookie ? document.cookie.split(';').filter(c => c.trim().length > 0) : [];
+          totalItems += cookies.length;
+          document.getElementById('badgeCookies').textContent = cookies.length > 0 ? `${cookies.length} active` : 'None';
+        } catch (e) {
+          document.getElementById('badgeCookies').textContent = 'Restricted';
+        }
+
+        // IndexedDB check
+        try {
+          if (window.indexedDB && indexedDB.databases) {
+            const dbs = await indexedDB.databases();
+            totalItems += dbs.length;
+            document.getElementById('badgeIndexedDB').textContent = dbs.length > 0 ? `${dbs.length} DBs` : 'Available';
+          } else {
+            document.getElementById('badgeIndexedDB').textContent = 'Available';
+          }
+        } catch (e) {
+          document.getElementById('badgeIndexedDB').textContent = 'Available';
+        }
+
+        // Cache Storage check
+        try {
+          if ('caches' in window) {
+            const cacheKeys = await caches.keys();
+            totalItems += cacheKeys.length;
+            document.getElementById('badgeCacheStorage').textContent = cacheKeys.length > 0 ? `${cacheKeys.length} caches` : 'Available';
+          } else {
+            document.getElementById('badgeCacheStorage').textContent = 'Available';
+          }
+        } catch (e) {
+          document.getElementById('badgeCacheStorage').textContent = 'Available';
+        }
+
+        document.getElementById('detectedCount').textContent = `${totalItems} stored items detected`;
+      }
+
+      inspectStorage();
+
+      // ========================================================================
+      // 3. Modal Handling
+      // ========================================================================
+      const confirmModalBackdrop = document.getElementById('confirmModalBackdrop');
+      const btnOpenConfirmModal = document.getElementById('btnOpenConfirmModal');
+      const btnModalCancel = document.getElementById('btnModalCancel');
+      const btnModalConfirm = document.getElementById('btnModalConfirm');
+
+      function openModal() {
+        confirmModalBackdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal() {
+        confirmModalBackdrop.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      btnOpenConfirmModal.addEventListener('click', openModal);
+      btnModalCancel.addEventListener('click', closeModal);
+      confirmModalBackdrop.addEventListener('click', function (e) {
+        if (e.target === confirmModalBackdrop) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && confirmModalBackdrop.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      // ========================================================================
+      // 4. Data Clearing Engine
+      // ========================================================================
+      async function clearAllSiteData() {
+        const errors = [];
+
+        // A. Clear Local Storage
+        try {
+          if (window.localStorage) {
+            window.localStorage.clear();
+          }
+        } catch (err) {
+          console.warn('Could not clear Local Storage:', err);
+          errors.push('Local Storage');
+        }
+
+        // B. Clear Session Storage
+        try {
+          if (window.sessionStorage) {
+            window.sessionStorage.clear();
+          }
+        } catch (err) {
+          console.warn('Could not clear Session Storage:', err);
+          errors.push('Session Storage');
+        }
+
+        // C. Clear All Browser Cookies for current domain and root paths
+        try {
+          if (document.cookie) {
+            const cookies = document.cookie.split(';');
+            const hostname = window.location.hostname;
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            
+            // Generate path permutations to guarantee eradication
+            const paths = ['/', ''];
+            let currentPath = '';
+            for (const seg of pathSegments) {
+              currentPath += '/' + seg;
+              paths.push(currentPath);
+            }
+
+            // Domain variations
+            const domains = ['', hostname, '.' + hostname];
+            const hostParts = hostname.split('.');
+            if (hostParts.length > 2) {
+              domains.push('.' + hostParts.slice(-2).join('.'));
+            }
+
+            for (let i = 0; i < cookies.length; i++) {
+              const eqPos = cookies[i].indexOf('=');
+              const name = eqPos > -1 ? cookies[i].substr(0, eqPos).trim() : cookies[i].trim();
+              if (!name) continue;
+
+              // Expire cookie with every potential domain & path combination
+              for (const p of paths) {
+                for (const d of domains) {
+                  const domainPart = d ? `; domain=${d}` : '';
+                  const pathPart = p ? `; path=${p}` : '; path=/';
+                  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0${pathPart}${domainPart}`;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Could not clear cookies:', err);
+          errors.push('Cookies');
+        }
+
+        // D. Clear IndexedDB Databases
+        try {
+          if (window.indexedDB) {
+            if (indexedDB.databases) {
+              const databases = await indexedDB.databases();
+              await Promise.all(
+                databases.map(db => {
+                  if (db.name) {
+                    return new Promise((resolve) => {
+                      const req = indexedDB.deleteDatabase(db.name);
+                      req.onsuccess = () => resolve();
+                      req.onerror = () => resolve();
+                      req.onblocked = () => resolve();
+                    });
+                  }
+                  return Promise.resolve();
+                })
+              );
+            }
+          }
+        } catch (err) {
+          console.warn('Could not clear IndexedDB:', err);
+          errors.push('IndexedDB');
+        }
+
+        // E. Clear Cache Storage
+        try {
+          if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+          }
+        } catch (err) {
+          console.warn('Could not clear Cache Storage:', err);
+          errors.push('Cache Storage');
+        }
+
+        // F. Unregister Service Workers
+        try {
+          if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map(reg => reg.unregister()));
+          }
+        } catch (err) {
+          console.warn('Could not unregister Service Workers:', err);
+          errors.push('Service Workers');
+        }
+
+        // G. Clear in-memory state variables
+        window._greeterConfig = null;
+        window._userData = null;
+
+        return errors;
+      }
+
+      // ========================================================================
+      // 5. Post-Clearing & Redirect Countdown
+      // ========================================================================
+      let redirectTimer = null;
+      let countdownInterval = null;
+
+      function startRedirectCountdown() {
+        let remainingSeconds = 3;
+        const countdownText = document.getElementById('redirectCountdownText');
+        const progressBarFill = document.getElementById('progressBarFill');
+
+        // Animate progress bar fill to 0%
+        progressBarFill.style.width = '100%';
+        setTimeout(() => {
+          progressBarFill.style.transition = 'width 3s linear';
+          progressBarFill.style.width = '0%';
+        }, 50);
+
+        countdownInterval = setInterval(() => {
+          remainingSeconds--;
+          if (remainingSeconds > 0) {
+            countdownText.textContent = `Redirecting to homepage in ${remainingSeconds}s...`;
+          } else {
+            countdownText.textContent = `Redirecting now...`;
+            clearInterval(countdownInterval);
+          }
+        }, 1000);
+
+        redirectTimer = setTimeout(() => {
+          window.location.href = '/';
+        }, 3000);
+      }
+
+      function cancelRedirect() {
+        if (redirectTimer) clearTimeout(redirectTimer);
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        const redirectBox = document.getElementById('redirectBox');
+        redirectBox.innerHTML = `
+          <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 12px;">
+            <i class="fas fa-check-circle" style="color: var(--success-solid); margin-right: 6px;"></i> Auto-redirect cancelled. You can stay on this page or navigate manually:
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="/" class="btn-redirect-now"><i class="fas fa-home"></i> Go to Homepage</a>
+            <a href="/create" class="btn-redirect-now" style="background: var(--bg-card-subtle); color: var(--text-main); border: 1px solid var(--border-color);"><i class="fas fa-plus"></i> Go to Creator</a>
+          </div>
+        `;
+      }
+
+      document.getElementById('btnCancelRedirect').addEventListener('click', cancelRedirect);
+
+      // ========================================================================
+      // 6. Action Execution Flow
+      // ========================================================================
+      btnModalConfirm.addEventListener('click', async function () {
+        // Disable button and show spinner
+        btnModalConfirm.disabled = true;
+        btnModalConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+
+        const errors = await clearAllSiteData();
+
+        closeModal();
+
+        // Switch to success view
+        document.getElementById('initialView').style.display = 'none';
+        const successView = document.getElementById('successView');
+        successView.style.display = 'block';
+
+        if (errors.length > 0) {
+          const errorBanner = document.getElementById('errorBanner');
+          const errorMessage = document.getElementById('errorMessage');
+          errorMessage.textContent = `Cleared most data, but could not clear: ${errors.join(', ')} (restricted by browser permissions).`;
+          errorBanner.style.display = 'flex';
+        }
+
+        // Start 3-second redirect countdown
+        startRedirectCountdown();
+      });
+
+    })();
+  </script>
+</body>
+
+</html>
