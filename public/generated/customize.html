@@ -6515,10 +6515,13 @@
               if (doc.body) doc.body.classList.remove('magic-noscroll');
             }
             if (window.lockUnlocked) return {};
-            editModeBeforeLock = editModeActive;
-            editModeActive = false;
-            doc.body.contentEditable = false;
-            editToggleBtn.classList.remove('active');
+            if (typeof editModeActive !== 'undefined') {
+              editModeBeforeLock = editModeActive;
+              editModeActive = false;
+            }
+            if (doc && doc.body) doc.body.contentEditable = false;
+            const editToggleBtnEl = (doc && doc.getElementById && doc.getElementById('editToggleBtn')) || (typeof document !== 'undefined' && document.getElementById ? document.getElementById('editToggleBtn') : null);
+            if (editToggleBtnEl) editToggleBtnEl.classList.remove('active');
             const password = (customText && customText.trim()) ? customText.trim() : '1234';
             const overlay = doc.createElement('div');
             overlay.id = 'lock-overlay';
@@ -6646,9 +6649,14 @@
                   try { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
                   try { if (win && win !== window) win.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
                   try { if (doc && typeof doc.dispatchEvent === 'function') doc.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
-                  editModeActive = editModeBeforeLock;
-                  doc.body.contentEditable = editModeBeforeLock;
-                  editToggleBtn.classList.toggle('active', editModeBeforeLock);
+                  if (typeof editModeBeforeLock !== 'undefined') {
+                    if (doc && doc.body) doc.body.contentEditable = editModeBeforeLock;
+                    editModeActive = editModeBeforeLock;
+                  }
+                  const editToggleBtnEl = (doc && doc.getElementById && doc.getElementById('editToggleBtn')) || (typeof document !== 'undefined' && document.getElementById ? document.getElementById('editToggleBtn') : null);
+                  if (editToggleBtnEl && typeof editModeBeforeLock !== 'undefined') {
+                    editToggleBtnEl.classList.toggle('active', editModeBeforeLock);
+                  }
                 }, 800);
               } else {
                 // Play preloaded wrong password sound
@@ -6695,12 +6703,13 @@
             const overlay = doc.getElementById('lock-overlay');
             if (overlay) overlay.remove();
             window.lockUnlocked = false;
-            if (editModeBeforeLock && editModeActive) {
-              doc.body.contentEditable = true;
-              editToggleBtn.classList.add('active');
+            const editToggleBtnEl = (doc && doc.getElementById && doc.getElementById('editToggleBtn')) || (typeof document !== 'undefined' && document.getElementById ? document.getElementById('editToggleBtn') : null);
+            if (typeof editModeBeforeLock !== 'undefined' && typeof editModeActive !== 'undefined' && editModeBeforeLock && editModeActive) {
+              if (doc && doc.body) doc.body.contentEditable = true;
+              if (editToggleBtnEl) editToggleBtnEl.classList.add('active');
             } else {
-              doc.body.contentEditable = false;
-              editToggleBtn.classList.remove('active');
+              if (doc && doc.body) doc.body.contentEditable = false;
+              if (editToggleBtnEl) editToggleBtnEl.classList.remove('active');
             }
             // Clean up any inline styles that might have been applied to prevent color traces
             doc.body.style = '';
@@ -7071,7 +7080,7 @@
         FEATURE_MAP.addTextBox = FEATURE_MAP.resizableText;
         // Set default iframe src to template HTML if not already set
         const frame = document.getElementById('frame');
-        if (!frame.src || frame.src.includes('share.html')) {
+        if (frame && (!frame.src || frame.src.includes('share.html'))) {
           isFrameLoaded = false;
           const selectedTp = localStorage.getItem('selectedTemplate') || 'birthday1';
           const cleanTp = selectedTp.replace(/^\/?templates\//, '').replace(/\.html$/, '');
@@ -7212,16 +7221,25 @@
         if (!FEATURE_MAP) return;
         const feature = FEATURE_MAP[id];
         if (!feature) return;
-        if (!enable) { if (feature?.disable) feature.disable(doc, win); return; }
+        if (!enable) {
+          if (feature?.disable) {
+            try { feature.disable(doc, win); } catch (err) { console.warn('[applyFeature] Error disabling ' + id, err); }
+          }
+          return;
+        }
         if (feature?.enable) {
-          if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
-          else if (id === "flowerBouquet") feature.enable(doc, win, userName, customText, images, customEmoji);
-          else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion") feature.enable(doc, win, userName, customText, images);
-          else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
-          else if (id === "countdown") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
-          else if (id === "welcomeTyping") feature.enable(doc, win, userName, customText, images, customEmoji, audio, mediaUrl);
-          else if (id === "finalSurprise") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
-          else feature.enable(doc, win, userName, customText, audio);
+          try {
+            if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
+            else if (id === "flowerBouquet") feature.enable(doc, win, userName, customText, images, customEmoji);
+            else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion") feature.enable(doc, win, userName, customText, images);
+            else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
+            else if (id === "countdown") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
+            else if (id === "welcomeTyping") feature.enable(doc, win, userName, customText, images, customEmoji, audio, mediaUrl);
+            else if (id === "finalSurprise") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
+            else feature.enable(doc, win, userName, customText, audio);
+          } catch (err) {
+            console.error('[applyFeature] Error enabling ' + id, err);
+          }
 
           if (window.shouldScrollToFeatureId && window.scrollToElement) {
             const cakeSection = doc.getElementById('magic-virtual-cake-section');
@@ -8763,6 +8781,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         const viewId = urlParams.get('view');
         const restoreId = urlParams.get('restore');
+        const isExplicitShared = (urlParams.get('_v') === 'c' || urlParams.get('slug') || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || (viewId && !restoreId));
+        if (isExplicitShared) {
+          return;
+        }
         const isFresh = urlParams.get('fresh') === '1' || urlParams.has('t') || urlParams.get('src') === 'edit';
         const websiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || viewId || restoreId;
         let loaded = false;
@@ -10830,13 +10852,15 @@
 
       const runStages = () => {
         if (isCountdownRunning()) {
-          if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window);
-          if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
-          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+          try { if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window); } catch(e) {}
+          try { if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window); } catch(e) {}
+          try { if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window); } catch(e) {}
 
           const data = customData.get('countdown') || {};
           if (window.FEATURE_MAP.countdown) {
-            window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
+            try {
+              window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
+            } catch(e) {}
           }
           window._countdownFinishedHandler = () => {
             window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
@@ -10847,17 +10871,19 @@
           return;
         }
 
-        if (window.FEATURE_MAP.countdown?.disable) window.FEATURE_MAP.countdown.disable(document, window);
+        try { if (window.FEATURE_MAP.countdown?.disable) window.FEATURE_MAP.countdown.disable(document, window); } catch(e) {}
         window.countdownFinished = true;
 
         if (lockActive && !window.lockUnlocked) {
-          if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
-          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+          try { if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window); } catch(e) {}
+          try { if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window); } catch(e) {}
 
           const data = customData.get('lock') || {};
           const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
           if (window.FEATURE_MAP.lock) {
-            window.FEATURE_MAP.lock.enable(document, window, userName, lockPass);
+            try {
+              window.FEATURE_MAP.lock.enable(document, window, userName, lockPass);
+            } catch(e) {}
           }
           window._lockUnlockedHandler = () => {
             window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
@@ -10868,15 +10894,17 @@
           return;
         }
 
-        if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window);
+        try { if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window); } catch(e) {}
         window.lockUnlocked = true;
 
         if (curtainActive && !window.curtainOpened) {
-          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+          try { if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window); } catch(e) {}
 
           const data = customData.get('curtainReveal') || {};
           if (window.FEATURE_MAP.curtainReveal) {
-            window.FEATURE_MAP.curtainReveal.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            try {
+              window.FEATURE_MAP.curtainReveal.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            } catch(e) {}
           }
           window._curtainOpenedHandler = () => {
             window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
@@ -10893,13 +10921,15 @@
           return;
         }
 
-        if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
+        try { if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window); } catch(e) {}
         window.curtainOpened = true;
 
         if (welcomeActive && !window.welcomeFinished) {
           const data = customData.get('welcomeTyping') || {};
           if (window.FEATURE_MAP.welcomeTyping) {
-            window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.mediaUrl || "");
+            try {
+              window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.mediaUrl || "");
+            } catch(e) {}
           }
           window._welcomeFinishedHandler = () => {
             window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
@@ -12263,13 +12293,15 @@
 
       const runStages = () => {
         if (isCountdownRunning()) {
-          if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window);
-          if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
-          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+          try { if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window); } catch(e) { console.warn('lock disable error:', e); }
+          try { if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window); } catch(e) { console.warn('curtain disable error:', e); }
+          try { if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window); } catch(e) { console.warn('welcome disable error:', e); }
 
           const data = customData.get('countdown') || {};
           if (window.FEATURE_MAP.countdown) {
-            window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
+            try {
+              window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
+            } catch(e) { console.warn('countdown enable error:', e); }
           }
           window._countdownFinishedHandler = () => {
             window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
@@ -12280,17 +12312,19 @@
           return;
         }
 
-        if (window.FEATURE_MAP.countdown?.disable) window.FEATURE_MAP.countdown.disable(document, window);
+        try { if (window.FEATURE_MAP.countdown?.disable) window.FEATURE_MAP.countdown.disable(document, window); } catch(e) { console.warn('countdown disable error:', e); }
         window.countdownFinished = true;
 
         if (lockActive && !window.lockUnlocked) {
-          if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
-          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+          try { if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window); } catch(e) { console.warn('curtain disable error:', e); }
+          try { if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window); } catch(e) { console.warn('welcome disable error:', e); }
 
           const data = customData.get('lock') || {};
           const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
           if (window.FEATURE_MAP.lock) {
-            window.FEATURE_MAP.lock.enable(document, window, userName, lockPass);
+            try {
+              window.FEATURE_MAP.lock.enable(document, window, userName, lockPass);
+            } catch(e) { console.warn('lock enable error:', e); }
           }
           window._lockUnlockedHandler = () => {
             window.removeEventListener('lockUnlocked', window._lockUnlockedHandler);
@@ -12301,15 +12335,17 @@
           return;
         }
 
-        if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window);
+        try { if (window.FEATURE_MAP.lock?.disable) window.FEATURE_MAP.lock.disable(document, window); } catch(e) { console.warn('lock disable error:', e); }
         window.lockUnlocked = true;
 
         if (curtainActive && !window.curtainOpened) {
-          if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window);
+          try { if (window.FEATURE_MAP.welcomeTyping?.disable) window.FEATURE_MAP.welcomeTyping.disable(document, window); } catch(e) { console.warn('welcome disable error:', e); }
 
           const data = customData.get('curtainReveal') || {};
           if (window.FEATURE_MAP.curtainReveal) {
-            window.FEATURE_MAP.curtainReveal.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            try {
+              window.FEATURE_MAP.curtainReveal.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+            } catch(e) { console.warn('curtain enable error:', e); }
           }
           window._curtainOpenedHandler = () => {
             window.removeEventListener('curtainOpened', window._curtainOpenedHandler);
@@ -12326,13 +12362,15 @@
           return;
         }
 
-        if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window);
+        try { if (window.FEATURE_MAP.curtainReveal?.disable) window.FEATURE_MAP.curtainReveal.disable(document, window); } catch(e) { console.warn('curtain disable error:', e); }
         window.curtainOpened = true;
 
         if (welcomeActive && !window.welcomeFinished) {
           const data = customData.get('welcomeTyping') || {};
           if (window.FEATURE_MAP.welcomeTyping) {
-            window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.mediaUrl || "");
+            try {
+              window.FEATURE_MAP.welcomeTyping.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", data.mediaUrl || "");
+            } catch(e) { console.warn('welcome enable error:', e); }
           }
           window._welcomeFinishedHandler = () => {
             window.removeEventListener('welcomeTypingFinished', window._welcomeFinishedHandler);
