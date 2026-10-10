@@ -3859,7 +3859,7 @@
               <li class="feat-item star" id="featVirtualCake" style="align-items: flex-start;">
                 <i class="fas fa-check-circle fi-yes" style="color: #7b5df6; margin-top: 2px;"></i>
                 <div style="flex: 1;">
-                  <span>🎂 Virtual Cake Celebration with Blow Candles</span>
+                  <span>🎂 Cake Celebration with Blow Candles</span>
                   <div class="feat-exclusion-note" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
                     <i class="fas fa-lock"></i> (Included in Pro / Pro+ / Infinity)
                   </div>
@@ -4282,9 +4282,11 @@
           magicMusic: currentLang === 'hi' ? '🎵 बैकग्राउंड म्यूजिक (Background Music)' : '🎵 Background Music',
           voiceNote: currentLang === 'hi' ? '🎙️ वॉइस नोट (Voice Note)' : '🎙️ Voice Note',
           countdown: currentLang === 'hi' ? '⏳ सरप्राइज काउंटडाउन (Surprise Countdown)' : '⏳ Surprise Countdown',
-          virtualCake: currentLang === 'hi' ? '🎂 वर्चुअल केक सेलिब्रेशन (Virtual Cake Celebration)' : '🎂 Virtual Cake Celebration',
-          virtualHug: currentLang === 'hi' ? '🤗 वर्चुअल हग एनिमेशन (Virtual Hug)' : '🤗 Virtual Hug Animation',
-          flowerBouquet: currentLang === 'hi' ? '💐 फ्लावर बुके (Flower Bouquet)' : '💐 Flower Bouquet'
+          virtualCake: currentLang === 'hi' ? '🎂 वर्चुअल केक सेलिब्रेशन (Cake Celebration)' : '🎂 Cake Celebration',
+          virtualHug: currentLang === 'hi' ? '🤗 वर्चुअल हग (Virtual Hug)' : '🤗 Virtual Hug',
+          flowerBouquet: currentLang === 'hi' ? '💐 फ्लावर बुके (Flower Bouquet)' : '💐 Flower Bouquet',
+          namedBirthdayCard: currentLang === 'hi' ? '🎀 क्यूट बर्थडे पोस्टर (Cute Birthday Poster)' : '🎀 Cute Birthday Poster',
+          floatingPolaroids: currentLang === 'hi' ? '📷 फ्लोटिंग तस्वीरें (Floating Memories)' : '📷 Floating Memories'
         };
 
         const listItems = activatedFeatures.map(f => `<li style="margin-bottom: 6px; font-weight:700;">${featureNames[f] || f}</li>`).join('');
@@ -4352,7 +4354,7 @@
       };
 
       window.disablePremiumFeaturesAndClose = () => {
-        const premiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown', 'virtualCake', 'virtualHug', 'flowerBouquet'];
+        const premiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown', 'virtualCake', 'virtualHug', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids'];
         premiumFeatures.forEach(id => {
           activeFeatureStates.set(id, false);
           applyFeature(id, false);
@@ -4580,8 +4582,8 @@
           nativeShareText: "Share via device apps", openTabText: "Open in New Tab", copyAlert: "Link copied!",
           generateAlert: "Generate the link first!", previewNotReady: "Preview not ready", editModeTooltip: "Toggle text editing",
           refreshTooltip: "Reload preview",
-          catOpening: "\uD83C\uDFAD Intro", catFloral: "\uD83C\uDF38 Floral & Nature", catPlayful: "\uD83C\uDF88 Playful Interactions",
-          catHeart: "\uD83D\uDC8C Heart & Messages", catFinale: "\u2728 Grand Finale",
+          catOpening: "🎬 INTRO & REVEAL", catFloral: "🌸 FLORAL & NATURE", catPlayful: "🎈 PLAYFUL INTERACTIONS",
+          catMemories: "📸 MEMORIES & STORIES", catHeart: "❤️ HEART & EMOTIONS", catFinale: "✨ GRAND FINALE",
           featLock: "\uD83D\uDD12 Lock", featCurtainReveal: "\uD83C\uDFAD Curtain Reveal", featWelcomeTyping: "\uD83D\uDCAC Welcome Message", featFireworksText: "\uD83C\uDF86 Fireworks Text",
           featFlowerRain: "\uD83C\uDF38 Flower Rain", featFlyingSwans: "🕊️ Flying Birds", featFlowerBouquet: "💐 Flower Bouquet",
           featBalloonParty: "\uD83C\uDF88 Classic Balloons", featFloatingBalloonsNamed: "\uD83C\uDF88 Named Balloons", featFireworksClick: "\u2728 Click Fireworks",
@@ -4589,7 +4591,7 @@
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
           featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
           featImageExplosion: "\uD83D\uDCA5 Magic Photo", featFinalSurprise: "\uD83C\uDF89 Final Message",
-          featVirtualCake: "🎂 Virtual Cake Celebration", featVirtualHug: "🤗 Virtual Hug Animation", featNamedBirthdayCard: "🐼 Cute Birthday Poster",
+          featVirtualCake: "🎂 Cake Celebration", featVirtualHug: "🤗 Virtual Hug", featNamedBirthdayCard: "🐼 Cute Birthday Poster",
           featAddMusicSection: "\uD83C\uDFB5 Add Music", featMagicMusic: "🎵 Background Music", featVoiceNote: "🎙️ Voice Note", featCountdown: "⏳ Surprise Countdown", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
           uploadImages: "\uD83D\uDCF7 Upload Images", alertCopy: "Link copied!", alertGenerateFirst: "Generate the link first!",
           alertPreviewNotReady: "Preview not ready", shareInsta: "\uD83D\uDCF7 Copy this link to share on Instagram:",
@@ -4652,8 +4654,8 @@
           nativeShareText: "दूसरे ऐप्स से शेयर करें", openTabText: "नए टैब में खोलें", copyAlert: "लिंक कॉपी हो गया!",
           generateAlert: "पहले लिंक जेनरेट करें!", previewNotReady: "प्रीव्यू तैयार नहीं है", editModeTooltip: "टेक्स्ट एडिटिंग चालू/बंद करें",
           refreshTooltip: "प्रीव्यू रिफ्रेश करें",
-          catOpening: "🎭 शुरुआती जादू", catFloral: "🌸 फूल और प्रकृति", catPlayful: "🎈 मस्ती भरे इंटरैक्शन",
-          catHeart: "💌 दिल की बातें और संदेश", catFinale: "✨ भव्य समापन",
+          catOpening: "🎬 शुरुआती जादू / INTRO & REVEAL", catFloral: "🌸 फूल और प्रकृति / FLORAL & NATURE", catPlayful: "🎈 मस्ती भरे इंटरैक्शन / PLAYFUL INTERACTIONS",
+          catMemories: "📸 यादें और कहानियां / MEMORIES & STORIES", catHeart: "❤️ दिल और भावनाएं / HEART & EMOTIONS", catFinale: "✨ भव्य समापन / GRAND FINALE",
           featLock: "🔒 लॉक", featCurtainReveal: "🎭 पर्दा", featWelcomeTyping: "💬 स्वागत संदेश", featFireworksText: "🎆 पटाखे वाला टेक्स्ट",
           featFlowerRain: "🌸 फूलों की बारिश", featFlyingSwans: "🕊️ उड़ते पंछी", featFlowerBouquet: "💐 फ्लावर बुके",
           featBalloonParty: "🎈 क्लासिक गुब्बारे", featFloatingBalloonsNamed: "🎈 नाम वाले गुब्बारे", featFireworksClick: "✨ क्लिक पर पटाखे",
@@ -7322,9 +7324,10 @@
         const actualCategories = {
           [t.catOpening]: ["countdown", "lock", "curtainReveal", "welcomeTyping", "fireworksText"],
           [t.catFloral]: ["flowerRain", "flyingSwans", "flowerBouquet"],
-          [t.catPlayful]: ["balloonParty", "virtualCake", "virtualHug", "namedBirthdayCard", "floatingBalloonsNamed", "fireworksClick", "bombExplosion", "giftBoxOpen", "imageExplosion", "scratchReveal"],
-          [t.catHeart]: ["textFormation", "memoryTimeline", "heartsOnScroll", "oldPaperLetter", "hugSkyLetter", "floatingPolaroids"],
-          [t.catFinale]: ["finalSurprise", "addMusicSection", "magicMusic", "voiceNote"]
+          [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "imageExplosion", "virtualCake", "fireworksClick", "bombExplosion", "giftBoxOpen", "scratchReveal", "namedBirthdayCard", "virtualHug"],
+          [t.catMemories]: ["floatingPolaroids", "memoryTimeline", "oldPaperLetter"],
+          [t.catHeart]: ["textFormation", "heartsOnScroll", "hugSkyLetter"],
+          [t.catFinale]: ["magicMusic", "voiceNote", "addMusicSection", "finalSurprise"]
         };
         for (let [catName, ids] of Object.entries(actualCategories)) {
           const section = document.createElement("div"); section.className = "feature-category";
@@ -7333,19 +7336,19 @@
           ids.forEach(id => {
             const feat = FEATURES_CATALOG.find(f => f.id === id);
             if (!feat) return;
-            const featName = (id === "virtualCake") ? (currentLang === 'hi' ? '🎂 वर्चुअल केक सेलिब्रेशन' : '🎂 Virtual Cake Celebration') : (id === "virtualHug") ? (currentLang === 'hi' ? '🤗 वर्चुअल हग (Virtual Hug)' : '🤗 Virtual Hug Animation') : (t[feat.nameKey] || feat.nameKey);
+            const featName = (id === "virtualCake") ? (currentLang === 'hi' ? '🎂 वर्चुअल केक सेलिब्रेशन' : '🎂 Cake Celebration') : (id === "virtualHug") ? (currentLang === 'hi' ? '🤗 वर्चुअल हग (Virtual Hug)' : '🤗 Virtual Hug') : (t[feat.nameKey] || feat.nameKey);
             const toggleRow = document.createElement("div"); toggleRow.className = "toggle-row"; toggleRow.id = `toggle-${id}`;
             if (activeFeatureStates.get(id)) toggleRow.classList.add("active");
             const hasCustom = !noCustomizeIds.has(id);
             const labelSpan = document.createElement("span"); labelSpan.className = "toggle-label"; labelSpan.innerText = featName;
 
-            if (['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet'].includes(id)) {
+            if (['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids'].includes(id)) {
               const proBadge = document.createElement("span");
               proBadge.className = "pro-badge-pill";
               proBadge.innerHTML = `<span style="font-size: 0.72rem;">👑</span> <span style="font-size: 0.65rem; font-weight: 900; letter-spacing: 0.5px; color: #fff;">PRO</span>`;
               proBadge.style.cssText = "background: linear-gradient(135deg, #7b5df6 0%, #e83a59 100%); padding: 3px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; box-shadow: 0 2px 8px rgba(123, 93, 246, 0.35); vertical-align: middle; pointer-events: none;";
               labelSpan.appendChild(proBadge);
-            } else if (['magicMusic', 'voiceNote', 'countdown'].includes(id)) {
+            } else if (['voiceNote', 'countdown'].includes(id)) {
               const crownSpan = document.createElement("span");
               crownSpan.className = "inline-crown";
               crownSpan.textContent = "👑";
@@ -9363,8 +9366,8 @@
                       (viewId && sessionStorage.getItem(`pro_plan_${viewId}`) === 'true') ||
                       isPremium; // Any paid/premium user has full PRO access
 
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet'];
-        const basicPremiumFeatures = ['magicMusic', 'voiceNote', 'countdown'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids'];
+        const basicPremiumFeatures = ['voiceNote', 'countdown'];
 
         // Feature compliance is validated during Stage 3 Plan Selection (checkFeatureCompliance)
 
@@ -10505,8 +10508,8 @@
 
       window.getActivePremiumFeatures = function () {
         const active = [];
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet'];
-        const basicPremiumFeatures = ['magicMusic', 'voiceNote', 'countdown', 'lock', 'gallery', 'customUrl'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids'];
+        const basicPremiumFeatures = ['voiceNote', 'countdown', 'lock', 'gallery', 'customUrl'];
 
         if (typeof activeFeatureStates !== 'undefined') {
           for (let [id, state] of activeFeatureStates.entries()) {
@@ -10592,15 +10595,17 @@
 
       window.checkFeatureCompliance = function (planKey) {
         const activeFeatures = getActivePremiumFeatures();
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids'];
         const activePro = activeFeatures.filter(f => proFeatures.includes(f));
 
         const featureLabelMap = {
-          virtualCake: '🎂 Virtual Cake Celebration (PRO feature)',
-          virtualHug: '🤗 Virtual Hug Animation (PRO feature)',
+          virtualCake: '🎂 Cake Celebration (PRO feature)',
+          virtualHug: '🤗 Virtual Hug (PRO feature)',
           addMusicSection: '🎵 Add Music (PRO feature)',
           flowerBouquet: '💐 Flower Bouquet (PRO feature)',
-          magicMusic: '🎵 Background Music',
+          magicMusic: '🎵 Background Music (PRO feature)',
+          namedBirthdayCard: '🎀 Cute Birthday Poster (PRO feature)',
+          floatingPolaroids: '📷 Floating Memories (PRO feature)',
           voiceNote: '🎙️ Voice Note',
           countdown: '⏳ Midnight Surprise Countdown',
           lock: '🔒 Passcode Lock',
@@ -11216,7 +11221,7 @@
                 if (typeof showFeatureNoticeModal === 'function') {
                   showFeatureNoticeModal(
                     '👑 Pro Feature Locked',
-                    errData.activeProFeatures || ['🎂 Virtual Cake Celebration', '🤗 Virtual Hug Animation'],
+                    errData.activeProFeatures || ['🎂 Cake Celebration', '🤗 Virtual Hug'],
                     errData.error || 'This website is on a Starter plan. To use Virtual Cake & Virtual Hug, please upgrade your website to Pro.',
                     true
                   );

@@ -77,12 +77,50 @@
         }[m] || m));
     }
 
+    // Curated local PNG media pool for random fallback memories & reveals
+    const FALLBACK_PNG_MEDIA_POOL = [
+        "/assets/media/Final1.png",
+        "/assets/media/Final2.png",
+        "/assets/media/Final3.png",
+        "/assets/media/Final4.png",
+        "/assets/media/1000009474.png",
+        "/assets/media/1000009475.png",
+        "/assets/media/1000009484.png",
+        "/assets/media/1000009493.png",
+        "/assets/media/1000009498.png",
+        "/assets/media/1000009499.png",
+        "/assets/media/1000009500.png",
+        "/assets/media/1000009501.png",
+        "/assets/media/1000009502.png",
+        "/assets/media/1000009504.png",
+        "/assets/media/1000009505.png",
+        "/assets/media/1000009506.png",
+        "/assets/media/1000009507.png",
+        "/assets/media/1000009511.png",
+        "/assets/media/1000009513.png",
+        "/assets/media/1000009515.png",
+        "/assets/media/1000009545.png",
+        "/assets/media/1000009546.png",
+        "/assets/media/1000009547.png",
+        "/assets/media/1000009621.png",
+        "/assets/media/1000009622.png",
+        "/assets/media/1000009623.png",
+        "/assets/media/1000009825.png"
+    ];
+
+    function getRandomFallbackPngs(count = 4) {
+        const shuffled = [...FALLBACK_PNG_MEDIA_POOL].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+    }
+
     // Expose helpers globally if not already present
     if (typeof window !== 'undefined') {
         if (!window.escapeHtml) window.escapeHtml = escapeHtml;
         if (!window.insertSectionBeforeFinal) window.insertSectionBeforeFinal = insertSectionBeforeFinal;
         if (!window.scrollToElement) window.scrollToElement = scrollToElement;
         if (!window.injectFontsIfNeeded) window.injectFontsIfNeeded = injectFontsIfNeeded;
+        if (!window.FALLBACK_PNG_MEDIA_POOL) window.FALLBACK_PNG_MEDIA_POOL = FALLBACK_PNG_MEDIA_POOL;
+        if (!window.getRandomFallbackPngs) window.getRandomFallbackPngs = getRandomFallbackPngs;
     }
 
     // Helper to ensure confetti library is loaded
@@ -1488,10 +1526,7 @@
                 const handleOpen = () => {
                     giftAudio.currentTime = 0; giftAudio.play().catch(e => console.log('Gift audio failed:', e)); setTimeout(() => { giftContainer.style.display = "none"; revealDiv.style.display = "block"; revealDiv.style.animation = "giftRevealPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)"; }, 100);
                     if (!d.getElementById('gift-reveal-key')) { const s = d.createElement('style'); s.id = 'gift-reveal-key'; s.textContent = '@keyframes giftRevealPop{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}'; d.head.appendChild(s); }
-                    const fallbackGiftPhotos = [
-                        "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80",
-                        "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=80"
-                    ];
+                    const fallbackGiftPhotos = getRandomFallbackPngs(2);
                     let validGiftImgs = [];
                     if (images && Array.isArray(images) && images.length > 0) {
                         const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
@@ -1625,10 +1660,7 @@
                 const evData = window.getEventData ? window.getEventData() : { event: 'birthday' };
                 section.appendChild(title); const grid = d.createElement("div"); grid.style.cssText = "display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; margin-top: 20px;";
                 section.appendChild(grid); insertSectionBeforeFinal(d, section); scrollToElement(d, section);
-                const fallbackScratchPhotos = [
-                    "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80",
-                    "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=500&auto=format&fit=crop&q=80"
-                ];
+                const fallbackScratchPhotos = getRandomFallbackPngs(2);
                 let validScratchImages = [];
                 if (images && Array.isArray(images) && images.length > 0) {
                     const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
@@ -1754,12 +1786,7 @@
                     return typeof def === 'function' ? def(evData.event) : (def || "Memories");
                 };
                 const milestones = customText ? customText.split(',') : getDef().split(',');
-                const fallbackTimelinePhotos = [
-                    "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80",
-                    "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=500&auto=format&fit=crop&q=80",
-                    "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&auto=format&fit=crop&q=80",
-                    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80"
-                ];
+                const fallbackTimelinePhotos = getRandomFallbackPngs(milestones.length || 4);
                 milestones.forEach((m, i) => {
                     const card = d.createElement("div");
                     card.className = "magic-timeline-card";
@@ -2001,12 +2028,7 @@
                 insertSectionBeforeFinal(d, section);
                 scrollToElement(d, section);
 
-                const fallbackPhotos = [
-                    "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80",
-                    "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=500&auto=format&fit=crop&q=80",
-                    "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&auto=format&fit=crop&q=80",
-                    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80"
-                ];
+                const fallbackPhotos = getRandomFallbackPngs(4);
 
                 // Robust filtering: strip dead/local blob: URLs on shared devices to avoid broken images
                 let validImgs = [];
@@ -3127,8 +3149,8 @@
                             img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
                             img.style.opacity = "1";
                         } else {
-                            img.src = "https://placehold.co/200x250/FFF9F0/5D4037?text=Upload+any+image+here";
-                            img.style.cssText = "width: 100%; height: 100%; object-fit: contain; border: 3px solid #ff7a2f; border-radius: 24px; opacity: 0.6;";
+                            img.src = getRandomFallbackPngs(1)[0] || "/assets/media/Final1.png";
+                            img.style.cssText = "width: 100%; height: 100%; object-fit: contain; border: 3px solid #ff7a2f; border-radius: 24px; opacity: 0.9;";
                         }
                     }
                     const uploadBtn = section.querySelector('.upload-btn');
@@ -3184,8 +3206,8 @@
                     img.src = images[0];
                     img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
                 } else {
-                    img.src = "https://placehold.co/200x250/FFF9F0/5D4037?text=Upload+any+image+here";
-                    img.style.cssText = "width: 100%; height: 100%; object-fit: contain; border: 3px solid #ff7a2f; border-radius: 24px; opacity: 0.6;";
+                    img.src = getRandomFallbackPngs(1)[0] || "/assets/media/Final1.png";
+                    img.style.cssText = "width: 100%; height: 100%; object-fit: contain; border: 3px solid #ff7a2f; border-radius: 24px; opacity: 0.9;";
                 }
                 imageContainer.appendChild(img);
 
