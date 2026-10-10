@@ -77,12 +77,8 @@
         }[m] || m));
     }
 
-    // Curated local PNG media pool for random fallback memories & reveals
+    // Curated local PNG media pool for random fallback memories & reveals (excludes final surprise cards)
     const FALLBACK_PNG_MEDIA_POOL = [
-        "/assets/media/Final1.png",
-        "/assets/media/Final2.png",
-        "/assets/media/Final3.png",
-        "/assets/media/Final4.png",
         "/assets/media/1000009474.png",
         "/assets/media/1000009475.png",
         "/assets/media/1000009484.png",
@@ -102,6 +98,8 @@
         "/assets/media/1000009545.png",
         "/assets/media/1000009546.png",
         "/assets/media/1000009547.png",
+        "/assets/media/1000009618.png",
+        "/assets/media/1000009619.png",
         "/assets/media/1000009621.png",
         "/assets/media/1000009622.png",
         "/assets/media/1000009623.png",
@@ -109,7 +107,8 @@
     ];
 
     function getRandomFallbackPngs(count = 4) {
-        const shuffled = [...FALLBACK_PNG_MEDIA_POOL].sort(() => 0.5 - Math.random());
+        const cleanPool = FALLBACK_PNG_MEDIA_POOL.filter(src => !src.toLowerCase().includes('final'));
+        const shuffled = [...cleanPool].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, count);
     }
 
@@ -1528,16 +1527,20 @@
                     if (!d.getElementById('gift-reveal-key')) { const s = d.createElement('style'); s.id = 'gift-reveal-key'; s.textContent = '@keyframes giftRevealPop{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}'; d.head.appendChild(s); }
                     const fallbackGiftPhotos = getRandomFallbackPngs(2);
                     let validGiftImgs = [];
+                    const isGeneratedGift = Boolean(
+                        (typeof w !== 'undefined' && w.__IS_GENERATED_PAGE__) ||
+                        (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__)
+                    );
                     if (images && Array.isArray(images) && images.length > 0) {
-                        const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
-                        if (cleaned.length > 0) {
-                            validGiftImgs = cleaned;
-                        } else if (typeof window !== 'undefined' && !window.__IS_GENERATED_PAGE__) {
-                            validGiftImgs = images.filter(src => !!src);
+                        if (isGeneratedGift) {
+                            const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
+                            validGiftImgs = cleaned.length > 0 ? cleaned : [];
+                        } else {
+                            validGiftImgs = images.filter(src => src && typeof src === 'string' && src.trim() !== '');
                         }
-                    }
-                    if (images && images.length > 0 && validGiftImgs.length === 0) {
-                        validGiftImgs = fallbackGiftPhotos;
+                        if (validGiftImgs.length === 0 && images.length > 0) {
+                            validGiftImgs = fallbackGiftPhotos;
+                        }
                     }
 
                     if (validGiftImgs && validGiftImgs.length > 0) {
@@ -1662,16 +1665,20 @@
                 section.appendChild(grid); insertSectionBeforeFinal(d, section); scrollToElement(d, section);
                 const fallbackScratchPhotos = getRandomFallbackPngs(2);
                 let validScratchImages = [];
+                const isGeneratedScratch = Boolean(
+                    (typeof w !== 'undefined' && w.__IS_GENERATED_PAGE__) ||
+                    (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__)
+                );
                 if (images && Array.isArray(images) && images.length > 0) {
-                    const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
-                    if (cleaned.length > 0) {
-                        validScratchImages = cleaned;
-                    } else if (typeof window !== 'undefined' && !window.__IS_GENERATED_PAGE__) {
-                        validScratchImages = images.filter(src => !!src);
+                    if (isGeneratedScratch) {
+                        const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
+                        validScratchImages = cleaned.length > 0 ? cleaned : [];
+                    } else {
+                        validScratchImages = images.filter(src => src && typeof src === 'string' && src.trim() !== '');
                     }
-                }
-                if (images && images.length > 0 && validScratchImages.length === 0) {
-                    validScratchImages = fallbackScratchPhotos;
+                    if (validScratchImages.length === 0 && images.length > 0) {
+                        validScratchImages = fallbackScratchPhotos;
+                    }
                 }
 
                 const hasImages = validScratchImages && validScratchImages.length > 0;
@@ -2001,6 +2008,427 @@
             disable(d) { d?.getElementById("magic-hug-section")?.remove(); }
         },
 
+        instantCamera: {
+            enable(d, w, userName, customText, images) {
+                this.disable(d);
+                if (d.getElementById("magic-instant-camera-section")) return;
+
+                const lang = (typeof window !== 'undefined' && window.currentLang) || 'en';
+                const isHi = (lang === 'hi');
+
+                // Clean & prepare images list
+                let photoList = [];
+                const isGeneratedPage = Boolean(
+                    (typeof w !== 'undefined' && w.__IS_GENERATED_PAGE__) ||
+                    (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__)
+                );
+
+                if (images && Array.isArray(images) && images.length > 0) {
+                    if (isGeneratedPage) {
+                        const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
+                        photoList = cleaned.length > 0 ? cleaned : [];
+                    } else {
+                        photoList = images.filter(src => src && typeof src === 'string' && src.trim() !== '');
+                    }
+                }
+                if (photoList.length === 0) {
+                    photoList = getRandomFallbackPngs(4);
+                }
+
+                // Inject Styles
+                let styleEl = d.getElementById('magic-camera-styles');
+                if (!styleEl) {
+                    styleEl = d.createElement('style');
+                    styleEl.id = 'magic-camera-styles';
+                    styleEl.textContent = `
+                        @keyframes cameraFlashAnim {
+                            0% { opacity: 0.95; }
+                            100% { opacity: 0; }
+                        }
+                        @keyframes cameraRecoil {
+                            0% { transform: scale(1) translateY(0) rotate(0deg); }
+                            18% { transform: scale(0.92) translateY(8px) rotate(-1.5deg); }
+                            45% { transform: scale(1.04) translateY(-5px) rotate(1.2deg); }
+                            75% { transform: scale(0.98) translateY(2px) rotate(-0.5deg); }
+                            100% { transform: scale(1) translateY(0) rotate(0deg); }
+                        }
+                        @keyframes polaroidEjectAnim {
+                            0% {
+                                opacity: 0;
+                                transform: translateY(-135px) scale(0.48) rotateX(34deg) rotate(calc(var(--base-rot, 0deg) * 1.8));
+                                filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1)) blur(2px);
+                            }
+                            35% {
+                                opacity: 1;
+                                transform: translateY(-40px) scale(0.85) rotateX(15deg) rotate(var(--base-rot, 0deg));
+                                filter: drop-shadow(0 8px 18px rgba(0,0,0,0.12)) blur(0px);
+                            }
+                            70% {
+                                transform: translateY(14px) scale(1.05) rotate(calc(var(--base-rot, 0deg) - 1.5deg));
+                            }
+                            88% {
+                                transform: translateY(-4px) scale(0.99) rotate(calc(var(--base-rot, 0deg) + 0.5deg));
+                            }
+                            100% {
+                                opacity: 1;
+                                transform: translateY(0) scale(1) rotate(var(--base-rot, 0deg));
+                                filter: drop-shadow(0 16px 32px rgba(0,0,0,0.16));
+                            }
+                        }
+                        @keyframes polaroidDevelopAnim {
+                            0% {
+                                filter: brightness(2.1) contrast(0.35) saturate(0.1) sepia(0.35) blur(3.5px);
+                                opacity: 0.65;
+                            }
+                            35% {
+                                filter: brightness(1.55) contrast(0.65) saturate(0.55) sepia(0.2) blur(1.8px);
+                                opacity: 0.88;
+                            }
+                            72% {
+                                filter: brightness(1.15) contrast(0.9) saturate(0.85) sepia(0.05) blur(0.4px);
+                                opacity: 0.98;
+                            }
+                            100% {
+                                filter: brightness(1) contrast(1) saturate(1) sepia(0) blur(0px);
+                                opacity: 1;
+                            }
+                        }
+                        @keyframes photoShimmer {
+                            0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
+                            25% { opacity: 0.85; }
+                            100% { transform: translateX(250%) skewX(-25deg); opacity: 0; }
+                        }
+                        @keyframes polaroidShakeAnim {
+                            0%, 100% { transform: rotate(var(--base-rot, 0deg)) scale(1); }
+                            20% { transform: rotate(calc(var(--base-rot, 0deg) - 5deg)) scale(1.05); }
+                            40% { transform: rotate(calc(var(--base-rot, 0deg) + 6deg)) scale(1.07); }
+                            60% { transform: rotate(calc(var(--base-rot, 0deg) - 4deg)) scale(1.04); }
+                            80% { transform: rotate(calc(var(--base-rot, 0deg) + 3deg)) scale(1.02); }
+                        }
+                        @keyframes cameraHeroFloat {
+                            0%, 100% { transform: translateY(0) rotate(0deg); }
+                            50% { transform: translateY(-7px) rotate(0.8deg); }
+                        }
+                        @keyframes cameraSnapPulse {
+                            0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 6px 20px rgba(235, 75, 110, 0.45); }
+                            50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 10px 28px rgba(235, 75, 110, 0.65); }
+                        }
+                        .magic-polaroid-item {
+                            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.3, 1), box-shadow 0.3s ease;
+                        }
+                        .magic-polaroid-item:hover {
+                            transform: translateY(-8px) scale(1.03) rotate(0deg) !important;
+                            box-shadow: 0 20px 40px rgba(0,0,0,0.22) !important;
+                            z-index: 15 !important;
+                        }
+                        .camera-hero-wrapper:hover .magic-camera-main-img {
+                            transform: translateY(-4px) scale(1.02) !important;
+                            filter: drop-shadow(0 24px 38px rgba(120, 40, 160, 0.42)) drop-shadow(0 8px 16px rgba(235, 75, 110, 0.32)) !important;
+                        }
+                        .camera-hero-wrapper:active .magic-camera-main-img {
+                            transform: scale(0.93) translateY(4px) !important;
+                        }
+                    `;
+                    (d.head || d.body)?.appendChild(styleEl);
+                }
+
+                // Web Audio Shutter Sound Synthesizer
+                function playShutterAudio() {
+                    try {
+                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioCtx) return;
+                        const ctx = new AudioCtx();
+                        if (ctx.state === 'suspended') ctx.resume();
+
+                        // Shutter click transient
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(550, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.05);
+                        gain.gain.setValueAtTime(0.7, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.06);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.07);
+
+                        // Metallic noise burst
+                        const bufferSize = Math.floor(ctx.sampleRate * 0.06);
+                        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                        const noise = ctx.createBufferSource();
+                        noise.buffer = buffer;
+                        const noiseGain = ctx.createGain();
+                        noiseGain.gain.setValueAtTime(0.5, ctx.currentTime + 0.03);
+                        noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.09);
+                        noise.connect(noiseGain);
+                        noiseGain.connect(ctx.destination);
+                        noise.start(ctx.currentTime + 0.03);
+
+                        // Film motor whirrr
+                        const motor = ctx.createOscillator();
+                        const motorGain = ctx.createGain();
+                        motor.type = 'sawtooth';
+                        motor.frequency.setValueAtTime(240, ctx.currentTime + 0.1);
+                        motor.frequency.linearRampToValueAtTime(360, ctx.currentTime + 0.4);
+                        motorGain.gain.setValueAtTime(0.2, ctx.currentTime + 0.1);
+                        motorGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.48);
+                        motor.connect(motorGain);
+                        motorGain.connect(ctx.destination);
+                        motor.start(ctx.currentTime + 0.1);
+                        motor.stop(ctx.currentTime + 0.48);
+                    } catch (e) {
+                        console.warn('Camera audio note:', e);
+                    }
+                }
+
+                // Create Main Section
+                const section = d.createElement("section");
+                section.id = "magic-instant-camera-section";
+                section.style.cssText = "width: 92%; max-width: 640px; margin: 40px auto 55px auto; padding: clamp(26px, 3.5vw, 36px) clamp(16px, 2.5vw, 24px); border-radius: 36px; background: linear-gradient(155deg, rgba(255,250,245,0.96) 0%, rgba(255,240,245,0.94) 100%); border: 1.5px solid rgba(255,182,193,0.45); box-shadow: 0 16px 45px rgba(220,120,150,0.12); box-sizing: border-box; text-align: center; position: relative; overflow: visible; clear: both;";
+
+                // Flash Overlay
+                let flashOverlay = d.getElementById('magic-camera-flash');
+                if (!flashOverlay) {
+                    flashOverlay = d.createElement("div");
+                    flashOverlay.id = "magic-camera-flash";
+                    flashOverlay.style.cssText = "position: fixed; inset: 0; background: radial-gradient(circle, #ffffff 40%, rgba(255,255,255,0.85) 100%); pointer-events: none; z-index: 99999; opacity: 0; display: none;";
+                    d.body.appendChild(flashOverlay);
+                }
+
+                // Section Header
+                const badge = d.createElement("div");
+                badge.style.cssText = "display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 20px; background: rgba(235,75,110,0.1); color: #eb4b6e; font-size: 0.78rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;";
+                badge.innerHTML = `<span>📸</span> <span>${isHi ? 'इंस्टेंट यादें' : 'INSTANT MEMORIES'}</span>`;
+                section.appendChild(badge);
+
+                const title = d.createElement("h2");
+                title.style.cssText = "font-family: 'Great Vibes', cursive; font-size: clamp(2.2rem, 5vw, 2.9rem); color: #b83358; margin: 4px 0 6px 0; text-shadow: 0 2px 10px rgba(184,51,88,0.15); line-height: 1.2;";
+                title.innerText = isHi ? "जादुई कैमरा स्नैपशॉट" : "Magic Camera Snapshot";
+                section.appendChild(title);
+
+                const subtitle = d.createElement("p");
+                subtitle.style.cssText = "font-size: 0.92rem; color: #7a505b; margin: 0 0 22px 0; opacity: 0.9;";
+                subtitle.innerText = isHi ? "कैमरे के शटर बटन पर क्लिक करें और अपनी फोटो निकालें! 🎞️" : "Tap the shutter button to snap & print instant Polaroid memories! 🎞️";
+                section.appendChild(subtitle);
+
+                // CAMERA HERO CONTAINER (Beautiful 3D Image Centerpiece)
+                const cameraHero = d.createElement("div");
+                cameraHero.className = "camera-hero-wrapper";
+                cameraHero.style.cssText = "position: relative; width: min(240px, 72vw); margin: 10px auto 34px auto; cursor: pointer; user-select: none; animation: cameraHeroFloat 3.8s ease-in-out infinite; transition: transform 0.2s ease;";
+
+                const cameraImg = d.createElement("img");
+                cameraImg.src = "/assets/media/cam.png";
+                cameraImg.alt = "Instant Camera";
+                cameraImg.className = "magic-camera-main-img";
+                cameraImg.style.cssText = "width: 100%; height: auto; display: block; filter: drop-shadow(0 18px 32px rgba(120, 40, 160, 0.32)) drop-shadow(0 6px 14px rgba(235, 75, 110, 0.22)); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease; pointer-events: none;";
+                cameraHero.appendChild(cameraImg);
+
+                // Floating Glowing Snap Pill Badge (positioned below camera so TheGreeter text is completely clear)
+                const snapBadge = d.createElement("div");
+                snapBadge.className = "camera-snap-badge";
+                snapBadge.style.cssText = "position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff4b72 0%, #e0244d 100%); color: #ffffff; padding: 7px 18px; border-radius: 24px; font-weight: 800; font-size: 0.84rem; letter-spacing: 0.5px; box-shadow: 0 8px 22px rgba(224,36,77,0.45); display: flex; align-items: center; gap: 6px; white-space: nowrap; pointer-events: none; border: 2.5px solid #ffffff; animation: cameraSnapPulse 2.4s ease-in-out infinite;";
+                snapBadge.innerHTML = `<span>📸</span> <span>${isHi ? 'क्लिक करके फोटो निकालें' : 'Tap to Snap!'}</span>`;
+                cameraHero.appendChild(snapBadge);
+
+                // Counter Banner under camera
+                const counterBanner = d.createElement("div");
+                counterBanner.style.cssText = "font-size: 0.82rem; font-weight: 700; color: #b84568; margin-top: 26px; display: flex; align-items: center; justify-content: center; gap: 6px;";
+                counterBanner.innerHTML = `<span>🎞️</span> <span id="cameraRollCounter">${isHi ? `फोटो 0/${photoList.length} (क्लिक करके देखें)` : `0 of ${photoList.length} photos snapped`}</span>`;
+
+                section.appendChild(cameraHero);
+                section.appendChild(counterBanner);
+
+                // EJECTED GALLERY CONTAINER
+                const gallery = d.createElement("div");
+                gallery.id = "magic-camera-gallery";
+                gallery.style.cssText = "display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 10px; padding: 10px 4px; min-height: 40px;";
+                section.appendChild(gallery);
+
+                insertSectionBeforeFinal(d, section);
+                scrollToElement(d, section);
+
+                // LIGHTBOX POPUP FOR TAP-TO-ZOOM
+                let lightbox = d.getElementById('magic-camera-lightbox');
+                if (!lightbox) {
+                    lightbox = d.createElement("div");
+                    lightbox.id = "magic-camera-lightbox";
+                    lightbox.style.cssText = "position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 100000; display: none; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(6px); cursor: pointer;";
+                    lightbox.innerHTML = `
+                        <div id="magic-lightbox-card" style="max-width: 90vw; max-height: 85vh; background: #ffffff; padding: 14px 14px 20px 14px; border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,0.5); text-align: center; position: relative; cursor: default;">
+                            <img id="magic-lightbox-img" src="" style="max-width: 100%; max-height: 72vh; object-fit: contain; border-radius: 6px; display: block; background: #f8f8f8;" />
+                            <button style="position: absolute; top: -14px; right: -14px; width: 34px; height: 34px; border-radius: 50%; background: #eb4b6e; color: #fff; border: 2px solid #fff; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">×</button>
+                        </div>
+                    `;
+                    lightbox.onclick = (e) => {
+                        if (e.target === lightbox || e.target.tagName === 'BUTTON') {
+                            lightbox.style.display = 'none';
+                        }
+                    };
+                    d.body.appendChild(lightbox);
+                }
+
+                // Snap photo interaction logic
+                let currentSnapIdx = 0;
+
+                function snapPhoto() {
+                    if (currentSnapIdx >= photoList.length) {
+                        currentSnapIdx = 0;
+                        gallery.innerHTML = '';
+                    }
+
+                    // 1. Play Shutter Audio & Camera Mechanical Recoil Kick
+                    playShutterAudio();
+                    if (cameraHero) {
+                        cameraHero.style.animation = "cameraRecoil 0.48s cubic-bezier(0.34, 1.56, 0.64, 1)";
+                        setTimeout(() => {
+                            cameraHero.style.animation = "cameraHeroFloat 3.8s ease-in-out infinite";
+                        }, 500);
+                    }
+
+                    // 2. Flash animation & Lens Burst
+                    if (flashOverlay) {
+                        flashOverlay.style.display = "block";
+                        flashOverlay.style.animation = "none";
+                        void flashOverlay.offsetWidth;
+                        flashOverlay.style.animation = "cameraFlashAnim 0.35s ease-out forwards";
+                        setTimeout(() => { flashOverlay.style.display = "none"; }, 360);
+                    }
+
+                    // 3. Button printing micro-state feedback
+                    if (snapBadge) {
+                        snapBadge.innerHTML = `<span>🎞️</span> <span>${isHi ? 'फोटो प्रिंट हो रही है...' : 'Printing photo...'}</span>`;
+                        setTimeout(() => {
+                            snapBadge.innerHTML = `<span>📸</span> <span>${isHi ? 'क्लिक करके फोटो निकालें' : 'Tap to Snap!'}</span>`;
+                        }, 920);
+                    }
+
+                    // 4. Sparkle/Confetti Ejection Burst from Camera
+                    if (typeof ensureConfetti === 'function' && cameraHero) {
+                        ensureConfetti(cfn => {
+                            const rect = cameraHero.getBoundingClientRect();
+                            const x = (rect.left + rect.width / 2) / window.innerWidth;
+                            const y = (rect.top + rect.height * 0.72) / window.innerHeight;
+                            cfn({
+                                particleCount: 22,
+                                spread: 65,
+                                startVelocity: 26,
+                                origin: { x, y },
+                                colors: ['#ff4b72', '#ff8da1', '#ffd700', '#7b5df6', '#00f2fe', '#ffffff'],
+                                scalar: 0.85,
+                                ticks: 100
+                            });
+                        });
+                    }
+
+                    // 5. Pick photo
+                    const photoSrc = photoList[currentSnapIdx];
+                    currentSnapIdx++;
+
+                    // 6. Create Polaroid Card
+                    const polaroid = d.createElement("div");
+                    polaroid.className = "magic-polaroid-item";
+                    const randomRot = Math.round(Math.random() * 8 - 4);
+                    polaroid.style.setProperty('--base-rot', `${randomRot}deg`);
+                    polaroid.style.cssText = `
+                        width: clamp(200px, 42vw, 240px);
+                        background: #ffffff;
+                        padding: 10px 10px 14px 10px;
+                        border-radius: 12px;
+                        box-shadow: 0 16px 36px rgba(0,0,0,0.16), 0 4px 10px rgba(0,0,0,0.06);
+                        border: 1px solid rgba(0,0,0,0.06);
+                        transform: rotate(${randomRot}deg);
+                        cursor: pointer;
+                        box-sizing: border-box;
+                        animation: polaroidEjectAnim 0.95s cubic-bezier(0.22, 1, 0.36, 1) both;
+                        position: relative;
+                        user-select: none;
+                        perspective: 1000px;
+                    `;
+
+                    // Inner Frame Container for Image + Glare Sheen
+                    const frameWrap = d.createElement("div");
+                    frameWrap.style.cssText = "position: relative; width: 100%; height: clamp(170px, 36vw, 210px); border-radius: 6px; overflow: hidden; background: #faf8f5;";
+
+                    // Developing Image inside Polaroid
+                    const img = d.createElement("img");
+                    img.src = photoSrc;
+                    img.alt = "Memory Snapshot";
+                    img.style.cssText = "width: 100%; height: 100%; object-fit: cover; display: block; animation: polaroidDevelopAnim 2.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;";
+                    img.onerror = () => { img.onerror = null; img.src = getRandomFallbackPngs(1)[0] || '/assets/media/1000009474.png'; };
+                    frameWrap.appendChild(img);
+
+                    // Glossy Photo Glare Sweep
+                    const gloss = d.createElement("div");
+                    gloss.style.cssText = "position: absolute; inset: 0; pointer-events: none; overflow: hidden;";
+                    gloss.innerHTML = '<div style="position: absolute; top: 0; left: 0; width: 60%; height: 100%; background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.72) 50%, transparent 100%); animation: photoShimmer 1.8s cubic-bezier(0.25, 1, 0.5, 1) 0.35s both;"></div>';
+                    frameWrap.appendChild(gloss);
+
+                    polaroid.appendChild(frameWrap);
+
+                    // Bottom Polaroid Caption Stamp
+                    const caption = d.createElement("div");
+                    caption.style.cssText = "margin-top: 9px; display: flex; align-items: center; justify-content: space-between; font-size: 0.76rem; color: #7a505b; font-weight: 700; letter-spacing: 0.4px; padding: 0 4px;";
+                    caption.innerHTML = `<span>🎞️ #${currentSnapIdx}</span><span style="font-size: 0.82rem; color: #ff4b72;">💖</span>`;
+                    polaroid.appendChild(caption);
+
+                    // Interactive Tap-to-Shake & Lightbox Zoom
+                    polaroid.onclick = (e) => {
+                        e.stopPropagation();
+                        polaroid.style.animation = "none";
+                        void polaroid.offsetWidth;
+                        polaroid.style.animation = "polaroidShakeAnim 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) both";
+
+                        if (typeof ensureConfetti === 'function') {
+                            ensureConfetti(cfn => {
+                                const rect = polaroid.getBoundingClientRect();
+                                const x = (rect.left + rect.width / 2) / window.innerWidth;
+                                const y = (rect.top + rect.height / 2) / window.innerHeight;
+                                cfn({
+                                    particleCount: 18,
+                                    spread: 55,
+                                    origin: { x, y },
+                                    colors: ['#ff4b72', '#ffd700', '#ff8da1', '#ffffff']
+                                });
+                            });
+                        }
+
+                        const lbImg = d.getElementById('magic-lightbox-img');
+                        if (lbImg) {
+                            lbImg.src = img.src;
+                            lightbox.style.display = "flex";
+                        }
+                    };
+
+                    gallery.prepend(polaroid);
+
+                    // Update counter
+                    const counterEl = d.getElementById('cameraRollCounter');
+                    if (counterEl) {
+                        if (currentSnapIdx >= photoList.length) {
+                            counterEl.innerHTML = isHi ? `🎉 सभी ${photoList.length} फोटो तैयार! फिर से स्नैप करें 🔄` : `🎉 All ${photoList.length} Snapped! Tap to reload 🔄`;
+                        } else {
+                            counterEl.innerHTML = isHi ? `फोटो ${currentSnapIdx}/${photoList.length} तैयार` : `Photo ${currentSnapIdx} of ${photoList.length} snapped`;
+                        }
+                    }
+                }
+
+                cameraHero.onclick = snapPhoto;
+
+                return {
+                    listeners: [{ target: cameraHero, type: "click", handler: snapPhoto }]
+                };
+            },
+            disable(d) {
+                d?.getElementById("magic-instant-camera-section")?.remove();
+                d?.getElementById("magic-camera-flash")?.remove();
+                d?.getElementById("magic-camera-styles")?.remove();
+                d?.getElementById("magic-camera-lightbox")?.remove();
+            }
+        },
+
         floatingPolaroids: {
             enable(d, w, userName, customText, images) {
                 this.disable(d);
@@ -2032,13 +2460,16 @@
 
                 // Robust filtering: strip dead/local blob: URLs on shared devices to avoid broken images
                 let validImgs = [];
+                const isGeneratedPolaroids = Boolean(
+                    (typeof w !== 'undefined' && w.__IS_GENERATED_PAGE__) ||
+                    (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__)
+                );
                 if (images && Array.isArray(images) && images.length > 0) {
-                    const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
-                    if (cleaned.length > 0) {
-                        validImgs = cleaned;
-                    } else if (typeof window !== 'undefined' && !window.__IS_GENERATED_PAGE__) {
-                        // In editor mode with freshly selected local files, blob URLs are valid
-                        validImgs = images.filter(src => !!src);
+                    if (isGeneratedPolaroids) {
+                        const cleaned = images.filter(src => src && typeof src === 'string' && !src.startsWith('blob:'));
+                        validImgs = cleaned.length > 0 ? cleaned : [];
+                    } else {
+                        validImgs = images.filter(src => src && typeof src === 'string' && src.trim() !== '');
                     }
                 }
                 if (validImgs.length === 0) {
@@ -3149,7 +3580,7 @@
                             img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
                             img.style.opacity = "1";
                         } else {
-                            img.src = getRandomFallbackPngs(1)[0] || "/assets/media/Final1.png";
+                            img.src = getRandomFallbackPngs(1)[0] || "/assets/media/1000009474.png";
                             img.style.cssText = "width: 100%; height: 100%; object-fit: contain; border: 3px solid #ff7a2f; border-radius: 24px; opacity: 0.9;";
                         }
                     }
@@ -3206,7 +3637,7 @@
                     img.src = images[0];
                     img.style.cssText = "width: auto; height: auto; max-width: 100%; max-height: 60vh; border: 3px solid #ff7a2f; border-radius: 24px;";
                 } else {
-                    img.src = getRandomFallbackPngs(1)[0] || "/assets/media/Final1.png";
+                    img.src = getRandomFallbackPngs(1)[0] || "/assets/media/1000009474.png";
                     img.style.cssText = "width: 100%; height: 100%; object-fit: contain; border: 3px solid #ff7a2f; border-radius: 24px; opacity: 0.9;";
                 }
                 imageContainer.appendChild(img);

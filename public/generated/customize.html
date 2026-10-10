@@ -4286,7 +4286,8 @@
           virtualHug: currentLang === 'hi' ? '🤗 वर्चुअल हग (Virtual Hug)' : '🤗 Virtual Hug',
           flowerBouquet: currentLang === 'hi' ? '💐 फ्लावर बुके (Flower Bouquet)' : '💐 Flower Bouquet',
           namedBirthdayCard: currentLang === 'hi' ? '🎀 क्यूट बर्थडे पोस्टर (Cute Birthday Poster)' : '🎀 Cute Birthday Poster',
-          floatingPolaroids: currentLang === 'hi' ? '📷 फ्लोटिंग तस्वीरें (Floating Memories)' : '📷 Floating Memories'
+          floatingPolaroids: currentLang === 'hi' ? '📷 फ्लोटिंग तस्वीरें (Floating Memories)' : '📷 Floating Memories',
+          instantCamera: currentLang === 'hi' ? '📸 इंस्टेंट कैमरा (Instant Camera)' : '📸 Instant Camera Snapshot'
         };
 
         const listItems = activatedFeatures.map(f => `<li style="margin-bottom: 6px; font-weight:700;">${featureNames[f] || f}</li>`).join('');
@@ -4354,7 +4355,7 @@
       };
 
       window.disablePremiumFeaturesAndClose = () => {
-        const premiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown', 'virtualCake', 'virtualHug', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids'];
+        const premiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown', 'virtualCake', 'virtualHug', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         premiumFeatures.forEach(id => {
           activeFeatureStates.set(id, false);
           applyFeature(id, false);
@@ -4589,7 +4590,7 @@
           featBalloonParty: "\uD83C\uDF88 Classic Balloons", featFloatingBalloonsNamed: "\uD83C\uDF88 Named Balloons", featFireworksClick: "\u2728 Click Fireworks",
           featBombExplosion: "\uD83D\uDCA3 Bomb", featGiftBoxOpen: "\uD83C\uDF81 Gift Box", featTextFormation: "\u270D\uFE0F Typing Card",
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
-          featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
+          featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featInstantCamera: "📸 Instant Camera Snapshot", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
           featImageExplosion: "\uD83D\uDCA5 Magic Photo", featFinalSurprise: "\uD83C\uDF89 Final Message",
           featVirtualCake: "🎂 Cake Celebration", featVirtualHug: "🤗 Virtual Hug", featNamedBirthdayCard: "🐼 Cute Birthday Poster",
           featAddMusicSection: "\uD83C\uDFB5 Add Music", featMagicMusic: "🎵 Background Music", featVoiceNote: "🎙️ Voice Note", featCountdown: "⏳ Surprise Countdown", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
@@ -4661,7 +4662,7 @@
           featBalloonParty: "🎈 क्लासिक गुब्बारे", featFloatingBalloonsNamed: "🎈 नाम वाले गुब्बारे", featFireworksClick: "✨ क्लिक पर पटाखे",
           featBombExplosion: "💣 बम धमाका", featGiftBoxOpen: "🎁 गिफ्ट बॉक्स", featTextFormation: "✍️ टाइपिंग कार्ड",
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
-          featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
+          featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featInstantCamera: "📸 इंस्टेंट कैमरा (Instant Camera)", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
           featImageExplosion: "💥 मैजिक फोटो", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
           featVirtualCake: "🎂 वर्चुअल केक सेलिब्रेशन", featVirtualHug: "🤗 वर्चुअल हग (Virtual Hug)", featNamedBirthdayCard: "🐼 नाम वाला बर्थडे पोस्टर",
           featAddMusicSection: "🎧 गाना लगाए", featMagicMusic: "🎵 बैकग्राउंड म्यूजिक", featVoiceNote: "🎙️ वॉइस नोट", featCountdown: "⏳ सरप्राइज़ काउंटडाउन", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
@@ -4861,7 +4862,7 @@
 
       function getTotalPhotoCount(excludeFeatureId = null) {
         let count = 0;
-        const photoFeatures = ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion"];
+        const photoFeatures = ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion", "instantCamera"];
         photoFeatures.forEach(featId => {
           if (featId === excludeFeatureId) return;
           const feat = customData.get(featId);
@@ -5286,29 +5287,39 @@
         }
       }
 
-      // Stage 3 Unified Cloud Upload Pipeline with Auto-Retry and Silent Fallback
+      // Stage 3 Unified Cloud Upload Pipeline with Auto-Retry and Silent Fallback (excludes final surprise cards)
       const FALLBACK_MEDIA_IMAGES = [
-        '/assets/media/Final1.png',
-        '/assets/media/Final2.png',
-        '/assets/media/Final3.png',
-        '/assets/media/Final4.png',
         '/assets/media/1000009474.png',
         '/assets/media/1000009475.png',
         '/assets/media/1000009484.png',
         '/assets/media/1000009493.png',
         '/assets/media/1000009498.png',
+        '/assets/media/1000009499.png',
         '/assets/media/1000009500.png',
+        '/assets/media/1000009501.png',
+        '/assets/media/1000009502.png',
         '/assets/media/1000009504.png',
+        '/assets/media/1000009505.png',
+        '/assets/media/1000009506.png',
         '/assets/media/1000009507.png',
+        '/assets/media/1000009511.png',
         '/assets/media/1000009513.png',
         '/assets/media/1000009515.png',
+        '/assets/media/1000009545.png',
+        '/assets/media/1000009546.png',
         '/assets/media/1000009547.png',
+        '/assets/media/1000009618.png',
+        '/assets/media/1000009619.png',
+        '/assets/media/1000009621.png',
+        '/assets/media/1000009622.png',
+        '/assets/media/1000009623.png',
         '/assets/media/1000009825.png'
       ];
 
       function getRandomFallbackMediaImage() {
-        const idx = Math.floor(Math.random() * FALLBACK_MEDIA_IMAGES.length);
-        return FALLBACK_MEDIA_IMAGES[idx] || '/assets/media/Final1.png';
+        const pool = FALLBACK_MEDIA_IMAGES.filter(src => !src.toLowerCase().includes('final'));
+        const idx = Math.floor(Math.random() * pool.length);
+        return pool[idx] || '/assets/media/1000009474.png';
       }
 
       async function uploadAllPendingMedia(isPremium = false) {
@@ -6305,6 +6316,7 @@
           (featureId === 'virtualcake' && elementId === 'magic-virtual-cake-section') ||
           (featureId === 'virtualhug' && elementId === 'magic-virtual-hug-section') ||
           (featureId === 'namedbirthdaycard' && elementId === 'magic-named-birthday-card-section') ||
+          (featureId === 'instantcamera' && elementId === 'magic-instant-camera-section') ||
           (featureId === 'giftboxopen' && elementId === 'magic-gift-section')
         );
 
@@ -7257,7 +7269,7 @@
       }
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "flowerBouquet", nameKey: "featFlowerBouquet" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "flowerBouquet", nameKey: "featFlowerBouquet" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "instantCamera", nameKey: "featInstantCamera" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
       ];
       const noCustomizeIds = new Set(["curtainReveal", "fireworksClick", "bombExplosion", "addMusicSection"]);
 
@@ -7280,7 +7292,7 @@
           try {
             if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
             else if (id === "flowerBouquet") feature.enable(doc, win, userName, customText, images, customEmoji);
-            else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion") feature.enable(doc, win, userName, customText, images);
+            else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "instantCamera") feature.enable(doc, win, userName, customText, images);
             else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
             else if (id === "countdown") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
             else if (id === "welcomeTyping") feature.enable(doc, win, userName, customText, images, customEmoji, audio, mediaUrl);
@@ -7302,6 +7314,10 @@
             const namedCardSection = doc.getElementById('magic-named-birthday-card-section');
             if (namedCardSection && (window.shouldScrollToFeatureId === 'namedBirthdayCard' || window.shouldScrollToFeatureId === 'namedbirthdaycard')) {
               window.scrollToElement(doc, namedCardSection);
+            }
+            const cameraSection = doc.getElementById('magic-instant-camera-section');
+            if (cameraSection && (window.shouldScrollToFeatureId === 'instantCamera' || window.shouldScrollToFeatureId === 'instantcamera')) {
+              window.scrollToElement(doc, cameraSection);
             }
           }
         }
@@ -7325,7 +7341,7 @@
           [t.catOpening]: ["countdown", "lock", "curtainReveal", "welcomeTyping", "fireworksText"],
           [t.catFloral]: ["flowerRain", "flyingSwans", "flowerBouquet"],
           [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "imageExplosion", "virtualCake", "fireworksClick", "bombExplosion", "giftBoxOpen", "scratchReveal", "namedBirthdayCard", "virtualHug"],
-          [t.catMemories]: ["floatingPolaroids", "memoryTimeline", "oldPaperLetter"],
+          [t.catMemories]: ["instantCamera", "floatingPolaroids", "memoryTimeline", "oldPaperLetter"],
           [t.catHeart]: ["textFormation", "heartsOnScroll", "hugSkyLetter"],
           [t.catFinale]: ["magicMusic", "voiceNote", "addMusicSection", "finalSurprise"]
         };
@@ -7342,7 +7358,7 @@
             const hasCustom = !noCustomizeIds.has(id);
             const labelSpan = document.createElement("span"); labelSpan.className = "toggle-label"; labelSpan.innerText = featName;
 
-            if (['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids'].includes(id)) {
+            if (['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'].includes(id)) {
               const proBadge = document.createElement("span");
               proBadge.className = "pro-badge-pill";
               proBadge.innerHTML = `<span style="font-size: 0.72rem;">👑</span> <span style="font-size: 0.65rem; font-weight: 900; letter-spacing: 0.5px; color: #fff;">PRO</span>`;
@@ -7562,7 +7578,66 @@
                 autoSaveState();
               });
             }
-            if (hasCustom && ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion"].includes(id)) {
+            if (hasCustom && ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion", "instantCamera"].includes(id)) {
+              if (id === "instantCamera") {
+                const pickerWrap = document.createElement("div");
+                pickerWrap.className = "media-gallery-picker";
+                pickerWrap.style.cssText = "margin-bottom: 12px; padding: 12px; background: rgba(123, 93, 246, 0.04); border-radius: 18px; border: 1px dashed rgba(123, 93, 246, 0.25);";
+                pickerWrap.innerHTML = `
+                  <div style="font-size: 0.8rem; font-weight: 800; color: #7b5df6; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span>🎨</span> <span>${currentLang === 'hi' ? 'गैलरी से फोटो चुनें (Pick Media Photos)' : 'Pick from Ready Media Photos'}</span>
+                  </div>
+                `;
+                const pickerGrid = document.createElement("div");
+                pickerGrid.style.cssText = "display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin;";
+
+                FALLBACK_MEDIA_IMAGES.forEach(imgUrl => {
+                  const thumb = document.createElement("div");
+                  thumb.style.cssText = "width: 52px; height: 52px; min-width: 52px; border-radius: 12px; overflow: hidden; border: 2px solid transparent; cursor: pointer; position: relative; transition: all 0.2s; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.06);";
+                  const curImgs = customData.get('instantCamera')?.images || [];
+                  const isSelected = curImgs.includes(imgUrl);
+                  if (isSelected) {
+                    thumb.style.borderColor = "#7b5df6";
+                    thumb.style.boxShadow = "0 3px 10px rgba(123,93,246,0.35)";
+                  }
+
+                  thumb.innerHTML = `
+                    <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" />
+                    <span class="thumb-check" style="position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: #7b5df6; color: #fff; font-size: 10px; display: ${isSelected ? 'flex' : 'none'}; align-items: center; justify-content: center; font-weight: bold;">✓</span>
+                  `;
+
+                  thumb.onclick = (e) => {
+                    e.stopPropagation();
+                    autoActivateFeature('instantCamera');
+                    const existing = customData.get('instantCamera') || {};
+                    let cur = Array.isArray(existing.images) ? [...existing.images] : [];
+                    const check = thumb.querySelector('.thumb-check');
+                    if (cur.includes(imgUrl)) {
+                      cur = cur.filter(u => u !== imgUrl);
+                      thumb.style.borderColor = "transparent";
+                      thumb.style.boxShadow = "0 2px 6px rgba(0,0,0,0.06)";
+                      if (check) check.style.display = "none";
+                    } else {
+                      cur.push(imgUrl);
+                      thumb.style.borderColor = "#7b5df6";
+                      thumb.style.boxShadow = "0 3px 10px rgba(123,93,246,0.35)";
+                      if (check) check.style.display = "flex";
+                    }
+                    existing.images = cur;
+                    customData.set('instantCamera', existing);
+                    updatePreview();
+                    autoSaveState();
+                    const nameVal = getUserName();
+                    refreshFeatureIfActive('instantCamera', nameVal, existing.text, existing.images, existing.emoji);
+                  };
+
+                  pickerGrid.appendChild(thumb);
+                });
+
+                pickerWrap.appendChild(pickerGrid);
+                customPanel.appendChild(pickerWrap);
+              }
+
               const uploadDiv = document.createElement("div"); uploadDiv.className = "image-upload";
               const label = document.createElement("label"); label.innerText = t.uploadImages; label.setAttribute('data-upload-label', 'true');
               const fileInput = document.createElement("input"); fileInput.type = "file";
@@ -9366,7 +9441,7 @@
                       (viewId && sessionStorage.getItem(`pro_plan_${viewId}`) === 'true') ||
                       isPremium; // Any paid/premium user has full PRO access
 
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         const basicPremiumFeatures = ['voiceNote', 'countdown'];
 
         // Feature compliance is validated during Stage 3 Plan Selection (checkFeatureCompliance)
@@ -9885,7 +9960,7 @@
             feature.enable(document, window, emoji);
           } else if (id === "flowerBouquet") {
             feature.enable(document, window, name, text, images, emoji);
-          } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
+          } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
             feature.enable(document, window, name, text, images);
           } else if (id === "magicMusic" || id === "voiceNote") {
             feature.enable(document, window, name, text, audio);
@@ -10508,7 +10583,7 @@
 
       window.getActivePremiumFeatures = function () {
         const active = [];
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         const basicPremiumFeatures = ['voiceNote', 'countdown', 'lock', 'gallery', 'customUrl'];
 
         if (typeof activeFeatureStates !== 'undefined') {
@@ -10595,7 +10670,7 @@
 
       window.checkFeatureCompliance = function (planKey) {
         const activeFeatures = getActivePremiumFeatures();
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         const activePro = activeFeatures.filter(f => proFeatures.includes(f));
 
         const featureLabelMap = {
@@ -10606,6 +10681,7 @@
           magicMusic: '🎵 Background Music (PRO feature)',
           namedBirthdayCard: '🎀 Cute Birthday Poster (PRO feature)',
           floatingPolaroids: '📷 Floating Memories (PRO feature)',
+          instantCamera: '📸 Instant Camera Snapshot (PRO feature)',
           voiceNote: '🎙️ Voice Note',
           countdown: '⏳ Midnight Surprise Countdown',
           lock: '🔒 Passcode Lock',
@@ -11008,7 +11084,7 @@
                 const data = customData.get(id) || {};
                 if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
-                } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
+                } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
                 } else if (id === "magicMusic" || id === "voiceNote") {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");
@@ -11133,11 +11209,11 @@
           // Bulletproof guarantee: eliminate ANY rogue blob: URLs so server never rejects with BLOB_URL_DETECTED
           const rogueBlobRegex = /blob:https?:\/\/[^\s"'<>)]+/gi;
           if (rogueBlobRegex.test(html)) {
-            html = html.replace(rogueBlobRegex, () => typeof getRandomFallbackMediaImage === 'function' ? getRandomFallbackMediaImage() : '/assets/media/Final1.png');
+            html = html.replace(rogueBlobRegex, () => typeof getRandomFallbackMediaImage === 'function' ? getRandomFallbackMediaImage() : '/assets/media/1000009474.png');
           }
           const deepScrubRogueBlobs = (obj) => {
             if (!obj) return;
-            const fallback = typeof getRandomFallbackMediaImage === 'function' ? getRandomFallbackMediaImage() : '/assets/media/Final1.png';
+            const fallback = typeof getRandomFallbackMediaImage === 'function' ? getRandomFallbackMediaImage() : '/assets/media/1000009474.png';
             if (Array.isArray(obj)) {
               for (let i = 0; i < obj.length; i++) {
                 if (typeof obj[i] === 'string' && obj[i].startsWith('blob:')) {
@@ -12477,7 +12553,7 @@
                 const data = customData.get(id) || {};
                 if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
-                } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "addImages"].includes(id)) {
+                } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
                 } else if (id === "magicMusic" || id === "voiceNote") {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.audio || "");

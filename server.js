@@ -381,7 +381,7 @@ app.post('/api/config', async (req, res) => {
     // Validate photo limits on server: max 9 photos across interactive features
     if (config && config.customData && typeof config.customData === 'object') {
       let totalPhotos = 0;
-      const photoFeatures = ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion"];
+      const photoFeatures = ["memoryTimeline", "scratchReveal", "giftBoxOpen", "floatingPolaroids", "imageExplosion", "instantCamera"];
       for (const [featId, featVal] of Object.entries(config.customData)) {
         if (photoFeatures.includes(featId) && featVal && Array.isArray(featVal.images)) {
           totalPhotos += featVal.images.length;
