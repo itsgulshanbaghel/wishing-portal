@@ -3789,7 +3789,7 @@
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill sel" data-price="79" data-days="30" data-label="30 Days" data-plan="pro">
+              <button class="plan-pill sel" data-price="99" data-days="30" data-label="30 Days" data-plan="pro">
                 <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
                 <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro</span>
                 <span class="pill-period">30 Days</span>
@@ -3817,7 +3817,7 @@
               </div>
               <div class="cmp-price-row">
                 <span class="cmp-price-orig" id="priceOrig">₹199</span>
-                <span class="cmp-price-big" id="priceBig">₹79</span>
+                <span class="cmp-price-big" id="priceBig">₹99</span>
                 <span class="cmp-price-period" id="pricePeriod">for 30 Days</span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
@@ -10727,7 +10727,7 @@
       let selectedGateway = (selectedCurrency === 'INR') ? 'cashfree' : 'paypal';
       window.selectedCurrency = selectedCurrency;
       window.selectedGateway = selectedGateway;
-      let activePlan = { plan: 'pro', price: selectedCurrency === 'INR' ? 79 : 1.99, days: 30, label: '30 Days' };
+      let activePlan = { plan: 'pro', price: selectedCurrency === 'INR' ? 99 : 1.99, days: 30, label: '30 Days' };
 
       function updateGatewayToggleUI() {}
 
@@ -11734,7 +11734,7 @@
           let orig = '';
           if (selectedCurrency === 'INR') {
             if (planKey === 'starter') { p = 49; orig = '₹99'; }
-            else if (planKey === 'pro') { p = 79; orig = '₹199'; }
+            else if (planKey === 'pro') { p = 99; orig = '₹199'; }
             else if (planKey === 'pro_plus') { p = 149; orig = '₹299'; }
             else if (planKey === 'forever') { p = 299; orig = '₹599'; }
           } else if (selectedCurrency === 'GBP') {

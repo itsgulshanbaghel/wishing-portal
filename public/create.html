@@ -3516,7 +3516,7 @@
             else if (activePlan.plan === 'forever') planName = 'Infinity';
           }
 
-          const priceVal = (typeof activePlan !== 'undefined' && activePlan) ? activePlan.price : (selectedAmount || 49);
+          const priceVal = (typeof activePlan !== 'undefined' && activePlan) ? activePlan.price : (selectedAmount || 99);
           if (unifiedLabel) unifiedLabel.textContent = `Continue with ${planName} – ${currentSymbol}${priceVal}`;
           const premMobileLabel = document.getElementById('premCardProceedBtnLabel');
           if (premMobileLabel) {
@@ -3556,9 +3556,9 @@
         let starterPrice, proPrice, proPlusPrice, foreverPrice;
 
         if (selectedCurrency === 'INR') {
-          starterPrice = 29;
-          proPrice = 49;
-          proPlusPrice = 99;
+          starterPrice = 49;
+          proPrice = 99;
+          proPlusPrice = 149;
           foreverPrice = 299;
         } else if (selectedCurrency === 'USD') {
           starterPrice = 0.99;
@@ -3624,7 +3624,7 @@
           if (priceEl) priceEl.textContent = `${symbol}${adjustedPrice}`;
         });
 
-        // Default selected plan is Pro ($1.99 / ₹49)
+        // Default selected plan is Pro ($1.99 / ₹99)
         activePlan = {
           plan: 'pro',
           price: proPrice,
