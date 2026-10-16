@@ -3783,20 +3783,20 @@
 
             <!-- 4-tier pill switcher -->
             <div class="plan-switcher" id="planSwitcher">
-              <button class="plan-pill" data-price="49" data-days="14" data-label="14 Days" data-plan="starter">
+              <button class="plan-pill" data-price="79" data-days="14" data-label="14 Days" data-plan="starter">
                 <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Starter</span>
                 <span class="pill-period">14 Days</span>
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill sel" data-price="99" data-days="30" data-label="30 Days" data-plan="pro">
+              <button class="plan-pill sel" data-price="149" data-days="30" data-label="30 Days" data-plan="pro">
                 <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
                 <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro</span>
                 <span class="pill-period">30 Days</span>
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill" data-price="149" data-days="100" data-label="100 Days" data-plan="pro_plus">
+              <button class="plan-pill" data-price="199" data-days="100" data-label="100 Days" data-plan="pro_plus">
                 <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #10b981, #059669); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">BEST VALUE</span>
                 <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro+</span>
                 <span class="pill-period">100 Days</span>
@@ -3816,8 +3816,8 @@
                 <span class="cmp-price-badge" id="priceLimitedBadge">⚡ Limited Offer</span>
               </div>
               <div class="cmp-price-row">
-                <span class="cmp-price-orig" id="priceOrig">₹199</span>
-                <span class="cmp-price-big" id="priceBig">₹99</span>
+                <span class="cmp-price-orig" id="priceOrig">₹299</span>
+                <span class="cmp-price-big" id="priceBig">₹149</span>
                 <span class="cmp-price-period" id="pricePeriod">for 30 Days</span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
@@ -11733,40 +11733,40 @@
           let p = 1.99;
           let orig = '';
           if (selectedCurrency === 'INR') {
-            if (planKey === 'starter') { p = 49; orig = '₹99'; }
-            else if (planKey === 'pro') { p = 99; orig = '₹199'; }
-            else if (planKey === 'pro_plus') { p = 149; orig = '₹299'; }
+            if (planKey === 'starter') { p = 79; orig = '₹149'; }
+            else if (planKey === 'pro') { p = 149; orig = '₹299'; }
+            else if (planKey === 'pro_plus') { p = 199; orig = '₹399'; }
             else if (planKey === 'forever') { p = 299; orig = '₹599'; }
           } else if (selectedCurrency === 'GBP') {
-            if (planKey === 'starter') { p = 0.99; orig = '£1.99'; }
-            else if (planKey === 'pro') { p = 1.49; orig = '£2.99'; }
-            else if (planKey === 'pro_plus') { p = 2.99; orig = '£4.99'; }
-            else if (planKey === 'forever') { p = 5.99; orig = '£9.99'; }
+            if (planKey === 'starter') { p = 2.49; orig = '£4.99'; }
+            else if (planKey === 'pro') { p = 3.99; orig = '£7.99'; }
+            else if (planKey === 'pro_plus') { p = 6.49; orig = '£12.99'; }
+            else if (planKey === 'forever') { p = 11.99; orig = '£23.99'; }
           } else if (selectedCurrency === 'CAD') {
-            if (planKey === 'starter') { p = 1.49; orig = 'CA$2.99'; }
-            else if (planKey === 'pro') { p = 2.49; orig = 'CA$4.99'; }
-            else if (planKey === 'pro_plus') { p = 4.49; orig = 'CA$8.99'; }
-            else if (planKey === 'forever') { p = 8.99; orig = 'CA$16.99'; }
+            if (planKey === 'starter') { p = 3.99; orig = 'CA$7.99'; }
+            else if (planKey === 'pro') { p = 6.99; orig = 'CA$13.99'; }
+            else if (planKey === 'pro_plus') { p = 10.99; orig = 'CA$21.99'; }
+            else if (planKey === 'forever') { p = 19.99; orig = 'CA$39.99'; }
           } else if (selectedCurrency === 'AUD') {
-            if (planKey === 'starter') { p = 1.49; orig = 'A$2.99'; }
-            else if (planKey === 'pro') { p = 2.99; orig = 'A$5.99'; }
-            else if (planKey === 'pro_plus') { p = 4.99; orig = 'A$9.99'; }
-            else if (planKey === 'forever') { p = 9.99; orig = 'A$19.99'; }
+            if (planKey === 'starter') { p = 3.99; orig = 'A$7.99'; }
+            else if (planKey === 'pro') { p = 6.99; orig = 'A$13.99'; }
+            else if (planKey === 'pro_plus') { p = 10.99; orig = 'A$21.99'; }
+            else if (planKey === 'forever') { p = 19.99; orig = 'A$39.99'; }
           } else if (selectedCurrency === 'AED') {
-            if (planKey === 'starter') { p = 3.99; orig = 'AED 7.99'; }
-            else if (planKey === 'pro') { p = 6.99; orig = 'AED 13.99'; }
-            else if (planKey === 'pro_plus') { p = 12.99; orig = 'AED 24.99'; }
-            else if (planKey === 'forever') { p = 29.99; orig = 'AED 59.99'; }
+            if (planKey === 'starter') { p = 10.99; orig = 'AED 21.99'; }
+            else if (planKey === 'pro') { p = 18.99; orig = 'AED 37.99'; }
+            else if (planKey === 'pro_plus') { p = 29.99; orig = 'AED 59.99'; }
+            else if (planKey === 'forever') { p = 54.99; orig = 'AED 109.99'; }
           } else if (selectedCurrency === 'PKR') {
-            if (planKey === 'starter') { p = 99; orig = 'PKR 199'; }
-            else if (planKey === 'pro') { p = 149; orig = 'PKR 299'; }
-            else if (planKey === 'pro_plus') { p = 299; orig = 'PKR 599'; }
-            else if (planKey === 'forever') { p = 799; orig = 'PKR 1599'; }
+            if (planKey === 'starter') { p = 299; orig = 'PKR 599'; }
+            else if (planKey === 'pro') { p = 499; orig = 'PKR 999'; }
+            else if (planKey === 'pro_plus') { p = 899; orig = 'PKR 1799'; }
+            else if (planKey === 'forever') { p = 1999; orig = 'PKR 3999'; }
           } else {
-            if (planKey === 'starter') { p = 0.99; orig = '$1.99'; }
-            else if (planKey === 'pro') { p = 1.99; orig = '$3.99'; }
-            else if (planKey === 'pro_plus') { p = 3.49; orig = '$6.99'; }
-            else if (planKey === 'forever') { p = 6.99; orig = '$12.99'; }
+            if (planKey === 'starter') { p = 2.99; orig = '$5.99'; }
+            else if (planKey === 'pro') { p = 4.99; orig = '$9.99'; }
+            else if (planKey === 'pro_plus') { p = 7.99; orig = '$14.99'; }
+            else if (planKey === 'forever') { p = 14.99; orig = '$29.99'; }
           }
           pill.dataset.computedPrice = p;
           pill.dataset.computedOrigPrice = orig;
@@ -11802,7 +11802,7 @@
 
         if (selectedPill) {
           const planKey = selectedPill.dataset.plan;
-          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 79 : 1.99);
+          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 149 : 4.99);
           const orig = selectedPill.dataset.computedOrigPrice || '';
           activePlan = { plan: planKey, price: p, days: +selectedPill.dataset.days, label: selectedPill.dataset.label };
 

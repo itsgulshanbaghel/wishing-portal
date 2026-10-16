@@ -1077,8 +1077,8 @@
 
           <div class="price-block">
             <div>
-              <span class="price-orig" id="priceStarterOrig">₹99</span>
-              <span class="price-main" id="priceStarterVal">₹49</span>
+              <span class="price-orig" id="priceStarterOrig">₹149</span>
+              <span class="price-main" id="priceStarterVal">₹79</span>
             </div>
             <div class="price-type" id="priceStarterType">One-time payment • 14 Days active</div>
           </div>
@@ -1111,8 +1111,8 @@
 
           <div class="price-block">
             <div>
-              <span class="price-orig" id="priceProOrig">₹199</span>
-              <span class="price-main" id="priceProVal">₹99</span>
+              <span class="price-orig" id="priceProOrig">₹299</span>
+              <span class="price-main" id="priceProVal">₹149</span>
             </div>
             <div class="price-type" id="priceProType">One-time payment • 30 Days active</div>
           </div>
@@ -1145,8 +1145,8 @@
 
           <div class="price-block">
             <div>
-              <span class="price-orig" id="priceProPlusOrig">₹299</span>
-              <span class="price-main" id="priceProPlusVal">₹149</span>
+              <span class="price-orig" id="priceProPlusOrig">₹399</span>
+              <span class="price-main" id="priceProPlusVal">₹199</span>
             </div>
             <div class="price-type" id="priceProPlusType">One-time payment • 100 Days active</div>
           </div>
@@ -1611,46 +1611,46 @@
       else if (selectedCurrency === 'AED') symbol = 'AED ';
       else if (selectedCurrency === 'PKR') symbol = 'PKR ';
 
-      let starterPrice = 0.99, starterOrig = '$1.99';
-      let proPrice = 1.99, proOrig = '$3.99';
-      let proPlusPrice = 3.49, proPlusOrig = '$6.99';
-      let foreverPrice = 6.99, foreverOrig = '$12.99';
+      let starterPrice = 2.99, starterOrig = '$5.99';
+      let proPrice = 4.99, proOrig = '$9.99';
+      let proPlusPrice = 7.99, proPlusOrig = '$14.99';
+      let foreverPrice = 14.99, foreverOrig = '$29.99';
 
       if (selectedCurrency === 'INR') {
-        starterPrice = 49; starterOrig = '₹99';
-        proPrice = 99; proOrig = '₹199';
-        proPlusPrice = 149; proPlusOrig = '₹299';
+        starterPrice = 79; starterOrig = '₹149';
+        proPrice = 149; proOrig = '₹299';
+        proPlusPrice = 199; proPlusOrig = '₹399';
         foreverPrice = 299; foreverOrig = '₹599';
       } else if (selectedCurrency === 'GBP') {
-        starterPrice = 0.99; starterOrig = '£1.99';
-        proPrice = 1.49; proOrig = '£2.99';
-        proPlusPrice = 2.99; proPlusOrig = '£4.99';
-        foreverPrice = 5.99; foreverOrig = '£9.99';
+        starterPrice = 2.49; starterOrig = '£4.99';
+        proPrice = 3.99; proOrig = '£7.99';
+        proPlusPrice = 6.49; proPlusOrig = '£12.99';
+        foreverPrice = 11.99; foreverOrig = '£23.99';
       } else if (selectedCurrency === 'CAD') {
-        starterPrice = 1.49; starterOrig = 'CA$2.99';
-        proPrice = 2.49; proOrig = 'CA$4.99';
-        proPlusPrice = 4.49; proPlusOrig = 'CA$8.99';
-        foreverPrice = 8.99; foreverOrig = 'CA$16.99';
+        starterPrice = 3.99; starterOrig = 'CA$7.99';
+        proPrice = 6.99; proOrig = 'CA$13.99';
+        proPlusPrice = 10.99; proPlusOrig = 'CA$21.99';
+        foreverPrice = 19.99; foreverOrig = 'CA$39.99';
       } else if (selectedCurrency === 'AUD') {
-        starterPrice = 1.49; starterOrig = 'A$2.99';
-        proPrice = 2.99; proOrig = 'A$5.99';
-        proPlusPrice = 4.99; proPlusOrig = 'A$9.99';
-        foreverPrice = 9.99; foreverOrig = 'A$19.99';
+        starterPrice = 3.99; starterOrig = 'A$7.99';
+        proPrice = 6.99; proOrig = 'A$13.99';
+        proPlusPrice = 10.99; proPlusOrig = 'A$21.99';
+        foreverPrice = 19.99; foreverOrig = 'A$39.99';
       } else if (selectedCurrency === 'AED') {
-        starterPrice = 3.99; starterOrig = 'AED 7.99';
-        proPrice = 6.99; proOrig = 'AED 13.99';
-        proPlusPrice = 12.99; proPlusOrig = 'AED 24.99';
-        foreverPrice = 29.99; foreverOrig = 'AED 59.99';
+        starterPrice = 10.99; starterOrig = 'AED 21.99';
+        proPrice = 18.99; proOrig = 'AED 37.99';
+        proPlusPrice = 29.99; proPlusOrig = 'AED 59.99';
+        foreverPrice = 54.99; foreverOrig = 'AED 109.99';
       } else if (selectedCurrency === 'PKR') {
-        starterPrice = 99; starterOrig = 'PKR 199';
-        proPrice = 149; proOrig = 'PKR 299';
-        proPlusPrice = 299; proPlusOrig = 'PKR 599';
-        foreverPrice = 799; foreverOrig = 'PKR 1599';
+        starterPrice = 299; starterOrig = 'PKR 599';
+        proPrice = 499; proOrig = 'PKR 999';
+        proPlusPrice = 899; proPlusOrig = 'PKR 1799';
+        foreverPrice = 1999; foreverOrig = 'PKR 3999';
       } else {
-        starterPrice = 0.99; starterOrig = '$1.99';
-        proPrice = 1.99; proOrig = '$3.99';
-        proPlusPrice = 3.49; proPlusOrig = '$6.99';
-        foreverPrice = 6.99; foreverOrig = '$12.99';
+        starterPrice = 2.99; starterOrig = '$5.99';
+        proPrice = 4.99; proOrig = '$9.99';
+        proPlusPrice = 7.99; proPlusOrig = '$14.99';
+        foreverPrice = 14.99; foreverOrig = '$29.99';
       }
 
       const elStarterVal = document.getElementById('priceStarterVal');

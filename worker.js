@@ -1,31 +1,31 @@
 const EDGE_PRICING = {
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India', country: 'IN',
-    plans: { custom_url: { amount: 29 }, starter: { amount: 49 }, pro: { amount: 99 }, pro_plus: { amount: 149 }, forever: { amount: 299 } }
+    plans: { custom_url: { amount: 29 }, starter: { amount: 79 }, pro: { amount: 149 }, pro_plus: { amount: 199 }, forever: { amount: 299 } }
   },
   GB: {
     currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom', country: 'GB',
-    plans: { custom_url: { amount: 0.99 }, starter: { amount: 0.99 }, pro: { amount: 1.99 }, pro_plus: { amount: 3.49 }, forever: { amount: 6.99 } }
+    plans: { custom_url: { amount: 1.19 }, starter: { amount: 2.49 }, pro: { amount: 3.99 }, pro_plus: { amount: 6.49 }, forever: { amount: 11.99 } }
   },
   CA: {
     currency: 'CAD', symbol: 'CA$', gateway: 'paypal', paypalCurrency: 'CAD', countryName: 'Canada', country: 'CA',
-    plans: { custom_url: { amount: 1.49 }, starter: { amount: 1.49 }, pro: { amount: 2.99 }, pro_plus: { amount: 4.99 }, forever: { amount: 9.99 } }
+    plans: { custom_url: { amount: 1.99 }, starter: { amount: 3.99 }, pro: { amount: 6.99 }, pro_plus: { amount: 10.99 }, forever: { amount: 19.99 } }
   },
   AU: {
     currency: 'AUD', symbol: 'A$', gateway: 'paypal', paypalCurrency: 'AUD', countryName: 'Australia', country: 'AU',
-    plans: { custom_url: { amount: 1.49 }, starter: { amount: 1.49 }, pro: { amount: 2.99 }, pro_plus: { amount: 4.99 }, forever: { amount: 9.99 } }
+    plans: { custom_url: { amount: 1.99 }, starter: { amount: 3.99 }, pro: { amount: 6.99 }, pro_plus: { amount: 10.99 }, forever: { amount: 19.99 } }
   },
   AE: {
     currency: 'AED', symbol: 'AED ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'UAE', country: 'AE',
-    plans: { custom_url: { amount: 3.99 }, starter: { amount: 3.99 }, pro: { amount: 6.99 }, pro_plus: { amount: 12.99 }, forever: { amount: 29.99 } }
+    plans: { custom_url: { amount: 5.49 }, starter: { amount: 10.99 }, pro: { amount: 18.99 }, pro_plus: { amount: 29.99 }, forever: { amount: 54.99 } }
   },
   PK: {
     currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan', country: 'PK',
-    plans: { custom_url: { amount: 99 }, starter: { amount: 99 }, pro: { amount: 149 }, pro_plus: { amount: 299 }, forever: { amount: 799 } }
+    plans: { custom_url: { amount: 99 }, starter: { amount: 299 }, pro: { amount: 499 }, pro_plus: { amount: 899 }, forever: { amount: 1999 } }
   },
   US: {
     currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'United States', country: 'US',
-    plans: { custom_url: { amount: 0.99 }, starter: { amount: 0.99 }, pro: { amount: 1.99 }, pro_plus: { amount: 3.49 }, forever: { amount: 6.99 } }
+    plans: { custom_url: { amount: 1.49 }, starter: { amount: 2.99 }, pro: { amount: 4.99 }, pro_plus: { amount: 7.99 }, forever: { amount: 14.99 } }
   }
 };
 
