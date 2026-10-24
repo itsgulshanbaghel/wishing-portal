@@ -4355,7 +4355,7 @@
       };
 
       window.disablePremiumFeaturesAndClose = () => {
-        const premiumFeatures = ['addMusicSection', 'magicMusic', 'voiceNote', 'countdown', 'virtualCake', 'virtualHug', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
+        const premiumFeatures = ['addMusicSection', 'voiceNote', 'countdown', 'virtualCake', 'virtualHug', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         premiumFeatures.forEach(id => {
           activeFeatureStates.set(id, false);
           applyFeature(id, false);
@@ -7358,7 +7358,7 @@
             const hasCustom = !noCustomizeIds.has(id);
             const labelSpan = document.createElement("span"); labelSpan.className = "toggle-label"; labelSpan.innerText = featName;
 
-            if (['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'].includes(id)) {
+            if (['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'].includes(id)) {
               const proBadge = document.createElement("span");
               proBadge.className = "pro-badge-pill";
               proBadge.innerHTML = `<span style="font-size: 0.72rem;">👑</span> <span style="font-size: 0.65rem; font-weight: 900; letter-spacing: 0.5px; color: #fff;">PRO</span>`;
@@ -9441,7 +9441,7 @@
                       (viewId && sessionStorage.getItem(`pro_plan_${viewId}`) === 'true') ||
                       isPremium; // Any paid/premium user has full PRO access
 
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         const basicPremiumFeatures = ['voiceNote', 'countdown'];
 
         // Feature compliance is validated during Stage 3 Plan Selection (checkFeatureCompliance)
@@ -10583,7 +10583,7 @@
 
       window.getActivePremiumFeatures = function () {
         const active = [];
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         const basicPremiumFeatures = ['voiceNote', 'countdown', 'lock', 'gallery', 'customUrl'];
 
         if (typeof activeFeatureStates !== 'undefined') {
@@ -10670,7 +10670,7 @@
 
       window.checkFeatureCompliance = function (planKey) {
         const activeFeatures = getActivePremiumFeatures();
-        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'magicMusic', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
+        const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         const activePro = activeFeatures.filter(f => proFeatures.includes(f));
 
         const featureLabelMap = {
@@ -10678,7 +10678,7 @@
           virtualHug: '🤗 Virtual Hug (PRO feature)',
           addMusicSection: '🎵 Add Music (PRO feature)',
           flowerBouquet: '💐 Flower Bouquet (PRO feature)',
-          magicMusic: '🎵 Background Music (PRO feature)',
+          magicMusic: '🎵 Background Music (Starter feature)',
           namedBirthdayCard: '🎀 Cute Birthday Poster (PRO feature)',
           floatingPolaroids: '📷 Floating Memories (PRO feature)',
           instantCamera: '📸 Instant Camera Snapshot (PRO feature)',
