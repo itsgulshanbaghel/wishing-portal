@@ -6928,6 +6928,877 @@
             border: 1.5px solid var(--card-border);
             color: var(--text-primary);
         }
+
+        /* ═══════════════════════════════════════════════════════════
+           QR CODE & CUSTOM URL SHOWCASE SECTION (UPGRADED AESTHETICS)
+        ═══════════════════════════════════════════════════════════ */
+        .qr-showcase-section {
+            margin: 64px 0 44px;
+            padding: 56px 48px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 40px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            grid-template-areas:
+                "header visual"
+                "body visual";
+            gap: 24px 52px;
+            align-items: center;
+            transition: all 0.4s ease;
+            box-sizing: border-box;
+        }
+
+        .qr-showcase-section::before {
+            content: '';
+            position: absolute;
+            top: -140px;
+            right: -100px;
+            width: 440px;
+            height: 440px;
+            background: radial-gradient(circle, rgba(255, 77, 109, 0.22) 0%, rgba(123, 93, 246, 0.16) 45%, transparent 75%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(45px);
+        }
+
+        .qr-showcase-section::after {
+            content: '';
+            position: absolute;
+            bottom: -120px;
+            left: -80px;
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, rgba(255, 122, 47, 0.18) 0%, rgba(255, 77, 109, 0.12) 55%, transparent 75%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(45px);
+        }
+
+        .qr-showcase-header {
+            grid-area: header;
+            position: relative;
+            z-index: 1;
+        }
+
+        .qr-showcase-visual {
+            grid-area: visual;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-showcase-body {
+            grid-area: body;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Emotional Eyebrow Badge */
+        .qr-showcase-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, rgba(255, 77, 109, 0.12) 0%, rgba(123, 93, 246, 0.12) 100%);
+            border: 1px solid rgba(255, 77, 109, 0.3);
+            border-radius: 50px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #ff4d6d;
+            margin-bottom: 16px;
+            letter-spacing: 0.3px;
+        }
+
+        body.dark .qr-showcase-badge {
+            color: #ff758f;
+            border-color: rgba(255, 117, 143, 0.35);
+        }
+
+        .qr-showcase-title {
+            font-size: clamp(2rem, 3.4vw, 2.75rem);
+            font-weight: 800;
+            line-height: 1.25;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .desktop-only {
+            display: block;
+        }
+
+        .qr-title-gradient {
+            background: linear-gradient(135deg, #ff4d6d 0%, #7b5df6 55%, #ff7a2f 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        .qr-showcase-desc {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            margin-bottom: 4px;
+            max-width: 560px;
+        }
+
+        /* Feature Cards */
+        .qr-feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .qr-feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            transition: all 0.25s ease;
+        }
+
+        body.dark .qr-feature-item {
+            background: rgba(30, 20, 55, 0.45);
+        }
+
+        .qr-feature-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 77, 109, 0.35);
+            box-shadow: 0 8px 24px -6px var(--glow);
+        }
+
+        .qr-feature-icon {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #ff4d6d 0%, #7b5df6 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(255, 77, 109, 0.28);
+        }
+
+        .qr-feature-icon.icon-purple {
+            background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%);
+            box-shadow: 0 4px 14px rgba(123, 93, 246, 0.3);
+        }
+
+        .qr-feature-icon.icon-warm {
+            background: linear-gradient(135deg, #ff7a2f 0%, #ff4d6d 100%);
+            box-shadow: 0 4px 14px rgba(255, 122, 47, 0.3);
+        }
+
+        .qr-feature-text h4 {
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .qr-feature-text p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .qr-highlight-pill {
+            display: inline-block;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            background: linear-gradient(135deg, rgba(255, 77, 109, 0.12) 0%, rgba(123, 93, 246, 0.12) 100%);
+            color: #ff4d6d;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 1px dashed rgba(255, 77, 109, 0.35);
+        }
+
+        body.dark .qr-highlight-pill {
+            color: #ff758f;
+        }
+
+        .qr-showcase-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .qr-showcase-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #ff4d6d 0%, #7b5df6 60%, #ff7a2f 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            box-shadow: 0 10px 28px -6px rgba(255, 77, 109, 0.45);
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            width: fit-content;
+            cursor: pointer;
+            border: none;
+        }
+
+        .qr-showcase-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 16px 36px -6px rgba(255, 77, 109, 0.6);
+            color: #ffffff;
+        }
+
+        .qr-showcase-subcta {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-left: 6px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           LUXURY PHONE MOCKUP (HIGH-CONTRAST TITANIUM CHASSIS)
+        ═══════════════════════════════════════════════════════════ */
+        .qr-phone-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .qr-phone-mockup {
+            width: 100%;
+            width: 320px;
+            background: var(--bg-secondary);
+            border-radius: 44px;
+            border: 8px solid #1a1329;
+            box-shadow: 0 35px 80px -15px rgba(255, 77, 109, 0.35), 0 18px 40px -10px rgba(0, 0, 0, 0.22), inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+            padding: 12px 14px 20px;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.2), box-shadow 0.4s ease;
+            box-sizing: border-box;
+        }
+
+        body.dark .qr-phone-mockup {
+            border-color: #231b34;
+            box-shadow: 0 35px 80px -15px rgba(255, 77, 109, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15);
+        }
+
+        .qr-phone-mockup:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 40px 90px -15px rgba(255, 77, 109, 0.45);
+        }
+
+        /* Dynamic Island */
+        .qr-phone-island {
+            width: 76px;
+            height: 18px;
+            background: #000000;
+            border-radius: 20px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 10px;
+            gap: 6px;
+        }
+
+        .qr-island-lens {
+            width: 7px;
+            height: 7px;
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 50%;
+        }
+
+        .qr-island-sensor {
+            width: 4px;
+            height: 4px;
+            background: #090e1a;
+            border-radius: 50%;
+        }
+
+        /* Status Bar Mockup */
+        .qr-phone-status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            opacity: 0.85;
+        }
+
+        .qr-status-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+        }
+
+        /* Safari / Chrome Style Clean URL Bar (Zero Truncation!) */
+        .qr-phone-url-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            padding: 8px 12px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .qr-url-left {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .qr-url-lock {
+            color: #ff4d6d;
+            font-size: 0.82rem;
+            flex-shrink: 0;
+        }
+
+        .qr-url-text {
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            white-space: nowrap;
+        }
+
+        .qr-url-domain {
+            opacity: 0.75;
+        }
+
+        .qr-url-slug {
+            color: #ff4d6d;
+            font-weight: 800;
+            transition: all 0.25s ease;
+        }
+
+        body.dark .qr-url-slug {
+            color: #ff758f;
+        }
+
+        .qr-url-copy-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.82rem;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .qr-url-copy-btn:hover {
+            color: #ff4d6d;
+            transform: scale(1.1);
+        }
+
+        /* Internal Card Presentation */
+        .qr-phone-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 26px;
+            padding: 14px 12px 16px;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .qr-phone-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 0 4px;
+            gap: 8px;
+        }
+
+        .qr-phone-card-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+            min-width: 0;
+        }
+
+        .qr-phone-avatar {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff4d6d 0%, #ff7a2f 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            box-shadow: 0 3px 10px rgba(255, 77, 109, 0.35);
+        }
+
+        .qr-phone-userinfo {
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .qr-phone-username {
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .qr-phone-usersub {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .qr-phone-badge {
+            background: linear-gradient(135deg, rgba(255, 77, 109, 0.12) 0%, rgba(123, 93, 246, 0.12) 100%);
+            border: 1px solid rgba(255, 77, 109, 0.25);
+            color: #ff4d6d;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: 20px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .qr-phone-badge:hover {
+            background: linear-gradient(135deg, #ff4d6d 0%, #7b5df6 100%);
+            color: #ffffff;
+            border-color: transparent;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(255, 77, 109, 0.3);
+        }
+
+        body.dark .qr-phone-badge {
+            color: #ff758f;
+        }
+
+        body.dark .qr-phone-badge:hover {
+            color: #ffffff;
+        }
+
+        /* QR Frame with Animated Scanning Beam */
+        .qr-image-wrapper {
+            position: relative;
+            margin: 0 auto 12px;
+            width: 200px;
+            height: 200px;
+            max-width: 100%;
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 8px;
+            box-shadow: 0 12px 30px -8px rgba(123, 93, 246, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 77, 109, 0.2);
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .qr-scan-beam {
+            position: absolute;
+            top: 0;
+            left: 8px;
+            right: 8px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255, 77, 109, 0.9), rgba(123, 93, 246, 0.9), transparent);
+            box-shadow: 0 0 12px 3px rgba(255, 77, 109, 0.7);
+            border-radius: 4px;
+            animation: scanBeam 3s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes scanBeam {
+            0% {
+                top: 10px;
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                top: calc(100% - 13px);
+                opacity: 0.3;
+            }
+        }
+
+        .qr-showcase-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 14px;
+            display: block;
+        }
+
+        .qr-scan-prompt {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: linear-gradient(135deg, #ff4d6d 0%, #7b5df6 100%);
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 7px 18px;
+            border-radius: 30px;
+            box-shadow: 0 4px 14px rgba(255, 77, 109, 0.38);
+            margin-bottom: 6px;
+        }
+
+        .qr-phone-card-footer {
+            font-size: 0.73rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* Floating Accent Badges (Clean Desktop Placement) */
+        .qr-floating-tag {
+            position: absolute;
+            background: var(--bg-secondary);
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.16);
+            z-index: 3;
+            animation: floatSlow 4s ease-in-out infinite alternate;
+            white-space: nowrap;
+        }
+
+        .qr-floating-tag i {
+            color: #ff4d6d;
+        }
+
+        .qr-floating-tag-top {
+            top: 20px;
+            left: -32px;
+            animation-delay: 0s;
+        }
+
+        .qr-floating-tag-bottom {
+            bottom: 24px;
+            right: -32px;
+            animation-delay: 1.6s;
+        }
+
+        .qr-mobile-badges {
+            display: none;
+        }
+
+        @keyframes floatSlow {
+            0% {
+                transform: translateY(0px);
+            }
+            100% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           RESPONSIVE MOBILE STYLES (TABLETS & PHONES)
+        ═══════════════════════════════════════════════════════════ */
+        @media (max-width: 992px) {
+            .qr-showcase-section {
+                display: flex;
+                flex-direction: column;
+                gap: 28px;
+                padding: 40px 24px;
+                margin: 36px 0 28px;
+                text-align: center;
+            }
+
+            .desktop-only {
+                display: inline;
+            }
+
+            .qr-showcase-header {
+                text-align: center;
+            }
+
+            .qr-showcase-desc {
+                margin: 0 auto 18px;
+            }
+
+            .qr-showcase-visual {
+                order: 2;
+                margin: 6px 0 8px;
+                width: 100%;
+            }
+
+            .qr-showcase-body {
+                order: 3;
+                width: 100%;
+            }
+
+            .qr-feature-list {
+                max-width: 520px;
+                margin: 0 auto 24px;
+                text-align: left;
+            }
+
+            .qr-showcase-btn {
+                margin: 0 auto;
+                width: 100%;
+                max-width: 420px;
+            }
+
+            .qr-showcase-subcta {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .qr-floating-tag {
+                display: none;
+            }
+
+            .qr-mobile-badges {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-top: 14px;
+            }
+
+            .qr-pill-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: rgba(255, 255, 255, 0.55);
+                border: 1px solid var(--card-border);
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 0.74rem;
+                font-weight: 700;
+                color: var(--text-primary);
+            }
+
+            body.dark .qr-pill-tag {
+                background: rgba(30, 20, 55, 0.45);
+            }
+
+            .qr-pill-tag i {
+                color: #ff4d6d;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .qr-showcase-section {
+                padding: 24px 14px 26px;
+                border-radius: 26px;
+                margin: 24px 0 18px;
+                gap: 20px;
+            }
+
+            .qr-showcase-badge {
+                font-size: 0.8rem;
+                padding: 6px 14px;
+                margin-bottom: 10px;
+            }
+
+            .qr-showcase-title {
+                font-size: clamp(1.42rem, 5.8vw, 1.8rem);
+                line-height: 1.25;
+                margin-bottom: 10px;
+            }
+
+            .qr-showcase-desc {
+                font-size: 0.9rem;
+                line-height: 1.5;
+                margin-bottom: 8px;
+                padding: 0;
+            }
+
+            /* Phone Mockup Compact & Centered */
+            .qr-phone-mockup {
+                width: 100%;
+                max-width: 295px;
+                border-width: 7px;
+                padding: 10px 10px 14px;
+                border-radius: 36px;
+            }
+
+            .qr-phone-island {
+                width: 68px;
+                height: 16px;
+                margin-bottom: 8px;
+            }
+
+            .qr-phone-status-bar {
+                padding: 0 6px 6px;
+                font-size: 0.68rem;
+            }
+
+            .qr-phone-url-bar {
+                padding: 7px 10px;
+                margin-bottom: 10px;
+            }
+
+            .qr-url-text {
+                font-size: 0.78rem;
+            }
+
+            .qr-phone-card {
+                padding: 12px 8px 14px;
+                border-radius: 20px;
+            }
+
+            .qr-phone-avatar {
+                width: 28px;
+                height: 28px;
+                min-width: 28px;
+                font-size: 0.75rem;
+            }
+
+            .qr-phone-username {
+                font-size: 0.78rem;
+            }
+
+            .qr-phone-usersub {
+                font-size: 0.64rem;
+            }
+
+            .qr-phone-badge {
+                font-size: 0.62rem;
+                padding: 3px 7px;
+            }
+
+            .qr-image-wrapper {
+                width: 175px;
+                height: 175px;
+                padding: 6px;
+                border-radius: 16px;
+                margin-bottom: 10px;
+            }
+
+            .qr-scan-prompt {
+                font-size: 0.72rem;
+                padding: 5px 14px;
+            }
+
+            .qr-phone-card-footer {
+                font-size: 0.68rem;
+            }
+
+            /* Feature items compact & legible */
+            .qr-feature-list {
+                gap: 10px;
+                margin-bottom: 18px;
+            }
+
+            .qr-feature-item {
+                padding: 11px 12px;
+                gap: 11px;
+                border-radius: 16px;
+            }
+
+            .qr-feature-icon {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                border-radius: 11px;
+                font-size: 0.95rem;
+            }
+
+            .qr-feature-text h4 {
+                font-size: 0.9rem;
+                gap: 6px;
+                margin-bottom: 2px;
+            }
+
+            .qr-highlight-pill {
+                font-size: 0.72rem;
+                padding: 1px 5px;
+            }
+
+            .qr-feature-text p {
+                font-size: 0.82rem;
+                line-height: 1.45;
+            }
+
+            /* CTA Button */
+            .qr-showcase-btn {
+                width: 100%;
+                font-size: 0.96rem;
+                padding: 15px 20px;
+                border-radius: 40px;
+                max-width: none;
+            }
+
+            .qr-showcase-subcta {
+                font-size: 0.76rem;
+                line-height: 1.4;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .qr-phone-mockup {
+                max-width: 270px;
+            }
+
+            .qr-image-wrapper {
+                width: 150px;
+                height: 150px;
+            }
+        }
     </style>
 
 
@@ -7197,11 +8068,140 @@
 
         </div>
 
+        <!-- QR CODE & CUSTOM URL SHOWCASE -->
+        <section class="qr-showcase-section animate-on-scroll" id="qrShowcaseSection">
+            <div class="qr-showcase-header">
+                <div class="qr-showcase-badge">
+                    <i class="fas fa-heart"></i> Made For Someone You Love
+                </div>
+                <h2 class="qr-showcase-title">
+                    A Special Surprise with<br class="desktop-only">
+                    <span class="qr-title-gradient">Their Name & Photo</span>
+                </h2>
+                <p class="qr-showcase-desc">
+                    Don't just send a plain message. Gift them a link written just for them, paired with a keepsake photo QR code ready to print on a card, tuck in a gift box, or send at midnight.
+                </p>
+            </div>
 
+            <div class="qr-showcase-visual">
+                <div class="qr-phone-wrapper">
+                    <!-- Floating Badges (Desktop) -->
+                    <div class="qr-floating-tag qr-floating-tag-top">
+                        <i class="fas fa-camera-retro"></i> Photo in Center
+                    </div>
+                    <div class="qr-floating-tag qr-floating-tag-bottom">
+                        <i class="fas fa-mobile-screen-button"></i> Any Phone Camera
+                    </div>
 
+                    <!-- Luxury Phone Mockup Card -->
+                    <div class="qr-phone-mockup">
+                        <!-- Dynamic Island -->
+                        <div class="qr-phone-island">
+                            <span class="qr-island-lens"></span>
+                            <span class="qr-island-sensor"></span>
+                        </div>
 
+                        <!-- Status Bar -->
+                        <div class="qr-phone-status-bar">
+                            <span class="qr-status-time">9:41</span>
+                            <div class="qr-status-icons">
+                                <i class="fas fa-signal"></i>
+                                <i class="fas fa-wifi"></i>
+                                <i class="fas fa-battery-full"></i>
+                            </div>
+                        </div>
 
+                        <!-- Browser URL Mockup (Never Truncated!) -->
+                        <div class="qr-phone-url-bar">
+                            <div class="qr-url-left">
+                                <i class="fas fa-lock qr-url-lock"></i>
+                                <span class="qr-url-text">thegreeter.in/<strong class="qr-url-slug" id="qrPreviewName">demo-raman</strong></span>
+                            </div>
+                            <button class="qr-url-copy-btn" id="qrCopyBtn" title="Copy demo link" aria-label="Copy demo link">
+                                <i class="far fa-copy"></i>
+                            </button>
+                        </div>
 
+                        <!-- Inner Card -->
+                        <div class="qr-phone-card">
+                            <div class="qr-phone-card-header">
+                                <div class="qr-phone-card-user">
+                                    <div class="qr-phone-avatar"><i class="fas fa-heart"></i></div>
+                                    <div class="qr-phone-userinfo">
+                                        <span class="qr-phone-username" id="qrCardUsername">For Raman 💖</span>
+                                        <span class="qr-phone-usersub" id="qrCardUsersub">thegreeter.in/demo-raman</span>
+                                    </div>
+                                </div>
+                                <a href="https://thegreeter.in/demo-raman" target="_blank" rel="noopener" class="qr-phone-badge" style="text-decoration:none;" title="Open Raman's live demo"><i class="fas fa-arrow-up-right-from-square"></i> Demo</a>
+                            </div>
+
+                            <!-- QR Code Frame with Scanning Laser Beam -->
+                            <div class="qr-image-wrapper">
+                                <div class="qr-scan-beam"></div>
+                                <img src="assets/Personalized%20QR%20.png" alt="Personalized QR Code with custom photo center" class="qr-showcase-img" loading="lazy" />
+                            </div>
+
+                            <div class="qr-scan-prompt">
+                                <i class="fas fa-camera"></i> Scan to open Raman's surprise
+                            </div>
+                            <div class="qr-phone-card-footer">
+                                Slip into a greeting card, bouquet, or send at midnight 🌙
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clean Mobile Badges (No Overlap) -->
+                    <div class="qr-mobile-badges">
+                        <span class="qr-pill-tag"><i class="fas fa-heart"></i> Photo in Center</span>
+                        <span class="qr-pill-tag"><i class="fas fa-camera"></i> Any Phone Camera</span>
+                        <span class="qr-pill-tag"><i class="fas fa-bolt"></i> 100% Ad-Free</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="qr-showcase-body">
+                <div class="qr-feature-list">
+                    <div class="qr-feature-item">
+                        <div class="qr-feature-icon">
+                            <i class="fas fa-signature"></i>
+                        </div>
+                        <div class="qr-feature-text">
+                            <h4>Their Very Own Link <span class="qr-highlight-pill" id="qrFeaturePill">thegreeter.in/TheirName</span></h4>
+                            <p>Imagine their smile seeing their name light up the address bar before the page even opens.</p>
+                        </div>
+                    </div>
+
+                    <div class="qr-feature-item">
+                        <div class="qr-feature-icon icon-purple">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <div class="qr-feature-text">
+                            <h4>Your Cherished Memory at the Center</h4>
+                            <p>Embed their radiant smile, your first trip together, or a favorite portrait right in the center of the QR code.</p>
+                        </div>
+                    </div>
+
+                    <div class="qr-feature-item">
+                        <div class="qr-feature-icon icon-warm">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="qr-feature-text">
+                            <h4>Scan to Open a World of Emotion</h4>
+                            <p>Works with any phone camera. One quick scan unlocks your heartfelt letter, photos, animations, and music.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qr-showcase-actions">
+                    <a href="create" class="qr-showcase-btn" id="qrShowcaseCta">
+                        <i class="fas fa-heart"></i> Create a Surprise For Them <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="qr-showcase-subcta">
+                        <i class="fas fa-sparkles" style="color: #ffb703;"></i> 100% Ad-Free · Ready in 2 minutes · A keepsake they will never forget
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- USE CASES -->
 
@@ -8851,6 +9851,29 @@
             ctaBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 startFlow('personal');
+            });
+        }
+
+        const qrShowcaseCta = document.getElementById('qrShowcaseCta');
+        if (qrShowcaseCta) {
+            qrShowcaseCta.addEventListener('click', (e) => {
+                e.preventDefault();
+                startFlow('personal');
+            });
+        }
+
+        // QR Showcase Copy Demo Link Button
+        const qrCopyBtn = document.getElementById('qrCopyBtn');
+        if (qrCopyBtn) {
+            qrCopyBtn.addEventListener('click', () => {
+                const fullUrl = 'https://thegreeter.in/demo-raman';
+                navigator.clipboard?.writeText(fullUrl).then(() => {
+                    const originalHtml = qrCopyBtn.innerHTML;
+                    qrCopyBtn.innerHTML = '<i class="fas fa-check" style="color:#10b981"></i>';
+                    setTimeout(() => {
+                        qrCopyBtn.innerHTML = originalHtml;
+                    }, 1800);
+                }).catch(() => {});
             });
         }
 
