@@ -1,3 +1,5 @@
+const EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
+
 const EDGE_PRICING = {
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India', country: 'IN',
@@ -5,27 +7,31 @@ const EDGE_PRICING = {
   },
   GB: {
     currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom', country: 'GB',
-    plans: { custom_url: { amount: 0.99 }, starter: { amount: 0.99 }, pro: { amount: 1.99 }, pro_plus: { amount: 3.49 }, forever: { amount: 6.99 } }
+    plans: { custom_url: { amount: 1.29 }, starter: { amount: 2.49 }, pro: { amount: 5.99 }, pro_plus: { amount: 8.49 }, forever: { amount: 16.99 } }
   },
   CA: {
     currency: 'CAD', symbol: 'CA$', gateway: 'paypal', paypalCurrency: 'CAD', countryName: 'Canada', country: 'CA',
-    plans: { custom_url: { amount: 1.49 }, starter: { amount: 1.49 }, pro: { amount: 2.99 }, pro_plus: { amount: 4.99 }, forever: { amount: 9.99 } }
+    plans: { custom_url: { amount: 1.99 }, starter: { amount: 3.99 }, pro: { amount: 8.99 }, pro_plus: { amount: 13.99 }, forever: { amount: 24.99 } }
   },
   AU: {
     currency: 'AUD', symbol: 'A$', gateway: 'paypal', paypalCurrency: 'AUD', countryName: 'Australia', country: 'AU',
-    plans: { custom_url: { amount: 1.49 }, starter: { amount: 1.49 }, pro: { amount: 2.99 }, pro_plus: { amount: 4.99 }, forever: { amount: 9.99 } }
+    plans: { custom_url: { amount: 1.99 }, starter: { amount: 3.99 }, pro: { amount: 8.99 }, pro_plus: { amount: 13.99 }, forever: { amount: 24.99 } }
   },
   AE: {
     currency: 'AED', symbol: 'AED ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'UAE', country: 'AE',
-    plans: { custom_url: { amount: 3.99 }, starter: { amount: 3.99 }, pro: { amount: 6.99 }, pro_plus: { amount: 12.99 }, forever: { amount: 29.99 } }
+    plans: { custom_url: { amount: 4.99 }, starter: { amount: 9.99 }, pro: { amount: 19.99 }, pro_plus: { amount: 39.99 }, forever: { amount: 79.99 } }
   },
   PK: {
-    currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan', country: 'PK',
-    plans: { custom_url: { amount: 99 }, starter: { amount: 99 }, pro: { amount: 149 }, pro_plus: { amount: 299 }, forever: { amount: 799 } }
+    currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan', country: 'PK',
+    plans: { custom_url: { amount: 1.49 }, starter: { amount: 2.99 }, pro: { amount: 6.99 }, pro_plus: { amount: 9.99 }, forever: { amount: 19.99 } }
+  },
+  EU: {
+    currency: 'EUR', symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', countryName: 'Eurozone', country: 'EU',
+    plans: { custom_url: { amount: 1.49 }, starter: { amount: 2.99 }, pro: { amount: 6.99 }, pro_plus: { amount: 9.99 }, forever: { amount: 19.99 } }
   },
   US: {
     currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'United States', country: 'US',
-    plans: { custom_url: { amount: 0.99 }, starter: { amount: 0.99 }, pro: { amount: 1.99 }, pro_plus: { amount: 3.49 }, forever: { amount: 6.99 } }
+    plans: { custom_url: { amount: 1.49 }, starter: { amount: 2.99 }, pro: { amount: 6.99 }, pro_plus: { amount: 9.99 }, forever: { amount: 19.99 } }
   }
 };
 
@@ -37,7 +43,12 @@ export default {
     // Instant Cloudflare Edge Geo-Pricing (<5ms direct from edge)
     if (path === '/api/geo-pricing' || path === '/api/payment/detect-price') {
       const country = (request.cf?.country || request.headers.get('cf-ipcountry') || 'IN').toUpperCase();
-      const pricing = EDGE_PRICING[country] || (country === 'IN' ? EDGE_PRICING.IN : EDGE_PRICING.US);
+      let pricing = EDGE_PRICING[country];
+      if (!pricing) {
+        if (EUROZONE.includes(country)) pricing = { ...EDGE_PRICING.EU, country };
+        else if (country === 'IN') pricing = EDGE_PRICING.IN;
+        else pricing = { ...EDGE_PRICING.US, country };
+      }
       return new Response(JSON.stringify({ success: true, ...pricing, country }), {
         status: 200,
         headers: {

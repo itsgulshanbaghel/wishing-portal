@@ -3074,7 +3074,7 @@
               else if (countryCode === 'CA') selectedCurrency = 'CAD';
               else if (countryCode === 'AU') selectedCurrency = 'AUD';
               else if (countryCode === 'AE') selectedCurrency = 'AED';
-              else if (countryCode === 'PK') selectedCurrency = 'PKR';
+              else if (countryCode === 'PK') selectedCurrency = 'USD';
               else if (EUROZONE.includes(countryCode)) selectedCurrency = 'EUR';
               else selectedCurrency = 'USD';
 
@@ -3546,8 +3546,8 @@
           symbol = 'A$';
         } else if (selectedCurrency === 'AED') {
           symbol = 'AED ';
-        } else if (selectedCurrency === 'PKR') {
-          symbol = 'PKR ';
+        } else if (selectedCurrency === 'EUR') {
+          symbol = '€';
         } else {
           symbol = '$';
         }
@@ -3560,47 +3560,37 @@
           proPrice = 99;
           proPlusPrice = 149;
           foreverPrice = 299;
-        } else if (selectedCurrency === 'USD') {
-          starterPrice = 0.99;
-          proPrice = 1.99;
-          proPlusPrice = 3.49;
-          foreverPrice = 6.99;
         } else if (selectedCurrency === 'GBP') {
-          starterPrice = 0.99;
-          proPrice = 1.49;
-          proPlusPrice = 2.99;
-          foreverPrice = 5.99;
+          starterPrice = 2.49;
+          proPrice = 5.99;
+          proPlusPrice = 8.49;
+          foreverPrice = 16.99;
         } else if (selectedCurrency === 'CAD') {
-          starterPrice = 1.49;
-          proPrice = 2.49;
-          proPlusPrice = 4.49;
-          foreverPrice = 8.99;
-        } else if (selectedCurrency === 'AUD') {
-          starterPrice = 1.49;
-          proPrice = 2.99;
-          proPlusPrice = 4.99;
-          foreverPrice = 9.99;
-        } else if (selectedCurrency === 'AED') {
           starterPrice = 3.99;
-          proPrice = 6.99;
-          proPlusPrice = 12.99;
-          foreverPrice = 29.99;
-        } else if (selectedCurrency === 'PKR') {
-          starterPrice = 99;
-          proPrice = 149;
-          proPlusPrice = 299;
-          foreverPrice = 799;
+          proPrice = 8.99;
+          proPlusPrice = 13.99;
+          foreverPrice = 24.99;
+        } else if (selectedCurrency === 'AUD') {
+          starterPrice = 3.99;
+          proPrice = 8.99;
+          proPlusPrice = 13.99;
+          foreverPrice = 24.99;
+        } else if (selectedCurrency === 'AED') {
+          starterPrice = 9.99;
+          proPrice = 19.99;
+          proPlusPrice = 39.99;
+          foreverPrice = 79.99;
         } else if (selectedCurrency === 'EUR') {
-          starterPrice = 0.99;
-          proPrice = 1.99;
-          proPlusPrice = 3.49;
-          foreverPrice = 6.99;
+          starterPrice = 2.99;
+          proPrice = 6.99;
+          proPlusPrice = 9.99;
+          foreverPrice = 19.99;
         } else {
-          // Default international USD
-          starterPrice = 0.99;
-          proPrice = 1.99;
-          proPlusPrice = 3.49;
-          foreverPrice = 6.99;
+          // Default USD (US, Pakistan, International)
+          starterPrice = 2.99;
+          proPrice = 6.99;
+          proPlusPrice = 9.99;
+          foreverPrice = 19.99;
         }
 
         console.log('Calculated prices:', { starterPrice, proPrice, proPlusPrice, foreverPrice, symbol });

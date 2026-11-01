@@ -3938,6 +3938,14 @@
               </button>
             </div>
 
+            <!-- International Contact Us Button -->
+            <div id="intlContactSupportContainer" style="display: none; margin-top: 14px; text-align: center;">
+              <button type="button" id="intlContactUsBtn" onclick="window.openIntlPaymentModal()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(123, 93, 246, 0.08); border: 1.5px solid rgba(123, 93, 246, 0.32); color: var(--text-primary); font-size: 0.88rem; font-weight: 700; padding: 10px 22px; border-radius: 30px; cursor: pointer; transition: all 0.25s ease;">
+                <i class="fas fa-headset" style="color: #7b5df6;"></i>
+                <span>Contact Us</span>
+              </button>
+            </div>
+
           </div>
 
           <div style="text-align: center; margin-top: 18px;">
@@ -4022,6 +4030,62 @@
       </div>
       <button class="open-tab-btn" onclick="openInNewTab()"><i class="fas fa-external-link-alt"></i> <span
           id="openTabText">Open in New Tab</span></button>
+    </div>
+  </div>
+
+  <!-- Contact Us Modal -->
+  <div class="intl-modal-overlay" id="intlPaymentModal" style="display: none; position: fixed; inset: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 1000000; align-items: center; justify-content: center; padding: 18px; box-sizing: border-box;">
+    <div class="intl-modal-card" style="background: var(--bg-card, #1e1e2d); color: var(--text-primary, #ffffff); border: 1.5px solid rgba(123, 93, 246, 0.35); border-radius: 26px; max-width: 440px; width: 100%; padding: 28px 24px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 0 35px rgba(123, 93, 246, 0.2); position: relative; box-sizing: border-box; text-align: center;">
+      
+      <!-- Close button -->
+      <button type="button" onclick="window.closeIntlPaymentModal()" style="position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.1); color: var(--text-primary, #fff); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <!-- Header Icon -->
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, rgba(123, 93, 246, 0.2), rgba(255, 122, 47, 0.2)); border: 1.5px solid rgba(123, 93, 246, 0.45); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; font-size: 24px; color: #7b5df6;">
+        <i class="fas fa-headset"></i>
+      </div>
+
+      <h3 style="font-size: 1.35rem; font-weight: 800; margin: 0 0 8px; color: var(--text-primary, #fff); letter-spacing: -0.3px;">Contact Us</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary, #a1a1aa); margin: 0 0 20px; line-height: 1.45;">
+        Need help or have questions? Reach out to us directly.
+      </p>
+
+      <!-- Quick Contact Channels -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px;">
+        <!-- Instagram -->
+        <a href="https://instagram.com/thegreeter.in" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-radius: 14px; background: linear-gradient(135deg, rgba(225, 48, 108, 0.14), rgba(131, 58, 180, 0.14)); border: 1.5px solid rgba(225, 48, 108, 0.35); color: var(--text-primary, #fff); text-decoration: none; font-weight: 700; font-size: 0.92rem;">
+          <span style="display: flex; align-items: center; gap: 10px;">
+            <i class="fab fa-instagram" style="color: #e1306c; font-size: 1.25rem;"></i>
+            <span>Instagram DM (@thegreeter.in)</span>
+          </span>
+          <span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 10px; background: rgba(225, 48, 108, 0.2); color: #e1306c; font-weight: 800;">Fast Response</span>
+        </a>
+
+        <!-- Telegram -->
+        <a href="https://t.me/TheGreeter" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-radius: 14px; background: rgba(0, 136, 204, 0.12); border: 1.5px solid rgba(0, 136, 204, 0.35); color: var(--text-primary, #fff); text-decoration: none; font-weight: 700; font-size: 0.92rem;">
+          <span style="display: flex; align-items: center; gap: 10px;">
+            <i class="fab fa-telegram-plane" style="color: #0088cc; font-size: 1.25rem;"></i>
+            <span>Telegram (@TheGreeter)</span>
+          </span>
+          <i class="fas fa-arrow-right" style="font-size: 0.8rem; opacity: 0.6;"></i>
+        </a>
+
+        <!-- Email -->
+        <a href="mailto:greeterindia@gmail.com" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-radius: 14px; background: rgba(16, 185, 129, 0.12); border: 1.5px solid rgba(16, 185, 129, 0.35); color: var(--text-primary, #fff); text-decoration: none; font-weight: 700; font-size: 0.92rem;">
+          <span style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-envelope" style="color: #10b981; font-size: 1.15rem;"></i>
+            <span>Email (greeterindia@gmail.com)</span>
+          </span>
+          <i class="fas fa-arrow-right" style="font-size: 0.8rem; opacity: 0.6;"></i>
+        </a>
+
+        <!-- Contact Page -->
+        <a href="/ContactUs.html" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 16px; border-radius: 12px; background: transparent; border: 1px dashed rgba(255,255,255,0.22); color: var(--text-secondary, #cbd5e1); text-decoration: none; font-weight: 600; font-size: 0.84rem;">
+          <i class="fas fa-file-alt"></i> Open Full Contact Form
+        </a>
+      </div>
     </div>
   </div>
 
@@ -10773,12 +10837,14 @@
           if (res && res.ok) {
             const data = await res.json().catch(() => null);
             if (data && data.country_code) {
+              const euroCountries = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
               if (data.country_code === 'IN') selectedCurrency = 'INR';
               else if (data.country_code === 'GB') selectedCurrency = 'GBP';
               else if (data.country_code === 'CA') selectedCurrency = 'CAD';
               else if (data.country_code === 'AU') selectedCurrency = 'AUD';
               else if (data.country_code === 'AE') selectedCurrency = 'AED';
-              else if (data.country_code === 'PK') selectedCurrency = 'PKR';
+              else if (data.country_code === 'PK') selectedCurrency = 'USD';
+              else if (euroCountries.includes(data.country_code)) selectedCurrency = 'EUR';
               else selectedCurrency = 'USD';
 
               selectedGateway = (selectedCurrency === 'INR') ? 'cashfree' : 'paypal';
@@ -10811,7 +10877,9 @@
         } else if (tz.includes('Dubai') || lang.includes('ae')) {
           selectedCurrency = 'AED';
         } else if (tz.includes('Karachi') || lang.includes('pk')) {
-          selectedCurrency = 'PKR';
+          selectedCurrency = 'USD';
+        } else if (tz.includes('Berlin') || tz.includes('Paris') || tz.includes('Rome') || tz.includes('Madrid') || tz.includes('Amsterdam') || tz.includes('Brussels') || tz.includes('Vienna')) {
+          selectedCurrency = 'EUR';
         } else {
           selectedCurrency = 'USD';
         }
@@ -11723,50 +11791,52 @@
         else if (selectedCurrency === 'CAD') symbol = 'CA$';
         else if (selectedCurrency === 'AUD') symbol = 'A$';
         else if (selectedCurrency === 'AED') symbol = 'AED ';
-        else if (selectedCurrency === 'PKR') symbol = 'PKR ';
+        else if (selectedCurrency === 'EUR') symbol = '€';
+        else symbol = '$';
 
         const paidStatus = typeof window.getWebsitePaidStatus === 'function' ? window.getWebsitePaidStatus() : { isPaid: false, plan: null };
         const activePaidPlanKey = paidStatus.isPaid ? (paidStatus.plan || 'pro').toLowerCase() : null;
 
         pills.forEach(pill => {
           const planKey = pill.dataset.plan;
-          let p = 1.99;
-          let orig = '';
+          let p = 6.99;
+          let orig = '$11.99';
           if (selectedCurrency === 'INR') {
             if (planKey === 'starter') { p = 49; orig = '₹99'; }
             else if (planKey === 'pro') { p = 99; orig = '₹199'; }
             else if (planKey === 'pro_plus') { p = 149; orig = '₹299'; }
             else if (planKey === 'forever') { p = 299; orig = '₹599'; }
           } else if (selectedCurrency === 'GBP') {
-            if (planKey === 'starter') { p = 0.99; orig = '£1.99'; }
-            else if (planKey === 'pro') { p = 1.49; orig = '£2.99'; }
-            else if (planKey === 'pro_plus') { p = 2.99; orig = '£4.99'; }
-            else if (planKey === 'forever') { p = 5.99; orig = '£9.99'; }
+            if (planKey === 'starter') { p = 2.49; orig = '£3.99'; }
+            else if (planKey === 'pro') { p = 5.99; orig = '£9.99'; }
+            else if (planKey === 'pro_plus') { p = 8.49; orig = '£13.99'; }
+            else if (planKey === 'forever') { p = 16.99; orig = '£28.99'; }
           } else if (selectedCurrency === 'CAD') {
-            if (planKey === 'starter') { p = 1.49; orig = 'CA$2.99'; }
-            else if (planKey === 'pro') { p = 2.49; orig = 'CA$4.99'; }
-            else if (planKey === 'pro_plus') { p = 4.49; orig = 'CA$8.99'; }
-            else if (planKey === 'forever') { p = 8.99; orig = 'CA$16.99'; }
+            if (planKey === 'starter') { p = 3.99; orig = 'CA$5.99'; }
+            else if (planKey === 'pro') { p = 8.99; orig = 'CA$14.99'; }
+            else if (planKey === 'pro_plus') { p = 13.99; orig = 'CA$22.99'; }
+            else if (planKey === 'forever') { p = 24.99; orig = 'CA$39.99'; }
           } else if (selectedCurrency === 'AUD') {
-            if (planKey === 'starter') { p = 1.49; orig = 'A$2.99'; }
-            else if (planKey === 'pro') { p = 2.99; orig = 'A$5.99'; }
-            else if (planKey === 'pro_plus') { p = 4.99; orig = 'A$9.99'; }
-            else if (planKey === 'forever') { p = 9.99; orig = 'A$19.99'; }
+            if (planKey === 'starter') { p = 3.99; orig = 'A$5.99'; }
+            else if (planKey === 'pro') { p = 8.99; orig = 'A$14.99'; }
+            else if (planKey === 'pro_plus') { p = 13.99; orig = 'A$22.99'; }
+            else if (planKey === 'forever') { p = 24.99; orig = 'A$39.99'; }
           } else if (selectedCurrency === 'AED') {
-            if (planKey === 'starter') { p = 3.99; orig = 'AED 7.99'; }
-            else if (planKey === 'pro') { p = 6.99; orig = 'AED 13.99'; }
-            else if (planKey === 'pro_plus') { p = 12.99; orig = 'AED 24.99'; }
-            else if (planKey === 'forever') { p = 29.99; orig = 'AED 59.99'; }
-          } else if (selectedCurrency === 'PKR') {
-            if (planKey === 'starter') { p = 99; orig = 'PKR 199'; }
-            else if (planKey === 'pro') { p = 149; orig = 'PKR 299'; }
-            else if (planKey === 'pro_plus') { p = 299; orig = 'PKR 599'; }
-            else if (planKey === 'forever') { p = 799; orig = 'PKR 1599'; }
+            if (planKey === 'starter') { p = 9.99; orig = 'AED 19.99'; }
+            else if (planKey === 'pro') { p = 19.99; orig = 'AED 39.99'; }
+            else if (planKey === 'pro_plus') { p = 39.99; orig = 'AED 69.99'; }
+            else if (planKey === 'forever') { p = 79.99; orig = 'AED 139.99'; }
+          } else if (selectedCurrency === 'EUR') {
+            if (planKey === 'starter') { p = 2.99; orig = '€4.99'; }
+            else if (planKey === 'pro') { p = 6.99; orig = '€11.99'; }
+            else if (planKey === 'pro_plus') { p = 9.99; orig = '€16.99'; }
+            else if (planKey === 'forever') { p = 19.99; orig = '€34.99'; }
           } else {
-            if (planKey === 'starter') { p = 0.99; orig = '$1.99'; }
-            else if (planKey === 'pro') { p = 1.99; orig = '$3.99'; }
-            else if (planKey === 'pro_plus') { p = 3.49; orig = '$6.99'; }
-            else if (planKey === 'forever') { p = 6.99; orig = '$12.99'; }
+            // Default USD (US, Pakistan, International)
+            if (planKey === 'starter') { p = 2.99; orig = '$4.99'; }
+            else if (planKey === 'pro') { p = 6.99; orig = '$11.99'; }
+            else if (planKey === 'pro_plus') { p = 9.99; orig = '$16.99'; }
+            else if (planKey === 'forever') { p = 19.99; orig = '$34.99'; }
           }
           pill.dataset.computedPrice = p;
           pill.dataset.computedOrigPrice = orig;
@@ -11802,7 +11872,7 @@
 
         if (selectedPill) {
           const planKey = selectedPill.dataset.plan;
-          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 79 : 1.99);
+          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 99 : 6.99);
           const orig = selectedPill.dataset.computedOrigPrice || '';
           activePlan = { plan: planKey, price: p, days: +selectedPill.dataset.days, label: selectedPill.dataset.label };
 
@@ -11857,7 +11927,11 @@
               proceedBtn.onclick = (e) => window.revealInlineCheckout(e);
             }
             if (finalPayBtn) {
-              finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} &amp; Upgrade to ${planTitle}</span>`;
+              if (selectedCurrency === 'INR') {
+                finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} &amp; Upgrade to ${planTitle}</span>`;
+              } else {
+                finalPayBtn.innerHTML = `<i class="fab fa-paypal" style="font-size: 1.25rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} via PayPal &amp; Upgrade</span>`;
+              }
             }
             if (validityChip) validityChip.innerHTML = `<i class="fas fa-crown" style="color: #7b5df6;"></i> Upgrade to ${planTitle} · Active for ${activePlan.label}`;
             if (s3Title) s3Title.textContent = `Upgrade to ${planTitle}`;
@@ -11891,12 +11965,22 @@
               proceedBtn.onclick = (e) => window.revealInlineCheckout(e);
             }
             if (finalPayBtn) {
-              finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} Securely (${planTitle})</span>`;
+              if (selectedCurrency === 'INR') {
+                finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} Securely (${planTitle})</span>`;
+              } else {
+                finalPayBtn.innerHTML = `<i class="fab fa-paypal" style="font-size: 1.25rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} via PayPal &amp; Cards</span>`;
+              }
             }
             if (validityChip) validityChip.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Active ${activePlan.label} · 100% Ad-Free`;
             if (s3Title) s3Title.textContent = 'Make Your Surprise Truly Unforgettable';
             if (s3Sub) s3Sub.textContent = 'Select how long you want your personalized surprise website to remain live, interactive, and ad-free.';
             if (s3Badge) s3Badge.textContent = '✨ SELECT YOUR PLAN';
+          }
+
+          // Show/hide International Alternative Payment button
+          const intlContactContainer = document.getElementById('intlContactSupportContainer');
+          if (intlContactContainer) {
+            intlContactContainer.style.display = (selectedCurrency === 'INR') ? 'none' : 'block';
           }
 
           // Update feature items UI
@@ -11940,6 +12024,16 @@
           }
         }
       }
+
+      window.openIntlPaymentModal = function () {
+        const modal = document.getElementById('intlPaymentModal');
+        if (modal) modal.style.display = 'flex';
+      };
+
+      window.closeIntlPaymentModal = function () {
+        const modal = document.getElementById('intlPaymentModal');
+        if (modal) modal.style.display = 'none';
+      };
 
       window.revealInlineCheckout = function (e) {
         if (e && typeof e.preventDefault === 'function') e.preventDefault();

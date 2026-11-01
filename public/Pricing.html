@@ -1556,12 +1556,14 @@
         if (res && res.ok) {
           const data = await res.json().catch(() => null);
           if (data && data.country_code) {
+            const euroCountries = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
             if (data.country_code === 'IN') selectedCurrency = 'INR';
             else if (data.country_code === 'GB') selectedCurrency = 'GBP';
             else if (data.country_code === 'CA') selectedCurrency = 'CAD';
             else if (data.country_code === 'AU') selectedCurrency = 'AUD';
             else if (data.country_code === 'AE') selectedCurrency = 'AED';
-            else if (data.country_code === 'PK') selectedCurrency = 'PKR';
+            else if (data.country_code === 'PK') selectedCurrency = 'USD';
+            else if (euroCountries.includes(data.country_code)) selectedCurrency = 'EUR';
             else selectedCurrency = 'USD';
 
             window.selectedCurrency = selectedCurrency;
@@ -1591,7 +1593,9 @@
       } else if (tz.includes('Dubai') || lang.includes('ae')) {
         selectedCurrency = 'AED';
       } else if (tz.includes('Karachi') || lang.includes('pk')) {
-        selectedCurrency = 'PKR';
+        selectedCurrency = 'USD';
+      } else if (tz.includes('Berlin') || tz.includes('Paris') || tz.includes('Rome') || tz.includes('Madrid') || tz.includes('Amsterdam') || tz.includes('Brussels') || tz.includes('Vienna')) {
+        selectedCurrency = 'EUR';
       } else {
         selectedCurrency = 'USD';
       }
@@ -1609,12 +1613,13 @@
       else if (selectedCurrency === 'CAD') symbol = 'CA$';
       else if (selectedCurrency === 'AUD') symbol = 'A$';
       else if (selectedCurrency === 'AED') symbol = 'AED ';
-      else if (selectedCurrency === 'PKR') symbol = 'PKR ';
+      else if (selectedCurrency === 'EUR') symbol = '€';
+      else symbol = '$';
 
-      let starterPrice = 0.99, starterOrig = '$1.99';
-      let proPrice = 1.99, proOrig = '$3.99';
-      let proPlusPrice = 3.49, proPlusOrig = '$6.99';
-      let foreverPrice = 6.99, foreverOrig = '$12.99';
+      let starterPrice = 2.99, starterOrig = '$4.99';
+      let proPrice = 6.99, proOrig = '$11.99';
+      let proPlusPrice = 9.99, proPlusOrig = '$16.99';
+      let foreverPrice = 19.99, foreverOrig = '$34.99';
 
       if (selectedCurrency === 'INR') {
         starterPrice = 49; starterOrig = '₹99';
@@ -1622,35 +1627,36 @@
         proPlusPrice = 149; proPlusOrig = '₹299';
         foreverPrice = 299; foreverOrig = '₹599';
       } else if (selectedCurrency === 'GBP') {
-        starterPrice = 0.99; starterOrig = '£1.99';
-        proPrice = 1.49; proOrig = '£2.99';
-        proPlusPrice = 2.99; proPlusOrig = '£4.99';
-        foreverPrice = 5.99; foreverOrig = '£9.99';
+        starterPrice = 2.49; starterOrig = '£3.99';
+        proPrice = 5.99; proOrig = '£9.99';
+        proPlusPrice = 8.49; proPlusOrig = '£13.99';
+        foreverPrice = 16.99; foreverOrig = '£28.99';
       } else if (selectedCurrency === 'CAD') {
-        starterPrice = 1.49; starterOrig = 'CA$2.99';
-        proPrice = 2.49; proOrig = 'CA$4.99';
-        proPlusPrice = 4.49; proPlusOrig = 'CA$8.99';
-        foreverPrice = 8.99; foreverOrig = 'CA$16.99';
+        starterPrice = 3.99; starterOrig = 'CA$5.99';
+        proPrice = 8.99; proOrig = 'CA$14.99';
+        proPlusPrice = 13.99; proPlusOrig = 'CA$22.99';
+        foreverPrice = 24.99; foreverOrig = 'CA$39.99';
       } else if (selectedCurrency === 'AUD') {
-        starterPrice = 1.49; starterOrig = 'A$2.99';
-        proPrice = 2.99; proOrig = 'A$5.99';
-        proPlusPrice = 4.99; proPlusOrig = 'A$9.99';
-        foreverPrice = 9.99; foreverOrig = 'A$19.99';
+        starterPrice = 3.99; starterOrig = 'A$5.99';
+        proPrice = 8.99; proOrig = 'A$14.99';
+        proPlusPrice = 13.99; proPlusOrig = 'A$22.99';
+        foreverPrice = 24.99; foreverOrig = 'A$39.99';
       } else if (selectedCurrency === 'AED') {
-        starterPrice = 3.99; starterOrig = 'AED 7.99';
-        proPrice = 6.99; proOrig = 'AED 13.99';
-        proPlusPrice = 12.99; proPlusOrig = 'AED 24.99';
-        foreverPrice = 29.99; foreverOrig = 'AED 59.99';
-      } else if (selectedCurrency === 'PKR') {
-        starterPrice = 99; starterOrig = 'PKR 199';
-        proPrice = 149; proOrig = 'PKR 299';
-        proPlusPrice = 299; proPlusOrig = 'PKR 599';
-        foreverPrice = 799; foreverOrig = 'PKR 1599';
+        starterPrice = 9.99; starterOrig = 'AED 19.99';
+        proPrice = 19.99; proOrig = 'AED 39.99';
+        proPlusPrice = 39.99; proPlusOrig = 'AED 69.99';
+        foreverPrice = 79.99; foreverOrig = 'AED 139.99';
+      } else if (selectedCurrency === 'EUR') {
+        starterPrice = 2.99; starterOrig = '€4.99';
+        proPrice = 6.99; proOrig = '€11.99';
+        proPlusPrice = 9.99; proPlusOrig = '€16.99';
+        foreverPrice = 19.99; foreverOrig = '€34.99';
       } else {
-        starterPrice = 0.99; starterOrig = '$1.99';
-        proPrice = 1.99; proOrig = '$3.99';
-        proPlusPrice = 3.49; proPlusOrig = '$6.99';
-        foreverPrice = 6.99; foreverOrig = '$12.99';
+        // Default USD (US, Pakistan, International)
+        starterPrice = 2.99; starterOrig = '$4.99';
+        proPrice = 6.99; proOrig = '$11.99';
+        proPlusPrice = 9.99; proPlusOrig = '$16.99';
+        foreverPrice = 19.99; foreverOrig = '$34.99';
       }
 
       const elStarterVal = document.getElementById('priceStarterVal');

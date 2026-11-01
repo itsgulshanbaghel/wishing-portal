@@ -1336,23 +1336,23 @@ const PRICING_MAP = {
   // Tier 1: High Spending Power
   US: {
     currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'United States',
-    plans: { custom_url: { amount: 0.99, paypalAmount: 0.99 }, starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+    plans: { custom_url: { amount: 1.49, paypalAmount: 1.49 }, starter: { amount: 2.99, paypalAmount: 2.99 }, pro: { amount: 6.99, paypalAmount: 6.99 }, pro_plus: { amount: 9.99, paypalAmount: 9.99 }, forever: { amount: 19.99, paypalAmount: 19.99 } }
   },
   GB: {
     currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom',
-    plans: { custom_url: { amount: 0.99, paypalAmount: 0.99 }, starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+    plans: { custom_url: { amount: 1.29, paypalAmount: 1.29 }, starter: { amount: 2.49, paypalAmount: 2.49 }, pro: { amount: 5.99, paypalAmount: 5.99 }, pro_plus: { amount: 8.49, paypalAmount: 8.49 }, forever: { amount: 16.99, paypalAmount: 16.99 } }
   },
   CA: {
     currency: 'CAD', symbol: 'CA$', gateway: 'paypal', paypalCurrency: 'CAD', countryName: 'Canada',
-    plans: { custom_url: { amount: 1.49, paypalAmount: 1.49 }, starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 2.99, paypalAmount: 2.99 }, pro_plus: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
+    plans: { custom_url: { amount: 1.99, paypalAmount: 1.99 }, starter: { amount: 3.99, paypalAmount: 3.99 }, pro: { amount: 8.99, paypalAmount: 8.99 }, pro_plus: { amount: 13.99, paypalAmount: 13.99 }, forever: { amount: 24.99, paypalAmount: 24.99 } }
   },
   AU: {
     currency: 'AUD', symbol: 'A$', gateway: 'paypal', paypalCurrency: 'AUD', countryName: 'Australia',
-    plans: { custom_url: { amount: 1.49, paypalAmount: 1.49 }, starter: { amount: 1.49, paypalAmount: 1.49 }, pro: { amount: 2.99, paypalAmount: 2.99 }, pro_plus: { amount: 4.99, paypalAmount: 4.99 }, forever: { amount: 9.99, paypalAmount: 9.99 } }
+    plans: { custom_url: { amount: 1.99, paypalAmount: 1.99 }, starter: { amount: 3.99, paypalAmount: 3.99 }, pro: { amount: 8.99, paypalAmount: 8.99 }, pro_plus: { amount: 13.99, paypalAmount: 13.99 }, forever: { amount: 24.99, paypalAmount: 24.99 } }
   },
   AE: {
     currency: 'AED', symbol: 'AED ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'UAE',
-    plans: { custom_url: { amount: 3.99, paypalAmount: 1.09 }, starter: { amount: 3.99, paypalAmount: 1.09 }, pro: { amount: 6.99, paypalAmount: 1.90 }, pro_plus: { amount: 12.99, paypalAmount: 3.54 }, forever: { amount: 29.99, paypalAmount: 8.16 } }
+    plans: { custom_url: { amount: 4.99, paypalAmount: 1.36 }, starter: { amount: 9.99, paypalAmount: 2.72 }, pro: { amount: 19.99, paypalAmount: 5.44 }, pro_plus: { amount: 39.99, paypalAmount: 10.89 }, forever: { amount: 79.99, paypalAmount: 21.78 } }
   },
 
   // Tier 2: Developing (High Volume)
@@ -1361,15 +1361,15 @@ const PRICING_MAP = {
     plans: { custom_url: { amount: 29, paypalAmount: 29 }, starter: { amount: 49, paypalAmount: 49 }, pro: { amount: 99, paypalAmount: 99 }, pro_plus: { amount: 149, paypalAmount: 149 }, forever: { amount: 299, paypalAmount: 299 } }
   },
   PK: {
-    currency: 'PKR', symbol: 'PKR ', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',
-    plans: { custom_url: { amount: 99, paypalAmount: 0.35 }, starter: { amount: 99, paypalAmount: 0.35 }, pro: { amount: 149, paypalAmount: 0.53 }, pro_plus: { amount: 299, paypalAmount: 1.07 }, forever: { amount: 799, paypalAmount: 2.85 } }
+    currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',
+    plans: { custom_url: { amount: 1.49, paypalAmount: 1.49 }, starter: { amount: 2.99, paypalAmount: 2.99 }, pro: { amount: 6.99, paypalAmount: 6.99 }, pro_plus: { amount: 9.99, paypalAmount: 9.99 }, forever: { amount: 19.99, paypalAmount: 19.99 } }
   }
 };
 
 const EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
 const DEFAULT_PRICING = {
   currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'International', country: 'XX',
-  plans: { custom_url: { amount: 0.99, paypalAmount: 0.99 }, starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+  plans: { custom_url: { amount: 1.49, paypalAmount: 1.49 }, starter: { amount: 2.99, paypalAmount: 2.99 }, pro: { amount: 6.99, paypalAmount: 6.99 }, pro_plus: { amount: 9.99, paypalAmount: 9.99 }, forever: { amount: 19.99, paypalAmount: 19.99 } }
 };
 
 function getGeoPrice(req) {
@@ -1382,7 +1382,7 @@ function getGeoPrice(req) {
       if (EUROZONE.includes(code)) {
         return {
           currency: 'EUR', symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', countryName: 'Eurozone', country: code,
-          plans: { custom_url: { amount: 0.99, paypalAmount: 0.99 }, starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+          plans: { custom_url: { amount: 1.49, paypalAmount: 1.49 }, starter: { amount: 2.99, paypalAmount: 2.99 }, pro: { amount: 6.99, paypalAmount: 6.99 }, pro_plus: { amount: 9.99, paypalAmount: 9.99 }, forever: { amount: 19.99, paypalAmount: 19.99 } }
         };
       }
       if (PRICING_MAP[code]) return { ...PRICING_MAP[code], country: code };
@@ -1414,7 +1414,7 @@ function getGeoPrice(req) {
     if (EUROZONE.includes(code)) {
       return {
         currency: 'EUR', symbol: '€', gateway: 'paypal', paypalCurrency: 'EUR', countryName: 'Eurozone', country: code,
-        plans: { custom_url: { amount: 0.99, paypalAmount: 0.99 }, starter: { amount: 0.99, paypalAmount: 0.99 }, pro: { amount: 1.99, paypalAmount: 1.99 }, pro_plus: { amount: 3.49, paypalAmount: 3.49 }, forever: { amount: 6.99, paypalAmount: 6.99 } }
+        plans: { custom_url: { amount: 1.49, paypalAmount: 1.49 }, starter: { amount: 2.99, paypalAmount: 2.99 }, pro: { amount: 6.99, paypalAmount: 6.99 }, pro_plus: { amount: 9.99, paypalAmount: 9.99 }, forever: { amount: 19.99, paypalAmount: 19.99 } }
       };
     }
 
