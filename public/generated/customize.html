@@ -3217,10 +3217,25 @@
       .btn-unified {
         width: 100% !important;
         max-width: 100% !important;
-        font-size: 1.02rem !important;
-        padding: 14px 16px !important;
+        font-size: clamp(0.92rem, 3.8vw, 1.05rem) !important;
+        padding: 14px 14px !important;
         border-radius: 40px !important;
         box-sizing: border-box !important;
+        white-space: normal !important;
+        min-height: 50px !important;
+      }
+
+      #intlContactSupportContainer {
+        margin-top: 12px !important;
+        padding: 0 4px !important;
+      }
+      #intlContactSupportContainer p {
+        font-size: 0.84rem !important;
+        line-height: 1.45 !important;
+      }
+      #intlContactUsBtn {
+        font-size: 0.84rem !important;
+        padding: 2px 4px !important;
       }
 
       #inlineCheckout {
@@ -3592,6 +3607,223 @@
     .upload-modal-btn.btn-secondary:hover {
       background: rgba(255, 255, 255, 0.15);
     }
+
+    /* Contact Us Modal (Theme-Adaptive) */
+    .intl-modal-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000000;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      box-sizing: border-box;
+      animation: fadeInOverlay 0.22s ease-out;
+    }
+    body.dark .intl-modal-overlay {
+      background: rgba(10, 6, 20, 0.82);
+    }
+    .intl-modal-card {
+      background: var(--bg-secondary, #ffffff);
+      color: var(--text-primary, #1a1025);
+      border: 1.5px solid rgba(123, 93, 246, 0.22);
+      border-radius: 26px;
+      max-width: 440px;
+      width: 100%;
+      max-height: calc(100vh - 36px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 28px 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.16), 0 0 25px rgba(123, 93, 246, 0.1);
+      position: relative;
+      box-sizing: border-box;
+      text-align: center;
+      animation: scaleInCard 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+    body.dark .intl-modal-card {
+      background: var(--bg-secondary, #1e1635);
+      color: var(--text-primary, #f5f0ff);
+      border-color: rgba(123, 93, 246, 0.38);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(123, 93, 246, 0.22);
+    }
+    .intl-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border, rgba(0, 0, 0, 0.08));
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text-secondary, #4a3b66);
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    body.dark .intl-modal-close {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: var(--text-secondary, #cbbff0);
+    }
+    .intl-modal-close:hover {
+      background: rgba(239, 68, 68, 0.14);
+      color: #ef4444;
+      transform: scale(1.05);
+    }
+    .intl-modal-header-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(123, 93, 246, 0.12), rgba(255, 122, 47, 0.12));
+      border: 1.5px solid rgba(123, 93, 246, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 24px;
+      color: var(--accent-solid, #7b5df6);
+    }
+    body.dark .intl-modal-header-icon {
+      background: linear-gradient(135deg, rgba(123, 93, 246, 0.22), rgba(255, 122, 47, 0.22));
+      border-color: rgba(123, 93, 246, 0.45);
+      color: #a78bfa;
+    }
+    .intl-modal-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+    .intl-modal-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin: 0 0 18px;
+      line-height: 1.45;
+    }
+    .intl-channel-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 18px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+    .intl-channel-link:hover {
+      transform: translateY(-2px);
+    }
+    /* Instagram channel */
+    .intl-channel-ig {
+      background: linear-gradient(135deg, rgba(225, 48, 108, 0.08), rgba(131, 58, 180, 0.08));
+      border: 1.5px solid rgba(225, 48, 108, 0.25);
+    }
+    body.dark .intl-channel-ig {
+      background: linear-gradient(135deg, rgba(225, 48, 108, 0.16), rgba(131, 58, 180, 0.16));
+      border-color: rgba(225, 48, 108, 0.38);
+    }
+    .intl-channel-ig:hover {
+      border-color: #e1306c;
+      box-shadow: 0 6px 18px rgba(225, 48, 108, 0.2);
+    }
+    /* Telegram channel */
+    .intl-channel-tg {
+      background: rgba(0, 136, 204, 0.07);
+      border: 1.5px solid rgba(0, 136, 204, 0.22);
+    }
+    body.dark .intl-channel-tg {
+      background: rgba(0, 136, 204, 0.14);
+      border-color: rgba(0, 136, 204, 0.38);
+    }
+    .intl-channel-tg:hover {
+      border-color: #0088cc;
+      box-shadow: 0 6px 18px rgba(0, 136, 204, 0.2);
+    }
+    /* Email channel */
+    .intl-channel-mail {
+      background: rgba(16, 185, 129, 0.07);
+      border: 1.5px solid rgba(16, 185, 129, 0.22);
+    }
+    body.dark .intl-channel-mail {
+      background: rgba(16, 185, 129, 0.14);
+      border-color: rgba(16, 185, 129, 0.38);
+    }
+    .intl-channel-mail:hover {
+      border-color: #10b981;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.2);
+    }
+    /* Full form link */
+    .intl-channel-form {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.03);
+      border: 1.5px dashed var(--card-border, rgba(0, 0, 0, 0.15));
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.84rem;
+      transition: all 0.2s ease;
+    }
+    body.dark .intl-channel-form {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.18);
+      color: var(--text-secondary);
+    }
+    .intl-channel-form:hover {
+      border-color: var(--accent-solid, #7b5df6);
+      color: var(--accent-solid, #7b5df6);
+      background: rgba(123, 93, 246, 0.06);
+    }
+    @media (max-width: 480px) {
+      .intl-modal-overlay {
+        padding: 12px;
+      }
+      .intl-modal-card {
+        padding: 22px 16px 18px;
+        border-radius: 20px;
+        max-height: calc(100vh - 24px);
+      }
+      .intl-modal-close {
+        top: 12px;
+        right: 12px;
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+      }
+      .intl-modal-header-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+      .intl-modal-title {
+        font-size: 1.2rem;
+      }
+      .intl-modal-desc {
+        font-size: 0.82rem;
+        margin-bottom: 14px;
+      }
+      .intl-channel-link {
+        padding: 11px 12px;
+        font-size: 0.86rem;
+      }
+    }
   </style>
 </head>
 
@@ -3938,12 +4170,11 @@
               </button>
             </div>
 
-            <!-- International Contact Us Button -->
+            <!-- International Support Line -->
             <div id="intlContactSupportContainer" style="display: none; margin-top: 14px; text-align: center;">
-              <button type="button" id="intlContactUsBtn" onclick="window.openIntlPaymentModal()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(123, 93, 246, 0.08); border: 1.5px solid rgba(123, 93, 246, 0.32); color: var(--text-primary); font-size: 0.88rem; font-weight: 700; padding: 10px 22px; border-radius: 30px; cursor: pointer; transition: all 0.25s ease;">
-                <i class="fas fa-headset" style="color: #7b5df6;"></i>
-                <span>Contact Us</span>
-              </button>
+              <p style="font-size: 0.88rem; color: var(--text-secondary, #94a3b8); margin: 0; font-weight: 500;">
+                Facing issues with payment? <button type="button" id="intlContactUsBtn" onclick="window.openIntlPaymentModal()" style="background: none; border: none; padding: 2px 4px; color: #7b5df6; font-weight: 700; text-decoration: underline; cursor: pointer; font-size: inherit; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Contact us</button>
+              </p>
             </div>
 
           </div>
@@ -4033,56 +4264,56 @@
     </div>
   </div>
 
-  <!-- Contact Us Modal -->
-  <div class="intl-modal-overlay" id="intlPaymentModal" style="display: none; position: fixed; inset: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 1000000; align-items: center; justify-content: center; padding: 18px; box-sizing: border-box;">
-    <div class="intl-modal-card" style="background: var(--bg-card, #1e1e2d); color: var(--text-primary, #ffffff); border: 1.5px solid rgba(123, 93, 246, 0.35); border-radius: 26px; max-width: 440px; width: 100%; padding: 28px 24px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 0 35px rgba(123, 93, 246, 0.2); position: relative; box-sizing: border-box; text-align: center;">
+  <!-- Contact Us Modal (Theme-Adaptive) -->
+  <div class="intl-modal-overlay" id="intlPaymentModal" style="display: none;">
+    <div class="intl-modal-card">
       
       <!-- Close button -->
-      <button type="button" onclick="window.closeIntlPaymentModal()" style="position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.1); color: var(--text-primary, #fff); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" aria-label="Close">
+      <button type="button" class="intl-modal-close" onclick="window.closeIntlPaymentModal()" aria-label="Close">
         <i class="fas fa-times"></i>
       </button>
 
       <!-- Header Icon -->
-      <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, rgba(123, 93, 246, 0.2), rgba(255, 122, 47, 0.2)); border: 1.5px solid rgba(123, 93, 246, 0.45); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; font-size: 24px; color: #7b5df6;">
+      <div class="intl-modal-header-icon">
         <i class="fas fa-headset"></i>
       </div>
 
-      <h3 style="font-size: 1.35rem; font-weight: 800; margin: 0 0 8px; color: var(--text-primary, #fff); letter-spacing: -0.3px;">Contact Us</h3>
-      <p style="font-size: 0.88rem; color: var(--text-secondary, #a1a1aa); margin: 0 0 20px; line-height: 1.45;">
+      <h3 class="intl-modal-title">Contact Us</h3>
+      <p class="intl-modal-desc">
         Need help or have questions? Reach out to us directly.
       </p>
 
       <!-- Quick Contact Channels -->
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px;">
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px;">
         <!-- Instagram -->
-        <a href="https://instagram.com/thegreeter.in" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-radius: 14px; background: linear-gradient(135deg, rgba(225, 48, 108, 0.14), rgba(131, 58, 180, 0.14)); border: 1.5px solid rgba(225, 48, 108, 0.35); color: var(--text-primary, #fff); text-decoration: none; font-weight: 700; font-size: 0.92rem;">
-          <span style="display: flex; align-items: center; gap: 10px;">
-            <i class="fab fa-instagram" style="color: #e1306c; font-size: 1.25rem;"></i>
-            <span>Instagram DM (@thegreeter.in)</span>
+        <a href="https://instagram.com/thegreeter.in" target="_blank" rel="noopener noreferrer" class="intl-channel-link intl-channel-ig">
+          <span style="display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left;">
+            <i class="fab fa-instagram" style="color: #e1306c; font-size: 1.2rem; flex-shrink: 0;"></i>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Instagram DM (@thegreeter.in)</span>
           </span>
-          <span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 10px; background: rgba(225, 48, 108, 0.2); color: #e1306c; font-weight: 800;">Fast Response</span>
+          <span style="font-size: 0.68rem; padding: 2px 7px; border-radius: 8px; background: rgba(225, 48, 108, 0.14); color: #e1306c; font-weight: 800; white-space: nowrap; flex-shrink: 0;">Fast Response</span>
         </a>
 
         <!-- Telegram -->
-        <a href="https://t.me/TheGreeter" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-radius: 14px; background: rgba(0, 136, 204, 0.12); border: 1.5px solid rgba(0, 136, 204, 0.35); color: var(--text-primary, #fff); text-decoration: none; font-weight: 700; font-size: 0.92rem;">
-          <span style="display: flex; align-items: center; gap: 10px;">
-            <i class="fab fa-telegram-plane" style="color: #0088cc; font-size: 1.25rem;"></i>
-            <span>Telegram (@TheGreeter)</span>
+        <a href="https://t.me/TheGreeter" target="_blank" rel="noopener noreferrer" class="intl-channel-link intl-channel-tg">
+          <span style="display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left;">
+            <i class="fab fa-telegram-plane" style="color: #0088cc; font-size: 1.2rem; flex-shrink: 0;"></i>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Telegram (@TheGreeter)</span>
           </span>
-          <i class="fas fa-arrow-right" style="font-size: 0.8rem; opacity: 0.6;"></i>
+          <i class="fas fa-arrow-right" style="font-size: 0.8rem; opacity: 0.5; flex-shrink: 0;"></i>
         </a>
 
         <!-- Email -->
-        <a href="mailto:greeterindia@gmail.com" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-radius: 14px; background: rgba(16, 185, 129, 0.12); border: 1.5px solid rgba(16, 185, 129, 0.35); color: var(--text-primary, #fff); text-decoration: none; font-weight: 700; font-size: 0.92rem;">
-          <span style="display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-envelope" style="color: #10b981; font-size: 1.15rem;"></i>
-            <span>Email (greeterindia@gmail.com)</span>
+        <a href="mailto:greeterindia@gmail.com" class="intl-channel-link intl-channel-mail">
+          <span style="display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left;">
+            <i class="fas fa-envelope" style="color: #10b981; font-size: 1.15rem; flex-shrink: 0;"></i>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Email (greeterindia@gmail.com)</span>
           </span>
-          <i class="fas fa-arrow-right" style="font-size: 0.8rem; opacity: 0.6;"></i>
+          <i class="fas fa-arrow-right" style="font-size: 0.8rem; opacity: 0.5; flex-shrink: 0;"></i>
         </a>
 
         <!-- Contact Page -->
-        <a href="/ContactUs.html" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 16px; border-radius: 12px; background: transparent; border: 1px dashed rgba(255,255,255,0.22); color: var(--text-secondary, #cbd5e1); text-decoration: none; font-weight: 600; font-size: 0.84rem;">
+        <a href="/ContactUs.html" target="_blank" rel="noopener noreferrer" class="intl-channel-form">
           <i class="fas fa-file-alt"></i> Open Full Contact Form
         </a>
       </div>
@@ -11930,7 +12161,7 @@
               if (selectedCurrency === 'INR') {
                 finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} &amp; Upgrade to ${planTitle}</span>`;
               } else {
-                finalPayBtn.innerHTML = `<i class="fab fa-paypal" style="font-size: 1.25rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} via PayPal &amp; Upgrade</span>`;
+                finalPayBtn.innerHTML = `<i class="fab fa-paypal" style="font-size: 1.2rem; flex-shrink: 0;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} via PayPal</span>`;
               }
             }
             if (validityChip) validityChip.innerHTML = `<i class="fas fa-crown" style="color: #7b5df6;"></i> Upgrade to ${planTitle} · Active for ${activePlan.label}`;
@@ -11968,7 +12199,7 @@
               if (selectedCurrency === 'INR') {
                 finalPayBtn.innerHTML = `<i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} Securely (${planTitle})</span>`;
               } else {
-                finalPayBtn.innerHTML = `<i class="fab fa-paypal" style="font-size: 1.25rem;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} via PayPal &amp; Cards</span>`;
+                finalPayBtn.innerHTML = `<i class="fab fa-paypal" style="font-size: 1.2rem; flex-shrink: 0;"></i> <span id="finalPayBtnText">Pay ${symbol}${p} via PayPal</span>`;
               }
             }
             if (validityChip) validityChip.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Active ${activePlan.label} · 100% Ad-Free`;
