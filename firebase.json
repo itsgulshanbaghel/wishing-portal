@@ -8,6 +8,18 @@
     ],
     "cleanUrls": true,
     "trailingSlash": false,
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "https://thegreeter.in/",
+        "type": 301
+      },
+      {
+        "source": "/:path*",
+        "destination": "https://thegreeter.in/:path*",
+        "type": 301
+      }
+    ],
     "rewrites": [
       {
         "source": "**",
