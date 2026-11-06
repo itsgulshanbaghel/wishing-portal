@@ -5160,37 +5160,112 @@
                     C5: {
                         id: 'C5',
                         name: 'Royal Velvet Blueberry',
-                        standGold: { c0: '#5E35B1', c18: '#9575CD', c42: '#EDE7F6', c65: '#7E57C2', c85: '#512DA8', c100: '#311B92', topStroke: '#9575CD', highlight: '#EDE7F6' },
-                        porcelainTop: { c0: '#FFFFFF', c60: '#F3E5F5', c100: '#E1BEE7' },
-                        spongeGrad: { c0: '#261438', c12: '#41225E', c32: '#5A3282', c52: '#6A3D99', c78: '#49266B', c100: '#231133', stroke: '#381C54' },
-                        biscuitFill: { c0: '#4A148C', c50: '#B388FF', c100: '#311B92' },
-                        spongeJam: '#7C4DFF',
-                        glazeBody: { c0: '#1A0033', c12: '#311B92', c38: '#6200EA', c68: '#7C4DFF', c88: '#4A148C', c100: '#140024' },
-                        glazePool: { c0: '#7C4DFF', c60: '#4A148C', c100: '#1A0033' },
-                        creamRosette: { c0: '#FFFFFF', c60: '#EDE7F6', c100: '#D1C4E9' },
-                        pearlGrad: { c0: '#FFFFFF', c28: '#D1C4E9', c65: '#7C4DFF', c100: '#311B92' },
-                        candleWax: { c0: '#EDE7F6', c35: '#FFFFFF', c70: '#F3E5F5', c100: '#D1C4E9' },
-                        cardBg: 'radial-gradient(ellipse at 50% 50%, rgba(124, 77, 255, 0.28) 0%, rgba(49, 27, 146, 0.2) 35%, transparent 68%), radial-gradient(ellipse at 50% 0%, rgba(255, 215, 0, 0.2) 0%, rgba(106, 27, 154, 0.25) 32%, transparent 65%), linear-gradient(168deg, #0a041c 0%, #150933 30%, #251052 60%, #12062b 88%, #060112 100%)',
+                        standGold: { c0: '#8A6818', c18: '#DFBA60', c42: '#FFF9D8', c65: '#E5C163', c85: '#B88E28', c100: '#6E4E0D', topStroke: '#F0D078', highlight: '#FFFBE8' },
+                        porcelainTop: { c0: '#FFFFFF', c60: '#FAF5EE', c100: '#EDE0D0' },
+                        spongeGrad: { c0: '#1F0B29', c12: '#351245', c32: '#4D1A63', c52: '#5C2275', c78: '#421657', c100: '#1D0A26', stroke: '#351245' },
+                        biscuitFill: { c0: '#C88E46', c50: '#FFD180', c100: '#B57A30' },
+                        spongeJam: '#4A0E4E',
+                        glazeBody: { c0: '#2A063B', c12: '#5B117A', c38: '#9C27B0', c68: '#BA68C8', c88: '#7B1FA2', c100: '#230430' },
+                        glazePool: { c0: '#CE93D8', c60: '#AB47BC', c100: '#6A1B9A' },
+                        creamRosette: { c0: '#FFFFFF', c60: '#FFFDF9', c100: '#F5E8DC' },
+                        pearlGrad: { c0: '#FFFFFF', c28: '#FFF2B2', c65: '#FFD700', c100: '#997000' },
+                        candleWax: { c0: '#FAF1E0', c35: '#FFFFFF', c70: '#FFFDF6', c100: '#E8DAC2' },
+                        cardBg: 'radial-gradient(ellipse at 50% 50%, rgba(186, 85, 211, 0.22) 0%, rgba(106, 27, 154, 0.16) 35%, transparent 68%), radial-gradient(ellipse at 50% 0%, rgba(255, 215, 0, 0.28) 0%, rgba(142, 36, 170, 0.18) 32%, transparent 65%), linear-gradient(168deg, #12031a 0%, #20062e 30%, #340c49 60%, #190524 88%, #0d0213 100%)',
                         ledgeLeft: `
-                            <g transform="translate(82, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
-                            <g transform="translate(98, 196)"><circle cx="-2" cy="-2" r="3" fill="#311B92"/><circle cx="2" cy="-2" r="3" fill="#4A148C"/><circle cx="-2" cy="2" r="3" fill="#1A0033"/><circle cx="2" cy="2" r="3" fill="#6200EA"/><circle cx="0" cy="0" r="1" fill="#FFF" opacity="0.8"/></g>
-                            <g transform="translate(72, 198)"><circle cx="0" cy="0" r="4.2" fill="url(#vc-blueberry-grad)"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                            <g transform="translate(82, 192)">
+                                <path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/>
+                                <path d="M -5,-1 C -7,-5 -2,-7 0,-4 C 2,-7 7,-5 5,-1 Z" fill="#FFFFFF"/>
+                                <circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/>
+                            </g>
+                            <g transform="translate(98, 196) rotate(-15)">
+                                <ellipse cx="0" cy="0" rx="6.5" ry="5.5" fill="#240733"/>
+                                <circle cx="-2.5" cy="-2" r="2.2" fill="#5E187D"/><circle cx="2.5" cy="-2" r="2.2" fill="#430E5C"/>
+                                <circle cx="-3" cy="2" r="2.2" fill="#36084D"/><circle cx="2" cy="2.5" r="2.2" fill="#6A1B9A"/>
+                                <circle cx="0" cy="0" r="2" fill="#7B1FA2"/>
+                                <ellipse cx="-1.5" cy="-2.5" rx="0.8" ry="0.5" fill="#FFF" opacity="0.8"/>
+                                <path d="M 0,-5.5 L -2,-8 L 0,-7 L 2,-8 Z" fill="#66BB6A"/>
+                            </g>
+                            <g transform="translate(72, 198)">
+                                <circle cx="0" cy="0" r="4.5" fill="url(#vc-blueberry-grad)"/>
+                                <circle cx="-1.2" cy="-1.2" r="1.1" fill="#FFFFFF" opacity="0.85"/>
+                                <polygon points="0,-1.5 0.7,-0.5 1.6,-0.8 1.1,0.2 1.5,1.1 0.5,0.7 0,1.6 -0.5,0.7 -1.5,1.1 -1.1,0.2 -1.6,-0.8 -0.7,-0.5" fill="#1A1C3B" transform="scale(0.8)"/>
+                            </g>`,
                         ledgeRight: `
-                            <g transform="translate(278, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
-                            <g transform="translate(262, 196)"><circle cx="-2" cy="-2" r="3" fill="#311B92"/><circle cx="2" cy="-2" r="3" fill="#4A148C"/><circle cx="-2" cy="2" r="3" fill="#1A0033"/><circle cx="2" cy="2" r="3" fill="#6200EA"/><circle cx="0" cy="0" r="1" fill="#FFF" opacity="0.8"/></g>
-                            <g transform="translate(288, 198)"><circle cx="0" cy="0" r="4.2" fill="url(#vc-blueberry-grad)"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                            <g transform="translate(278, 192)">
+                                <path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/>
+                                <path d="M -5,-1 C -7,-5 -2,-7 0,-4 C 2,-7 7,-5 5,-1 Z" fill="#FFFFFF"/>
+                                <circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/>
+                            </g>
+                            <g transform="translate(262, 196) rotate(15)">
+                                <ellipse cx="0" cy="0" rx="6.5" ry="5.5" fill="#240733"/>
+                                <circle cx="-2.5" cy="-2" r="2.2" fill="#5E187D"/><circle cx="2.5" cy="-2" r="2.2" fill="#430E5C"/>
+                                <circle cx="-3" cy="2" r="2.2" fill="#36084D"/><circle cx="2" cy="2.5" r="2.2" fill="#6A1B9A"/>
+                                <circle cx="0" cy="0" r="2" fill="#7B1FA2"/>
+                                <ellipse cx="1.5" cy="-2.5" rx="0.8" ry="0.5" fill="#FFF" opacity="0.8"/>
+                                <path d="M 0,-5.5 L -2,-8 L 0,-7 L 2,-8 Z" fill="#66BB6A"/>
+                            </g>
+                            <g transform="translate(288, 198)">
+                                <circle cx="0" cy="0" r="4.5" fill="url(#vc-blueberry-grad)"/>
+                                <circle cx="-1.2" cy="-1.2" r="1.1" fill="#FFFFFF" opacity="0.85"/>
+                                <polygon points="0,-1.5 0.7,-0.5 1.6,-0.8 1.1,0.2 1.5,1.1 0.5,0.7 0,1.6 -0.5,0.7 -1.5,1.1 -1.1,0.2 -1.6,-0.8 -0.7,-0.5" fill="#1A1C3B" transform="scale(0.8)"/>
+                            </g>`,
                         topToppingsLeft: `
-                            <g><g transform="translate(118, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(148, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
-                            <g transform="translate(136, 114)"><circle cx="-3" cy="-3" r="3.2" fill="#311B92"/><circle cx="3" cy="-3" r="3.2" fill="#4A148C"/><circle cx="-3" cy="3" r="3.2" fill="#1A0033"/><circle cx="3" cy="3" r="3.2" fill="#6200EA"/><circle cx="0" cy="0" r="3.5" fill="#7C4DFF"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/><path d="M 0,-7 L -3,-10 L 0,-9 L 3,-10 Z" fill="#81C784"/></g>
-                            <g transform="translate(156, 124)"><circle cx="0" cy="0" r="5" fill="url(#vc-blueberry-grad)"/><circle cx="-1.5" cy="-1.5" r="1.2" fill="#FFFFFF" opacity="0.85"/></g>`,
+                            <g>
+                                <g transform="translate(118, 126)">
+                                    <path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/>
+                                    <path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#FFFFFF"/>
+                                    <circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/>
+                                </g>
+                                <g transform="translate(148, 123)">
+                                    <path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/>
+                                    <path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#FFFFFF"/>
+                                    <circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/>
+                                </g>
+                            </g>
+                            <g transform="translate(136, 114) rotate(-12)">
+                                <polygon points="-6,-7 6,-7 8,7 -4,7" fill="url(#vc-stand-gold)" stroke="#8A5A1A" stroke-width="0.8"/>
+                                <line x1="-3" y1="-6" x2="1" y2="6" stroke="#8A5A1A" stroke-width="0.6"/>
+                            </g>
+                            <g transform="translate(156, 124)">
+                                <circle cx="0" cy="0" r="5" fill="url(#vc-blueberry-grad)"/>
+                                <circle cx="-1.5" cy="-1.5" r="1.2" fill="#FFFFFF" opacity="0.85"/>
+                                <polygon points="0,-1.8 0.9,-0.6 2.1,-1 1.4,0.3 1.9,1.4 0.7,0.9 0,2.1 -0.7,0.9 -1.9,1.4 -1.4,0.3 -2.1,-1 -0.9,-0.6" fill="#1A1C3B" transform="scale(0.8)"/>
+                            </g>`,
                         topToppingsRight: `
-                            <g><g transform="translate(212, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(242, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
-                            <g transform="translate(224, 114)"><circle cx="-3" cy="-3" r="3.2" fill="#311B92"/><circle cx="3" cy="-3" r="3.2" fill="#4A148C"/><circle cx="-3" cy="3" r="3.2" fill="#1A0033"/><circle cx="3" cy="3" r="3.2" fill="#6200EA"/><circle cx="0" cy="0" r="3.5" fill="#7C4DFF"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/><path d="M 0,-7 L -3,-10 L 0,-9 L 3,-10 Z" fill="#81C784"/></g>
-                            <g transform="translate(204, 124)"><circle cx="0" cy="0" r="5" fill="url(#vc-blueberry-grad)"/><circle cx="-1.5" cy="-1.5" r="1.2" fill="#FFFFFF" opacity="0.85"/></g>`,
+                            <g>
+                                <g transform="translate(212, 123)">
+                                    <path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/>
+                                    <path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#FFFFFF"/>
+                                    <circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/>
+                                </g>
+                                <g transform="translate(242, 126)">
+                                    <path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/>
+                                    <path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#FFFFFF"/>
+                                    <circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/>
+                                </g>
+                            </g>
+                            <g transform="translate(224, 114) rotate(12)">
+                                <polygon points="-6,-7 6,-7 8,7 -4,7" fill="url(#vc-stand-gold)" stroke="#8A5A1A" stroke-width="0.8"/>
+                                <line x1="-3" y1="-6" x2="1" y2="6" stroke="#8A5A1A" stroke-width="0.6"/>
+                            </g>
+                            <g transform="translate(204, 124)">
+                                <circle cx="0" cy="0" r="5" fill="url(#vc-blueberry-grad)"/>
+                                <circle cx="-1.5" cy="-1.5" r="1.2" fill="#FFFFFF" opacity="0.85"/>
+                                <polygon points="0,-1.8 0.9,-0.6 2.1,-1 1.4,0.3 1.9,1.4 0.7,0.9 0,2.1 -0.7,0.9 -1.9,1.4 -1.4,0.3 -2.1,-1 -0.9,-0.6" fill="#1A1C3B" transform="scale(0.8)"/>
+                            </g>`,
                         centerpiece: `
-                            <g transform="translate(180, 122)"><ellipse cx="0" cy="12" rx="9" ry="4" fill="rgba(0,0,0,0.25)"/><circle cx="-4" cy="-5" r="4.2" fill="#311B92"/><circle cx="4" cy="-5" r="4.2" fill="#4A148C"/><circle cx="-6" cy="1" r="4.2" fill="#1A0033"/><circle cx="0" cy="0" r="4.6" fill="#6200EA"/><circle cx="6" cy="1" r="4.2" fill="#4A148C"/><circle cx="-3" cy="7" r="4.2" fill="#311B92"/><circle cx="3" cy="7" r="4.2" fill="#6200EA"/><circle cx="0" cy="11" r="3.6" fill="#1A0033"/><circle cx="-1" cy="-1" r="1.2" fill="#FFF" opacity="0.8"/><circle cx="3" cy="3" r="1" fill="#FFF" opacity="0.7"/><path d="M 0,-9 L -4,-13 L -1,-11 L 0,-14 L 1,-11 L 4,-13 Z" fill="#81C784"/></g>`,
-                        sparklesLeft: `<path d="M 125,138 L 126.5,142 L 130.5,143.5 L 126.5,145 L 125,149 L 123.5,145 L 119.5,143.5 L 123.5,142 Z" fill="#B388FF" opacity="0.85"/><path d="M 166,134 L 167,137 L 170,138 L 167,139 L 166,142 L 165,139 L 162,138 L 165,137 Z" fill="#EDE7F6" opacity="0.9"/>`,
-                        sparklesRight: `<path d="M 235,138 L 236.5,142 L 240.5,143.5 L 236.5,145 L 235,149 L 233.5,145 L 229.5,143.5 L 233.5,142 Z" fill="#B388FF" opacity="0.85"/><path d="M 194,134 L 195,137 L 198,138 L 195,139 L 194,142 L 193,139 L 190,138 L 193,137 Z" fill="#EDE7F6" opacity="0.9"/>`
+                            <g transform="translate(180, 120)">
+                                <ellipse cx="0" cy="12" rx="11" ry="4.5" fill="rgba(0,0,0,0.3)"/>
+                                <path d="M -11,6 L -9,-9 L -3,1 L 0,-13 L 3,1 L 9,-9 L 11,6 Z" fill="url(#vc-stand-gold)" stroke="#8A5A1A" stroke-width="0.8"/>
+                                <circle cx="-9" cy="-9" r="1.6" fill="#FFF"/><circle cx="0" cy="-13" r="2.2" fill="#FFF"/><circle cx="9" cy="-9" r="1.6" fill="#FFF"/>
+                                <circle cx="0" cy="1" r="3.2" fill="#AB47BC"/>
+                                <circle cx="-14" cy="5" r="3.5" fill="#3A0E4E"/>
+                                <circle cx="14" cy="5" r="3.5" fill="#3A0E4E"/>
+                                <ellipse cx="-15" cy="4" rx="0.8" ry="0.5" fill="#FFF" opacity="0.8"/>
+                                <ellipse cx="13" cy="4" rx="0.8" ry="0.5" fill="#FFF" opacity="0.8"/>
+                            </g>`,
+                        sparklesLeft: `<path d="M 125,138 L 126.5,142 L 130.5,143.5 L 126.5,145 L 125,149 L 123.5,145 L 119.5,143.5 L 123.5,142 Z" fill="#FFD700" opacity="0.88"/><path d="M 166,134 L 167,137 L 170,138 L 167,139 L 166,142 L 165,139 L 162,138 L 165,137 Z" fill="#FFE082" opacity="0.95"/>`,
+                        sparklesRight: `<path d="M 235,138 L 236.5,142 L 240.5,143.5 L 236.5,145 L 235,149 L 233.5,145 L 229.5,143.5 L 233.5,142 Z" fill="#FFD700" opacity="0.88"/><path d="M 194,134 L 195,137 L 198,138 L 195,139 L 194,142 L 193,139 L 190,138 L 193,137 Z" fill="#FFE082" opacity="0.95"/>`
                     },
                     C6: {
                         id: 'C6',

@@ -166,18 +166,21 @@
     }
     .media-preset-active-check {
       position: absolute;
-      top: 3px;
-      right: 3px;
+      top: 5px;
+      right: 5px;
       background: var(--accent-gradient);
       color: white;
-      width: 15px;
-      height: 15px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      font-size: 8px;
+      font-size: 9px;
       display: none;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      border: 2px solid #ffffff;
+      z-index: 10;
+      pointer-events: none;
     }
     .media-preset-card.active .media-preset-active-check {
       display: flex;
@@ -7741,7 +7744,6 @@
                 const check = document.createElement('span');
                 check.className = 'media-preset-active-check';
                 check.innerHTML = '<i class="fas fa-check"></i>';
-                card.appendChild(check);
 
                 const name = document.createElement('div');
                 name.className = 'media-preset-name';
@@ -7749,6 +7751,7 @@
 
                 card.appendChild(thumbWrap);
                 card.appendChild(name);
+                card.appendChild(check);
 
                 card.onclick = (e) => {
                   e.stopPropagation();
@@ -7799,12 +7802,96 @@
             // ── VIRTUAL CAKE custom panel (cake design picker + ribbon message textarea) ──
             if (id === "virtualCake" && hasCustom) {
               const CAKE_OPTIONS = [
-                { id: 'C1', name: 'Ruby Berry', nameHi: 'रूबी बेरी', sponge: '#FFF9F2', drip: '#FF2A7A', stand: '#DFBA60', candle: '#FFF', bg: 'radial-gradient(circle at 50% 40%, #80092b, #18021f)' },
-                { id: 'C2', name: 'Choco Truffle', nameHi: 'चोको ट्रफल', sponge: '#5C2D13', drip: '#4F1E0B', stand: '#C9933B', candle: '#47200B', bg: 'radial-gradient(circle at 50% 40%, #3d1c06, #120905)' },
-                { id: 'C3', name: 'Pastel Blush', nameHi: 'पेस्टल पिंक', sponge: '#FFF9FB', drip: '#FF4081', stand: '#F7C5CC', candle: '#FCE4EC', bg: 'radial-gradient(circle at 50% 40%, #7a264a, #200517)' },
-                { id: 'C4', name: 'Rainbow Party', nameHi: 'रेनबो पार्टी', sponge: '#FFFFFF', drip: '#FF1744', stand: '#FFD700', candle: '#FFF', bg: 'radial-gradient(circle at 50% 40%, #422575, #0e072b)' },
-                { id: 'C5', name: 'Royal Velvet', nameHi: 'रॉयल वेलवेट', sponge: '#5A3282', drip: '#6200EA', stand: '#9575CD', candle: '#EDE7F6', bg: 'radial-gradient(circle at 50% 40%, #321054, #0a041c)' },
-                { id: 'C6', name: 'Caramel Crunch', nameHi: 'कैरेमल क्रंच', sponge: '#FFF6E9', drip: '#E67E00', stand: '#DDA059', candle: '#FFF8E1', bg: 'radial-gradient(circle at 50% 40%, #5a350a, #190e04)' }
+                {
+                  id: 'C1',
+                  name: 'Ruby Berry',
+                  nameHi: 'रूबी बेरी',
+                  sponge: '#FFFDF8',
+                  biscuit: '#D89B52',
+                  drip: '#FF2A7A',
+                  dripHighlight: '#FFE0EB',
+                  stand: '#DFBA60',
+                  standHighlight: '#FFF5D1',
+                  standDark: '#997520',
+                  candle: '#FFFDF6',
+                  candleStripe: '#DFBA60',
+                  bg: 'radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FFF0F4 60%, #FCE0EA 100%)'
+                },
+                {
+                  id: 'C2',
+                  name: 'Choco Truffle',
+                  nameHi: 'चोको ट्रफल',
+                  sponge: '#4E240D',
+                  biscuit: '#8A4B1A',
+                  drip: '#2B0E05',
+                  dripHighlight: '#7A3E1D',
+                  stand: '#C9933B',
+                  standHighlight: '#FFEAA6',
+                  standDark: '#6E4912',
+                  candle: '#3D1C0B',
+                  candleStripe: '#C9933B',
+                  bg: 'radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FAF0E6 60%, #EFE1D2 100%)'
+                },
+                {
+                  id: 'C3',
+                  name: 'Pastel Blush',
+                  nameHi: 'पेस्टल पिंक',
+                  sponge: '#FFEBF2',
+                  biscuit: '#EAA8B8',
+                  drip: '#FF6097',
+                  dripHighlight: '#FFF0F6',
+                  stand: '#EAA4AE',
+                  standHighlight: '#FFF0F3',
+                  standDark: '#BA6E7A',
+                  candle: '#FFF2F6',
+                  candleStripe: '#FF8DA1',
+                  bg: 'radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FFF3F7 60%, #FDE4ED 100%)'
+                },
+                {
+                  id: 'C4',
+                  name: 'Rainbow Party',
+                  nameHi: 'रेनबो पार्टी',
+                  sponge: '#FFFFFF',
+                  biscuit: '#FFE082',
+                  drip: '#FF1744',
+                  dripHighlight: '#FFCDD2',
+                  stand: '#FFD700',
+                  standHighlight: '#FFFF8D',
+                  standDark: '#FFAB00',
+                  candle: '#FFFFFF',
+                  candleStripe: '#2979FF',
+                  bg: 'radial-gradient(circle at 50% 35%, #FFFFFF 0%, #F0F4FF 60%, #E3EAFF 100%)'
+                },
+                {
+                  id: 'C5',
+                  name: 'Royal Velvet',
+                  nameHi: 'रॉयल वेलवेट',
+                  sponge: '#3E1547',
+                  biscuit: '#6A1B9A',
+                  drip: '#8E24AA',
+                  dripHighlight: '#CE93D8',
+                  stand: '#9C84C4',
+                  standHighlight: '#EDE7F6',
+                  standDark: '#5E35B1',
+                  candle: '#EDE7F6',
+                  candleStripe: '#BA68C8',
+                  bg: 'radial-gradient(circle at 50% 35%, #FFFFFF 0%, #F5F0FA 60%, #ECE0F7 100%)'
+                },
+                {
+                  id: 'C6',
+                  name: 'Caramel Crunch',
+                  nameHi: 'कैरेमल क्रंच',
+                  sponge: '#DDA059',
+                  biscuit: '#B57A30',
+                  drip: '#E67E00',
+                  dripHighlight: '#FFE082',
+                  stand: '#DDA059',
+                  standHighlight: '#FFF3D0',
+                  standDark: '#9E6715',
+                  candle: '#FFF8E1',
+                  candleStripe: '#E67E00',
+                  bg: 'radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FFF8EE 60%, #FDEED6 100%)'
+                }
               ];
               const existingCake = customData.get('virtualCake') || {};
               let selectedCakeId = existingCake.emoji || 'C1';
@@ -7825,38 +7912,114 @@
               vcGrid.style.cssText = 'display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;';
 
               function getCakeMiniSvg(c) {
-                return `<svg viewBox="0 0 100 80" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));">
-                  <ellipse cx="50" cy="74" rx="36" ry="4" fill="${c.stand}" opacity="0.9"/>
-                  <path d="M 46,67 L 44,74 L 56,74 L 54,67 Z" fill="${c.stand}"/>
-                  <ellipse cx="50" cy="67" rx="42" ry="5" fill="${c.stand}"/>
-                  <path d="M 18,48 L 18,64 C 18,70 82,70 82,64 L 82,48 Z" fill="${c.sponge}"/>
-                  <ellipse cx="50" cy="48" rx="32" ry="5.5" fill="${c.drip}"/>
-                  <path d="M 18,48 C 21,55 24,58 27,58 C 30,58 32,53 35,50 C 38,55 42,62 46,62 C 50,62 53,54 57,50 C 60,54 64,60 68,60 C 72,60 76,54 82,48 Z" fill="${c.drip}"/>
-                  <path d="M 28,32 L 28,47 C 28,52 72,52 72,47 L 72,32 Z" fill="${c.sponge}"/>
-                  <ellipse cx="50" cy="32" rx="22" ry="4.5" fill="${c.drip}"/>
-                  <path d="M 28,32 C 32,38 35,42 38,42 C 41,42 44,36 47,34 C 50,38 54,43 58,43 C 62,43 66,37 72,32 Z" fill="${c.drip}"/>
-                  <g transform="translate(36, 17)">
-                    <rect x="-1" y="4" width="2.5" height="11" rx="1" fill="${c.candle}"/>
-                    <circle cx="0.2" cy="0" r="3.5" fill="#FF9100"/>
-                    <circle cx="0.2" cy="0" r="1.8" fill="#FFF"/>
-                  </g>
-                  <g transform="translate(50, 14)">
-                    <rect x="-1" y="4" width="2.5" height="14" rx="1" fill="${c.candle}"/>
-                    <circle cx="0.2" cy="0" r="4.2" fill="#FF9100"/>
-                    <circle cx="0.2" cy="0" r="2.2" fill="#FFF"/>
-                  </g>
-                  <g transform="translate(64, 17)">
-                    <rect x="-1" y="4" width="2.5" height="11" rx="1" fill="${c.candle}"/>
-                    <circle cx="0.2" cy="0" r="3.5" fill="#FF9100"/>
-                    <circle cx="0.2" cy="0" r="1.8" fill="#FFF"/>
-                  </g>
-                </svg>`;
+                const isChoco = c.id === 'C2';
+                const isVelvet = c.id === 'C5';
+                const isCaramel = c.id === 'C6';
+                const isRainbow = c.id === 'C4';
+                const isPastel = c.id === 'C3';
+
+                const standFill = c.stand;
+                const standTop = c.standHighlight || '#FFE8A3';
+                const sponge = c.sponge;
+                const biscuit = c.biscuit || '#D8A060';
+                const drip = c.drip;
+                const dripHighlight = c.dripHighlight || '#FFFFFF';
+                const pearl = c.pearl || '#FFD700';
+                const candleWax = c.candle;
+                const candleStripe = c.candleStripe || '#DFBA60';
+
+                let toppings = '';
+                if (isChoco) {
+                  toppings = '<circle cx="38" cy="46" r="3" fill="#2B1006"/><circle cx="62" cy="46" r="3" fill="#2B1006"/><circle cx="44" cy="30" r="3.2" fill="#2B1006"/><circle cx="56" cy="30" r="3.2" fill="#2B1006"/><circle cx="50" cy="29" r="3.8" fill="#1C0A04"/>';
+                } else if (isCaramel) {
+                  toppings = '<rect x="36" y="44" width="4.5" height="4.5" rx="1" fill="#E67E00" transform="rotate(15 38 46)"/><rect x="60" y="44" width="4.5" height="4.5" rx="1" fill="#E67E00" transform="rotate(-15 62 46)"/><rect x="42" y="28" width="4.5" height="4.5" rx="1" fill="#E67E00" transform="rotate(20 44 30)"/><rect x="54" y="28" width="4.5" height="4.5" rx="1" fill="#E67E00" transform="rotate(-20 56 30)"/><circle cx="50" cy="29" r="3.5" fill="#D35400"/>';
+                } else if (isVelvet) {
+                  toppings = '<circle cx="38" cy="46" r="3" fill="#6A1B9A"/><circle cx="62" cy="46" r="3" fill="#6A1B9A"/><circle cx="44" cy="30" r="3.2" fill="#4A148C"/><circle cx="56" cy="30" r="3.2" fill="#4A148C"/><circle cx="50" cy="29" r="3.6" fill="#7B1FA2"/>';
+                } else if (isRainbow) {
+                  toppings = '<circle cx="38" cy="46" r="2.5" fill="#FF1744"/><circle cx="62" cy="46" r="2.5" fill="#2979FF"/><circle cx="44" cy="30" r="2.5" fill="#00E676"/><circle cx="56" cy="30" r="2.5" fill="#FFD600"/><circle cx="50" cy="29" r="3.8" fill="#FF1744"/><path d="M 50,26 C 52,21 55,20 57,21" stroke="#2E7D32" stroke-width="1.2" fill="none"/>';
+                } else {
+                  const berryCol = isPastel ? '#FF4081' : '#E91E63';
+                  toppings = '<circle cx="38" cy="46" r="2.8" fill="#FFFDF8"/><circle cx="62" cy="46" r="2.8" fill="#FFFDF8"/><path d="M 43,28 C 41,28 39,33 43,36 C 47,33 45,28 43,28 Z" fill="' + berryCol + '"/><path d="M 57,28 C 55,28 53,33 57,36 C 61,33 59,28 57,28 Z" fill="' + berryCol + '"/><path d="M 50,26 C 47,26 44,32 50,37 C 56,32 53,26 50,26 Z" fill="' + berryCol + '"/><polygon points="49,25 50,27 51,25" fill="#4CAF50"/>';
+                }
+
+                return '<svg viewBox="0 0 100 84" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="overflow:visible; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.18));">' +
+                  '<defs>' +
+                    '<radialGradient id="standGrad-' + c.id + '" cx="50%" cy="30%" r="70%">' +
+                      '<stop offset="0%" stop-color="' + standTop + '"/>' +
+                      '<stop offset="60%" stop-color="' + standFill + '"/>' +
+                      '<stop offset="100%" stop-color="' + (c.standDark || standFill) + '"/>' +
+                    '</radialGradient>' +
+                  '</defs>' +
+                  '<ellipse cx="50" cy="76" rx="28" ry="4" fill="rgba(0,0,0,0.15)"/>' +
+                  '<ellipse cx="50" cy="74" rx="26" ry="3.5" fill="url(#standGrad-' + c.id + ')"/>' +
+                  '<path d="M 47,66 L 45,74 L 55,74 L 53,66 Z" fill="url(#standGrad-' + c.id + ')"/>' +
+                  '<ellipse cx="50" cy="66" rx="41" ry="5.5" fill="url(#standGrad-' + c.id + ')"/>' +
+                  '<ellipse cx="50" cy="65.2" rx="39" ry="4.2" fill="' + standTop + '" opacity="0.6"/>' +
+                  '<path d="M 18,48 L 18,62 C 18,67 82,67 82,62 L 82,48 Z" fill="' + sponge + '"/>' +
+                  '<path d="M 18,60 C 28,65 72,65 82,60 L 82,62 C 82,67 18,67 18,62 Z" fill="' + biscuit + '" opacity="0.8"/>' +
+                  '<g fill="' + pearl + '">' +
+                    '<circle cx="21" cy="62" r="1.3"/><circle cx="27" cy="63.5" r="1.3"/><circle cx="34" cy="64.5" r="1.3"/>' +
+                    '<circle cx="42" cy="65.2" r="1.3"/><circle cx="50" cy="65.5" r="1.3"/><circle cx="58" cy="65.2" r="1.3"/>' +
+                    '<circle cx="66" cy="64.5" r="1.3"/><circle cx="73" cy="63.5" r="1.3"/><circle cx="79" cy="62" r="1.3"/>' +
+                  '</g>' +
+                  '<ellipse cx="50" cy="48" rx="32" ry="5.2" fill="' + drip + '"/>' +
+                  '<path d="M 18,48 C 22,55 25,58 29,58 C 32,58 34,53 37,50 C 40,55 43,61 47,61 C 51,61 54,54 57,50 C 60,54 64,59 68,59 C 72,59 75,54 82,48 Z" fill="' + drip + '"/>' +
+                  '<path d="M 22,50 C 24,53 27,53 28,50 M 41,51 C 43,55 46,55 47,51 M 61,51 C 63,54 66,54 67,51" stroke="' + dripHighlight + '" stroke-width="0.9" stroke-linecap="round" fill="none" opacity="0.5"/>' +
+                  toppings +
+                  '<path d="M 29,32 L 29,46 C 29,50 71,50 71,46 L 71,32 Z" fill="' + sponge + '"/>' +
+                  '<ellipse cx="50" cy="32" rx="21" ry="4.2" fill="' + drip + '"/>' +
+                  '<path d="M 29,32 C 33,38 36,41 39,41 C 42,41 45,36 48,34 C 51,37 54,42 58,42 C 62,42 65,37 71,32 Z" fill="' + drip + '"/>' +
+                  '<path d="M 33,33 C 35,36 38,36 39,33 M 52,34 C 54,37 57,37 58,34" stroke="' + dripHighlight + '" stroke-width="0.9" stroke-linecap="round" fill="none" opacity="0.5"/>' +
+                  '<g transform="translate(35, 17)">' +
+                    '<rect x="-1.2" y="3" width="2.4" height="12" rx="0.8" fill="' + candleWax + '"/>' +
+                    '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
+                    '<path d="M 0,1.5 C -1.6,-1.5 -1.2,-4.5 0,-6.5 C 1.2,-4.5 1.6,-1.5 0,1.5 Z" fill="#FF9100"/>' +
+                    '<ellipse cx="0" cy="-2.5" rx="0.7" ry="2.2" fill="#FFF8E1"/>' +
+                  '</g>' +
+                  '<g transform="translate(42.5, 15)">' +
+                    '<rect x="-1.2" y="3" width="2.4" height="14" rx="0.8" fill="' + candleWax + '"/>' +
+                    '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="-1.2" y1="14" x2="1.2" y2="16" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
+                    '<path d="M 0,1.5 C -1.8,-1.8 -1.4,-5.2 0,-7.5 C 1.4,-5.2 1.8,-1.8 0,1.5 Z" fill="#FF9100"/>' +
+                    '<ellipse cx="0" cy="-3" rx="0.8" ry="2.6" fill="#FFF8E1"/>' +
+                  '</g>' +
+                  '<g transform="translate(50, 13)">' +
+                    '<rect x="-1.4" y="3" width="2.8" height="16" rx="0.9" fill="' + candleWax + '"/>' +
+                    '<line x1="-1.4" y1="6" x2="1.4" y2="8" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
+                    '<line x1="-1.4" y1="10" x2="1.4" y2="12" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
+                    '<line x1="-1.4" y1="14" x2="1.4" y2="16" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
+                    '<line x1="0" y1="3" x2="0" y2="1.2" stroke="#333" stroke-width="0.7"/>' +
+                    '<path d="M 0,1.2 C -2,-2 -1.5,-6 0,-8.5 C 1.5,-6 2,-2 0,1.2 Z" fill="#FF9100"/>' +
+                    '<ellipse cx="0" cy="-3.5" rx="0.9" ry="3" fill="#FFF8E1"/>' +
+                  '</g>' +
+                  '<g transform="translate(57.5, 15)">' +
+                    '<rect x="-1.2" y="3" width="2.4" height="14" rx="0.8" fill="' + candleWax + '"/>' +
+                    '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="-1.2" y1="14" x2="1.2" y2="16" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
+                    '<path d="M 0,1.5 C -1.8,-1.8 -1.4,-5.2 0,-7.5 C 1.4,-5.2 1.8,-1.8 0,1.5 Z" fill="#FF9100"/>' +
+                    '<ellipse cx="0" cy="-3" rx="0.8" ry="2.6" fill="#FFF8E1"/>' +
+                  '</g>' +
+                  '<g transform="translate(65, 17)">' +
+                    '<rect x="-1.2" y="3" width="2.4" height="12" rx="0.8" fill="' + candleWax + '"/>' +
+                    '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                    '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
+                    '<path d="M 0,1.5 C -1.6,-1.5 -1.2,-4.5 0,-6.5 C 1.2,-4.5 1.6,-1.5 0,1.5 Z" fill="#FF9100"/>' +
+                    '<ellipse cx="0" cy="-2.5" rx="0.7" ry="2.2" fill="#FFF8E1"/>' +
+                  '</g>' +
+                '</svg>';
               }
 
               CAKE_OPTIONS.forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'media-preset-card' + (selectedCakeId === c.id ? ' active' : '');
-                card.style.cssText = 'flex: 0 0 96px; min-width: 96px; scroll-snap-align: start;';
+                card.style.cssText = 'flex: 0 0 98px; min-width: 98px; scroll-snap-align: start;';
                 card.setAttribute('data-cake-id', c.id);
 
                 const thumbWrap = document.createElement('div');
@@ -7867,7 +8030,6 @@
                 const check = document.createElement('span');
                 check.className = 'media-preset-active-check';
                 check.innerHTML = '<i class="fas fa-check"></i>';
-                card.appendChild(check);
 
                 const name = document.createElement('div');
                 name.className = 'media-preset-name';
@@ -7875,6 +8037,7 @@
 
                 card.appendChild(thumbWrap);
                 card.appendChild(name);
+                card.appendChild(check);
 
                 card.onclick = (e) => {
                   e.stopPropagation();
@@ -11345,7 +11508,7 @@
           const magicRaw = window._magicRaw || '';
           const magicRuntime = `
 <scr` + `ipt src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></scr` + `ipt>
-<scr` + `ipt src="/features.js?v=1793964682537"></scr` + `ipt>
+<scr` + `ipt src="/features.js?v=1793974913242"></scr` + `ipt>
 <scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
@@ -12833,7 +12996,7 @@
             // Inject early bootstrap runtime into storedHtml before document.write
             const bootstrapScript = `
 <scr` + `ipt src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></scr` + `ipt>
-<scr` + `ipt src="/features.js?v=1793964682537"></scr` + `ipt>
+<scr` + `ipt src="/features.js?v=1793974913242"></scr` + `ipt>
 <scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
