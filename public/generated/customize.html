@@ -6308,6 +6308,17 @@
             }
           }
 
+          // Restore cake design card selection
+          if (id === "virtualCake" && data.emoji && customPanel) {
+            const cards = customPanel.querySelectorAll('.media-preset-card');
+            cards.forEach(card => {
+              if (card.getAttribute('data-cake-id') === data.emoji) {
+                cards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+              }
+            });
+          }
+
           // Restore media preset active selection (welcomeTyping, countdown, finalSurprise)
           if (data.mediaUrl && customPanel) {
             const cards = customPanel.querySelectorAll('.media-preset-card');
@@ -7586,7 +7597,7 @@
         if (feature?.enable) {
           try {
             if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
-            else if (id === "flowerBouquet") feature.enable(doc, win, userName, customText, images, customEmoji);
+            else if (id === "flowerBouquet" || id === "virtualCake") feature.enable(doc, win, userName, customText, images, customEmoji);
             else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "instantCamera") feature.enable(doc, win, userName, customText, images);
             else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
             else if (id === "countdown") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
@@ -7785,7 +7796,133 @@
               customPanel.appendChild(fbWrap);
             }
 
-            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualCake", "virtualHug", "namedBirthdayCard"].includes(id))) {
+            // ── VIRTUAL CAKE custom panel (cake design picker + ribbon message textarea) ──
+            if (id === "virtualCake" && hasCustom) {
+              const CAKE_OPTIONS = [
+                { id: 'C1', name: 'Ruby Berry', nameHi: 'रूबी बेरी', sponge: '#FFF9F2', drip: '#FF2A7A', stand: '#DFBA60', candle: '#FFF', bg: 'radial-gradient(circle at 50% 40%, #80092b, #18021f)' },
+                { id: 'C2', name: 'Choco Truffle', nameHi: 'चोको ट्रफल', sponge: '#5C2D13', drip: '#4F1E0B', stand: '#C9933B', candle: '#47200B', bg: 'radial-gradient(circle at 50% 40%, #3d1c06, #120905)' },
+                { id: 'C3', name: 'Pastel Blush', nameHi: 'पेस्टल पिंक', sponge: '#FFF9FB', drip: '#FF4081', stand: '#F7C5CC', candle: '#FCE4EC', bg: 'radial-gradient(circle at 50% 40%, #7a264a, #200517)' },
+                { id: 'C4', name: 'Rainbow Party', nameHi: 'रेनबो पार्टी', sponge: '#FFFFFF', drip: '#FF1744', stand: '#FFD700', candle: '#FFF', bg: 'radial-gradient(circle at 50% 40%, #422575, #0e072b)' },
+                { id: 'C5', name: 'Royal Velvet', nameHi: 'रॉयल वेलवेट', sponge: '#5A3282', drip: '#6200EA', stand: '#9575CD', candle: '#EDE7F6', bg: 'radial-gradient(circle at 50% 40%, #321054, #0a041c)' },
+                { id: 'C6', name: 'Caramel Crunch', nameHi: 'कैरेमल क्रंच', sponge: '#FFF6E9', drip: '#E67E00', stand: '#DDA059', candle: '#FFF8E1', bg: 'radial-gradient(circle at 50% 40%, #5a350a, #190e04)' }
+              ];
+              const existingCake = customData.get('virtualCake') || {};
+              let selectedCakeId = existingCake.emoji || 'C1';
+
+              // Section wrapper
+              const vcWrap = document.createElement('div');
+              vcWrap.style.cssText = 'padding: 10px 0;';
+
+              // Cake picker label
+              const vcPickerTitle = document.createElement('div');
+              vcPickerTitle.style.cssText = 'font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-solid); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;';
+              vcPickerTitle.innerHTML = '<i class="fas fa-birthday-cake"></i> ' + (currentLang === 'hi' ? 'केक का स्टाइल चुनें' : 'Choose Cake Design');
+              vcWrap.appendChild(vcPickerTitle);
+
+              // Horizontal scrollable cake grid
+              const vcGrid = document.createElement('div');
+              vcGrid.className = 'media-preset-grid';
+              vcGrid.style.cssText = 'display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;';
+
+              function getCakeMiniSvg(c) {
+                return `<svg viewBox="0 0 100 80" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));">
+                  <ellipse cx="50" cy="74" rx="36" ry="4" fill="${c.stand}" opacity="0.9"/>
+                  <path d="M 46,67 L 44,74 L 56,74 L 54,67 Z" fill="${c.stand}"/>
+                  <ellipse cx="50" cy="67" rx="42" ry="5" fill="${c.stand}"/>
+                  <path d="M 18,48 L 18,64 C 18,70 82,70 82,64 L 82,48 Z" fill="${c.sponge}"/>
+                  <ellipse cx="50" cy="48" rx="32" ry="5.5" fill="${c.drip}"/>
+                  <path d="M 18,48 C 21,55 24,58 27,58 C 30,58 32,53 35,50 C 38,55 42,62 46,62 C 50,62 53,54 57,50 C 60,54 64,60 68,60 C 72,60 76,54 82,48 Z" fill="${c.drip}"/>
+                  <path d="M 28,32 L 28,47 C 28,52 72,52 72,47 L 72,32 Z" fill="${c.sponge}"/>
+                  <ellipse cx="50" cy="32" rx="22" ry="4.5" fill="${c.drip}"/>
+                  <path d="M 28,32 C 32,38 35,42 38,42 C 41,42 44,36 47,34 C 50,38 54,43 58,43 C 62,43 66,37 72,32 Z" fill="${c.drip}"/>
+                  <g transform="translate(36, 17)">
+                    <rect x="-1" y="4" width="2.5" height="11" rx="1" fill="${c.candle}"/>
+                    <circle cx="0.2" cy="0" r="3.5" fill="#FF9100"/>
+                    <circle cx="0.2" cy="0" r="1.8" fill="#FFF"/>
+                  </g>
+                  <g transform="translate(50, 14)">
+                    <rect x="-1" y="4" width="2.5" height="14" rx="1" fill="${c.candle}"/>
+                    <circle cx="0.2" cy="0" r="4.2" fill="#FF9100"/>
+                    <circle cx="0.2" cy="0" r="2.2" fill="#FFF"/>
+                  </g>
+                  <g transform="translate(64, 17)">
+                    <rect x="-1" y="4" width="2.5" height="11" rx="1" fill="${c.candle}"/>
+                    <circle cx="0.2" cy="0" r="3.5" fill="#FF9100"/>
+                    <circle cx="0.2" cy="0" r="1.8" fill="#FFF"/>
+                  </g>
+                </svg>`;
+              }
+
+              CAKE_OPTIONS.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'media-preset-card' + (selectedCakeId === c.id ? ' active' : '');
+                card.style.cssText = 'flex: 0 0 96px; min-width: 96px; scroll-snap-align: start;';
+                card.setAttribute('data-cake-id', c.id);
+
+                const thumbWrap = document.createElement('div');
+                thumbWrap.className = 'media-preset-thumb-wrap';
+                thumbWrap.style.cssText = 'height: 84px; background: ' + c.bg + '; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 10px; box-sizing: border-box;';
+                thumbWrap.innerHTML = getCakeMiniSvg(c);
+
+                const check = document.createElement('span');
+                check.className = 'media-preset-active-check';
+                check.innerHTML = '<i class="fas fa-check"></i>';
+                card.appendChild(check);
+
+                const name = document.createElement('div');
+                name.className = 'media-preset-name';
+                name.innerText = currentLang === 'hi' ? c.nameHi : c.name;
+
+                card.appendChild(thumbWrap);
+                card.appendChild(name);
+
+                card.onclick = (e) => {
+                  e.stopPropagation();
+                  vcGrid.querySelectorAll('.media-preset-card').forEach(x => x.classList.remove('active'));
+                  card.classList.add('active');
+                  selectedCakeId = c.id;
+                  const ex = customData.get('virtualCake') || {};
+                  ex.emoji = c.id;
+                  if (textarea) ex.text = textarea.value;
+                  customData.set('virtualCake', ex);
+                  const nameVal = getUserName();
+                  refreshFeatureIfActive('virtualCake', nameVal, ex.text, [], c.id);
+                  autoSaveState();
+                };
+
+                vcGrid.appendChild(card);
+              });
+              vcWrap.appendChild(vcGrid);
+
+              // Message textarea for ribbon
+              const msgLabel = document.createElement('div');
+              msgLabel.style.cssText = 'font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-solid); margin: 10px 0 6px; display: flex; align-items: center; gap: 6px;';
+              msgLabel.innerHTML = '<i class="fas fa-heart"></i> ' + (currentLang === 'hi' ? 'केक रिबन का संदेश' : 'Cake Ribbon Wish Message');
+              vcWrap.appendChild(msgLabel);
+
+              textarea = document.createElement('textarea');
+              textarea.placeholder = currentLang === 'hi' ? 'उदा. हैप्पी बर्थडे राहुल! 🎉' : 'e.g. Happy Birthday, Loved One!';
+              const nameVal = getUserName();
+              const defMsg = nameVal
+                ? (currentLang === 'hi' ? `हैप्पी बर्थडे ${nameVal}!` : `Happy Birthday, ${nameVal}!`)
+                : (currentLang === 'hi' ? 'हैप्पी बर्थडे!' : 'Happy Birthday, Loved One!');
+              textarea.value = existingCake.text || defMsg;
+              vcWrap.appendChild(textarea);
+
+              textarea.addEventListener('input', () => {
+                const ex = customData.get('virtualCake') || {};
+                ex.text = textarea.value;
+                ex.emoji = selectedCakeId;
+                customData.set('virtualCake', ex);
+                const nv = getUserName();
+                refreshFeatureIfActive('virtualCake', nv, ex.text, [], ex.emoji);
+                autoSaveState();
+              });
+
+              customPanel.appendChild(vcWrap);
+            }
+
+            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualHug", "namedBirthdayCard"].includes(id))) {
               textarea = document.createElement("textarea"); textarea.placeholder = t.placeholderText; textarea.setAttribute('data-placeholder-key', 'text');
               if (id === "lock") textarea.placeholder = currentLang === 'en' ? "Set the Password here (e.g. 1234)" : "यहाँ पासवर्ड दर्ज करें (उदा. 1234)";
               let def = "";
@@ -7808,7 +7945,6 @@
               else if (id === "floatingPolaroids") def = t.defaultFloatingPolaroids(ev);
               else if (id === "imageExplosion") def = t.defaultFloatingPolaroids(ev); // Reuse polaroid default or add new
               else if (id === "floatingBalloonsNamed" || id === "namedBirthdayCard") def = name;
-              else if (id === "virtualCake") def = currentLang === 'hi' ? `हैप्पी बर्थडे ${name}!` : `Happy Birthday, ${name}!`;
               else if (id === "virtualHug") def = currentLang === 'hi' ? `जब भी आपको एक मुस्कान, सुकून या प्यार भरे साथ की ज़रूरत हो — यह प्यारा सा हग हमेशा आपके लिए है। दूरियां चाहे जितनी हों, आप हमेशा दिल के करीब हैं! 🤗` : `Whenever you need a smile, a little comfort, or a gentle reminder of how special you are — this warm hug is always here for you. Distance means so little when you mean so much! 🤗`;
 
               let existingText = customData.get(id)?.text;
@@ -10253,7 +10389,7 @@
         try {
           if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
             feature.enable(document, window, emoji);
-          } else if (id === "flowerBouquet") {
+          } else if (id === "flowerBouquet" || id === "virtualCake") {
             feature.enable(document, window, name, text, images, emoji);
           } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
             feature.enable(document, window, name, text, images);
@@ -11209,7 +11345,7 @@
           const magicRaw = window._magicRaw || '';
           const magicRuntime = `
 <scr` + `ipt src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></scr` + `ipt>
-<scr` + `ipt src="/features.js"></scr` + `ipt>
+<scr` + `ipt src="/features.js?v=1793964682537"></scr` + `ipt>
 <scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
@@ -11383,6 +11519,8 @@
                 const data = customData.get(id) || {};
                 if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
+                } else if (id === "flowerBouquet" || id === "virtualCake") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || [], data.emoji || "");
                 } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
                 } else if (id === "magicMusic" || id === "voiceNote") {
@@ -12695,7 +12833,7 @@
             // Inject early bootstrap runtime into storedHtml before document.write
             const bootstrapScript = `
 <scr` + `ipt src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></scr` + `ipt>
-<scr` + `ipt src="/features.js"></scr` + `ipt>
+<scr` + `ipt src="/features.js?v=1793964682537"></scr` + `ipt>
 <scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
@@ -12878,6 +13016,8 @@
                 const data = customData.get(id) || {};
                 if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
+                } else if (id === "flowerBouquet" || id === "virtualCake") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || [], data.emoji || "");
                 } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
                 } else if (id === "magicMusic" || id === "voiceNote") {

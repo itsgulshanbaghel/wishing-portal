@@ -149,6 +149,45 @@
         }
     }
 
+    // Helper to smoothly stop 360 Earth rotation and align front-facing
+    function smoothStopAndAlignRotator(rotator, win) {
+        if (!rotator) return;
+        const w = win || (typeof window !== 'undefined' ? window : null);
+        let curAngle = 0;
+        try {
+            const st = (w && w.getComputedStyle) ? w.getComputedStyle(rotator) : null;
+            const tf = st ? st.transform : '';
+            if (tf && tf !== 'none') {
+                const m3d = tf.match(/^matrix3d\((.+)\)$/);
+                if (m3d) {
+                    const vals = m3d[1].split(',').map(Number);
+                    const cos = vals[0];
+                    const sin = -vals[2];
+                    let deg = Math.atan2(sin, cos) * (180 / Math.PI);
+                    if (deg < 0) deg += 360;
+                    curAngle = Math.round(deg);
+                } else {
+                    const m2d = tf.match(/^matrix\((.+)\)$/);
+                    if (m2d) {
+                        const vals = m2d[1].split(',').map(Number);
+                        const cos = vals[0];
+                        let deg = Math.acos(Math.min(1, Math.max(-1, cos))) * (180 / Math.PI);
+                        curAngle = Math.round(deg);
+                    }
+                }
+            }
+        } catch(e) {}
+
+        rotator.classList.add('is-stopped');
+        rotator.style.animation = 'none';
+        rotator.style.transform = 'rotateY(' + curAngle + 'deg)';
+
+        setTimeout(() => {
+            rotator.style.transition = 'transform 0.45s cubic-bezier(0.2, 0.8, 0.25, 1)';
+            rotator.style.transform = (curAngle > 180) ? 'rotateY(360deg)' : 'rotateY(0deg)';
+        }, 20);
+    }
+
     // Global runner for Virtual Cake blowout and cutting
     function triggerBlowAndCutCake(sectionEl) {
         const d = typeof document !== 'undefined' ? document : null;
@@ -159,24 +198,37 @@
 
         const btn = section.querySelector('#vc-blow-btn');
         const stage = section.querySelector('#vc-cake-stage');
+        if (stage) {
+            stage.classList.remove('rolling-in');
+            stage.classList.remove('is-swaying');
+        }
+        const rotator = section.querySelector('#vc-cake-rotator');
         const knife = section.querySelector('#vc-knife-wrap');
         const cutLine = section.querySelector('#vc-cut-line');
         const card = section.querySelector('#vc-wish-card');
         const slicesWrap = section.querySelector('#vc-slices-wrapper');
         const audio = section.querySelector('#vc-audio');
 
-        if (section.dataset.cakeDone === 'true' || (btn && btn.classList.contains('done'))) return;
-        section.dataset.cakeDone = 'true';
+        if (section.getAttribute('data-cake-done') === 'true' || (btn && btn.classList.contains('done'))) return;
+        section.setAttribute('data-cake-done', 'true');
+
+        /* Smoothly glide back to exact center (0° yaw, 0px float) in 0.35s for clean symmetrical knife cut */
+        if (rotator) {
+            rotator.classList.remove('is-idle-swaying');
+            rotator.classList.add('is-stopped');
+            rotator.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.25, 1)';
+            rotator.style.transform = 'translateY(0px) rotateY(0deg) rotateZ(0deg)';
+        }
 
         ensureConfetti();
 
         /* PHASE 1: Light off / blow out ALL 5 candles FIRST (0ms - 450ms) */
         [0, 1, 2, 3, 4].forEach((i, idx) => {
             setTimeout(() => {
-                const flame = section.querySelector(`#vc-flame-${i}`);
-                const smoke = section.querySelector(`#vc-smoke-${i}`);
+                const flame = section.querySelector('#vc-flame-' + i);
+                const smoke = section.querySelector('#vc-smoke-' + i);
                 if (flame) flame.classList.add('out');
-                if (smoke) smoke.classList.add('puffing');
+                if (smoke) { smoke.style.display = 'block'; smoke.classList.add('puffing'); }
             }, idx * 90);
         });
 
@@ -197,7 +249,7 @@
             if (cutLine) cutLine.classList.add('flash');
             if (knife) knife.style.opacity = '0';
 
-            if (audio) { audio.currentTime = 0; audio.play().catch(() => { }); }
+            if (audio) { audio.currentTime = 0; const p = audio.play(); if (p && p.catch) p.catch(() => {}); }
         }, 1250);
 
         /* PHASE 4: Confetti bursts, Wish Card & Slices Showcase reveal (1350ms - 1700ms) */
@@ -4196,8 +4248,8 @@
                 if (audio) audio.remove();
             }
         },
-        virtualCake: {
-            enable(d, w, userName, customText) {
+                        virtualCake: {
+            enable(d, w, userName, customText, images, customCakeId) {
                 const existingCake = d.getElementById('magic-virtual-cake-section');
                 if (existingCake) existingCake.remove();
 
@@ -4222,627 +4274,969 @@
                     (d.head || d.body)?.appendChild(fl);
                 }
 
-                if (!d.getElementById('vc-styles')) {
-                    const s = d.createElement('style');
-                    s.id = 'vc-styles';
-                    s.textContent = `
+                const oldVcStyles = d.getElementById('vc-styles');
+                if (oldVcStyles) oldVcStyles.remove();
+                const s = d.createElement('style');
+                s.id = 'vc-styles';
+                s.textContent = `
                 :root {
                     --vc-gold: #FFD700;
                     --vc-gold2: #FF9100;
                     --vc-pink: #FF4D8F;
-                    --vc-purple: #7B5DF6;
-                    --vc-bg: #0D0720;
+                    --vc-rose: #E91E8C;
+                    --vc-blush: #FFB6C1;
+                    --vc-magenta: #C2185B;
                 }
+                /* ===== FLOATING AMBIENT PETALS ===== */
+                @keyframes vc-petal-float {
+                    0%   { transform: translateY(0) translateX(0) rotate(0deg) scale(1); opacity: 0; }
+                    12%  { opacity: 0.75; }
+                    80%  { opacity: 0.65; }
+                    100% { transform: translateY(-115%) translateX(var(--vc-petal-dx, 28px)) rotate(var(--vc-petal-rot, 180deg)) scale(0.5); opacity: 0; }
+                }
+                .vc-petal {
+                    position: absolute;
+                    pointer-events: none;
+                    border-radius: 50% 0 50% 0;
+                    animation: vc-petal-float var(--vc-petal-dur, 7s) ease-in-out var(--vc-petal-delay, 0s) infinite;
+                    will-change: transform, opacity;
+                    z-index: 1;
+                }
+                /* ===== LUXURY CELEBRATION CARD ===== */
                 .vc-section {
                     position: relative;
+                    z-index: 10;
+                    isolation: isolate;
                     width: 92%;
-                    max-width: 600px;
+                    max-width: 580px;
+                    perspective: 1200px;
+                    -webkit-perspective: 1200px;
                     margin: clamp(20px, 3.5vw, 36px) auto !important;
                     margin-left: auto !important;
                     margin-right: auto !important;
                     align-self: center;
                     box-sizing: border-box;
-                    padding: clamp(26px, 3.5vw, 40px) clamp(16px, 3vw, 30px);
-                    background: radial-gradient(ellipse at 30% 20%, rgba(123,93,246,0.35) 0%, transparent 65%),
-                                radial-gradient(ellipse at 75% 80%, rgba(255,145,0,0.28) 0%, transparent 65%),
-                                linear-gradient(145deg, rgba(20, 10, 38, 0.88) 0%, rgba(35, 12, 50, 0.82) 100%);
-                    backdrop-filter: blur(20px);
-                    -webkit-backdrop-filter: blur(20px);
-                    border-radius: clamp(24px,4vw,40px);
-                    border: 2px solid rgba(255, 215, 0, 0.45);
-                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45),
-                                0 0 30px rgba(255, 215, 0, 0.15),
-                                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-                    overflow: hidden;
-                    font-family: 'Poppins', sans-serif;
-                    text-align: center;
+                    padding: clamp(28px, 4vw, 44px) clamp(16px, 3vw, 32px);
+                    border-radius: clamp(26px, 4vw, 36px);
+                    border: 1.5px solid rgba(255, 215, 0, 0.45);
+                    box-shadow:
+                        0 24px 60px -10px rgba(0, 0, 0, 0.75),
+                        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+                        0 0 50px -10px rgba(255, 77, 143, 0.35);
                     color: #fff;
-                    box-sizing: border-box;
+                    font-family: 'Outfit', 'Poppins', -apple-system, sans-serif;
+                    text-align: center;
+                    overflow: hidden;
+                    transition: border-color 0.4s ease, box-shadow 0.4s ease, background 0.45s ease;
                 }
-                /* --- Floating orbs --- */
+                .vc-section:hover {
+                    border-color: rgba(255, 215, 0, 0.7);
+                    box-shadow:
+                        0 28px 70px -10px rgba(0, 0, 0, 0.8),
+                        0 0 0 1.5px rgba(255, 255, 255, 0.12) inset,
+                        0 0 65px -8px rgba(255, 77, 143, 0.45);
+                }
+
+                /* Ambient Floating Orbs */
                 .vc-orb {
                     position: absolute;
                     border-radius: 50%;
                     pointer-events: none;
-                    filter: blur(60px);
+                    filter: blur(50px);
                     opacity: 0.35;
+                    z-index: 1;
                     animation: vc-orb-drift 8s ease-in-out infinite alternate;
                 }
-                .vc-orb-1 { width: 260px; height: 260px; background: #7B5DF6; top: -80px; left: -60px; }
-                .vc-orb-2 { width: 200px; height: 200px; background: #FF4D8F; bottom: -60px; right: -40px; animation-delay: -3s; }
-                .vc-orb-3 { width: 160px; height: 160px; background: #FFD700; top: 40%; right: 10%; animation-delay: -5s; opacity: 0.18; }
+                .vc-orb-1 { width: 220px; height: 220px; background: rgba(255, 77, 143, 0.4); top: -60px; left: -40px; }
+                .vc-orb-2 { width: 180px; height: 180px; background: rgba(255, 215, 0, 0.35); bottom: -40px; right: -30px; animation-delay: -3s; }
+                .vc-orb-3 { width: 140px; height: 140px; background: rgba(255, 145, 0, 0.28); top: 35%; right: 8%; animation-delay: -5s; }
                 @keyframes vc-orb-drift {
-                    0%   { transform: translate(0,0) scale(1); }
-                    100% { transform: translate(20px,15px) scale(1.08); }
+                    0%   { transform: translate(0, 0) scale(1); }
+                    100% { transform: translate(16px, 12px) scale(1.08); }
                 }
-                /* --- Shimmer stars --- */
+
+                /* Ambient Twinkling Stars */
                 .vc-star {
                     position: absolute;
                     pointer-events: none;
-                    font-size: clamp(10px,2.5vw,16px);
+                    font-size: clamp(10px, 2.4vw, 15px);
                     color: #FFD700;
                     opacity: 0;
-                    animation: vc-star-twinkle 2.5s ease-in-out infinite;
+                    z-index: 2;
+                    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+                    animation: vc-star-twinkle 2.8s ease-in-out infinite;
                 }
                 @keyframes vc-star-twinkle {
-                    0%,100% { opacity:0; transform:scale(0.6) rotate(0deg); }
-                    50%      { opacity:0.9; transform:scale(1.2) rotate(30deg); }
+                    0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+                    50%      { opacity: 0.88; transform: scale(1.15) rotate(25deg); }
                 }
-                /* --- Title --- */
-                .vc-title {
-                    font-family: 'Outfit', sans-serif;
-                    font-size: clamp(1.35rem, 4.5vw, 2.4rem);
+
+                /* Header Badges & Typography */
+                .vc-header {
+                    position: relative;
+                    z-index: 3;
+                    margin-bottom: clamp(12px, 2.5vw, 18px);
+                }
+                .vc-title,
+                .vc-title-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    font-family: 'Outfit', -apple-system, sans-serif;
+                    font-size: clamp(1.4rem, 4.2vw, 2.1rem);
                     font-weight: 900;
-                    letter-spacing: -0.5px;
-                    margin: 0 0 8px;
+                    letter-spacing: -0.01em;
                     line-height: 1.2;
-                    color: #FFD700;
+                    margin: 0 auto 6px;
+                    color: #FFFFFF;
+                    text-shadow: none !important;
                 }
-                .vc-title-text {
-                    background: linear-gradient(135deg, #FFD700 0%, #FF9100 40%, #FF4D8F 100%);
+                .vc-title-text,
+                .vc-gradient-text {
+                    background: linear-gradient(135deg, #FFF9D2 0%, #FFD700 38%, #FF85A2 75%, #FF4081 100%);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                     background-clip: text;
+                    text-shadow: none !important;
+                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+                    font-weight: 900;
+                }
+                .vc-title-badge .vc-icon,
+                .vc-title .fas {
+                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+                    display: inline-block;
                 }
                 .vc-emoji {
                     -webkit-text-fill-color: initial;
                     display: inline-block;
-                    margin-left: 6px;
+                    margin-left: 4px;
+                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
                 }
                 .vc-subtitle {
-                    font-size: clamp(0.85rem, 2.2vw, 1.05rem);
-                    color: rgba(255, 255, 255, 0.95);
-                    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-                    margin: 0 0 clamp(20px,4vw,36px);
+                    font-size: clamp(0.82rem, 2.3vw, 0.98rem);
                     font-weight: 500;
+                    color: rgba(255, 255, 255, 0.92);
+                    letter-spacing: 0.01em;
+                    margin: 0;
+                    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
                 }
-                /* --- Wish ribbon --- */
+
+                /* Ribbon Wish Banner */
                 .vc-ribbon {
+                    position: relative;
+                    z-index: 3;
                     display: inline-flex;
                     align-items: center;
-                    gap: 10px;
-                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.22), rgba(255, 77, 143, 0.18));
-                    border: 1.5px solid rgba(255, 215, 0, 0.7);
-                    border-radius: 50px;
-                    padding: clamp(8px,2vw,12px) clamp(18px,4vw,30px);
-                    margin: 0 auto clamp(20px,4vw,32px);
-                    max-width: 90%;
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-                    backdrop-filter: blur(12px);
-                    -webkit-backdrop-filter: blur(12px);
+                    justify-content: center;
+                    gap: 12px;
+                    margin: 0 auto clamp(14px, 2.8vw, 22px);
+                    padding: clamp(6px, 1.5vw, 10px) clamp(16px, 3.2vw, 28px);
+                    background:
+                        linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%),
+                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.14), transparent 70%);
+                    border: 1.5px solid rgba(255, 215, 0, 0.65);
+                    border-radius: 999px;
+                    box-shadow:
+                        0 8px 24px -4px rgba(0, 0, 0, 0.5),
+                        0 0 20px rgba(255, 215, 0, 0.25) inset;
+                    max-width: 95%;
+                    box-sizing: border-box;
                 }
                 .vc-ribbon-text {
-                    font-family: 'Great Vibes', cursive;
-                    font-size: clamp(1.2rem, 3.8vw, 1.9rem);
+                    font-family: 'Great Vibes', cursive, sans-serif;
+                    font-size: clamp(1.15rem, 3.4vw, 1.75rem);
+                    font-weight: 400;
                     color: #FFD700;
-                    line-height: 1.3;
+                    letter-spacing: 0.02em;
+                    line-height: 1.25;
                     word-break: break-word;
-                    text-shadow: 0 2px 12px rgba(255,215,0,0.6), 0 1px 3px rgba(0,0,0,0.8);
+                    text-align: center;
+                    text-shadow:
+                        0 2px 10px rgba(0, 0, 0, 0.7),
+                        0 0 18px rgba(255, 215, 0, 0.6);
                 }
                 .vc-ribbon-icon {
-                    color: #FFD700;
-                    font-size: clamp(0.9rem,2.5vw,1.2rem);
+                    font-size: clamp(0.9rem, 2vw, 1.15rem);
                     flex-shrink: 0;
+                    color: #FF4D8F;
+                    filter: drop-shadow(0 2px 6px rgba(255, 77, 143, 0.6));
                     animation: vc-icon-pulse 1.8s ease-in-out infinite;
                 }
                 @keyframes vc-icon-pulse {
-                    0%,100% { transform: scale(1); opacity: 0.85; }
-                    50%      { transform: scale(1.2); opacity: 1; }
+                    0%, 100% { transform: scale(1); opacity: 0.88; }
+                    50%      { transform: scale(1.18); opacity: 1; }
                 }
-                /* === CAKE SCENE === */
+
+                /* 3D Scene Container */
                 .vc-scene {
                     position: relative;
-                    display: inline-flex;
+                    display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 0;
-                    margin: 0 auto clamp(20px,4vw,36px);
+                    justify-content: center;
+                    margin: 0 auto clamp(18px, 3.5vw, 30px);
+                    width: 100%;
+                    max-width: 360px;
                     cursor: pointer;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    perspective: 1100px;
+                    perspective-origin: 50% 32%;
+                    transform-style: preserve-3d;
                 }
-                /* --- Vertical Cut Line (Center Red Laser Line) --- */
+
+                /* ===== ROLLING ENTRANCE ANIMATION (vc-cake-roll-in) ===== */
+                @keyframes vc-cake-roll-in {
+                    0% {
+                        opacity: 0;
+                        transform: translateX(-120%) rotate(-210deg) scale(0.6);
+                    }
+                    60% {
+                        opacity: 1;
+                        transform: translateX(14px) rotate(14deg) scale(1.05, 0.95);
+                    }
+                    78% {
+                        transform: translateX(-7px) rotate(-7deg) scale(0.97, 1.03);
+                    }
+                    90% {
+                        transform: translateX(3px) rotate(2deg) scale(1.01, 0.99);
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: translateX(0) rotate(0deg) scale(1);
+                    }
+                }
+
+                .vc-scene.rolling-in {
+                    animation: vc-cake-roll-in 1.35s cubic-bezier(0.2, 0.85, 0.32, 1.2) forwards;
+                    transform-origin: 50% 88%;
+                    will-change: transform, opacity;
+                }
+
+                /* Gold Sparkle Dust Trail underneath pedestal */
+                .vc-roll-trail {
+                    position: absolute;
+                    bottom: 6px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 90%;
+                    max-width: 330px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-around;
+                    pointer-events: none;
+                    z-index: 1;
+                    opacity: 0;
+                    transition: opacity 0.35s ease;
+                }
+
+                .vc-scene.rolling-in .vc-roll-trail {
+                    opacity: 1;
+                }
+
+                .vc-roll-sparkle-dot {
+                    position: relative;
+                    display: inline-block;
+                    font-size: clamp(14px, 2.8vw, 19px);
+                    line-height: 1;
+                    color: #FFD700;
+                    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.95)) drop-shadow(0 0 16px rgba(255, 179, 0, 0.7));
+                    opacity: 0;
+                }
+
+                .vc-roll-sparkle-dot::before {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle, rgba(255, 215, 0, 0.75) 0%, rgba(255, 179, 0, 0.25) 55%, transparent 75%);
+                    pointer-events: none;
+                    z-index: -1;
+                }
+
+                .vc-scene.rolling-in .vc-roll-sparkle-dot {
+                    animation: vc-roll-sparkle 1.15s ease-out forwards;
+                    animation-delay: calc(var(--i, 0) * 0.15s);
+                }
+
+                @keyframes vc-roll-sparkle {
+                    0% {
+                        opacity: 0;
+                        transform: translateY(14px) scale(0.2) rotate(0deg);
+                    }
+                    30% {
+                        opacity: 1;
+                        transform: translateY(-6px) scale(1.25) rotate(45deg);
+                    }
+                    70% {
+                        opacity: 0.85;
+                        transform: translateY(-14px) scale(1) rotate(90deg);
+                    }
+                    100% {
+                        opacity: 0;
+                        transform: translateY(-22px) scale(0.2) rotate(135deg);
+                    }
+                }
+
+
+                /* Cake Container (Stationary with Subtle 3D Side-to-Side Yaw & Micro-Hover) */
+                .vc-cake-rotator {
+                    position: relative;
+                    z-index: 2;
+                    width: 100%;
+                    max-width: 350px;
+                    margin: 0 auto;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transform-style: preserve-3d;
+                }
+
+                /* ===== LUXURY IDLE YAW & MICRO-HOVER ANIMATION ===== */
+                @keyframes vc-idle-sway {
+                    0% {
+                        transform: translateY(0px) rotateY(0deg) rotateZ(0deg);
+                    }
+                    25% {
+                        transform: translateY(-4px) rotateY(-8deg) rotateZ(-0.5deg);
+                    }
+                    50% {
+                        transform: translateY(1px) rotateY(0deg) rotateZ(0deg);
+                    }
+                    75% {
+                        transform: translateY(-4px) rotateY(8deg) rotateZ(0.5deg);
+                    }
+                    100% {
+                        transform: translateY(0px) rotateY(0deg) rotateZ(0deg);
+                    }
+                }
+
+                .vc-cake-rotator.is-idle-swaying {
+                    animation: vc-idle-sway 4.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+                    transform-origin: 50% 88%;
+                    will-change: transform;
+                }
+
+                /* Turntable Dynamic Shadow with Synchronized Breath Pulse */
+                .vc-turntable-shadow {
+                    position: absolute;
+                    bottom: 0px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: clamp(220px, 80%, 300px);
+                    height: 26px;
+                    background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.15) 55%, transparent 75%);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1;
+                    opacity: 0.55;
+                    transition: opacity 0.4s ease;
+                }
+
+                @keyframes vc-shadow-pulse {
+                    0%, 50%, 100% {
+                        transform: translateX(-50%) scale(1);
+                        opacity: 0.55;
+                    }
+                    25%, 75% {
+                        transform: translateX(-50%) scale(0.92);
+                        opacity: 0.35;
+                    }
+                }
+
+                .vc-scene.is-swaying .vc-turntable-shadow {
+                    animation: vc-shadow-pulse 4.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+                    will-change: transform, opacity;
+                }
+
+                /* SVG Vector Cake */
+                .vc-cake-svg {
+                    width: 100%;
+                    max-width: 350px;
+                    height: auto;
+                    display: block;
+                    overflow: visible;
+                    filter: drop-shadow(0 16px 32px rgba(20, 2, 18, 0.5));
+                }
+
+                /* Cake Halves Separation */
+                .vc-half {
+                    transition: transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    transform-origin: 180px 270px;
+                }
+                .vc-scene.is-cut .vc-left {
+                    transform: translateX(-38px) rotate(-3.5deg);
+                }
+                .vc-scene.is-cut .vc-right {
+                    transform: translateX(38px) rotate(3.5deg);
+                }
+
+                /* Vertical Laser Cut Line & Knife */
                 .vc-cut-line {
                     position: absolute;
+                    top: 50px;
                     left: 50%;
-                    top: -10px;
-                    width: 4px;
-                    height: 0%;
                     transform: translateX(-50%);
-                    background: linear-gradient(180deg, #ff0055 0%, #ff0000 60%, #ff5500 100%);
-                    box-shadow: 0 0 10px #ff0055, 0 0 20px #ff0000, 0 0 30px #ff5500;
-                    border-radius: 4px;
-                    z-index: 35;
-                    pointer-events: none;
+                    width: 3px;
+                    height: 0;
+                    background: linear-gradient(180deg, #FF1744 0%, #FF5252 60%, #FF8A80 100%);
+                    box-shadow:
+                        0 0 16px #FF1744,
+                        0 0 28px #FF5252;
+                    z-index: 20;
                     opacity: 0;
-                    transition: height 0.65s linear, opacity 0.2s ease;
+                    pointer-events: none;
+                    border-radius: 3px;
                 }
                 .vc-cut-line.slicing {
                     opacity: 1;
-                    height: 105%;
+                    height: 250px;
+                    transition: height 0.65s cubic-bezier(0.2, 0.8, 0.25, 1);
                 }
                 .vc-cut-line.flash {
+                    opacity: 1;
                     animation: vc-cut-glow 0.8s ease-out forwards;
                 }
                 @keyframes vc-cut-glow {
-                    0%   { opacity: 1; box-shadow: 0 0 25px #ff0055, 0 0 45px #ff0000; }
-                    100% { opacity: 0; }
+                    0%   { opacity: 1; filter: brightness(2); }
+                    100% { opacity: 0; filter: brightness(1); }
                 }
 
-                /* --- Ceremonial Knife --- */
                 .vc-knife-wrap {
                     position: absolute;
-                    left: 50%;
                     top: -55px;
-                    transform: translateX(-50%) rotate(-15deg);
-                    font-size: clamp(2.2rem, 5vw, 3rem);
-                    color: #FFD700;
-                    filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.9));
-                    z-index: 40;
-                    pointer-events: none;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 25;
+                    font-size: clamp(2.0rem, 5vw, 2.6rem);
+                    color: #E0E0E0;
+                    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
                     opacity: 0;
-                    transition: top 0.65s linear, opacity 0.25s ease, transform 0.65s ease;
+                    pointer-events: none;
+                    transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.25, 1), opacity 0.3s ease;
                 }
                 .vc-knife-wrap.slicing {
                     opacity: 1;
-                    top: calc(100% - 15px);
-                    transform: translateX(-50%) rotate(10deg);
+                    transform: translateX(-50%) translateY(240px);
                 }
 
-                /* --- Candles wrapper --- */
-                .vc-candles {
-                    display: flex;
-                    align-items: flex-end;
-                    justify-content: center;
-                    gap: clamp(8px,2vw,14px);
-                    position: relative;
-                    z-index: 10;
-                    margin-bottom: -4px;
+                /* Realistic Candle Burning & Flame Flickering Animations */
+                @keyframes vc-flame-burn-1 {
+                    0%, 100% { transform: scale(1, 1) rotate(0deg) skewX(0deg); }
+                    18%      { transform: scale(0.93, 1.07) rotate(-3.5deg) skewX(-2.5deg); }
+                    38%      { transform: scale(1.06, 0.94) rotate(2.8deg) skewX(2deg); }
+                    58%      { transform: scale(0.96, 1.04) rotate(-2.2deg) skewX(-1.5deg); }
+                    78%      { transform: scale(1.03, 0.97) rotate(2.2deg) skewX(1.5deg); }
                 }
-                .vc-candle {
-                    position: relative;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+                @keyframes vc-flame-burn-2 {
+                    0%, 100% { transform: scale(1.02, 0.97) rotate(-1.5deg) skewX(-1deg); }
+                    22%      { transform: scale(0.93, 1.08) rotate(3.5deg) skewX(2.5deg); }
+                    44%      { transform: scale(1.05, 0.94) rotate(-3deg) skewX(-2deg); }
+                    66%      { transform: scale(0.96, 1.04) rotate(2.2deg) skewX(1.5deg); }
+                    84%      { transform: scale(1.01, 0.98) rotate(-1.2deg) skewX(-1deg); }
                 }
-                .vc-candle-stick {
-                    width: clamp(9px,2vw,13px);
-                    height: clamp(32px,6vw,50px);
-                    background: repeating-linear-gradient(
-                        180deg,
-                        #ffffff 0px, #ffffff 6px,
-                        #00c8e0 6px, #00c8e0 12px
-                    );
-                    border-radius: clamp(4px,1vw,6px) clamp(4px,1vw,6px) 2px 2px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.3);
-                    flex-shrink: 0;
+                @keyframes vc-flame-burn-3 {
+                    0%, 100% { transform: scale(1.01, 1.02) rotate(0deg) skewX(0deg); }
+                    20%      { transform: scale(1.07, 0.93) rotate(4deg) skewX(2.8deg); }
+                    40%      { transform: scale(0.94, 1.07) rotate(-3deg) skewX(-2.2deg); }
+                    60%      { transform: scale(1.04, 0.95) rotate(3deg) skewX(2deg); }
+                    80%      { transform: scale(0.96, 1.05) rotate(-3.5deg) skewX(-2.5deg); }
                 }
-                .vc-wick {
-                    width: 2px;
-                    height: clamp(5px,1.5vw,8px);
-                    background: #2d2d2d;
-                    border-radius: 1px;
-                    margin-bottom: -1px;
+                @keyframes vc-ambient-candlelight-pulse {
+                    0%, 100% { opacity: 0.72; transform: scale(0.97); }
+                    50%      { opacity: 0.96; transform: scale(1.03); }
                 }
-                .vc-flame {
-                    position: relative;
-                    width: clamp(12px,3vw,18px);
-                    height: clamp(18px,4vw,26px);
-                    background: radial-gradient(ellipse at 50% 85%, #ffffff 0%, #FFF176 30%, #FF9100 70%, transparent 100%);
-                    border-radius: 50% 50% 30% 30%;
-                    box-shadow: 0 0 clamp(8px,2vw,14px) #FFD700, 0 0 clamp(18px,4vw,28px) rgba(255,145,0,0.6);
-                    animation: vc-flicker 0.55s ease-in-out infinite alternate;
-                    transition: opacity 0.6s ease, transform 0.6s ease;
-                    margin-bottom: -2px;
+
+                /* Candle Flame Items (Anchored at wick tip: 0px -5px, natural fire teardrop glow) */
+                .vc-flame-item {
+                    filter: drop-shadow(0 -3px 8px rgba(255, 154, 0, 0.85)) drop-shadow(0 -6px 16px rgba(255, 61, 0, 0.5));
                 }
-                @keyframes vc-flicker {
-                    0%   { transform: scaleX(1)   scaleY(1)   rotate(-2deg); opacity: 0.92; }
-                    100% { transform: scaleX(0.88) scaleY(1.1) rotate(3deg);  opacity: 1; }
+                #vc-flame-0, .vc-flame-item-1 {
+                    transform-origin: 0px -5px;
+                    animation: vc-flame-burn-1 1.25s ease-in-out infinite;
+                    will-change: transform;
                 }
-                .vc-flame.out {
+                #vc-flame-1, .vc-flame-item-2 {
+                    transform-origin: 0px -5px;
+                    animation: vc-flame-burn-2 1.45s ease-in-out infinite 0.18s;
+                    will-change: transform;
+                }
+                #vc-flame-2, .vc-flame-item-3 {
+                    transform-origin: 0px -5px;
+                    animation: vc-flame-burn-3 1.15s ease-in-out infinite 0.35s;
+                    will-change: transform;
+                }
+                #vc-flame-3, .vc-flame-item-4 {
+                    transform-origin: 0px -5px;
+                    animation: vc-flame-burn-2 1.55s ease-in-out infinite 0.12s;
+                    will-change: transform;
+                }
+                #vc-flame-4, .vc-flame-item-5 {
+                    transform-origin: 0px -5px;
+                    animation: vc-flame-burn-1 1.35s ease-in-out infinite 0.28s;
+                    will-change: transform;
+                }
+
+                /* Ambient Candlelight Warmth Soft Pulsing */
+                .vc-ambient-candlelight-glow {
+                    transform-origin: 180px 110px;
+                    animation: vc-ambient-candlelight-pulse 2.2s ease-in-out infinite alternate;
+                }
+
+                /* Ensure NO discs, corona circles, or pre-mature smoke appear */
+                .vc-flame-corona,
+                circle.vc-flame-corona,
+                .vc-flame-item circle,
+                .vc-smoke-item:not(.puffing),
+                .vc-smoke:not(.puffing) {
+                    display: none !important;
                     opacity: 0 !important;
-                    transform: scaleY(0) !important;
-                    animation: none !important;
+                    visibility: hidden !important;
                 }
+                .vc-smoke-item.puffing,
+                .vc-smoke.puffing {
+                    display: block !important;
+                    opacity: 0;
+                    animation: vc-smoke-float 1.2s ease-out forwards !important;
+                }
+
+                /* Blow out candles state */
+                .vc-flame-item.out,
+                .vc-flame-item.out *,
+                .vc-flame.out,
+                #vc-flame-0.out,
+                #vc-flame-1.out,
+                #vc-flame-2.out,
+                #vc-flame-3.out,
+                #vc-flame-4.out {
+                    animation: none !important;
+                    opacity: 0 !important;
+                    transform: scale(0.1) translateY(-12px) !important;
+                    transition: opacity 0.35s ease, transform 0.4s ease !important;
+                }
+
+                /* Smoke Puffs */
                 .vc-smoke {
-                    position: absolute;
-                    top: 0;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: clamp(6px,1.5vw,10px);
-                    height: clamp(6px,1.5vw,10px);
-                    border-radius: 50%;
-                    background: rgba(200,200,220,0.75);
                     opacity: 0;
                     pointer-events: none;
                 }
                 .vc-smoke.puffing {
-                    animation: vc-smoke-rise 1.3s ease-out forwards;
+                    animation: vc-smoke-float 1.2s ease-out forwards;
                 }
-                @keyframes vc-smoke-rise {
-                    0%   { opacity: 0.8; transform: translateX(-50%) translateY(0)   scale(1); filter: blur(0); }
-                    100% { opacity: 0;   transform: translateX(-40%) translateY(-40px) scale(4); filter: blur(5px); }
-                }
-
-                /* --- Cake Tiers & Center Splitting Halves --- */
-                .vc-tier {
-                    position: relative;
-                    display: flex;
-                    align-items: flex-start;
-                    justify-content: center;
-                    overflow: visible;
-                }
-                .vc-tier-body {
-                    position: relative;
-                    display: flex;
-                    box-shadow: 0 clamp(6px,2vw,12px) clamp(20px,4vw,32px) rgba(0,0,0,0.4);
-                }
-                .vc-top-body {
-                    width: clamp(130px, 22vw, 175px);
-                    height: clamp(56px, 9vw, 76px);
-                }
-                .vc-bottom-body {
-                    width: clamp(180px, 30vw, 245px);
-                    height: clamp(70px, 11vw, 92px);
-                    margin-top: -3px;
+                @keyframes vc-smoke-float {
+                    0%   { opacity: 0.85; transform: translateY(0) scale(0.6); }
+                    50%  { opacity: 0.6; transform: translateY(-16px) scale(1.1); }
+                    100% { opacity: 0; transform: translateY(-36px) scale(1.6); }
                 }
 
-                /* Halves */
-                .vc-half {
-                    position: relative;
-                    width: 50%;
-                    height: 100%;
-                    overflow: hidden;
-                    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-                }
-                .vc-top-body .vc-half.vc-left {
-                    background: linear-gradient(180deg, #FFAD60 0%, #FF8000 55%, #E65C00 100%);
-                    border-radius: clamp(12px,2.5vw,18px) 0 0 clamp(8px,1.5vw,12px);
-                }
-                .vc-top-body .vc-half.vc-right {
-                    background: linear-gradient(180deg, #FFAD60 0%, #FF8000 55%, #E65C00 100%);
-                    border-radius: 0 clamp(12px,2.5vw,18px) clamp(8px,1.5vw,12px) 0;
-                }
-                .vc-bottom-body .vc-half.vc-left {
-                    background: linear-gradient(180deg, #FF6EB4 0%, #E0177D 55%, #B5136A 100%);
-                    border-radius: clamp(12px,2.5vw,18px) 0 0 clamp(8px,1.5vw,12px);
-                }
-                .vc-bottom-body .vc-half.vc-right {
-                    background: linear-gradient(180deg, #FF6EB4 0%, #E0177D 55%, #B5136A 100%);
-                    border-radius: 0 clamp(12px,2.5vw,18px) clamp(8px,1.5vw,12px) 0;
-                }
-
-                /* Frosting drip on each half */
-                .vc-frosting {
-                    position: absolute;
-                    top: 0; left: 0; right: 0;
-                    height: clamp(16px,4vw,24px);
-                    background: #ffffff;
-                    border-radius: 0 0 clamp(10px,2.5vw,16px) clamp(10px,2.5vw,16px);
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                }
-                .vc-frosting::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -clamp(8px,2vw,12px);
-                    left: 8%;
-                    right: 8%;
-                    height: clamp(8px,2vw,13px);
-                    background: #ffffff;
-                    border-radius: 0 0 12px 12px;
-                    box-shadow: clamp(16px,4vw,24px) 0 0 #fff;
-                }
-
-                /* Decorative dots on tier halves */
-                .vc-tier-dots {
-                    position: absolute;
-                    bottom: clamp(10px,2.5vw,16px);
-                    left: 0; right: 0;
-                    display: flex;
-                    justify-content: center;
-                    gap: clamp(5px,1.5vw,9px);
-                }
-                .vc-dot {
-                    width: clamp(6px,1.5vw,9px);
-                    height: clamp(6px,1.5vw,9px);
-                    border-radius: 50%;
-                    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-                }
-                .vc-top-body .vc-dot { background: #FF4D8F; }
-                .vc-bottom-body .vc-dot { background: #FFD700; }
-
-                /* Stars on bottom tier */
-                .vc-tier-stars {
-                    position: absolute;
-                    top: 50%; left: 50%;
-                    transform: translate(-50%,-50%);
-                    display: flex;
-                    gap: clamp(6px,1.5vw,10px);
-                    color: rgba(255,255,255,0.4);
-                    font-size: clamp(10px,2.5vw,15px);
-                }
-
-                /* Inner cake cut glow when split */
-                .vc-half.vc-left::after {
-                    content: '';
-                    position: absolute;
-                    top: 0; right: 0; bottom: 0;
-                    width: 8px;
-                    background: linear-gradient(90deg, transparent, #FFD700, #FFF59D);
-                    opacity: 0;
-                    transition: opacity 0.4s ease;
-                }
-                .vc-half.vc-right::before {
-                    content: '';
-                    position: absolute;
-                    top: 0; left: 0; bottom: 0;
-                    width: 8px;
-                    background: linear-gradient(90deg, #FFF59D, #FFD700, transparent);
-                    opacity: 0;
-                    transition: opacity 0.4s ease;
-                }
-
-                /* --- Center Split Action --- */
-                .vc-scene.is-cut .vc-half.vc-left {
-                    transform: translateX(-16px) rotate(-1.5deg);
-                }
-                .vc-scene.is-cut .vc-half.vc-right {
-                    transform: translateX(16px) rotate(1.2deg);
-                }
-                .vc-scene.is-cut .vc-half.vc-left::after,
-                .vc-scene.is-cut .vc-half.vc-right::before {
-                    opacity: 1;
-                }
-                /* Middle candle (index 2) disappears completely on cut */
-                .vc-scene.is-cut .vc-candle[data-i="2"] {
-                    opacity: 0 !important;
-                    transform: scale(0) translateY(-20px) !important;
-                    pointer-events: none !important;
-                    transition: opacity 0.4s ease, transform 0.4s ease !important;
-                }
-                .vc-scene.is-cut .vc-candle[data-i="0"],
-                .vc-scene.is-cut .vc-candle[data-i="1"] {
-                    transform: translateX(-12px) rotate(-4deg);
-                }
-                .vc-scene.is-cut .vc-candle[data-i="3"],
-                .vc-scene.is-cut .vc-candle[data-i="4"] {
-                    transform: translateX(12px) rotate(4deg);
-                }
-
-                /* --- Plate --- */
-                .vc-plate {
-                    width: clamp(210px, 35vw, 280px);
-                    height: clamp(14px, 2.2vw, 20px);
-                    background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #d0d0d0 60%, #9e9e9e 100%);
-                    border-radius: 50%;
-                    margin-top: -4px;
-                    box-shadow: 0 clamp(8px,2vw,16px) clamp(20px,5vw,36px) rgba(0,0,0,0.55),
-                                inset 0 2px 4px rgba(255,255,255,0.8);
-                }
-                /* --- Interaction button --- */
+                /* Action Button */
                 .vc-btn-wrap {
-                    margin: 0 auto clamp(16px,4vw,28px);
+                    position: relative;
+                    z-index: 4;
+                    margin-top: clamp(10px, 2vw, 16px);
+                    display: flex;
+                    justify-content: center;
                 }
                 .vc-btn {
+                    position: relative;
                     display: inline-flex;
                     align-items: center;
+                    justify-content: center;
                     gap: 10px;
-                    background: linear-gradient(135deg, #FFD700 0%, #FF9100 55%, #FF4D8F 100%);
-                    color: #1a0628;
+                    padding: clamp(14px, 2.6vw, 18px) clamp(28px, 5.5vw, 44px);
                     border: none;
-                    padding: clamp(13px, 2vw, 18px) clamp(28px, 4vw, 50px);
-                    font-size: clamp(0.95rem, 1.8vw, 1.2rem);
-                    font-weight: 800;
+                    border-radius: 999px;
+                    background: linear-gradient(135deg, #FFE082 0%, #FFB300 35%, #FF4081 75%, #F50057 100%);
+                    color: #260012;
                     font-family: 'Outfit', sans-serif;
-                    border-radius: 50px;
+                    font-size: clamp(0.95rem, 2.4vw, 1.15rem);
+                    font-weight: 800;
+                    letter-spacing: 0.01em;
                     cursor: pointer;
-                    box-shadow: 0 clamp(8px,2vw,14px) clamp(20px,4vw,36px) rgba(255,145,0,0.45),
-                                0 0 0 0 rgba(255,215,0,0);
-                    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
-                                box-shadow 0.25s ease;
-                    letter-spacing: 0.2px;
-                    white-space: nowrap;
-                    position: relative;
-                    overflow: hidden;
-                }
-                .vc-btn::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 60%);
-                    pointer-events: none;
+                    box-shadow:
+                        0 10px 30px -4px rgba(255, 64, 129, 0.55),
+                        0 4px 12px rgba(0, 0, 0, 0.4),
+                        0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+                    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, filter 0.25s ease;
+                    outline: none;
                 }
                 .vc-btn:hover {
-                    transform: translateY(-3px) scale(1.04);
-                    box-shadow: 0 clamp(14px,3vw,22px) clamp(30px,6vw,50px) rgba(255,145,0,0.6),
-                                0 0 0 4px rgba(255,215,0,0.2);
+                    transform: translateY(-2px) scale(1.02);
+                    box-shadow:
+                        0 16px 40px -4px rgba(255, 64, 129, 0.7),
+                        0 6px 18px rgba(0, 0, 0, 0.5),
+                        0 0 0 1.5px rgba(255, 255, 255, 0.55) inset;
+                    filter: brightness(1.06);
                 }
                 .vc-btn:active {
                     transform: translateY(1px) scale(0.98);
                 }
                 .vc-btn.done {
-                    background: linear-gradient(135deg, #2ed573, #00cec9);
-                    box-shadow: 0 10px 30px rgba(46,213,115,0.4);
+                    background: linear-gradient(135deg, #10B981, #059669);
                     color: #fff;
-                    pointer-events: none;
-                }
-                /* --- Wish card (post-cut reveal) --- */
-                .vc-wish-card {
-                    display: none;
-                    margin: 0 auto clamp(20px, 4vw, 32px);
-                    max-width: clamp(280px,80vw,560px);
-                    padding: clamp(20px,4vw,32px) clamp(18px,4vw,36px);
-                    background: rgba(255,255,255,0.06);
-                    backdrop-filter: blur(20px);
-                    -webkit-backdrop-filter: blur(20px);
-                    border: 1px solid rgba(255,215,0,0.35);
-                    border-radius: clamp(16px,4vw,28px);
-                    box-shadow: 0 16px 48px rgba(0,0,0,0.35),
-                                inset 0 1px 0 rgba(255,255,255,0.08);
-                    animation: vc-wish-pop 0.65s cubic-bezier(0.34,1.56,0.64,1) forwards;
-                }
-                @keyframes vc-wish-pop {
-                    0%   { opacity:0; transform:translateY(24px) scale(0.88); }
-                    100% { opacity:1; transform:translateY(0)    scale(1); }
-                }
-                .vc-wish-icons {
-                    display: flex;
-                    justify-content: center;
-                    gap: 10px;
-                    font-size: clamp(1.2rem,3.5vw,1.8rem);
-                    color: #FFD700;
-                    margin-bottom: 12px;
-                    animation: vc-icon-pulse 1.5s infinite ease-in-out;
-                }
-                .vc-wish-text {
-                    font-family: 'Poppins', sans-serif;
-                    font-size: clamp(0.88rem,2.2vw,1.1rem);
-                    color: rgba(255,255,255,0.92);
-                    line-height: 1.7;
-                    font-weight: 500;
-                }
-                .vc-wish-sender {
-                    margin-top: 14px;
-                    font-family: 'Great Vibes', cursive;
-                    font-size: clamp(1rem,3vw,1.5rem);
-                    color: #FFD700;
-                    text-shadow: 0 2px 12px rgba(255,215,0,0.4);
+                    cursor: default;
+                    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
+                    transform: none !important;
                 }
 
-                /* --- Slices Showcase Container --- */
-                .vc-slices-wrapper {
+                /* Celebratory Wish Card */
+                .vc-wish-card {
                     display: none;
-                    margin: clamp(20px, 4vw, 32px) auto 0;
-                    max-width: clamp(300px, 92vw, 780px);
-                    padding: clamp(20px, 4vw, 32px) clamp(14px, 3vw, 24px);
-                    background: rgba(255, 255, 255, 0.05);
-                    backdrop-filter: blur(16px);
-                    -webkit-backdrop-filter: blur(16px);
-                    border-radius: clamp(20px, 4vw, 32px);
-                    border: 1.5px solid rgba(255, 215, 0, 0.35);
-                    box-shadow: 0 20px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-                    animation: vc-wish-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                    margin-top: 18px;
+                    padding: 16px 22px;
+                    background: rgba(255, 255, 255, 0.08);
+                    border: 1px solid rgba(255, 215, 0, 0.45);
+                    border-radius: 18px;
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+                    animation: vc-wish-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
                 }
-                .vc-slices-heading {
-                    font-family: 'Outfit', sans-serif;
-                    font-size: clamp(1.15rem, 3.5vw, 1.6rem);
+                @keyframes vc-wish-pop {
+                    0% { opacity: 0; transform: translateY(14px) scale(0.92); }
+                    100% { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                .vc-wish-title {
+                    font-size: 1.15rem;
                     font-weight: 800;
                     color: #FFD700;
-                    margin: 0 0 6px;
-                    letter-spacing: -0.3px;
+                    margin-bottom: 4px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                }
+                .vc-wish-desc {
+                    font-size: 0.88rem;
+                    color: rgba(255, 255, 255, 0.9);
+                    line-height: 1.4;
+                    margin: 0;
+                }
+
+                /* Cake Slices Sharing Showcase */
+                .vc-slices-wrapper {
+                    display: none;
+                    margin-top: 24px;
+                    padding-top: 18px;
+                    border-top: 1px dashed rgba(255, 215, 0, 0.35);
+                    animation: vc-wish-pop 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+                }
+                .vc-slices-heading {
+                    font-size: 1.05rem;
+                    font-weight: 800;
+                    color: #FFE082;
+                    margin: 0 0 4px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
                 }
                 .vc-slices-sub {
-                    font-size: clamp(0.8rem, 2vw, 0.95rem);
+                    font-size: 0.78rem;
                     color: rgba(255, 255, 255, 0.75);
-                    margin: 0 0 clamp(16px, 3vw, 24px);
+                    margin: 0 0 14px;
                 }
                 .vc-slices-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(clamp(130px, 38vw, 160px), 1fr));
-                    gap: clamp(12px, 2.5vw, 20px);
-                    justify-content: center;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
                 }
                 .vc-slice-card {
                     position: relative;
-                    background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
-                    border: 1.5px solid rgba(255, 215, 0, 0.3);
-                    border-radius: clamp(14px, 3vw, 20px);
-                    padding: clamp(14px, 3vw, 20px) clamp(10px, 2vw, 16px);
-                    text-align: center;
+                    background: rgba(255, 255, 255, 0.06);
+                    border: 1px solid rgba(255, 215, 0, 0.28);
+                    border-radius: 14px;
+                    padding: 12px 10px;
                     cursor: pointer;
-                    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+                    transition: transform 0.2s, background 0.2s, border-color 0.2s;
                     user-select: none;
                 }
                 .vc-slice-card:hover {
-                    transform: translateY(-6px) scale(1.05);
-                    border-color: #FFD700;
-                    box-shadow: 0 14px 36px rgba(255, 215, 0, 0.45);
+                    transform: translateY(-2px);
+                    background: rgba(255, 255, 255, 0.12);
+                    border-color: rgba(255, 215, 0, 0.6);
                 }
                 .vc-slice-card:active {
-                    transform: translateY(0) scale(0.97);
+                    transform: scale(0.96);
                 }
                 .vc-slice-graphic {
-                    position: relative;
-                    font-size: clamp(2.2rem, 6vw, 3rem);
+                    font-size: 1.8rem;
                     line-height: 1;
-                    margin-bottom: 8px;
-                    display: inline-block;
-                    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
-                }
-                .vc-slice-cherry {
-                    position: absolute;
-                    top: -6px;
-                    right: -6px;
-                    font-size: 0.45em;
-                    animation: vc-icon-pulse 2s infinite ease-in-out;
+                    margin-bottom: 4px;
                 }
                 .vc-slice-badge {
                     display: inline-block;
-                    background: linear-gradient(135deg, #FFD700, #FF9100);
-                    color: #1a0628;
-                    font-family: 'Outfit', sans-serif;
+                    font-size: 0.68rem;
                     font-weight: 800;
-                    font-size: clamp(0.7rem, 1.8vw, 0.82rem);
-                    padding: 3px 12px;
-                    border-radius: 20px;
-                    margin-bottom: 8px;
-                    box-shadow: 0 2px 8px rgba(255, 145, 0, 0.4);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    color: #FFD700;
+                    background: rgba(255, 215, 0, 0.15);
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    margin-bottom: 4px;
                 }
                 .vc-slice-label {
-                    font-family: 'Poppins', sans-serif;
-                    font-size: clamp(0.78rem, 2vw, 0.92rem);
-                    color: rgba(255, 255, 255, 0.95);
-                    line-height: 1.4;
+                    font-size: 0.78rem;
+                    color: rgba(255, 255, 255, 0.9);
+                    line-height: 1.25;
                 }
                 .vc-slice-toast {
                     position: absolute;
-                    top: 50%;
+                    top: -12px;
                     left: 50%;
-                    transform: translate(-50%, -50%) scale(0.5);
-                    background: linear-gradient(135deg, #FFD700, #FF4D8F);
-                    color: #1a0628;
-                    font-family: 'Outfit', sans-serif;
-                    font-weight: 900;
-                    font-size: 0.85rem;
-                    padding: 6px 14px;
-                    border-radius: 20px;
-                    white-space: nowrap;
-                    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                    transform: translateX(-50%) translateY(0);
+                    background: #FF4081;
+                    color: #fff;
+                    font-size: 0.72rem;
+                    font-weight: 700;
+                    padding: 3px 10px;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                     pointer-events: none;
                     opacity: 0;
-                    z-index: 50;
+                    white-space: nowrap;
+                    z-index: 10;
                 }
                 .vc-slice-toast.pop {
                     animation: vc-toast-float 1.2s ease-out forwards;
                 }
                 @keyframes vc-toast-float {
-                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
-                    30% { opacity: 1; transform: translate(-50%, -80%) scale(1.1); }
-                    100% { opacity: 0; transform: translate(-50%, -140%) scale(1); }
+                    0% { opacity: 0; transform: translateX(-50%) translateY(6px); }
+                    20% { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+                    80% { opacity: 1; transform: translateX(-50%) translateY(-12px); }
+                    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
                 }
                 `;
-                    d.head.appendChild(s);
+                d.head.appendChild(s);
+
+                const CAKE_THEMES = {
+                    C1: {
+                        id: 'C1',
+                        name: 'Ruby Berry Royale',
+                        standGold: { c0: '#9A7528', c18: '#DFBA60', c42: '#FFF8D6', c65: '#E5BF62', c85: '#B88A24', c100: '#735212', topStroke: '#E2BC60', highlight: '#FFF8D6' },
+                        porcelainTop: { c0: '#FFFFFF', c60: '#FAF5EE', c100: '#E5D9C8' },
+                        spongeGrad: { c0: '#D5C0AB', c12: '#EFE2D4', c32: '#FFFDF9', c52: '#FFFFFF', c78: '#F5E8D8', c100: '#CFBAA4', stroke: '#D4C0AD' },
+                        biscuitFill: { c0: '#C88E46', c50: '#FFD180', c100: '#B57A30' },
+                        spongeJam: '#C2185B',
+                        glazeBody: { c0: '#80092B', c12: '#C2185B', c38: '#FF2A7A', c68: '#E91E63', c88: '#C2185B', c100: '#60001B' },
+                        glazePool: { c0: '#FF5288', c60: '#E91E63', c100: '#AD1457' },
+                        creamRosette: { c0: '#FFFFFF', c60: '#FFFDF8', c100: '#EFE1D3' },
+                        pearlGrad: { c0: '#FFFFFF', c28: '#FFF0A0', c65: '#FFB300', c100: '#8A6715' },
+                        candleWax: { c0: '#FAF1E0', c35: '#FFFFFF', c70: '#FFFDF6', c100: '#E8DAC2' },
+                        cardBg: 'radial-gradient(ellipse at 50% 50%, rgba(255, 170, 50, 0.28) 0%, rgba(255, 105, 180, 0.16) 35%, transparent 68%), radial-gradient(ellipse at 50% 0%, rgba(255, 215, 0, 0.25) 0%, rgba(255, 77, 143, 0.18) 32%, transparent 65%), linear-gradient(168deg, #18021f 0%, #2b0630 30%, #430a3c 60%, #1f0323 88%, #140118 100%)',
+                        ledgeLeft: `
+                            <g transform="translate(82, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><path d="M -5,-1 C -7,-5 -2,-7 0,-4 C 2,-7 7,-5 5,-1 Z" fill="#FFFFFF"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(98, 196) rotate(-20)"><path d="M 0,-6 C -6,-6 -7,2 -2,8 C 0,10 0,10 2,8 C 7,2 6,-6 0,-6 Z" fill="url(#vc-berry-grad)"/><path d="M 0,-4 C -3,-4 -4,1 -1,5 C 0,6 0,6 1,5 C 4,1 3,-4 0,-4 Z" fill="#FFF2F4"/><circle cx="0" cy="1" r="0.8" fill="#FF1744"/></g>
+                            <g transform="translate(72, 198)"><circle cx="0" cy="0" r="4.2" fill="url(#vc-blueberry-grad)"/><circle cx="-1" cy="-1.2" r="1" fill="#FFFFFF" opacity="0.8"/><polygon points="0,-1.5 0.8,-0.5 1.8,-0.8 1.2,0.2 1.6,1.2 0.6,0.8 0,1.8 -0.6,0.8 -1.6,1.2 -1.2,0.2 -1.8,-0.8 -0.8,-0.5" fill="#121858" transform="scale(0.8)"/></g>`,
+                        ledgeRight: `
+                            <g transform="translate(278, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><path d="M -5,-1 C -7,-5 -2,-7 0,-4 C 2,-7 7,-5 5,-1 Z" fill="#FFFFFF"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(262, 196) rotate(20)"><path d="M 0,-6 C -6,-6 -7,2 -2,8 C 0,10 0,10 2,8 C 7,2 6,-6 0,-6 Z" fill="url(#vc-berry-grad)"/><path d="M 0,-4 C -3,-4 -4,1 -1,5 C 0,6 0,6 1,5 C 4,1 3,-4 0,-4 Z" fill="#FFF2F4"/><circle cx="0" cy="1" r="0.8" fill="#FF1744"/></g>
+                            <g transform="translate(288, 198)"><circle cx="0" cy="0" r="4.2" fill="url(#vc-blueberry-grad)"/><circle cx="-1" cy="-1.2" r="1" fill="#FFFFFF" opacity="0.8"/><polygon points="0,-1.5 0.8,-0.5 1.8,-0.8 1.2,0.2 1.6,1.2 0.6,0.8 0,1.8 -0.6,0.8 -1.6,1.2 -1.2,0.2 -1.8,-0.8 -0.8,-0.5" fill="#121858" transform="scale(0.8)"/></g>`,
+                        topToppingsLeft: `
+                            <g><g transform="translate(118, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#FFFFFF"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(148, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#FFFFFF"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(136, 114) rotate(-14)"><ellipse cx="2" cy="10" rx="8" ry="4" fill="rgba(0,0,0,0.2)"/><path d="M 0,-11 C -10,-11 -13,2 -4,13 C -1,17 1,17 4,13 C 13,2 10,-11 0,-11 Z" fill="url(#vc-berry-grad)"/><path d="M -3,-8 C -8,-3 -8,4 -4,8" stroke="rgba(255,255,255,0.85)" stroke-width="1.8" stroke-linecap="round" fill="none"/><circle cx="-4" cy="-3" r="0.75" fill="#FFE082"/><circle cx="2" cy="-4" r="0.75" fill="#FFE082"/><circle cx="-2" cy="2" r="0.75" fill="#FFE082"/><circle cx="3" cy="3" r="0.75" fill="#FFE082"/><circle cx="0" cy="7" r="0.75" fill="#FFE082"/><path d="M 0,-11 L -5,-15 L -2,-12 L 0,-16 L 3,-12 L 6,-15 L 2,-10 Z" fill="url(#vc-leaf-grad)"/></g>
+                            <g transform="translate(156, 124)"><circle cx="0" cy="0" r="5" fill="url(#vc-blueberry-grad)"/><circle cx="-1.5" cy="-1.5" r="1.2" fill="#FFFFFF" opacity="0.85"/><polygon points="0,-1.8 0.9,-0.6 2.1,-1 1.4,0.3 1.9,1.4 0.7,0.9 0,2.1 -0.7,0.9 -1.9,1.4 -1.4,0.3 -2.1,-1 -0.9,-0.6" fill="#0A0E32" transform="scale(0.8)"/></g>`,
+                        topToppingsRight: `
+                            <g><g transform="translate(212, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#FFFFFF"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(242, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#FFFFFF"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(224, 114) rotate(14)"><ellipse cx="2" cy="10" rx="8" ry="4" fill="rgba(0,0,0,0.2)"/><path d="M 0,-11 C -10,-11 -13,2 -4,13 C -1,17 1,17 4,13 C 13,2 10,-11 0,-11 Z" fill="url(#vc-berry-grad)"/><path d="M 3,-8 C 8,-3 8,4 4,8" stroke="rgba(255,255,255,0.85)" stroke-width="1.8" stroke-linecap="round" fill="none"/><circle cx="-3" cy="-4" r="0.75" fill="#FFE082"/><circle cx="3" cy="-3" r="0.75" fill="#FFE082"/><circle cx="2" cy="2" r="0.75" fill="#FFE082"/><circle cx="-2" cy="4" r="0.75" fill="#FFE082"/><circle cx="0" cy="7" r="0.75" fill="#FFE082"/><path d="M 0,-11 L -5,-15 L -2,-12 L 0,-16 L 3,-12 L 6,-15 L 2,-10 Z" fill="url(#vc-leaf-grad)"/></g>
+                            <g transform="translate(204, 124)"><circle cx="0" cy="0" r="5" fill="url(#vc-blueberry-grad)"/><circle cx="-1.5" cy="-1.5" r="1.2" fill="#FFFFFF" opacity="0.85"/><polygon points="0,-1.8 0.9,-0.6 2.1,-1 1.4,0.3 1.9,1.4 0.7,0.9 0,2.1 -0.7,0.9 -1.9,1.4 -1.4,0.3 -2.1,-1 -0.9,-0.6" fill="#0A0E32" transform="scale(0.8)"/></g>`,
+                        centerpiece: `
+                            <g transform="translate(180, 122)"><ellipse cx="0" cy="12" rx="9" ry="4" fill="rgba(0,0,0,0.25)"/><path d="M 0,-13 C -12,-13 -15,3 -5,16 C -1,20 1,20 5,16 C 15,3 12,-13 0,-13 Z" fill="url(#vc-berry-grad)"/><path d="M -4,-10 C -10,-4 -10,4 -5,10" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="-5" cy="-4" r="0.8" fill="#FFE082"/><circle cx="3" cy="-5" r="0.8" fill="#FFE082"/><circle cx="-2" cy="2" r="0.8" fill="#FFE082"/><circle cx="4" cy="3" r="0.8" fill="#FFE082"/><circle cx="-1" cy="8" r="0.8" fill="#FFE082"/><circle cx="2" cy="10" r="0.8" fill="#FFE082"/><path d="M 0,-13 L -6,-18 L -3,-14 L 0,-19 L 3,-14 L 6,-18 L 2,-12 Z" fill="url(#vc-leaf-grad)"/></g>`,
+                        sparklesLeft: `<path d="M 125,138 L 126.5,142 L 130.5,143.5 L 126.5,145 L 125,149 L 123.5,145 L 119.5,143.5 L 123.5,142 Z" fill="#FFD700" opacity="0.85"/><path d="M 166,134 L 167,137 L 170,138 L 167,139 L 166,142 L 165,139 L 162,138 L 165,137 Z" fill="#FFE082" opacity="0.9"/>`,
+                        sparklesRight: `<path d="M 235,138 L 236.5,142 L 240.5,143.5 L 236.5,145 L 235,149 L 233.5,145 L 229.5,143.5 L 233.5,142 Z" fill="#FFD700" opacity="0.85"/><path d="M 194,134 L 195,137 L 198,138 L 195,139 L 194,142 L 193,139 L 190,138 L 193,137 Z" fill="#FFE082" opacity="0.9"/>`
+                    },
+                    C2: {
+                        id: 'C2',
+                        name: 'Belgian Chocolate Truffle',
+                        standGold: { c0: '#4A3414', c18: '#C9933B', c42: '#FFEAA6', c65: '#D1A348', c85: '#875C1C', c100: '#3D2507', topStroke: '#D1A348', highlight: '#FFEAA6' },
+                        porcelainTop: { c0: '#2A1810', c60: '#1F1008', c100: '#150A05' },
+                        spongeGrad: { c0: '#2B1408', c12: '#44200D', c32: '#5C2D13', c52: '#6E3718', c78: '#4E240D', c100: '#261106', stroke: '#3A180A' },
+                        biscuitFill: { c0: '#8A4B1A', c50: '#DDA059', c100: '#6E350D' },
+                        spongeJam: '#180803',
+                        glazeBody: { c0: '#150703', c12: '#2B0E05', c38: '#4F1E0B', c68: '#3D1507', c88: '#250C04', c100: '#0F0401' },
+                        glazePool: { c0: '#4A1D0B', c60: '#2E1005', c100: '#170602' },
+                        creamRosette: { c0: '#7A3E1D', c60: '#5C2D13', c100: '#381A0B' },
+                        pearlGrad: { c0: '#FFFFFF', c28: '#FFF2B2', c65: '#FFC107', c100: '#996500' },
+                        candleWax: { c0: '#3D1C0B', c35: '#5C2D13', c70: '#47200B', c100: '#2A1005' },
+                        cardBg: 'radial-gradient(ellipse at 50% 50%, rgba(255, 170, 50, 0.28) 0%, rgba(218, 140, 40, 0.16) 35%, transparent 68%), radial-gradient(ellipse at 50% 0%, rgba(255, 215, 0, 0.22) 0%, rgba(139, 69, 19, 0.25) 32%, transparent 65%), linear-gradient(168deg, #120905 0%, #241108 30%, #38180c 60%, #1c0a04 88%, #0d0402 100%)',
+                        ledgeLeft: `
+                            <g transform="translate(82, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><path d="M -5,-1 C -7,-5 -2,-7 0,-4 C 2,-7 7,-5 5,-1 Z" fill="#9C5B28"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(98, 196) rotate(-15)"><ellipse cx="0" cy="-2" rx="8" ry="4" fill="#3D1C0B"/><ellipse cx="0" cy="0" rx="7" ry="1.2" fill="#180803"/><ellipse cx="0" cy="2" rx="8" ry="4" fill="#4E260F"/><circle cx="-2" cy="-2" r="1" fill="#FFF" opacity="0.4"/></g>
+                            <g transform="translate(70, 198)"><circle cx="0" cy="0" r="5" fill="url(#vc-gold-pearl)"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                        ledgeRight: `
+                            <g transform="translate(278, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><path d="M -5,-1 C -7,-5 -2,-7 0,-4 C 2,-7 7,-5 5,-1 Z" fill="#9C5B28"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(262, 196) rotate(15)"><ellipse cx="0" cy="-2" rx="8" ry="4" fill="#3D1C0B"/><ellipse cx="0" cy="0" rx="7" ry="1.2" fill="#180803"/><ellipse cx="0" cy="2" rx="8" ry="4" fill="#4E260F"/><circle cx="-2" cy="-2" r="1" fill="#FFF" opacity="0.4"/></g>
+                            <g transform="translate(290, 198)"><circle cx="0" cy="0" r="5" fill="url(#vc-gold-pearl)"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                        topToppingsLeft: `
+                            <g><g transform="translate(118, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#9C5B28"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(148, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(136, 114) rotate(-10)"><ellipse cx="0" cy="0" rx="8" ry="7" fill="url(#vc-gold-pearl)" stroke="#5C2D13" stroke-width="0.8"/><circle cx="-2" cy="-2" r="1.5" fill="#FFF" opacity="0.8"/><path d="M -4,-2 C -1,-5 2,-4 5,-1" stroke="#2B1408" stroke-width="1.6" fill="none"/></g>
+                            <g transform="translate(158, 122)"><circle cx="0" cy="0" r="4.5" fill="#3D1C0B"/><ellipse cx="-1" cy="-1" rx="1.5" ry="1" fill="#FFF" opacity="0.6"/></g>`,
+                        topToppingsRight: `
+                            <g><g transform="translate(212, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(242, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><path d="M -6,0 C -8,-4 -3,-7 0,-4 C 3,-7 8,-4 6,0 Z" fill="#9C5B28"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(224, 114) rotate(10)"><ellipse cx="0" cy="0" rx="8" ry="7" fill="url(#vc-gold-pearl)" stroke="#5C2D13" stroke-width="0.8"/><circle cx="-2" cy="-2" r="1.5" fill="#FFF" opacity="0.8"/><path d="M -4,-2 C -1,-5 2,-4 5,-1" stroke="#2B1408" stroke-width="1.6" fill="none"/></g>
+                            <g transform="translate(202, 122)"><circle cx="0" cy="0" r="4.5" fill="#3D1C0B"/><ellipse cx="-1" cy="-1" rx="1.5" ry="1" fill="#FFF" opacity="0.6"/></g>`,
+                        centerpiece: `
+                            <g transform="translate(180, 120)"><ellipse cx="0" cy="12" rx="10" ry="4" fill="rgba(0,0,0,0.35)"/><circle cx="0" cy="0" r="11" fill="url(#vc-gold-pearl)" stroke="#5C2D13" stroke-width="1"/><path d="M -8,-4 C -2,-8 4,-6 8,-2 C 4,3 -2,4 -7,2" stroke="#2B1408" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="-3" cy="-4" r="1.5" fill="#FFF" opacity="0.8"/><circle cx="2" cy="4" r="1.2" fill="#FFEAA6"/><circle cx="5" cy="-2" r="1" fill="#FFEAA6"/></g>`,
+                        sparklesLeft: `<path d="M 125,138 L 126.5,142 L 130.5,143.5 L 126.5,145 L 125,149 L 123.5,145 L 119.5,143.5 L 123.5,142 Z" fill="#FFD700" opacity="0.9"/><path d="M 166,134 L 167,137 L 170,138 L 167,139 L 166,142 L 165,139 L 162,138 L 165,137 Z" fill="#FFEAA6" opacity="0.95"/>`,
+                        sparklesRight: `<path d="M 235,138 L 236.5,142 L 240.5,143.5 L 236.5,145 L 235,149 L 233.5,145 L 229.5,143.5 L 233.5,142 Z" fill="#FFD700" opacity="0.9"/><path d="M 194,134 L 195,137 L 198,138 L 195,139 L 194,142 L 193,139 L 190,138 L 193,137 Z" fill="#FFEAA6" opacity="0.95"/>`
+                    },
+                    C3: {
+                        id: 'C3',
+                        name: 'Pastel Princess Strawberry',
+                        standGold: { c0: '#B76E79', c18: '#F7C5CC', c42: '#FFFFFF', c65: '#F2B1BA', c85: '#C87D87', c100: '#8A4850', topStroke: '#F2B1BA', highlight: '#FFFFFF' },
+                        porcelainTop: { c0: '#FFFFFF', c60: '#FFF5F7', c100: '#FCE4EC' },
+                        spongeGrad: { c0: '#F3CAD9', c12: '#FCE7F0', c32: '#FFF9FB', c52: '#FFFFFF', c78: '#FBE8F1', c100: '#EEC2D3', stroke: '#E8B3C7' },
+                        biscuitFill: { c0: '#F48FB1', c50: '#FF80AB', c100: '#C2185B' },
+                        spongeJam: '#FF4081',
+                        glazeBody: { c0: '#C2185B', c12: '#E91E63', c38: '#FF4081', c68: '#FF80AB', c88: '#F06292', c100: '#AD1457' },
+                        glazePool: { c0: '#FF80AB', c60: '#FF4081', c100: '#E91E63' },
+                        creamRosette: { c0: '#FFFFFF', c60: '#FFF0F5', c100: '#F8BBD0' },
+                        pearlGrad: { c0: '#FFFFFF', c28: '#FFE4E9', c65: '#FF80AB', c100: '#C2185B' },
+                        candleWax: { c0: '#FCE4EC', c35: '#FFFFFF', c70: '#FFF5F8', c100: '#F8BBD0' },
+                        cardBg: 'radial-gradient(ellipse at 50% 50%, rgba(255, 182, 193, 0.3) 0%, rgba(233, 30, 99, 0.16) 35%, transparent 68%), radial-gradient(ellipse at 50% 0%, rgba(255, 215, 0, 0.2) 0%, rgba(255, 105, 180, 0.22) 32%, transparent 65%), linear-gradient(168deg, #200517 0%, #380a29 30%, #520f3c 60%, #28051e 88%, #14020f 100%)',
+                        ledgeLeft: `
+                            <g transform="translate(82, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><path d="M -5,-1 C -7,-5 -2,-7 0,-4 C 2,-7 7,-5 5,-1 Z" fill="#FFFFFF"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(98, 196)"><circle cx="0" cy="0" r="2.5" fill="#FFD700"/><ellipse cx="0" cy="-4.8" rx="2" ry="3.8" fill="#FFF"/><ellipse cx="4.8" cy="0" rx="3.8" ry="2" fill="#FFF"/><ellipse cx="0" cy="4.8" rx="2" ry="3.8" fill="#FFF"/><ellipse cx="-4.8" cy="0" rx="3.8" ry="2" fill="#FFF"/></g>
+                            <g transform="translate(70, 198) rotate(-15)"><ellipse cx="0" cy="-1.5" rx="7" ry="3.5" fill="#FF80AB"/><ellipse cx="0" cy="0" rx="6" ry="1" fill="#FFF"/><ellipse cx="0" cy="1.5" rx="7" ry="3.5" fill="#F06292"/></g>`,
+                        ledgeRight: `
+                            <g transform="translate(278, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><path d="M -5,-1 C -7,-5 -2,-7 0,-4 C 2,-7 7,-5 5,-1 Z" fill="#FFFFFF"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(262, 196)"><circle cx="0" cy="0" r="2.5" fill="#FFD700"/><ellipse cx="0" cy="-4.8" rx="2" ry="3.8" fill="#FFF"/><ellipse cx="4.8" cy="0" rx="3.8" ry="2" fill="#FFF"/><ellipse cx="0" cy="4.8" rx="2" ry="3.8" fill="#FFF"/><ellipse cx="-4.8" cy="0" rx="3.8" ry="2" fill="#FFF"/></g>
+                            <g transform="translate(290, 198) rotate(15)"><ellipse cx="0" cy="-1.5" rx="7" ry="3.5" fill="#FF80AB"/><ellipse cx="0" cy="0" rx="6" ry="1" fill="#FFF"/><ellipse cx="0" cy="1.5" rx="7" ry="3.5" fill="#F06292"/></g>`,
+                        topToppingsLeft: `
+                            <g><g transform="translate(118, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(148, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(136, 114) rotate(-14)"><ellipse cx="2" cy="10" rx="8" ry="4" fill="rgba(0,0,0,0.2)"/><path d="M 0,-11 C -10,-11 -13,2 -4,13 C -1,17 1,17 4,13 C 13,2 10,-11 0,-11 Z" fill="url(#vc-berry-grad)"/><path d="M -3,-8 C -8,-3 -8,4 -4,8" stroke="rgba(255,255,255,0.85)" stroke-width="1.8" stroke-linecap="round" fill="none"/><circle cx="-4" cy="-3" r="0.75" fill="#FFE082"/><circle cx="2" cy="-4" r="0.75" fill="#FFE082"/><circle cx="-2" cy="2" r="0.75" fill="#FFE082"/><circle cx="3" cy="3" r="0.75" fill="#FFE082"/><circle cx="0" cy="7" r="0.75" fill="#FFE082"/><path d="M 0,-11 L -5,-15 L -2,-12 L 0,-16 L 3,-12 L 6,-15 L 2,-10 Z" fill="url(#vc-leaf-grad)"/></g>
+                            <g transform="translate(158, 124)"><circle cx="0" cy="0" r="2.2" fill="#FFD700"/><ellipse cx="0" cy="-4" rx="1.6" ry="3" fill="#FFF"/><ellipse cx="4" cy="0" rx="3" ry="1.6" fill="#FFF"/><ellipse cx="0" cy="4" rx="1.6" ry="3" fill="#FFF"/><ellipse cx="-4" cy="0" rx="3" ry="1.6" fill="#FFF"/></g>`,
+                        topToppingsRight: `
+                            <g><g transform="translate(212, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(242, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(224, 114) rotate(14)"><ellipse cx="2" cy="10" rx="8" ry="4" fill="rgba(0,0,0,0.2)"/><path d="M 0,-11 C -10,-11 -13,2 -4,13 C -1,17 1,17 4,13 C 13,2 10,-11 0,-11 Z" fill="url(#vc-berry-grad)"/><path d="M 3,-8 C 8,-3 8,4 4,8" stroke="rgba(255,255,255,0.85)" stroke-width="1.8" stroke-linecap="round" fill="none"/><circle cx="-3" cy="-4" r="0.75" fill="#FFE082"/><circle cx="3" cy="-3" r="0.75" fill="#FFE082"/><circle cx="2" cy="2" r="0.75" fill="#FFE082"/><circle cx="-2" cy="4" r="0.75" fill="#FFE082"/><circle cx="0" cy="7" r="0.75" fill="#FFE082"/><path d="M 0,-11 L -5,-15 L -2,-12 L 0,-16 L 3,-12 L 6,-15 L 2,-10 Z" fill="url(#vc-leaf-grad)"/></g>
+                            <g transform="translate(202, 124)"><circle cx="0" cy="0" r="2.2" fill="#FFD700"/><ellipse cx="0" cy="-4" rx="1.6" ry="3" fill="#FFF"/><ellipse cx="4" cy="0" rx="3" ry="1.6" fill="#FFF"/><ellipse cx="0" cy="4" rx="1.6" ry="3" fill="#FFF"/><ellipse cx="-4" cy="0" rx="3" ry="1.6" fill="#FFF"/></g>`,
+                        centerpiece: `
+                            <g transform="translate(180, 122)"><ellipse cx="0" cy="12" rx="9" ry="4" fill="rgba(0,0,0,0.25)"/><path d="M 0,-13 C -12,-13 -15,3 -5,16 C -1,20 1,20 5,16 C 15,3 12,-13 0,-13 Z" fill="url(#vc-berry-grad)"/><path d="M -4,-10 C -10,-4 -10,4 -5,10" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="-5" cy="-4" r="0.8" fill="#FFE082"/><circle cx="3" cy="-5" r="0.8" fill="#FFE082"/><circle cx="-2" cy="2" r="0.8" fill="#FFE082"/><circle cx="4" cy="3" r="0.8" fill="#FFE082"/><g transform="translate(0, -14)"><circle cx="0" cy="0" r="2.8" fill="#FFD700"/><ellipse cx="0" cy="-4" rx="1.8" ry="3" fill="#FFF"/><ellipse cx="4" cy="0" rx="3" ry="1.8" fill="#FFF"/><ellipse cx="0" cy="4" rx="1.8" ry="3" fill="#FFF"/><ellipse cx="-4" cy="0" rx="3" ry="1.8" fill="#FFF"/></g></g>`,
+                        sparklesLeft: `<path d="M 125,138 L 126.5,142 L 130.5,143.5 L 126.5,145 L 125,149 L 123.5,145 L 119.5,143.5 L 123.5,142 Z" fill="#FF80AB" opacity="0.9"/><path d="M 166,134 L 167,137 L 170,138 L 167,139 L 166,142 L 165,139 L 162,138 L 165,137 Z" fill="#FFF" opacity="0.9"/>`,
+                        sparklesRight: `<path d="M 235,138 L 236.5,142 L 240.5,143.5 L 236.5,145 L 235,149 L 233.5,145 L 229.5,143.5 L 233.5,142 Z" fill="#FF80AB" opacity="0.9"/><path d="M 194,134 L 195,137 L 198,138 L 195,139 L 194,142 L 193,139 L 190,138 L 193,137 Z" fill="#FFF" opacity="0.9"/>`
+                    },
+                    C4: {
+                        id: 'C4',
+                        name: 'Rainbow Confetti Fiesta',
+                        standGold: { c0: '#B8860B', c18: '#FFD700', c42: '#FFFFE0', c65: '#FFC800', c85: '#DAA520', c100: '#8B6508', topStroke: '#FFD700', highlight: '#FFFFE0' },
+                        porcelainTop: { c0: '#FFFFFF', c60: '#F8F9FA', c100: '#E9ECEF' },
+                        spongeGrad: { c0: '#E0E7FF', c12: '#F3E8FF', c32: '#FFF1F2', c52: '#FEFCE8', c78: '#ECFDF5', c100: '#EDE9FE', stroke: '#DDD6FE' },
+                        biscuitFill: { c0: '#FF1744', c50: '#FFEA00', c100: '#00E676' },
+                        spongeJam: '#00B0FF',
+                        glazeBody: { c0: '#00B0FF', c12: '#651FFF', c38: '#FF1744', c68: '#FFEA00', c88: '#00E676', c100: '#00B0FF' },
+                        glazePool: { c0: '#FFFFFF', c60: '#E0F2FE', c100: '#BAE6FD' },
+                        creamRosette: { c0: '#FFFFFF', c60: '#FFFDE7', c100: '#FFF59D' },
+                        pearlGrad: { c0: '#FFFFFF', c28: '#FFD54F', c65: '#FF1744', c100: '#651FFF' },
+                        candleWax: { c0: '#FFFFFF', c35: '#FFF9C4', c70: '#FFFFFF', c100: '#FFE082' },
+                        cardBg: 'radial-gradient(ellipse at 50% 50%, rgba(255, 235, 59, 0.25) 0%, rgba(233, 30, 99, 0.18) 35%, transparent 68%), radial-gradient(ellipse at 50% 0%, rgba(0, 229, 255, 0.2) 0%, rgba(124, 77, 255, 0.22) 32%, transparent 65%), linear-gradient(168deg, #0e072b 0%, #1e0d4a 30%, #301369 60%, #160838 88%, #090317 100%)',
+                        ledgeLeft: `
+                            <g transform="translate(82, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="-1" r="1.8" fill="#FF1744"/></g>
+                            <g transform="translate(98, 196) rotate(-15)"><ellipse cx="0" cy="-1.5" rx="7.5" ry="3.8" fill="#00E5FF"/><ellipse cx="0" cy="0" rx="6.5" ry="1.2" fill="#FFEA00"/><ellipse cx="0" cy="1.5" rx="7.5" ry="3.8" fill="#FF4081"/></g>
+                            <g transform="translate(70, 198)"><circle cx="0" cy="0" r="4.5" fill="#00E676"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                        ledgeRight: `
+                            <g transform="translate(278, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="-1" r="1.8" fill="#00E5FF"/></g>
+                            <g transform="translate(262, 196) rotate(15)"><ellipse cx="0" cy="-1.5" rx="7.5" ry="3.8" fill="#FF4081"/><ellipse cx="0" cy="0" rx="6.5" ry="1.2" fill="#FFEA00"/><ellipse cx="0" cy="1.5" rx="7.5" ry="3.8" fill="#00E5FF"/></g>
+                            <g transform="translate(290, 198)"><circle cx="0" cy="0" r="4.5" fill="#FFD600"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                        topToppingsLeft: `
+                            <g><g transform="translate(118, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="#FF1744"/></g><g transform="translate(148, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="#00E676"/></g></g>
+                            <g transform="translate(136, 114) rotate(-10)"><ellipse cx="0" cy="-2" rx="8" ry="4" fill="#00E5FF"/><ellipse cx="0" cy="0" rx="7" ry="1.2" fill="#FFEA00"/><ellipse cx="0" cy="2" rx="8" ry="4" fill="#FF1744"/></g>
+                            <g transform="translate(158, 124)"><circle cx="0" cy="0" r="4.2" fill="#651FFF"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                        topToppingsRight: `
+                            <g><g transform="translate(212, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="#FFEA00"/></g><g transform="translate(242, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="#00B0FF"/></g></g>
+                            <g transform="translate(224, 114) rotate(10)"><ellipse cx="0" cy="-2" rx="8" ry="4" fill="#FF1744"/><ellipse cx="0" cy="0" rx="7" ry="1.2" fill="#FFEA00"/><ellipse cx="0" cy="2" rx="8" ry="4" fill="#00E5FF"/></g>
+                            <g transform="translate(202, 124)"><circle cx="0" cy="0" r="4.2" fill="#FF9100"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                        centerpiece: `
+                            <g transform="translate(180, 120)"><ellipse cx="0" cy="12" rx="10" ry="4" fill="rgba(0,0,0,0.25)"/><ellipse cx="0" cy="-3" rx="12" ry="7" fill="#00E5FF"/><ellipse cx="0" cy="0" rx="11" ry="2.5" fill="#FFEA00"/><ellipse cx="0" cy="3" rx="12" ry="7" fill="#FF1744"/><ellipse cx="-3" cy="-4" rx="4" ry="1.5" fill="#FFF" opacity="0.7"/><g transform="translate(0, -12)"><polygon points="0,-7 2,-2 7,-2 3,1 5,6 0,3 -5,6 -3,1 -7,-2 -2,-2" fill="#FFD700"/></g></g>`,
+                        sparklesLeft: `<circle cx="125" cy="142" r="1.8" fill="#FF1744"/><circle cx="130" cy="145" r="1.8" fill="#FFEA00"/><circle cx="122" cy="146" r="1.8" fill="#00E676"/><circle cx="166" cy="138" r="1.8" fill="#00B0FF"/>`,
+                        sparklesRight: `<circle cx="235" cy="142" r="1.8" fill="#651FFF"/><circle cx="240" cy="145" r="1.8" fill="#FF1744"/><circle cx="232" cy="146" r="1.8" fill="#FFEA00"/><circle cx="194" cy="138" r="1.8" fill="#00E676"/>`
+                    },
+                    C5: {
+                        id: 'C5',
+                        name: 'Royal Velvet Blueberry',
+                        standGold: { c0: '#5E35B1', c18: '#9575CD', c42: '#EDE7F6', c65: '#7E57C2', c85: '#512DA8', c100: '#311B92', topStroke: '#9575CD', highlight: '#EDE7F6' },
+                        porcelainTop: { c0: '#FFFFFF', c60: '#F3E5F5', c100: '#E1BEE7' },
+                        spongeGrad: { c0: '#261438', c12: '#41225E', c32: '#5A3282', c52: '#6A3D99', c78: '#49266B', c100: '#231133', stroke: '#381C54' },
+                        biscuitFill: { c0: '#4A148C', c50: '#B388FF', c100: '#311B92' },
+                        spongeJam: '#7C4DFF',
+                        glazeBody: { c0: '#1A0033', c12: '#311B92', c38: '#6200EA', c68: '#7C4DFF', c88: '#4A148C', c100: '#140024' },
+                        glazePool: { c0: '#7C4DFF', c60: '#4A148C', c100: '#1A0033' },
+                        creamRosette: { c0: '#FFFFFF', c60: '#EDE7F6', c100: '#D1C4E9' },
+                        pearlGrad: { c0: '#FFFFFF', c28: '#D1C4E9', c65: '#7C4DFF', c100: '#311B92' },
+                        candleWax: { c0: '#EDE7F6', c35: '#FFFFFF', c70: '#F3E5F5', c100: '#D1C4E9' },
+                        cardBg: 'radial-gradient(ellipse at 50% 50%, rgba(124, 77, 255, 0.28) 0%, rgba(49, 27, 146, 0.2) 35%, transparent 68%), radial-gradient(ellipse at 50% 0%, rgba(255, 215, 0, 0.2) 0%, rgba(106, 27, 154, 0.25) 32%, transparent 65%), linear-gradient(168deg, #0a041c 0%, #150933 30%, #251052 60%, #12062b 88%, #060112 100%)',
+                        ledgeLeft: `
+                            <g transform="translate(82, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(98, 196)"><circle cx="-2" cy="-2" r="3" fill="#311B92"/><circle cx="2" cy="-2" r="3" fill="#4A148C"/><circle cx="-2" cy="2" r="3" fill="#1A0033"/><circle cx="2" cy="2" r="3" fill="#6200EA"/><circle cx="0" cy="0" r="1" fill="#FFF" opacity="0.8"/></g>
+                            <g transform="translate(72, 198)"><circle cx="0" cy="0" r="4.2" fill="url(#vc-blueberry-grad)"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                        ledgeRight: `
+                            <g transform="translate(278, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(262, 196)"><circle cx="-2" cy="-2" r="3" fill="#311B92"/><circle cx="2" cy="-2" r="3" fill="#4A148C"/><circle cx="-2" cy="2" r="3" fill="#1A0033"/><circle cx="2" cy="2" r="3" fill="#6200EA"/><circle cx="0" cy="0" r="1" fill="#FFF" opacity="0.8"/></g>
+                            <g transform="translate(288, 198)"><circle cx="0" cy="0" r="4.2" fill="url(#vc-blueberry-grad)"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/></g>`,
+                        topToppingsLeft: `
+                            <g><g transform="translate(118, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(148, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(136, 114)"><circle cx="-3" cy="-3" r="3.2" fill="#311B92"/><circle cx="3" cy="-3" r="3.2" fill="#4A148C"/><circle cx="-3" cy="3" r="3.2" fill="#1A0033"/><circle cx="3" cy="3" r="3.2" fill="#6200EA"/><circle cx="0" cy="0" r="3.5" fill="#7C4DFF"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/><path d="M 0,-7 L -3,-10 L 0,-9 L 3,-10 Z" fill="#81C784"/></g>
+                            <g transform="translate(156, 124)"><circle cx="0" cy="0" r="5" fill="url(#vc-blueberry-grad)"/><circle cx="-1.5" cy="-1.5" r="1.2" fill="#FFFFFF" opacity="0.85"/></g>`,
+                        topToppingsRight: `
+                            <g><g transform="translate(212, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(242, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(224, 114)"><circle cx="-3" cy="-3" r="3.2" fill="#311B92"/><circle cx="3" cy="-3" r="3.2" fill="#4A148C"/><circle cx="-3" cy="3" r="3.2" fill="#1A0033"/><circle cx="3" cy="3" r="3.2" fill="#6200EA"/><circle cx="0" cy="0" r="3.5" fill="#7C4DFF"/><circle cx="-1" cy="-1" r="1" fill="#FFF" opacity="0.8"/><path d="M 0,-7 L -3,-10 L 0,-9 L 3,-10 Z" fill="#81C784"/></g>
+                            <g transform="translate(204, 124)"><circle cx="0" cy="0" r="5" fill="url(#vc-blueberry-grad)"/><circle cx="-1.5" cy="-1.5" r="1.2" fill="#FFFFFF" opacity="0.85"/></g>`,
+                        centerpiece: `
+                            <g transform="translate(180, 122)"><ellipse cx="0" cy="12" rx="9" ry="4" fill="rgba(0,0,0,0.25)"/><circle cx="-4" cy="-5" r="4.2" fill="#311B92"/><circle cx="4" cy="-5" r="4.2" fill="#4A148C"/><circle cx="-6" cy="1" r="4.2" fill="#1A0033"/><circle cx="0" cy="0" r="4.6" fill="#6200EA"/><circle cx="6" cy="1" r="4.2" fill="#4A148C"/><circle cx="-3" cy="7" r="4.2" fill="#311B92"/><circle cx="3" cy="7" r="4.2" fill="#6200EA"/><circle cx="0" cy="11" r="3.6" fill="#1A0033"/><circle cx="-1" cy="-1" r="1.2" fill="#FFF" opacity="0.8"/><circle cx="3" cy="3" r="1" fill="#FFF" opacity="0.7"/><path d="M 0,-9 L -4,-13 L -1,-11 L 0,-14 L 1,-11 L 4,-13 Z" fill="#81C784"/></g>`,
+                        sparklesLeft: `<path d="M 125,138 L 126.5,142 L 130.5,143.5 L 126.5,145 L 125,149 L 123.5,145 L 119.5,143.5 L 123.5,142 Z" fill="#B388FF" opacity="0.85"/><path d="M 166,134 L 167,137 L 170,138 L 167,139 L 166,142 L 165,139 L 162,138 L 165,137 Z" fill="#EDE7F6" opacity="0.9"/>`,
+                        sparklesRight: `<path d="M 235,138 L 236.5,142 L 240.5,143.5 L 236.5,145 L 235,149 L 233.5,145 L 229.5,143.5 L 233.5,142 Z" fill="#B388FF" opacity="0.85"/><path d="M 194,134 L 195,137 L 198,138 L 195,139 L 194,142 L 193,139 L 190,138 L 193,137 Z" fill="#EDE7F6" opacity="0.9"/>`
+                    },
+                    C6: {
+                        id: 'C6',
+                        name: 'Salted Caramel Crunch',
+                        standGold: { c0: '#8A5A1A', c18: '#DDA059', c42: '#FFF3D6', c65: '#D18D3A', c85: '#9E641B', c100: '#54340A', topStroke: '#DDA059', highlight: '#FFF3D6' },
+                        porcelainTop: { c0: '#FFFFFF', c60: '#FFF8E7', c100: '#FFE0B2' },
+                        spongeGrad: { c0: '#D7B48C', c12: '#EDD6B8', c32: '#FFF6E9', c52: '#FFFFFF', c78: '#F5E2C9', c100: '#C9A375', stroke: '#C29868' },
+                        biscuitFill: { c0: '#BF6E00', c50: '#FFB300', c100: '#804400' },
+                        spongeJam: '#FF8F00',
+                        glazeBody: { c0: '#663300', c12: '#A85800', c38: '#E67E00', c68: '#FF9900', c88: '#B35900', c100: '#4D2600' },
+                        glazePool: { c0: '#FFA726', c60: '#E65100', c100: '#7A2E00' },
+                        creamRosette: { c0: '#FFFFFF', c60: '#FFF8E1', c100: '#FFE082' },
+                        pearlGrad: { c0: '#FFFFFF', c28: '#FFE082', c65: '#FFB300', c100: '#8D4600' },
+                        candleWax: { c0: '#FFF8E1', c35: '#FFFFFF', c70: '#FFECB3', c100: '#FFE082' },
+                        cardBg: 'radial-gradient(ellipse at 50% 50%, rgba(255, 167, 38, 0.28) 0%, rgba(139, 69, 19, 0.18) 35%, transparent 68%), radial-gradient(ellipse at 50% 0%, rgba(255, 215, 0, 0.25) 0%, rgba(230, 81, 0, 0.2) 32%, transparent 65%), linear-gradient(168deg, #190e04 0%, #2e1a07 30%, #452608 60%, #211204 88%, #0f0701 100%)',
+                        ledgeLeft: `
+                            <g transform="translate(82, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(98, 196) rotate(-15)"><polygon points="-6,-6 6,-6 8,6 -4,6" fill="#DDA059" stroke="#8A5A1A" stroke-width="0.8"/><line x1="-3" y1="-5" x2="1" y2="5" stroke="#8A5A1A" stroke-width="0.6"/><line x1="2" y1="-5" x2="6" y2="5" stroke="#8A5A1A" stroke-width="0.6"/></g>
+                            <g transform="translate(70, 198)"><circle cx="0" cy="0" r="4.5" fill="#8A5A1A"/><ellipse cx="-1" cy="-1" rx="1.5" ry="1" fill="#FFF" opacity="0.6"/></g>`,
+                        ledgeRight: `
+                            <g transform="translate(278, 192)"><path d="M -8,2 C -11,-4 -5,-9 0,-6 C 5,-9 11,-4 8,2 C 4,7 -4,7 -8,2 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="-1" r="1.8" fill="url(#vc-gold-pearl)"/></g>
+                            <g transform="translate(262, 196) rotate(15)"><polygon points="-6,-6 6,-6 8,6 -4,6" fill="#DDA059" stroke="#8A5A1A" stroke-width="0.8"/><line x1="-3" y1="-5" x2="1" y2="5" stroke="#8A5A1A" stroke-width="0.6"/><line x1="2" y1="-5" x2="6" y2="5" stroke="#8A5A1A" stroke-width="0.6"/></g>
+                            <g transform="translate(290, 198)"><circle cx="0" cy="0" r="4.5" fill="#8A5A1A"/><ellipse cx="-1" cy="-1" rx="1.5" ry="1" fill="#FFF" opacity="0.6"/></g>`,
+                        topToppingsLeft: `
+                            <g><g transform="translate(118, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(148, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(136, 114) rotate(-10)"><polygon points="-6,-6 6,-6 8,6 -4,6" fill="#DDA059" stroke="#8A5A1A" stroke-width="0.8"/><line x1="-3" y1="-5" x2="1" y2="5" stroke="#8A5A1A" stroke-width="0.6"/></g>
+                            <g transform="translate(158, 124)"><circle cx="0" cy="0" r="4.5" fill="#8A5A1A"/><ellipse cx="-1" cy="-1" rx="1.5" ry="1" fill="#FFF" opacity="0.6"/></g>`,
+                        topToppingsRight: `
+                            <g><g transform="translate(212, 123)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g><g transform="translate(242, 126)"><path d="M -9,3 C -13,-4 -6,-10 0,-7 C 6,-10 13,-4 9,3 C 5,8 -5,8 -9,3 Z" fill="url(#vc-cream-rosette)"/><circle cx="0" cy="0" r="1.5" fill="url(#vc-gold-pearl)"/></g></g>
+                            <g transform="translate(224, 114) rotate(10)"><polygon points="-6,-6 6,-6 8,6 -4,6" fill="#DDA059" stroke="#8A5A1A" stroke-width="0.8"/><line x1="-3" y1="-5" x2="1" y2="5" stroke="#8A5A1A" stroke-width="0.6"/></g>
+                            <g transform="translate(202, 124)"><circle cx="0" cy="0" r="4.5" fill="#8A5A1A"/><ellipse cx="-1" cy="-1" rx="1.5" ry="1" fill="#FFF" opacity="0.6"/></g>`,
+                        centerpiece: `
+                            <g transform="translate(180, 120)"><ellipse cx="0" cy="12" rx="10" ry="4" fill="rgba(0,0,0,0.3)"/><path d="M -10,6 L -8,-8 L -3,0 L 0,-12 L 3,0 L 8,-8 L 10,6 Z" fill="url(#vc-stand-gold)" stroke="#8A5A1A" stroke-width="0.8"/><circle cx="-8" cy="-8" r="1.5" fill="#FFF"/><circle cx="0" cy="-12" r="2" fill="#FFF"/><circle cx="8" cy="-8" r="1.5" fill="#FFF"/><circle cx="0" cy="2" r="3" fill="#DDA059"/></g>`,
+                        sparklesLeft: `<path d="M 125,138 L 126.5,142 L 130.5,143.5 L 126.5,145 L 125,149 L 123.5,145 L 119.5,143.5 L 123.5,142 Z" fill="#FFA726" opacity="0.85"/><path d="M 166,134 L 167,137 L 170,138 L 167,139 L 166,142 L 165,139 L 162,138 L 165,137 Z" fill="#FFE082" opacity="0.9"/>`,
+                        sparklesRight: `<path d="M 235,138 L 236.5,142 L 240.5,143.5 L 236.5,145 L 235,149 L 233.5,145 L 229.5,143.5 L 233.5,142 Z" fill="#FFA726" opacity="0.85"/><path d="M 194,134 L 195,137 L 198,138 L 195,139 L 194,142 L 193,139 L 190,138 L 193,137 Z" fill="#FFE082" opacity="0.9"/>`
+                    }
+                };
+
+                let cakeId = 'C1';
+                if (typeof customCakeId === 'string' && customCakeId.trim().startsWith('C')) {
+                    cakeId = customCakeId.trim();
+                } else if (typeof images === 'string' && images.trim().startsWith('C')) {
+                    cakeId = images.trim();
                 }
+                if (!CAKE_THEMES[cakeId]) cakeId = 'C1';
+                const theme = CAKE_THEMES[cakeId];
 
                 const recipient = userName || 'Someone Special';
                 const wishMsg = customText && customText.trim()
@@ -4852,146 +5246,522 @@
                 const section = d.createElement('section');
                 section.id = 'magic-virtual-cake-section';
                 section.className = 'vc-section';
+                section.setAttribute('data-cake-id', cakeId);
+                section.style.setProperty('background', theme.cardBg, 'important');
 
                 section.innerHTML = `
-                <!-- decorative orbs -->
+                <!-- Ambient Glowing Orbs -->
                 <div class="vc-orb vc-orb-1"></div>
                 <div class="vc-orb vc-orb-2"></div>
                 <div class="vc-orb vc-orb-3"></div>
-                <!-- shimmer stars -->
+
+                <!-- Twinkling Corner & Margin Stars -->
                 <i class="fas fa-star vc-star" style="top:12%;left:7%;animation-delay:0s"></i>
-                <i class="fas fa-star vc-star" style="top:18%;right:9%;animation-delay:0.7s"></i>
-                <i class="fas fa-sparkles vc-star" style="bottom:22%;left:5%;animation-delay:1.2s"></i>
-                <i class="fas fa-star vc-star" style="bottom:15%;right:7%;animation-delay:0.4s"></i>
-                <i class="fas fa-star vc-star" style="top:50%;left:3%;animation-delay:1.6s;font-size:10px"></i>
+                <i class="fas fa-star vc-star" style="top:18%;right:9%;animation-delay:0.7s;font-size:11px"></i>
+                <i class="fas fa-star vc-star" style="bottom:22%;left:6%;animation-delay:1.2s;font-size:13px"></i>
+                <i class="fas fa-star vc-star" style="bottom:15%;right:8%;animation-delay:0.4s;font-size:10px"></i>
+                <i class="fas fa-star vc-star" style="top:48%;left:4%;animation-delay:1.6s;font-size:10px"></i>
+                <i class="fas fa-star vc-star" style="top:52%;right:5%;animation-delay:1.1s;font-size:11px"></i>
 
-                <!-- title -->
-                <h2 class="vc-title">
-                    <i class="fas fa-birthday-cake" style="color:#FFD700;margin-right:10px;"></i><span class="vc-title-text">Cut the Cake</span> <span class="vc-emoji">\u{1F970}</span><i class="fas fa-crown" style="color:#FFD700;margin-left:10px;font-size:0.75em;vertical-align:middle;"></i>
-                </h2>
-                <p class="vc-subtitle">Tap the button to blow out the candles &amp; make a wish!</p>
-
-                <!-- personalised ribbon -->
-                <div class="vc-ribbon">
-                    <i class="fas fa-heart vc-ribbon-icon" style="color:#FF4D8F;"></i>
-                    <span class="vc-ribbon-text">${wishMsg}</span>
-                    <i class="fas fa-heart vc-ribbon-icon" style="color:#FF4D8F;"></i>
+                <!-- Header Title & Subtitle -->
+                <div class="vc-header">
+                    <h2 class="vc-title">
+                        <i class="fas fa-birthday-cake" style="color:#FFD700;margin-right:8px;"></i><span class="vc-title-text">Cut the Cake</span> <span class="vc-emoji">&#129392;</span><i class="fas fa-crown" style="color:#FFD700;margin-left:8px;font-size:0.75em;vertical-align:middle;"></i>
+                    </h2>
+                    <p class="vc-subtitle">Tap the button to blow out the candles &amp; make a wish!</p>
                 </div>
 
-                <!-- cake scene -->
+                <!-- Personalised Wish Ribbon -->
+                <div class="vc-ribbon">
+                    <i class="fas fa-heart vc-ribbon-icon"></i>
+                    <span class="vc-ribbon-text">${wishMsg}</span>
+                    <i class="fas fa-heart vc-ribbon-icon"></i>
+                </div>
+
                 <div class="vc-scene" id="vc-cake-stage">
+                    <!-- Dynamic Turntable Floor Shadow with Breath Pulse -->
+                    <div class="vc-turntable-shadow" id="vc-turntable-shadow"></div>
+
+                    <!-- Gold Sparkle Dust Trail underneath pedestal as cake rolls -->
+                    <div class="vc-roll-trail" id="vc-roll-trail">
+                        <span class="vc-roll-sparkle-dot" style="--i:0">✨</span>
+                        <span class="vc-roll-sparkle-dot" style="--i:1">⭐</span>
+                        <span class="vc-roll-sparkle-dot" style="--i:2">✨</span>
+                        <span class="vc-roll-sparkle-dot" style="--i:3">⭐</span>
+                        <span class="vc-roll-sparkle-dot" style="--i:4">✨</span>
+                    </div>
+
                     <!-- Vertical center red cut line & Knife -->
                     <div class="vc-cut-line" id="vc-cut-line"></div>
                     <div class="vc-knife-wrap" id="vc-knife-wrap"><i class="fas fa-utensils"></i></div>
 
-                    <!-- 5 candles sitting on top tier -->
-                    <div class="vc-candles" id="vc-candles">
-                        ${[0, 1, 2, 3, 4].map(i => `
-                        <div class="vc-candle" data-i="${i}" id="vc-candle-${i}">
-                            <div class="vc-flame" id="vc-flame-${i}"></div>
-                            <div class="vc-smoke" id="vc-smoke-${i}"></div>
-                            <div class="vc-wick"></div>
-                            <div class="vc-candle-stick"></div>
-                        </div>`).join('')}
-                    </div>
+                    <!-- SVG Vector Cake -->
+                    
+                    <!-- 360 Degree Continuous Rotating Cake (Vertical Center Axis Earth Spin) -->
+                    <div class="vc-cake-rotator" id="vc-cake-rotator">
+<svg class="vc-cake-svg" viewBox="0 0 360 325" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Stand Gold Gradient -->
+                            <linearGradient id="vc-stand-gold" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="${theme.standGold.c0}"/>
+                                <stop offset="18%" stop-color="${theme.standGold.c18}"/>
+                                <stop offset="42%" stop-color="${theme.standGold.c42}"/>
+                                <stop offset="65%" stop-color="${theme.standGold.c65}"/>
+                                <stop offset="85%" stop-color="${theme.standGold.c85}"/>
+                                <stop offset="100%" stop-color="${theme.standGold.c100}"/>
+                            </linearGradient>
 
-                    <!-- top tier split halves (100% Symmetrical Decoration) -->
-                    <div class="vc-tier">
-                        <div class="vc-tier-body vc-top-body">
-                            <div class="vc-half vc-left">
-                                <div class="vc-frosting"></div>
-                                <div class="vc-tier-dots"><div class="vc-dot"></div><div class="vc-dot"></div></div>
-                                <div class="vc-tier-stars"><i class="fas fa-star"></i></div>
-                            </div>
-                            <div class="vc-half vc-right">
-                                <div class="vc-frosting"></div>
-                                <div class="vc-tier-dots"><div class="vc-dot"></div><div class="vc-dot"></div></div>
-                                <div class="vc-tier-stars"><i class="fas fa-star"></i></div>
-                            </div>
-                        </div>
-                    </div>
+                            <linearGradient id="vc-stand-gold-v" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="${theme.standGold.highlight}"/>
+                                <stop offset="50%" stop-color="${theme.standGold.c18}"/>
+                                <stop offset="100%" stop-color="${theme.standGold.c100}"/>
+                            </linearGradient>
 
-                    <!-- bottom tier split halves (100% Symmetrical Decoration) -->
-                    <div class="vc-tier">
-                        <div class="vc-tier-body vc-bottom-body">
-                            <div class="vc-half vc-left">
-                                <div class="vc-frosting"></div>
-                                <div class="vc-tier-dots"><div class="vc-dot"></div><div class="vc-dot"></div></div>
-                                <div class="vc-tier-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            </div>
-                            <div class="vc-half vc-right">
-                                <div class="vc-frosting"></div>
-                                <div class="vc-tier-dots"><div class="vc-dot"></div><div class="vc-dot"></div></div>
-                                <div class="vc-tier-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            </div>
-                        </div>
-                    </div>
+                            <!-- Fine Porcelain Platter Top -->
+                            <linearGradient id="vc-porcelain-top" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="${theme.porcelainTop.c0}"/>
+                                <stop offset="60%" stop-color="${theme.porcelainTop.c60}"/>
+                                <stop offset="100%" stop-color="${theme.porcelainTop.c100}"/>
+                            </linearGradient>
 
-                    <!-- plate -->
-                    <div class="vc-plate"></div>
+                            <!-- Sponge Cylindrical 3D Shading -->
+                            <linearGradient id="vc-sponge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="${theme.spongeGrad.c0}"/>
+                                <stop offset="12%" stop-color="${theme.spongeGrad.c12}"/>
+                                <stop offset="32%" stop-color="${theme.spongeGrad.c32}"/>
+                                <stop offset="52%" stop-color="${theme.spongeGrad.c52}"/>
+                                <stop offset="78%" stop-color="${theme.spongeGrad.c78}"/>
+                                <stop offset="100%" stop-color="${theme.spongeGrad.c100}"/>
+                            </linearGradient>
+
+                            <!-- Biscuit Sponge Filling -->
+                            <linearGradient id="vc-biscuit-fill" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="${theme.biscuitFill.c0}"/>
+                                <stop offset="50%" stop-color="${theme.biscuitFill.c50}"/>
+                                <stop offset="100%" stop-color="${theme.biscuitFill.c100}"/>
+                            </linearGradient>
+
+                            <!-- Mirror Glaze (Body & Drips) -->
+                            <linearGradient id="vc-glaze-body" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="${theme.glazeBody.c0}"/>
+                                <stop offset="12%" stop-color="${theme.glazeBody.c12}"/>
+                                <stop offset="38%" stop-color="${theme.glazeBody.c38}"/>
+                                <stop offset="68%" stop-color="${theme.glazeBody.c68}"/>
+                                <stop offset="88%" stop-color="${theme.glazeBody.c88}"/>
+                                <stop offset="100%" stop-color="${theme.glazeBody.c100}"/>
+                            </linearGradient>
+
+                            <!-- Glaze Pool on Top Surface -->
+                            <radialGradient id="vc-glaze-pool" cx="50%" cy="40%" r="60%">
+                                <stop offset="0%" stop-color="${theme.glazePool.c0}"/>
+                                <stop offset="60%" stop-color="${theme.glazePool.c60}"/>
+                                <stop offset="100%" stop-color="${theme.glazePool.c100}"/>
+                            </radialGradient>
+
+                            <!-- Fresh Glazed Strawberry Gradient -->
+                            <radialGradient id="vc-berry-grad" cx="38%" cy="28%" r="68%">
+                                <stop offset="0%" stop-color="#FF6B7A"/>
+                                <stop offset="30%" stop-color="#FF1744"/>
+                                <stop offset="72%" stop-color="#D50000"/>
+                                <stop offset="100%" stop-color="#550015"/>
+                            </radialGradient>
+
+                            <!-- Indigo Blueberry Gradient -->
+                            <radialGradient id="vc-blueberry-grad" cx="35%" cy="30%" r="68%">
+                                <stop offset="0%" stop-color="#7986CB"/>
+                                <stop offset="40%" stop-color="#303F9F"/>
+                                <stop offset="80%" stop-color="#1A237E"/>
+                                <stop offset="100%" stop-color="#0A0E32"/>
+                            </radialGradient>
+
+                            <!-- Calyx Leaf Gradient -->
+                            <linearGradient id="vc-leaf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#81C784"/>
+                                <stop offset="50%" stop-color="#388E3C"/>
+                                <stop offset="100%" stop-color="#1B5E20"/>
+                            </linearGradient>
+
+                            <!-- Chantilly Cream Rosette Gradient -->
+                            <linearGradient id="vc-cream-rosette" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="${theme.creamRosette.c0}"/>
+                                <stop offset="60%" stop-color="${theme.creamRosette.c60}"/>
+                                <stop offset="100%" stop-color="${theme.creamRosette.c100}"/>
+                            </linearGradient>
+
+                            <!-- 3D Pearl / Dragee Bead -->
+                            <radialGradient id="vc-gold-pearl" cx="32%" cy="28%" r="68%">
+                                <stop offset="0%" stop-color="${theme.pearlGrad.c0}"/>
+                                <stop offset="28%" stop-color="${theme.pearlGrad.c28}"/>
+                                <stop offset="65%" stop-color="${theme.pearlGrad.c65}"/>
+                                <stop offset="100%" stop-color="${theme.pearlGrad.c100}"/>
+                            </radialGradient>
+
+                            <!-- Candle Wax Cylinder -->
+                            <linearGradient id="vc-candle-wax" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="${theme.candleWax.c0}"/>
+                                <stop offset="35%" stop-color="${theme.candleWax.c35}"/>
+                                <stop offset="70%" stop-color="${theme.candleWax.c70}"/>
+                                <stop offset="100%" stop-color="${theme.candleWax.c100}"/>
+                            </linearGradient>
+
+                            <!-- Multi-tone Candle Flame Core Fallback -->
+                            <radialGradient id="vc-flame-core" cx="50%" cy="75%" r="68%">
+                                <stop offset="0%" stop-color="#FFFFFF"/>
+                                <stop offset="22%" stop-color="#FFF9C4"/>
+                                <stop offset="52%" stop-color="#FFCA28"/>
+                                <stop offset="78%" stop-color="#FF9100"/>
+                                <stop offset="100%" stop-color="#FF3D00"/>
+                            </radialGradient>
+
+                            <!-- Layered Radiant Candle Flame Gradients -->
+                            <radialGradient id="vc-flame-outer" cx="50%" cy="65%" r="60%">
+                                <stop offset="0%" stop-color="#FFF9C4"/>
+                                <stop offset="25%" stop-color="#FFD54F"/>
+                                <stop offset="55%" stop-color="#FF9100"/>
+                                <stop offset="85%" stop-color="#FF3D00"/>
+                                <stop offset="100%" stop-color="#D50000" stop-opacity="0.95"/>
+                            </radialGradient>
+
+                            <linearGradient id="vc-flame-inner" x1="0%" y1="100%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="#FF9100"/>
+                                <stop offset="35%" stop-color="#FFD54F"/>
+                                <stop offset="75%" stop-color="#FFF9C4"/>
+                                <stop offset="100%" stop-color="#FFFFFF"/>
+                            </linearGradient>
+
+                            <radialGradient id="vc-ambient-candlelight" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#FFE082" stop-opacity="0.55"/>
+                                <stop offset="35%" stop-color="#FF9100" stop-opacity="0.25"/>
+                                <stop offset="70%" stop-color="#FF3D00" stop-opacity="0.06"/>
+                                <stop offset="100%" stop-color="#FF3D00" stop-opacity="0"/>
+                            </radialGradient>
+
+                            <filter id="vc-ambient-glow-blur" x="-30%" y="-30%" width="160%" height="160%">
+                                <feGaussianBlur stdDeviation="16"/>
+                            </filter>
+
+                            <filter id="vc-flame-glow" x="-80%" y="-80%" width="260%" height="260%">
+                                <feGaussianBlur stdDeviation="3" result="blur"/>
+                                <feMerge>
+                                    <feMergeNode in="blur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+
+                            <filter id="vc-shadow-blur" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="4"/>
+                            </filter>
+
+                            <clipPath id="vc-cut-clip-left">
+                                <rect x="-100" y="0" width="282" height="360"/>
+                            </clipPath>
+                            <clipPath id="vc-cut-clip-right">
+                                <rect x="178" y="0" width="282" height="360"/>
+                            </clipPath>
+                        </defs>
+
+                        <!-- Ambient Candlelight Illumination across the top of the cake -->
+                        <ellipse cx="180" cy="108" rx="150" ry="65" fill="url(#vc-ambient-candlelight)" filter="url(#vc-ambient-glow-blur)" class="vc-ambient-candlelight-glow"/>
+
+                        <!-- ================= BASE PEDESTAL STAND (Static) ================= -->
+                        <g class="vc-stand">
+                            <!-- Soft Contact Shadow on Table Surface -->
+                            <ellipse cx="180" cy="312" rx="146" ry="10" fill="rgba(0,0,0,0.35)" filter="url(#vc-shadow-blur)"/>
+                            <!-- Pedestal Base Foot Gold -->
+                            <ellipse cx="180" cy="305" rx="72" ry="11" fill="url(#vc-stand-gold)"/>
+                            <ellipse cx="180" cy="303" rx="66" ry="9" fill="url(#vc-stand-gold-v)"/>
+                            <ellipse cx="180" cy="301" rx="58" ry="6" fill="${theme.standGold.highlight}" opacity="0.4"/>
+                            <!-- Fluted Pedestal Stem -->
+                            <path d="M 166,270 C 166,285 160,296 156,303 L 204,303 C 200,296 194,285 194,270 Z" fill="url(#vc-stand-gold)"/>
+                            <path d="M 176,270 C 176,285 174,296 172,303 L 188,303 C 186,296 184,285 184,270 Z" fill="${theme.standGold.highlight}" opacity="0.45"/>
+                            <!-- Platter Rim Base Collar -->
+                            <ellipse cx="180" cy="272" rx="158" ry="17" fill="url(#vc-stand-gold)"/>
+                            <!-- Beveled Porcelain Platter Top -->
+                            <ellipse cx="180" cy="269" rx="152" ry="15" fill="url(#vc-porcelain-top)" stroke="${theme.standGold.topStroke}" stroke-width="1.8"/>
+                            <!-- Platter Inner Ambient Occlusion Shadow under Cake -->
+                            <ellipse cx="180" cy="264" rx="126" ry="10" fill="rgba(0, 0, 0, 0.28)"/>
+                        </g>
+
+                        <!-- ================= LEFT HALF (Transforms on Cut) ================= -->
+                        <g class="vc-half vc-left" clip-path="url(#vc-cut-clip-left)">
+                            <!-- --- BOTTOM TIER (Tier 1) --- -->
+                            <!-- Tier 1 Body (Cylindrical 3D Shading) -->
+                            <path d="M 60,195 L 60,258 C 60,274 300,274 300,258 L 300,195 Z" fill="url(#vc-sponge-grad)" stroke="${theme.spongeGrad.stroke}" stroke-width="0.8"/>
+                            <!-- Tier 1 Baked Sponge Cake Layer Divider -->
+                            <path d="M 60,227 C 120,242 240,242 300,227 L 300,231 C 240,246 120,246 60,231 Z" fill="url(#vc-biscuit-fill)" opacity="0.85"/>
+                            <path d="M 60,231 C 120,246 240,246 300,231 L 300,234 C 240,249 120,249 60,234 Z" fill="${theme.spongeJam}" opacity="0.9"/>
+                            <!-- Tier 1 Top Surface -->
+                            <ellipse cx="180" cy="195" rx="120" ry="18" fill="${theme.spongeGrad.c32 || '#FFF9F2'}"/>
+
+                            <!-- Tier 1 Shadow Under Drips -->
+                            <path d="M 60,197 C 63,210 67,226 74,226 C 80,226 83,212 87,204 C 90,201 93,201 96,204 C 100,214 105,240 114,240 C 122,240 126,216 130,205 C 133,202 137,202 140,205 C 144,213 148,228 155,228 C 161,228 164,215 168,206 C 171,203 175,203 178,206 C 182,216 187,244 195,244 C 203,244 207,218 211,206 C 214,203 218,203 221,206 C 225,214 229,230 236,230 C 242,230 245,216 249,205 C 252,202 256,202 259,205 C 263,214 268,238 276,238 C 283,238 287,217 291,204 C 294,201 297,202 300,197 C 240,215 120,215 60,197 Z" fill="rgba(0, 0, 0, 0.22)"/>
+
+                            <!-- Tier 1 Luscious Organic Drips -->
+                            <path d="M 60,195 C 63,208 67,224 74,224 C 80,224 83,210 87,202 C 90,199 93,199 96,202 C 100,212 105,238 114,238 C 122,238 126,214 130,203 C 133,200 137,200 140,203 C 144,211 148,226 155,226 C 161,226 164,213 168,204 C 171,201 175,201 178,204 C 182,214 187,242 195,242 C 203,242 207,216 211,204 C 214,201 218,201 221,204 C 225,212 229,228 236,228 C 242,228 245,214 249,203 C 252,200 256,200 259,203 C 263,212 268,236 276,236 C 283,236 287,215 291,202 C 294,199 297,200 300,195 C 240,213 120,213 60,195 Z" fill="url(#vc-glaze-body)"/>
+
+                            <!-- Tier 1 Drip Bulbs Glossy Specular Highlights -->
+                            <ellipse cx="74" cy="221" rx="3.5" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="114" cy="235" rx="4.2" ry="2" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="155" cy="223" rx="3.8" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="195" cy="239" rx="4.5" ry="2.2" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="236" cy="225" rx="3.8" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="276" cy="233" rx="4" ry="2" fill="rgba(255,255,255,0.75)"/>
+
+                            <!-- Tier 1 Base Pearl Dragees Border -->
+                            <g>
+                                <ellipse cx="66" cy="261" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="80" cy="265" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="97" cy="268" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="116" cy="270" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="136" cy="272" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="157" cy="273" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="180" cy="273" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="203" cy="273" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="224" cy="272" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="244" cy="270" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="263" cy="268" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="280" cy="265" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="294" cy="261" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/>
+                                <circle cx="66" cy="258" r="4.6" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="80" cy="262" r="4.8" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="97" cy="265" r="5" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="116" cy="267" r="5" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="136" cy="269" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="157" cy="270" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="180" cy="270" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="203" cy="270" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="224" cy="269" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="244" cy="267" r="5" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="263" cy="265" r="5" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="280" cy="262" r="4.8" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="294" cy="258" r="4.6" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                            </g>
+
+                            <!-- --- Tier 1 Ledge Decorations (Left Side) --- -->
+                            ${theme.ledgeLeft}
+
+                            <!-- Ambient Shadow Cast by Top Tier onto Bottom Tier Top -->
+                            <ellipse cx="180" cy="194" rx="82" ry="12" fill="rgba(0, 0, 0, 0.35)"/>
+
+                            <!-- --- TOP TIER (Tier 2) --- -->
+                            <!-- Tier 2 Body (Cylindrical 3D Shading) -->
+                            <path d="M 100,132 L 100,192 C 100,205 260,205 260,192 L 260,132 Z" fill="url(#vc-sponge-grad)" stroke="${theme.spongeGrad.stroke}" stroke-width="0.8"/>
+                            <!-- Tier 2 Sponge Layer Divider -->
+                            <path d="M 100,158 C 140,169 220,169 260,158 L 260,161 C 220,172 140,172 100,161 Z" fill="url(#vc-biscuit-fill)" opacity="0.85"/>
+                            <path d="M 100,161 C 140,172 220,172 260,161 L 260,163 C 220,174 140,174 100,163 Z" fill="${theme.spongeJam}" opacity="0.9"/>
+                            <!-- Tier 2 Top Surface with Mirror Glaze Pool -->
+                            <ellipse cx="180" cy="132" rx="80" ry="14" fill="url(#vc-glaze-pool)"/>
+                            <!-- Specular Mirror Gloss Sheen -->
+                            <ellipse cx="170" cy="129" rx="55" ry="6.5" fill="rgba(255,255,255,0.4)"/>
+                            <!-- Warm Candlelight Reflections in Glaze Pool -->
+                            <ellipse cx="118" cy="130" rx="9" ry="2.2" fill="#FFE082" opacity="0.6"/>
+                            <ellipse cx="148" cy="131" rx="10" ry="2.4" fill="#FFE082" opacity="0.65"/>
+                            <ellipse cx="180" cy="132" rx="11" ry="2.6" fill="#FFF9C4" opacity="0.7"/>
+
+                            <!-- Tier 2 Shadow Under Drips -->
+                            <path d="M 100,134 C 102,144 106,157 112,157 C 117,157 119,144 122,138 C 125,136 128,136 130,138 C 133,146 136,170 143,170 C 149,170 152,148 156,139 C 159,137 162,137 165,139 C 168,145 171,154 176,154 C 180,154 183,145 186,139 C 189,137 192,137 195,139 C 198,147 202,167 208,167 C 214,167 217,149 221,139 C 224,137 227,137 230,139 C 233,145 236,156 241,156 C 246,156 249,146 252,138 C 255,136 258,137 260,134 C 220,148 140,148 100,134 Z" fill="rgba(0, 0, 0, 0.25)"/>
+
+                            <!-- Tier 2 Organic Drips -->
+                            <path d="M 100,132 C 102,142 106,155 112,155 C 117,155 119,142 122,136 C 125,134 128,134 130,136 C 133,144 136,168 143,168 C 149,168 152,146 156,137 C 159,135 162,135 165,137 C 168,143 171,152 176,152 C 180,152 183,143 186,137 C 189,135 192,135 195,137 C 198,145 202,165 208,165 C 214,165 217,147 221,137 C 224,135 227,135 230,137 C 233,143 236,154 241,154 C 246,154 249,144 252,136 C 255,134 258,135 260,132 C 220,146 140,146 100,132 Z" fill="url(#vc-glaze-body)"/>
+
+                            <!-- Tier 2 Drip Bulbs Specular Gloss Highlights -->
+                            <ellipse cx="112" cy="152" rx="3.5" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="143" cy="165" rx="4.2" ry="2" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="176" cy="149" rx="3.6" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="208" cy="162" rx="4.2" ry="2" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="241" cy="151" rx="3.5" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+
+                            <!-- --- TOP TIER GOURMET TOPPINGS (Left Side & Center) --- -->
+                            ${theme.topToppingsLeft}
+                            ${theme.centerpiece}
+                            ${theme.sparklesLeft}
+
+                            <!-- --- CANDLES 0 & 1 (Left Half) --- -->
+                            <!-- Candle 0 (x=118) -->
+                            <g id="vc-candle-0" class="vc-candle-group" transform="translate(118, 84)">
+                                <ellipse cx="0" cy="44" rx="5.5" ry="2.2" fill="url(#vc-stand-gold)"/>
+                                <rect x="-4" y="0" width="8" height="44" rx="2.5" fill="url(#vc-candle-wax)"/>
+                                <path d="M -4,8 L 4,15 M -4,18 L 4,25 M -4,28 L 4,35" stroke="url(#vc-stand-gold)" stroke-width="2.6" stroke-linecap="round"/>
+                                <path d="M 0,0 L 0,-6" stroke="#2B1810" stroke-width="1.6" stroke-linecap="round"/>
+                                <circle cx="0" cy="-5" r="1.3" fill="#FF3D00"/>
+                                <g id="vc-flame-0" class="vc-flame-item vc-flame-item-1">
+                                    <path d="M 0,-5 C -6.2,-13 -5.2,-23 0,-32 C 5.2,-23 6.2,-13 0,-5 Z" fill="url(#vc-flame-outer)" filter="url(#vc-flame-glow)"/>
+                                    <path d="M 0,-6 C -3.8,-13 -3.2,-21 0,-27 C 3.2,-21 3.8,-13 0,-6 Z" fill="url(#vc-flame-inner)"/>
+                                    <ellipse cx="0" cy="-14" rx="1.8" ry="6.5" fill="#FFFFFF" opacity="0.98"/>
+                                    <ellipse cx="0" cy="-6" rx="2" ry="1.2" fill="#2979FF" opacity="0.6"/>
+                                </g>
+                                <circle id="vc-smoke-0" class="vc-smoke-item" cx="0" cy="-22" r="5" fill="rgba(255,255,255,0.75)" style="display:none;opacity:0;" />
+                            </g>
+
+                            <!-- Candle 1 (x=148) -->
+                            <g id="vc-candle-1" class="vc-candle-group" transform="translate(148, 77)">
+                                <ellipse cx="0" cy="48" rx="5.5" ry="2.2" fill="url(#vc-stand-gold)"/>
+                                <rect x="-4" y="0" width="8" height="48" rx="2.5" fill="url(#vc-candle-wax)"/>
+                                <path d="M -4,8 L 4,15 M -4,18 L 4,25 M -4,28 L 4,35 M -4,38 L 4,45" stroke="url(#vc-stand-gold)" stroke-width="2.6" stroke-linecap="round"/>
+                                <path d="M 0,0 L 0,-6" stroke="#2B1810" stroke-width="1.6" stroke-linecap="round"/>
+                                <circle cx="0" cy="-5" r="1.3" fill="#FF3D00"/>
+                                <g id="vc-flame-1" class="vc-flame-item vc-flame-item-2">
+                                    <path d="M 0,-5 C -6.5,-13 -5.5,-23 0,-33 C 5.5,-23 6.5,-13 0,-5 Z" fill="url(#vc-flame-outer)" filter="url(#vc-flame-glow)"/>
+                                    <path d="M 0,-6 C -4,-13 -3.4,-21 0,-28 C 3.4,-21 4,-13 0,-6 Z" fill="url(#vc-flame-inner)"/>
+                                    <ellipse cx="0" cy="-14" rx="2" ry="7" fill="#FFFFFF" opacity="0.98"/>
+                                    <ellipse cx="0" cy="-6" rx="2.2" ry="1.2" fill="#2979FF" opacity="0.6"/>
+                                </g>
+                                <circle id="vc-smoke-1" class="vc-smoke-item" cx="0" cy="-22" r="5" fill="rgba(255,255,255,0.75)" style="display:none;opacity:0;" />
+                            </g>
+                        </g>
+
+                        <!-- ================= RIGHT HALF (Transforms on Cut) ================= -->
+                        <g class="vc-half vc-right" clip-path="url(#vc-cut-clip-right)">
+                            <!-- --- BOTTOM TIER (Tier 1) --- -->
+                            <path d="M 60,195 L 60,258 C 60,274 300,274 300,258 L 300,195 Z" fill="url(#vc-sponge-grad)" stroke="${theme.spongeGrad.stroke}" stroke-width="0.8"/>
+                            <path d="M 60,227 C 120,242 240,242 300,227 L 300,231 C 240,246 120,246 60,231 Z" fill="url(#vc-biscuit-fill)" opacity="0.85"/>
+                            <path d="M 60,231 C 120,246 240,246 300,231 L 300,234 C 240,249 120,249 60,234 Z" fill="${theme.spongeJam}" opacity="0.9"/>
+                            <ellipse cx="180" cy="195" rx="120" ry="18" fill="${theme.spongeGrad.c32 || '#FFF9F2'}"/>
+
+                            <path d="M 60,197 C 63,210 67,226 74,226 C 80,226 83,212 87,204 C 90,201 93,201 96,204 C 100,214 105,240 114,240 C 122,240 126,216 130,205 C 133,202 137,202 140,205 C 144,213 148,228 155,228 C 161,228 164,215 168,206 C 171,203 175,203 178,206 C 182,216 187,244 195,244 C 203,244 207,218 211,206 C 214,203 218,203 221,206 C 225,214 229,230 236,230 C 242,230 245,216 249,205 C 252,202 256,202 259,205 C 263,214 268,238 276,238 C 283,238 287,217 291,204 C 294,201 297,202 300,197 C 240,215 120,215 60,197 Z" fill="rgba(0, 0, 0, 0.22)"/>
+
+                            <path d="M 60,195 C 63,208 67,224 74,224 C 80,224 83,210 87,202 C 90,199 93,199 96,202 C 100,212 105,238 114,238 C 122,238 126,214 130,203 C 133,200 137,200 140,203 C 144,211 148,226 155,226 C 161,226 164,213 168,204 C 171,201 175,201 178,204 C 182,214 187,242 195,242 C 203,242 207,216 211,204 C 214,201 218,201 221,204 C 225,212 229,228 236,228 C 242,228 245,214 249,203 C 252,200 256,200 259,203 C 263,212 268,236 276,236 C 283,236 287,215 291,202 C 294,199 297,200 300,195 C 240,213 120,213 60,195 Z" fill="url(#vc-glaze-body)"/>
+
+                            <ellipse cx="74" cy="221" rx="3.5" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="114" cy="235" rx="4.2" ry="2" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="155" cy="223" rx="3.8" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="195" cy="239" rx="4.5" ry="2.2" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="236" cy="225" rx="3.8" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="276" cy="233" rx="4" ry="2" fill="rgba(255,255,255,0.75)"/>
+
+                            <!-- Pearl Drop Shadows & Pearls (Right Half) -->
+                            <g>
+                                <ellipse cx="66" cy="261" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="80" cy="265" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="97" cy="268" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="116" cy="270" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="136" cy="272" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="157" cy="273" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="180" cy="273" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="203" cy="273" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="224" cy="272" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="244" cy="270" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="263" cy="268" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="280" cy="265" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/><ellipse cx="294" cy="261" rx="4.5" ry="3.5" fill="rgba(0,0,0,0.18)"/>
+                                <circle cx="66" cy="258" r="4.6" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="80" cy="262" r="4.8" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="97" cy="265" r="5" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="116" cy="267" r="5" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="136" cy="269" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="157" cy="270" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="180" cy="270" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="203" cy="270" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="224" cy="269" r="5.2" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="244" cy="267" r="5" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="263" cy="265" r="5" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="280" cy="262" r="4.8" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                                <circle cx="294" cy="258" r="4.6" fill="url(#vc-gold-pearl)" stroke="#FFFFFF" stroke-width="0.6"/>
+                            </g>
+
+                            <!-- --- Tier 1 Ledge Decorations (Right Side) --- -->
+                            ${theme.ledgeRight}
+
+                            <!-- Ambient Shadow Under Top Tier -->
+                            <ellipse cx="180" cy="194" rx="82" ry="12" fill="rgba(0, 0, 0, 0.35)"/>
+
+                            <!-- --- TOP TIER (Tier 2) --- -->
+                            <path d="M 100,132 L 100,192 C 100,205 260,205 260,192 L 260,132 Z" fill="url(#vc-sponge-grad)" stroke="${theme.spongeGrad.stroke}" stroke-width="0.8"/>
+                            <path d="M 100,158 C 140,169 220,169 260,158 L 260,161 C 220,172 140,172 100,161 Z" fill="url(#vc-biscuit-fill)" opacity="0.85"/>
+                            <path d="M 100,161 C 140,172 220,172 260,161 L 260,163 C 220,174 140,174 100,163 Z" fill="${theme.spongeJam}" opacity="0.9"/>
+                            <ellipse cx="180" cy="132" rx="80" ry="14" fill="url(#vc-glaze-pool)"/>
+                            <ellipse cx="170" cy="129" rx="55" ry="6.5" fill="rgba(255,255,255,0.4)"/>
+                            <!-- Warm Candlelight Reflections in Glaze Pool -->
+                            <ellipse cx="180" cy="132" rx="11" ry="2.6" fill="#FFF9C4" opacity="0.7"/>
+                            <ellipse cx="212" cy="131" rx="10" ry="2.4" fill="#FFE082" opacity="0.65"/>
+                            <ellipse cx="242" cy="130" rx="9" ry="2.2" fill="#FFE082" opacity="0.6"/>
+
+                            <path d="M 100,134 C 102,144 106,157 112,157 C 117,157 119,144 122,138 C 125,136 128,136 130,138 C 133,146 136,170 143,170 C 149,170 152,148 156,139 C 159,137 162,137 165,139 C 168,145 171,154 176,154 C 180,154 183,145 186,139 C 189,137 192,137 195,139 C 198,147 202,167 208,167 C 214,167 217,149 221,139 C 224,137 227,137 230,139 C 233,145 236,156 241,156 C 246,156 249,146 252,138 C 255,136 258,137 260,134 C 220,148 140,148 100,134 Z" fill="rgba(0, 0, 0, 0.25)"/>
+
+                            <path d="M 100,132 C 102,142 106,155 112,155 C 117,155 119,142 122,136 C 125,134 128,134 130,136 C 133,144 136,168 143,168 C 149,168 152,146 156,137 C 159,135 162,135 165,137 C 168,143 171,152 176,152 C 180,152 183,143 186,137 C 189,135 192,135 195,137 C 198,145 202,165 208,165 C 214,165 217,147 221,137 C 224,135 227,135 230,137 C 233,143 236,154 241,154 C 246,154 249,144 252,136 C 255,134 258,135 260,132 C 220,146 140,146 100,132 Z" fill="url(#vc-glaze-body)"/>
+
+                            <ellipse cx="112" cy="152" rx="3.5" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="143" cy="165" rx="4.2" ry="2" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="176" cy="149" rx="3.6" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="208" cy="162" rx="4.2" ry="2" fill="rgba(255,255,255,0.75)"/>
+                            <ellipse cx="241" cy="151" rx="3.5" ry="1.8" fill="rgba(255,255,255,0.75)"/>
+
+                            <!-- --- TOP TIER GOURMET TOPPINGS (Right Side & Center) --- -->
+                            ${theme.topToppingsRight}
+                            ${theme.centerpiece}
+                            ${theme.sparklesRight}
+
+                            <!-- --- CANDLES 3 & 4 (Right Half) --- -->
+                            <!-- Candle 3 (x=212) -->
+                            <g id="vc-candle-3" class="vc-candle-group" transform="translate(212, 77)">
+                                <ellipse cx="0" cy="48" rx="5.5" ry="2.2" fill="url(#vc-stand-gold)"/>
+                                <rect x="-4" y="0" width="8" height="48" rx="2.5" fill="url(#vc-candle-wax)"/>
+                                <path d="M -4,8 L 4,15 M -4,18 L 4,25 M -4,28 L 4,35 M -4,38 L 4,45" stroke="url(#vc-stand-gold)" stroke-width="2.6" stroke-linecap="round"/>
+                                <path d="M 0,0 L 0,-6" stroke="#2B1810" stroke-width="1.6" stroke-linecap="round"/>
+                                <circle cx="0" cy="-5" r="1.3" fill="#FF3D00"/>
+                                <g id="vc-flame-3" class="vc-flame-item vc-flame-item-4">
+                                    <path d="M 0,-5 C -6.5,-13 -5.5,-23 0,-33 C 5.5,-23 6.5,-13 0,-5 Z" fill="url(#vc-flame-outer)" filter="url(#vc-flame-glow)"/>
+                                    <path d="M 0,-6 C -4,-13 -3.4,-21 0,-28 C 3.4,-21 4,-13 0,-6 Z" fill="url(#vc-flame-inner)"/>
+                                    <ellipse cx="0" cy="-14" rx="2" ry="7" fill="#FFFFFF" opacity="0.98"/>
+                                    <ellipse cx="0" cy="-6" rx="2.2" ry="1.2" fill="#2979FF" opacity="0.6"/>
+                                </g>
+                                <circle id="vc-smoke-3" class="vc-smoke-item" cx="0" cy="-22" r="5" fill="rgba(255,255,255,0.75)" style="display:none;opacity:0;" />
+                            </g>
+
+                            <!-- Candle 4 (x=242) -->
+                            <g id="vc-candle-4" class="vc-candle-group" transform="translate(242, 84)">
+                                <ellipse cx="0" cy="44" rx="5.5" ry="2.2" fill="url(#vc-stand-gold)"/>
+                                <rect x="-4" y="0" width="8" height="44" rx="2.5" fill="url(#vc-candle-wax)"/>
+                                <path d="M -4,8 L 4,15 M -4,18 L 4,25 M -4,28 L 4,35" stroke="url(#vc-stand-gold)" stroke-width="2.6" stroke-linecap="round"/>
+                                <path d="M 0,0 L 0,-6" stroke="#2B1810" stroke-width="1.6" stroke-linecap="round"/>
+                                <circle cx="0" cy="-5" r="1.3" fill="#FF3D00"/>
+                                <g id="vc-flame-4" class="vc-flame-item vc-flame-item-5">
+                                    <path d="M 0,-5 C -6.2,-13 -5.2,-23 0,-32 C 5.2,-23 6.2,-13 0,-5 Z" fill="url(#vc-flame-outer)" filter="url(#vc-flame-glow)"/>
+                                    <path d="M 0,-6 C -3.8,-13 -3.2,-21 0,-27 C 3.2,-21 3.8,-13 0,-6 Z" fill="url(#vc-flame-inner)"/>
+                                    <ellipse cx="0" cy="-14" rx="1.8" ry="6.5" fill="#FFFFFF" opacity="0.98"/>
+                                    <ellipse cx="0" cy="-6" rx="2" ry="1.2" fill="#2979FF" opacity="0.6"/>
+                                </g>
+                                <circle id="vc-smoke-4" class="vc-smoke-item" cx="0" cy="-22" r="5" fill="rgba(255,255,255,0.75)" style="display:none;opacity:0;" />
+                            </g>
+                        </g>
+
+                        <!-- ================= CENTERPIECE CANDLE 2 (Center X=180, vanishes cleanly on cut) ================= -->
+                        <g id="vc-candle-2" class="vc-candle-group" transform="translate(180, 70)">
+                            <ellipse cx="0" cy="52" rx="5.5" ry="2.2" fill="url(#vc-stand-gold)"/>
+                            <rect x="-4" y="0" width="8" height="52" rx="2.5" fill="url(#vc-candle-wax)"/>
+                            <path d="M -4,8 L 4,15 M -4,18 L 4,25 M -4,28 L 4,35 M -4,38 L 4,45" stroke="url(#vc-stand-gold)" stroke-width="2.6" stroke-linecap="round"/>
+                            <path d="M 0,0 L 0,-6" stroke="#2B1810" stroke-width="1.6" stroke-linecap="round"/>
+                            <circle cx="0" cy="-5" r="1.3" fill="#FF3D00"/>
+                            <g id="vc-flame-2" class="vc-flame-item vc-flame-item-3">
+                                <path d="M 0,-5 C -7,-14 -5.8,-25 0,-35 C 5.8,-25 7,-14 0,-5 Z" fill="url(#vc-flame-outer)" filter="url(#vc-flame-glow)"/>
+                                <path d="M 0,-6 C -4.4,-14 -3.6,-22 0,-30 C 3.6,-22 4.4,-14 0,-6 Z" fill="url(#vc-flame-inner)"/>
+                                <ellipse cx="0" cy="-15" rx="2.2" ry="7.5" fill="#FFFFFF" opacity="0.98"/>
+                                <ellipse cx="0" cy="-6" rx="2.4" ry="1.3" fill="#2979FF" opacity="0.6"/>
+                            </g>
+                            <circle id="vc-smoke-2" class="vc-smoke-item" cx="0" cy="-22" r="5" fill="rgba(255,255,255,0.75)" style="display:none;opacity:0;" />
+                        </g>
+                    </svg>
+                    </div>
                 </div>
 
-                <!-- action button -->
-                <div class="vc-btn-wrap">
-                    <button class="vc-btn" id="vc-blow-btn">
+                <!-- Blow & Cut Button -->
+                <div class="vc-btn-wrap" style="margin-top: 16px;">
+                    <button class="vc-btn" id="vc-blow-btn" type="button">
                         <i class="fas fa-wind"></i>
                         <span>Blow Candles &amp; Cut Cake!</span>
                     </button>
                 </div>
 
-                <!-- wish card (hidden until after celebration) -->
+                <!-- Wish Card -->
                 <div class="vc-wish-card" id="vc-wish-card">
-                    <div class="vc-wish-icons">
-                        <i class="fas fa-gift"></i>
-                        <i class="fas fa-birthday-cake"></i>
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="vc-wish-text">
-                        "May this year bring you boundless joy, laughter, and every dream you dare to dream. You are truly one in a million!"
-                    </div>
-                    <div class="vc-wish-sender">
-                        <i class="fas fa-heart" style="color:#FF4D8F;margin-right:6px;font-size:0.9em;"></i>With all the love in the world
-                    </div>
+                    <h3 class="vc-wish-title"><i class="fas fa-star" style="color:#FFD700;"></i> Make a Wish! <i class="fas fa-star" style="color:#FFD700;"></i></h3>
+                    <p class="vc-wish-desc">May all your dreams and sweetest wishes come true this year! 🌟🎂</p>
                 </div>
 
-                <!-- Beautiful Interactive Cake Slices Showcase (Reveals after cake cut!) -->
+                <!-- Cake Slices Sharing -->
                 <div class="vc-slices-wrapper" id="vc-slices-wrapper">
-                    <h3 class="vc-slices-heading">
-                        <i class="fas fa-utensils" style="color:#FFD700;margin-right:8px;"></i>Here is your Cake Slice Sharing! \u{1F370}
-                    </h3>
+                    <h3 class="vc-slices-heading"><i class="fas fa-utensils" style="color:#FFE082;"></i> Here is your Cake Slice Sharing! 🍰</h3>
                     <p class="vc-slices-sub">Tap any slice to take a bite!</p>
-
                     <div class="vc-slices-grid">
-                        <!-- Slice 1: For You -->
                         <div class="vc-slice-card">
-                            <div class="vc-slice-graphic">\u{1F370}<span class="vc-slice-cherry">\u{1F353}</span></div>
-                            <div class="vc-slice-badge">For You</div>
-                            <div class="vc-slice-label">Here is a slice for <strong>You</strong>! \u{1F60B}</div>
-                            <div class="vc-slice-toast">Yum! Delicious! \u{1F60B}</div>
+                            <div class="vc-slice-graphic">🍰🍓</div>
+                            <div class="vc-slice-badge">FOR YOU</div>
+                            <div class="vc-slice-label">Here is a slice for <strong>You</strong>! 😋</div>
+                            <div class="vc-slice-toast">Yum! Delicious! 😋</div>
                         </div>
-
-                        <!-- Slice 2: For Me -->
                         <div class="vc-slice-card">
-                            <div class="vc-slice-graphic">\u{1F370}<span class="vc-slice-cherry">\u{1F352}</span></div>
-                            <div class="vc-slice-badge">For Me</div>
-                            <div class="vc-slice-label">Here is a slice for <strong>Me</strong>! \u{1F382}</div>
-                            <div class="vc-slice-toast">Save me a bite! \u{1F382}</div>
+                            <div class="vc-slice-graphic">🍰🍒</div>
+                            <div class="vc-slice-badge">FOR ME</div>
+                            <div class="vc-slice-label">Here is a slice for <strong>Me</strong>! 🎂</div>
+                            <div class="vc-slice-toast">Save me a bite! 🎂</div>
                         </div>
-
-                        <!-- Slice 3: For Everyone -->
                         <div class="vc-slice-card">
-                            <div class="vc-slice-graphic">\u{1F370}<span class="vc-slice-cherry">\u{1F31F}</span></div>
-                            <div class="vc-slice-badge">For Everyone</div>
-                            <div class="vc-slice-label">A big slice for <strong>Everyone</strong>! \u{1F389}</div>
-                            <div class="vc-slice-toast">Party Time! \u{1F389}</div>
+                            <div class="vc-slice-graphic">🍰🌟</div>
+                            <div class="vc-slice-badge">FOR EVERYONE</div>
+                            <div class="vc-slice-label">A big slice for <strong>Everyone</strong>! 🎉</div>
+                            <div class="vc-slice-toast">Party Time! 🎉</div>
                         </div>
-
-                        <!-- Slice 4: Extra Slice of Love -->
                         <div class="vc-slice-card">
-                            <div class="vc-slice-graphic">\u{1F370}<span class="vc-slice-cherry">\u{1F496}</span></div>
-                            <div class="vc-slice-badge">Extra Slice</div>
-                            <div class="vc-slice-label">An extra slice of <strong>Love</strong>! \u{1F495}</div>
-                            <div class="vc-slice-toast">Made with Love! \u{1F496}</div>
+                            <div class="vc-slice-graphic">🍰💖</div>
+                            <div class="vc-slice-badge">EXTRA SLICE</div>
+                            <div class="vc-slice-label">An extra slice of <strong>Love</strong>! 💕</div>
+                            <div class="vc-slice-toast">Made with Love! 💖</div>
                         </div>
                     </div>
                 </div>
@@ -4999,7 +5769,7 @@
                 <audio id="vc-audio"
                     src="https://www.dropbox.com/scl/fi/veung117ggbzx65sxlj98/Crackers-mini.mp3?rlkey=tfheg9i04k6upkavcpdsrghle&st=koce788t&dl=1"
                     preload="auto" style="display:none;"></audio>
-            `;
+                `;
 
                 if (w.insertSectionBeforeFinal) {
                     w.insertSectionBeforeFinal(d, section);
@@ -5008,22 +5778,37 @@
                     const finalMessage = d.getElementById('magic-final-surprise-section');
                     const cta = d.getElementById('magic-cta-section');
                     const anchor = finalMessage || cta;
-                    if (anchor && anchor.parentNode === container) { container.insertBefore(section, anchor); } else { container.appendChild(section); }
+                    if (anchor && anchor.parentNode === container) {
+                        container.insertBefore(section, anchor);
+                    } else {
+                        container.appendChild(section);
+                    }
                 }
-                const scrollFn = w.scrollToElement || (w.parent && w.parent.scrollToElement);
-                if (scrollFn) scrollFn(d, section);
 
-                /* --- Logic --- */
-                const btn = section.querySelector('#vc-blow-btn');
-                const stage = section.querySelector('#vc-cake-stage');
-                const knife = section.querySelector('#vc-knife-wrap');
-                const cutLine = section.querySelector('#vc-cut-line');
-                const card = section.querySelector('#vc-wish-card');
-                const slicesWrap = section.querySelector('#vc-slices-wrapper');
-                const audio = section.querySelector('#vc-audio');
-                let done = false;
+                // Ambient floating petals
+                (function createAmbientPetals() {
+                    const petalColors = [
+                        'rgba(255,105,180,0.7)', 'rgba(255,182,193,0.8)', 'rgba(219,112,147,0.7)',
+                        'rgba(255,215,0,0.5)',   'rgba(255,160,180,0.65)'
+                    ];
+                    const count = 14;
+                    for (let i = 0; i < count; i++) {
+                        const p = d.createElement('div');
+                        p.className = 'vc-petal';
+                        const size = 7 + Math.random() * 11;
+                        const left = Math.random() * 95;
+                        const bottom = -(size + 10);
+                        const color = petalColors[Math.floor(Math.random() * petalColors.length)];
+                        const dur = 5 + Math.random() * 7;
+                        const delay = Math.random() * -10;
+                        const dx = (Math.random() - 0.5) * 60;
+                        const rot = Math.random() * 540 - 270;
+                        p.style.cssText = 'width:' + size + 'px; height:' + (size * 0.75) + 'px; left:' + left + '%; bottom:' + bottom + 'px; background:' + color + '; border-radius: 50% 0 50% 0; filter: blur(' + (Math.random() < 0.3 ? '1px' : '0px') + '); --vc-petal-dur:' + dur + 's; --vc-petal-delay:' + delay + 's; --vc-petal-dx:' + dx + 'px; --vc-petal-rot:' + rot + 'deg;';
+                        section.appendChild(p);
+                    }
+                })();
 
-                /* Interactive Slice Tapping */
+                // Slice tapping interactions
                 const sliceCards = section.querySelectorAll('.vc-slice-card');
                 sliceCards.forEach(cardEl => {
                     cardEl.addEventListener('click', (e) => {
@@ -5037,79 +5822,105 @@
                         const cfn = w.confetti || w.canvasConfetti || (typeof window !== 'undefined' && (window.confetti || window.canvasConfetti));
                         if (cfn) {
                             const rect = cardEl.getBoundingClientRect();
-                            const x = (rect.left + rect.width / 2) / window.innerWidth;
-                            const y = (rect.top + rect.height / 2) / window.innerHeight;
+                            const x = (rect.left + rect.width / 2) / (w.innerWidth || 800);
+                            const y = (rect.top + rect.height / 2) / (w.innerHeight || 600);
                             cfn({ particleCount: 35, spread: 60, origin: { x, y: Math.max(0.2, y) }, zIndex: 99999 });
                         }
                     });
                 });
 
-                const blowAndCutCake = () => {
-                    if (done) return;
-                    done = true;
-
-                    /* PHASE 1: Light off / blow out ALL 5 candles FIRST (0ms - 450ms) */
-                    [0, 1, 2, 3, 4].forEach((i, idx) => {
-                        setTimeout(() => {
-                            const flame = section.querySelector(`#vc-flame-${i}`);
-                            const smoke = section.querySelector(`#vc-smoke-${i}`);
-                            if (flame) flame.classList.add('out');
-                            if (smoke) smoke.classList.add('puffing');
-                        }, idx * 90);
-                    });
-
-                    /* PHASE 2: After candles are completely lit off, start Knife & Red Line Slicing (at 600ms) */
-                    setTimeout(() => {
-                        knife.classList.add('slicing');
-                        cutLine.classList.add('slicing');
-                    }, 600);
-
-                    /* PHASE 3: Knife reaches bottom -> Split cake halves, disappear middle candle & play sound (at 1250ms) */
-                    setTimeout(() => {
-                        const midCandle = section.querySelector('#vc-candle-2');
-                        if (midCandle) {
-                            midCandle.style.opacity = '0';
-                            midCandle.style.transform = 'scale(0) translateY(-20px)';
-                        }
-                        stage.classList.add('is-cut');
-                        cutLine.classList.add('flash');
-                        knife.style.opacity = '0';
-
-                        if (audio) { audio.currentTime = 0; audio.play().catch(() => { }); }
-                    }, 1250);
-
-                    /* PHASE 4: Confetti bursts, Wish Card & Slices Showcase reveal (1350ms - 1700ms) */
-                    const cfn = w.confetti || w.canvasConfetti || (typeof window !== 'undefined' && (window.confetti || window.canvasConfetti));
-                    if (cfn) {
-                        const burst = (opts) => cfn({ zIndex: 99999, ...opts });
-                        setTimeout(() => burst({ particleCount: 160, spread: 100, origin: { x: 0.5, y: 0.55 } }), 1350);
-                        setTimeout(() => burst({ particleCount: 110, spread: 85, origin: { x: 0.25, y: 0.5 }, angle: 60 }), 1550);
-                        setTimeout(() => burst({ particleCount: 110, spread: 85, origin: { x: 0.75, y: 0.5 }, angle: 120 }), 1700);
-                        setTimeout(() => burst({
-                            particleCount: 220, spread: 130, origin: { x: 0.5, y: 0.4 },
-                            colors: ['#FFD700', '#FF9100', '#FF4D8F', '#7B5DF6', '#ffffff']
-                        }), 1900);
+                const btn = section.querySelector('#vc-blow-btn');
+                const stage = section.querySelector('#vc-cake-stage');
+                const rotator = section.querySelector('#vc-cake-rotator');
+                const blowAndCutHandler = () => {
+                    if (rollTimer) {
+                        clearTimeout(rollTimer);
+                        rollTimer = null;
                     }
+                    if (stage) {
+                        stage.classList.remove('rolling-in');
+                        stage.classList.remove('is-swaying');
+                    }
+                    if (rotator) {
+                        rotator.classList.remove('is-idle-swaying');
+                    }
+                    triggerBlowAndCutCake(section);
+                };
+                if (btn) btn.addEventListener('click', blowAndCutHandler);
+                if (stage) stage.addEventListener('click', blowAndCutHandler);
 
-                    setTimeout(() => {
-                        card.style.display = 'block';
-                        if (slicesWrap) slicesWrap.style.display = 'block';
-                        btn.classList.add('done');
-                        btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Wish Granted &amp; Cake Cut!</span>';
-                    }, 1600);
+                // Rolling entrance & luxury idle swaying
+                let rollTimer = null;
+                let hasRolled = false;
+                let rollObserver = null;
+
+                const startRollingEntrance = () => {
+                    if (hasRolled) return;
+                    hasRolled = true;
+                    if (stage) {
+                        stage.classList.remove('rolling-in');
+                        if (rotator) rotator.classList.remove('is-idle-swaying');
+                        void stage.offsetWidth;
+                        stage.classList.add('rolling-in');
+                        rollTimer = setTimeout(() => {
+                            if (stage) {
+                                stage.classList.remove('rolling-in');
+                                stage.classList.add('is-swaying');
+                            }
+                            if (rotator && !section.getAttribute('data-cake-done')) {
+                                rotator.classList.add('is-idle-swaying');
+                            }
+                            rollTimer = null;
+                        }, 1380);
+                    }
                 };
 
-                if (btn) btn.addEventListener('click', blowAndCutCake);
-                if (stage) stage.addEventListener('click', blowAndCutCake);
+                try {
+                    const rect = (stage || section).getBoundingClientRect ? (stage || section).getBoundingClientRect() : null;
+                    const inView = rect && (rect.top < (w.innerHeight || 800) && rect.bottom > 0);
+                    const WinObserver = w.IntersectionObserver || (typeof IntersectionObserver !== 'undefined' ? IntersectionObserver : null);
 
-                return { cleanup: () => section.remove() };
+                    if (inView) {
+                        startRollingEntrance();
+                    } else if (WinObserver) {
+                        rollObserver = new WinObserver((entries) => {
+                            entries.forEach(entry => {
+                                if (entry.isIntersecting) {
+                                    startRollingEntrance();
+                                    if (rollObserver) {
+                                        rollObserver.disconnect();
+                                        rollObserver = null;
+                                    }
+                                }
+                            });
+                        }, { threshold: 0.15 });
+                        rollObserver.observe(stage || section);
+                    } else {
+                        startRollingEntrance();
+                    }
+                } catch(e) {
+                    startRollingEntrance();
+                }
+
+                return {
+                    cleanup: () => {
+                        if (rollTimer) {
+                            clearTimeout(rollTimer);
+                            rollTimer = null;
+                        }
+                        if (rollObserver) {
+                            rollObserver.disconnect();
+                            rollObserver = null;
+                        }
+                        section.remove();
+                    }
+                };
             },
             disable(d) {
                 d?.getElementById('magic-virtual-cake-section')?.remove();
             }
         },
-
-        virtualHug: {
+virtualHug: {
             enable(d, w, userName, customText) {
                 const existingHug = d.getElementById('magic-virtual-hug-section');
                 if (existingHug) existingHug.remove();
