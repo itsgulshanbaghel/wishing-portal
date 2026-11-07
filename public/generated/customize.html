@@ -6034,6 +6034,64 @@
             } catch (e) {}
           }
 
+          // Extract & restore user custom DOM text edits (pencil edits) from server config and saved HTML
+          let extractedDomTexts = {};
+          if (serverData.html && typeof serverData.html === 'string') {
+            try {
+              const parser = new DOMParser();
+              const parsedDoc = parser.parseFromString(serverData.html, 'text/html');
+              const trackIds = [
+                'heroTitle', 'nameSub', 'bookTitle', 'insideMsg', 'insideSign',
+                'storyTop', 'storyBody', 'wishHead', 'wishText', 'celBtn',
+                'floatingText', 'letterText', 'scratchMessage', 'musicCustomMessage'
+              ];
+              trackIds.forEach(id => {
+                const el = parsedDoc.getElementById(id);
+                if (el && el.innerHTML && el.innerHTML.trim()) {
+                  extractedDomTexts[id] = el.innerHTML;
+                }
+              });
+              ['.story-top', '.inside-sign', '.inside-message', '.hero-subtitle', '.story-body', '.wish-text'].forEach(sel => {
+                const el = parsedDoc.querySelector(sel);
+                if (el && !el.id && el.innerHTML && el.innerHTML.trim()) {
+                  extractedDomTexts[sel] = el.innerHTML;
+                }
+              });
+            } catch (e) {
+              console.warn('[CustomizeEditor] Error parsing saved HTML for pencil edits:', e);
+            }
+          }
+
+          const finalDomTexts = Object.assign({}, extractedDomTexts, config.customDomTexts || {});
+          window._serverCustomDomTexts = finalDomTexts;
+          try {
+            if (websiteId) {
+              localStorage.setItem('greeter_custom_dom_texts_' + websiteId, JSON.stringify(finalDomTexts));
+            }
+            localStorage.setItem('greeter_custom_dom_texts', JSON.stringify(finalDomTexts));
+            sessionStorage.setItem('greeter_custom_dom_texts', JSON.stringify(finalDomTexts));
+          } catch (e) {}
+
+          // Also keep userData story & wishes in sync if pencil edits changed them
+          try {
+            const currentUd = JSON.parse(localStorage.getItem('userData') || '{}');
+            const storyEdit = finalDomTexts['storyBody'] || finalDomTexts['#storyBody'] || finalDomTexts['.story-body'];
+            if (storyEdit) {
+              const tmp = document.createElement('div');
+              tmp.innerHTML = storyEdit;
+              const textContent = tmp.textContent || tmp.innerText || '';
+              if (textContent.trim()) currentUd.story = textContent.trim();
+            }
+            const wishEdit = finalDomTexts['wishText'] || finalDomTexts['#wishText'] || finalDomTexts['.wish-text'];
+            if (wishEdit) {
+              const tmp = document.createElement('div');
+              tmp.innerHTML = wishEdit;
+              const textContent = tmp.textContent || tmp.innerText || '';
+              if (textContent.trim()) currentUd.wishes = textContent.trim();
+            }
+            localStorage.setItem('userData', JSON.stringify(currentUd));
+          } catch (e) {}
+
           // Restore and switch to the correct saved template
           const templateRaw = config.template || config.templateName ||
             (serverData.metadata && (serverData.metadata.templateName || serverData.metadata.template)) ||
@@ -9408,6 +9466,12 @@
           window.restoreCustomDomEdits(iframeDoc);
           setTimeout(() => window.restoreCustomDomEdits(iframeDoc), 60);
           setTimeout(() => window.restoreCustomDomEdits(iframeDoc), 200);
+          setTimeout(() => window.restoreCustomDomEdits(iframeDoc), 500);
+          setTimeout(() => {
+            if (typeof syncDomEditsToState === 'function') {
+              syncDomEditsToState(iframeDoc, false);
+            }
+          }, 350);
         }
         // Add drag drop to iframe content
         if (iframeDoc) {
@@ -9634,9 +9698,16 @@
         const doc = targetDoc || getIframeDocument();
         if (!doc || !doc.body) return;
         try {
-          const raw = localStorage.getItem('greeter_custom_dom_texts');
-          if (!raw) return;
-          const texts = JSON.parse(raw);
+          const websiteId = typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null;
+          let texts = window._serverCustomDomTexts || null;
+          if (!texts) {
+            const raw = (websiteId && localStorage.getItem('greeter_custom_dom_texts_' + websiteId)) ||
+                        localStorage.getItem('greeter_custom_dom_texts') ||
+                        sessionStorage.getItem('greeter_custom_dom_texts');
+            if (raw) {
+              try { texts = JSON.parse(raw); } catch (e) {}
+            }
+          }
           if (!texts || typeof texts !== 'object') return;
           for (const [key, val] of Object.entries(texts)) {
             if (val === undefined || val === null || val === '') continue;
@@ -11478,6 +11549,13 @@
             template: localStorage.getItem('selectedTemplate') || '',
             userData: getEventData(),
             userName: getUserName(),
+            customDomTexts: (function() {
+              try {
+                return JSON.parse(localStorage.getItem('greeter_custom_dom_texts') || '{}');
+              } catch (e) {
+                return {};
+              }
+            })(),
             isPremium: isPremium
           };
 
@@ -11918,6 +11996,11 @@
             try {
               localStorage.setItem('final_magic_' + data.id, html);
               localStorage.setItem('magic_config_' + data.id, JSON.stringify(config));
+              if (finalConfig && finalConfig.customDomTexts && Object.keys(finalConfig.customDomTexts).length > 0) {
+                try {
+                  localStorage.setItem('greeter_custom_dom_texts_' + data.id, JSON.stringify(finalConfig.customDomTexts));
+                } catch(e) {}
+              }
               if (editPin) {
                 localStorage.setItem('creator_pin_' + data.id, editPin);
                 window._verifiedEditPin = editPin;
