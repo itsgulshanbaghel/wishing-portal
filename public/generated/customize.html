@@ -4173,8 +4173,8 @@
               </button>
             </div>
 
-            <!-- International Support Line -->
-            <div id="intlContactSupportContainer" style="display: none; margin-top: 14px; text-align: center;">
+            <!-- Payment Support Line (Indian & International) -->
+            <div id="intlContactSupportContainer" style="display: block; margin-top: 14px; text-align: center;">
               <p style="font-size: 0.88rem; color: var(--text-secondary, #94a3b8); margin: 0; font-weight: 500;">
                 Facing issues with payment? <button type="button" id="intlContactUsBtn" onclick="window.openIntlPaymentModal()" style="background: none; border: none; padding: 2px 4px; color: #7b5df6; font-weight: 700; text-decoration: underline; cursor: pointer; font-size: inherit; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Contact us</button>
               </p>
@@ -12602,10 +12602,10 @@
             if (s3Badge) s3Badge.textContent = '✨ SELECT YOUR PLAN';
           }
 
-          // Show/hide International Alternative Payment button
+          // Show Payment Support Line (for both Indian and International users)
           const intlContactContainer = document.getElementById('intlContactSupportContainer');
           if (intlContactContainer) {
-            intlContactContainer.style.display = (selectedCurrency === 'INR') ? 'none' : 'block';
+            intlContactContainer.style.display = 'block';
           }
 
           // Update feature items UI
