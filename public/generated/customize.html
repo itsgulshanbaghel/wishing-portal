@@ -6048,14 +6048,10 @@
             if (frame) {
               const separator = resolvedTemplate.includes('?') ? '&' : '?';
               const targetSrc = `${resolvedTemplate}${separator}v=${Date.now()}&_nocache=${Date.now()}&mode=edit&lang=${currentLang}`;
-              const currentSrcClean = (frame.src || '').split('?')[0].replace(/^https?:\/\/[^\/]+/, '');
-              const targetClean = resolvedTemplate.replace(/^\.\.\//, '/');
-
-              if (!currentSrcClean.endsWith(targetClean)) {
-                console.log('[CustomizeEditor] Hard reloading iframe with saved template:', resolvedTemplate);
-                isFrameLoaded = false;
-                frame.src = targetSrc;
-              }
+              // Always load or reload iframe with fresh server-loaded userData and template
+              console.log('[CustomizeEditor] Loading iframe with restored server template:', resolvedTemplate);
+              isFrameLoaded = false;
+              frame.src = targetSrc;
             }
           }
 
@@ -9490,7 +9486,12 @@
         }
       };
       renderCategoriesWithLanguage(translations[currentLang]);
-      loadSelectedTemplate();
+      const initialUrlParams = new URLSearchParams(window.location.search);
+      const isRestoringSite = initialUrlParams.has('restore') || (initialUrlParams.has('src') && initialUrlParams.get('src') === 'edit');
+      // When restoring an existing site, wait for loadConfigFromServer to load the template with original data
+      if (!isRestoringSite) {
+        loadSelectedTemplate();
+      }
       if (typeof showStage === 'function') {
         showStage(1);
       }
@@ -9531,6 +9532,11 @@
         // 2. Fall back to localStorage if server fetch failed or no ID (only when NOT a fresh edit request)
         if (!loaded && !isFresh) {
           loaded = loadCustomizationState();
+        }
+
+        // If restoring and server load didn't trigger template load, ensure template is loaded
+        if (isRestoringSite && !loaded) {
+          loadSelectedTemplate();
         }
 
         // Re-hydrate any pending media binary files cached in IndexedDB
@@ -10443,12 +10449,7 @@
     window.curtainOpened = false;
     window.welcomeFinished = false;
     window.countdownFinished = false;
-    if (config && config.userData) {
-      try {
-        localStorage.setItem('userData', JSON.stringify(config.userData));
-        sessionStorage.setItem('userData', JSON.stringify(config.userData));
-      } catch(e) {}
-    }
+    // Shared generated page: config is attached to window._magicConfig without polluting visitor storage
     const activeFeatureStates = new Map(config.activeFeatures || []);
     const customData = new Map(config.customData || []);
     const userName = config.userName || 'Loved One';
@@ -11516,12 +11517,7 @@
   const magicRaw = "${magicRaw}";
   window._magicConfig = config;
   window.__IS_GENERATED_PAGE__ = true;
-  if (config && config.userData) {
-    try {
-      localStorage.setItem('userData', JSON.stringify(config.userData));
-      sessionStorage.setItem('userData', JSON.stringify(config.userData));
-    } catch(e) {}
-  }
+  // Shared generated page: config attached to window._magicConfig without polluting visitor storage
   if (config && config.userName) {
     try {
       localStorage.setItem('userDataName', config.userName);
@@ -12965,6 +12961,10 @@
               storedHtml = storedHtml.replace('setTimeout(function showNudge(){', 'return; setTimeout(function showNudge(){');
             }
 
+            // Neutralize any legacy localStorage.userData / sessionStorage.userData writes baked into storedHtml
+            storedHtml = storedHtml.replace(/(localStorage|sessionStorage)\.setItem\(\s*['"]userData['"]/g, '/* shared view guard */ (function(){})(');
+            storedHtml = storedHtml.replace(/(localStorage|sessionStorage)\.setItem\(\s*['"]userDataName['"]/g, '/* shared view guard */ (function(){})(');
+
             // Parse and hydrate config on recipient device
             let cfgObj = {};
             try {
@@ -12974,23 +12974,7 @@
             if (cfgObj) {
               const configStr = JSON.stringify(cfgObj);
               sessionStorage.setItem('magic_hydration_config', configStr);
-              if (cfgObj.userData) {
-                try {
-                  localStorage.setItem('userData', JSON.stringify(cfgObj.userData));
-                  sessionStorage.setItem('userData', JSON.stringify(cfgObj.userData));
-                } catch(e) {}
-              }
-              if (cfgObj.userName) {
-                try {
-                  localStorage.setItem('userDataName', cfgObj.userName);
-                  sessionStorage.setItem('userDataName', cfgObj.userName);
-                } catch(e) {}
-              }
-              if (cfgObj.template || cfgObj.templateName) {
-                try {
-                  localStorage.setItem('selectedTemplate', cfgObj.template || cfgObj.templateName);
-                } catch(e) {}
-              }
+              // Do NOT pollute visitor's localStorage with demo or shared greeting userData
             }
 
             // Inject early bootstrap runtime into storedHtml before document.write
@@ -13012,12 +12996,6 @@
   window.fullUIRefresh = function() {};
   window.refreshLanguage = function() {};
   window.syncLanguage = function() {};
-  if (config && config.userData) {
-    try {
-      localStorage.setItem('userData', JSON.stringify(config.userData));
-      sessionStorage.setItem('userData', JSON.stringify(config.userData));
-    } catch(e) {}
-  }
   if (config && config.userName) {
     try {
       localStorage.setItem('userDataName', config.userName);

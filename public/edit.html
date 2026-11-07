@@ -1876,6 +1876,11 @@
 
       const openEditorBtn = document.getElementById('openEditorBtn');
       openEditorBtn.href = editorUrl;
+      openEditorBtn.onclick = () => {
+        try {
+          localStorage.setItem('activeCustomizerWebsiteId', data.websiteId);
+        } catch(e) {}
+      };
 
       const viewLiveBtn = document.getElementById('viewLiveBtn');
       viewLiveBtn.href = liveUrl;

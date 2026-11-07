@@ -3728,6 +3728,38 @@
         };
       }
 
+      // Auto-save unfinished inputs on create.html so user drafts are preserved across reloads
+      function autoSaveCreateDraft() {
+        try {
+          const currentData = collectFormData({ _fromCreate: true, _savedAt: Date.now() });
+          const hasUserInput = Boolean(
+            (currentData.name && currentData.name.trim()) ||
+            (currentData.story && currentData.story.trim()) ||
+            (currentData.wishes && currentData.wishes.trim()) ||
+            (currentData.festival && currentData.festival.trim()) ||
+            (currentData.creatingFor && currentData.creatingFor.trim()) ||
+            (currentData.age && String(currentData.age).trim())
+          );
+          if (hasUserInput) {
+            localStorage.setItem('create_form_draft', JSON.stringify(currentData));
+          } else {
+            localStorage.removeItem('create_form_draft');
+          }
+        } catch(e) {}
+      }
+
+      const formFieldsToTrack = [
+        eventSelect, moodSelect, nameInput, creatingForInput,
+        document.getElementById('age'), storyTextarea, wishesTextarea,
+        festivalInput, document.getElementById('proposalForSelect'),
+        document.getElementById('proposalQuestionInput')
+      ].filter(Boolean);
+
+      formFieldsToTrack.forEach(el => {
+        el.addEventListener('input', autoSaveCreateDraft);
+        el.addEventListener('change', autoSaveCreateDraft);
+      });
+
       // Submit → go to preview.html
       document.getElementById('submitBtn').addEventListener('click', (e) => {
         e.preventDefault();
@@ -3735,7 +3767,9 @@
         localStorage.removeItem('activeCustomizerWebsiteId');
         localStorage.removeItem('customizationState');
         sessionStorage.removeItem('pendingPremiumForNextWebsite');
-        localStorage.setItem('userData', JSON.stringify(collectFormData()));
+        const formData = collectFormData({ _fromCreate: true });
+        localStorage.setItem('userData', JSON.stringify(formData));
+        localStorage.setItem('create_form_draft', JSON.stringify(formData));
         window.location.href = 'generated/preview.html';
       });
 
@@ -3772,30 +3806,54 @@
         if (navLinks.classList.contains('show')) { navLinks.classList.remove('show'); menuBtn.querySelector('i').classList.replace('fa-times', 'fa-bars'); }
       }));
 
-      // Prefill form if userData exists in localStorage
+      // Prefill form ONLY if actual unfinished inputs from create.html exist (prevents demo/shared pages from ever prefilling)
       try {
-        const stored = localStorage.getItem('userData');
+        let stored = null;
+        const draft = localStorage.getItem('create_form_draft');
+        if (draft) {
+          stored = draft;
+        } else {
+          // Check userData only if explicitly flagged as authored on create.html
+          const ud = localStorage.getItem('userData');
+          if (ud) {
+            try {
+              const parsed = JSON.parse(ud);
+              if (parsed && parsed._fromCreate === true) {
+                stored = ud;
+              }
+            } catch(e) {}
+          }
+        }
+
         if (stored) {
           const data = JSON.parse(stored);
           if (data.event) {
             eventSelect.value = data.event;
-            if (data.event === 'festival') {
-              festivalContainer.style.display = 'block';
-              document.getElementById('relationContainer').style.display = 'none';
-              document.getElementById('ageContainer').style.display = 'none';
-              if (data.festival) festivalInput.value = data.festival;
-            } else {
-              festivalContainer.style.display = 'none';
-              document.getElementById('relationContainer').style.display = 'block';
-              document.getElementById('ageContainer').style.display = 'block';
-            }
+            toggleFestivalField();
+            if (data.festival && festivalInput) festivalInput.value = data.festival;
           }
           if (data.mood) moodSelect.value = data.mood;
           if (data.creatingFor) creatingForInput.value = data.creatingFor;
           if (data.name) nameInput.value = data.name;
           if (data.age) document.getElementById('age').value = data.age;
-          if (data.story) storyTextarea.value = data.story;
-          if (data.wishes) wishesTextarea.value = data.wishes;
+          if (data.story) {
+            storyTextarea.value = data.story;
+            autoResize(storyTextarea);
+          }
+          if (data.wishes) {
+            wishesTextarea.value = data.wishes;
+            autoResize(wishesTextarea);
+          }
+          if (data.event === 'proposal' && data.proposalFor) {
+            const pSel = document.getElementById('proposalForSelect');
+            if (pSel) {
+              pSel.value = data.proposalFor;
+              const qWrap = document.getElementById('proposalQuestionWrapper');
+              const qInput = document.getElementById('proposalQuestionInput');
+              if (qWrap) qWrap.style.display = 'block';
+              if (qInput && data.proposalQuestion) qInput.value = data.proposalQuestion;
+            }
+          }
         }
       } catch (e) {
         console.error('Prefill failed:', e);
