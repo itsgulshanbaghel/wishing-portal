@@ -1631,36 +1631,12 @@
 
 
         .hero {
-
-
-
             display: grid;
-
-
-
             grid-template-columns: 1.1fr 1fr;
-
-
-
             align-items: center;
-
-
-
-            padding: 30px 0 100px;
-
-
-
-            gap: 60px;
-
-
-
+            padding: 6px 0 36px;
+            gap: 40px;
         }
-
-
-
-
-
-
 
         .hero-content {
             display: flex;
@@ -1674,14 +1650,14 @@
             align-items: center;
             gap: 10px;
             background: linear-gradient(135deg, rgba(123, 93, 246, 0.12) 0%, rgba(236, 72, 153, 0.1) 50%, rgba(255, 122, 47, 0.12) 100%);
-            padding: 8px 20px;
+            padding: 7px 18px;
             border-radius: 100px;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: clamp(12px, 1.05vw, 13.5px);
             font-weight: 800;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            margin-bottom: 22px;
+            margin-bottom: 14px;
             border: 1.5px solid rgba(168, 85, 247, 0.35);
             box-shadow: 0 4px 18px -2px rgba(123, 93, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.6);
             transition: all 0.35s ease;
@@ -1721,10 +1697,10 @@
         .hero-title {
             font-size: clamp(48px, 4.6vw, 64px);
             font-weight: 800;
-            line-height: 1.13;
+            line-height: 1.12;
             letter-spacing: -0.038em;
             text-wrap: balance;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             animation: titleGlow 1.2s ease-out;
             color: var(--text-primary);
@@ -1774,8 +1750,8 @@
             font-size: clamp(16px, 1.25vw, 17.5px);
             color: var(--text-secondary);
             max-width: 550px;
-            margin-bottom: 32px;
-            line-height: 1.7;
+            margin-bottom: 22px;
+            line-height: 1.65;
             letter-spacing: -0.01em;
             opacity: 0.94;
             animation: fadeUp 0.8s ease-out 0.22s both;
@@ -1807,11 +1783,11 @@
 
         .hero-buttons {
             display: flex;
-            gap: 16px;
+            gap: 20px;
             flex-wrap: wrap;
             align-items: center;
             justify-content: flex-start;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             animation: fadeUp 0.8s ease-out 0.32s both;
         }
 
@@ -1819,20 +1795,21 @@
         .hero-buttons .btn-demo {
             font-family: 'Inter', sans-serif;
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             letter-spacing: -0.01em;
-            height: 56px;
-            min-width: 200px;
-            padding: 0 28px;
+            height: 60px;
+            width: 255px;
+            max-width: 100%;
+            padding: 0 24px;
             border-radius: 9999px;
             box-sizing: border-box;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             text-decoration: none;
             cursor: pointer;
-            flex: initial;
+            flex: none;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -1850,67 +1827,216 @@
         }
 
         .hero-buttons .btn-demo {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            color: var(--text-primary);
-            border: 1.5px solid rgba(123, 93, 246, 0.28);
-            box-shadow: 0 4px 16px rgba(123, 93, 246, 0.08);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 14px 30px -6px rgba(37, 99, 235, 0.45);
         }
 
         .hero-buttons .btn-demo:hover {
             transform: translateY(-2px);
-            border-color: #ec4899;
-            box-shadow: 0 10px 26px -4px rgba(236, 72, 153, 0.25);
-            background: #ffffff;
+            box-shadow: 0 18px 36px -8px rgba(37, 99, 235, 0.6);
+            filter: brightness(1.06);
         }
 
         body.dark .hero-buttons .btn-demo {
-            background: rgba(30, 20, 55, 0.85);
-            border-color: rgba(168, 85, 247, 0.3);
-            color: #f0edff;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 14px 30px -6px rgba(37, 99, 235, 0.5);
         }
 
         body.dark .hero-buttons .btn-demo:hover {
-            border-color: #f472b6;
-            box-shadow: 0 10px 26px -4px rgba(244, 114, 182, 0.3);
-            background: rgba(45, 28, 80, 0.95);
+            box-shadow: 0 18px 36px -8px rgba(59, 130, 246, 0.65);
+            filter: brightness(1.08);
+        }
+
+        /* Combined Unified Hero Trust & Social Proof Card */
+        .hero-trust-proof-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 540px;
+            padding: 14px 22px;
+            background: rgba(255, 255, 255, 0.76);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(139, 92, 246, 0.18);
+            border-radius: 20px;
+            box-shadow: 0 10px 28px -4px rgba(123, 93, 246, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+            animation: fadeUp 0.8s ease-out 0.44s both;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hero-trust-proof-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 34px -4px rgba(123, 93, 246, 0.16);
+            border-color: rgba(139, 92, 246, 0.34);
+        }
+
+        body.dark .hero-trust-proof-card {
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        body.dark .hero-trust-proof-card:hover {
+            border-color: rgba(192, 132, 252, 0.32);
+            box-shadow: 0 14px 34px -4px rgba(168, 85, 247, 0.22);
+        }
+
+        .proof-top-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .proof-avatars-group {
+            display: flex;
+            align-items: center;
+            padding-left: 2px;
+            flex-shrink: 0;
+        }
+
+        .proof-avatar {
+            width: 33px;
+            height: 33px;
+            border-radius: 50%;
+            border: 2.5px solid #ffffff;
+            margin-left: -9px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            position: relative;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .proof-avatar:first-child {
+            margin-left: 0;
+            background-color: #fbcfe8;
+        }
+
+        .proof-avatar:nth-child(2) {
+            background-color: #c7d2fe;
+        }
+
+        .proof-avatar:nth-child(3) {
+            background-color: #fed7aa;
+        }
+
+        .proof-avatar:nth-child(4) {
+            background-color: #bbf7d0;
+        }
+
+        .proof-avatar:hover {
+            transform: translateY(-2px) scale(1.14);
+            z-index: 5;
+        }
+
+        body.dark .proof-avatar {
+            border-color: #1a162b;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .proof-avatar-count {
+            background: linear-gradient(135deg, #7b5df6 0%, #ec4899 100%);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 10.5px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: -0.02em;
+        }
+
+        .proof-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .proof-stars {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            line-height: 1;
+        }
+
+        .proof-stars .star-icons {
+            color: #f59e0b;
+            font-size: 12px;
+            letter-spacing: 2px;
+            display: inline-flex;
+            gap: 1px;
+            filter: drop-shadow(0 1px 3px rgba(245, 158, 11, 0.35));
+        }
+
+        .proof-rating-val {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-left: 4px;
+        }
+
+        .proof-subtext {
+            font-family: 'Inter', sans-serif;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+
+        .proof-subtext strong {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .proof-card-divider {
+            height: 1px;
+            width: 100%;
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.04) 0%, rgba(139, 92, 246, 0.18) 20%, rgba(139, 92, 246, 0.18) 80%, rgba(139, 92, 246, 0.04) 100%);
+        }
+
+        body.dark .proof-card-divider {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.1) 80%, transparent);
         }
 
         .hero-trust {
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
-            gap: 10px 18px;
+            justify-content: space-between;
+            width: 100%;
             font-family: 'Inter', sans-serif;
-            font-size: clamp(13px, 1.15vw, 14px);
+            font-size: 12.5px;
             font-weight: 500;
             color: var(--text-secondary);
             opacity: 0.95;
-            margin-top: 4px;
-            animation: fadeUp 0.8s ease-out 0.42s both;
+            margin: 0;
+            padding: 0;
         }
 
         .trust-item {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            white-space: nowrap;
         }
 
         .trust-item i {
-            font-size: 1.05em;
+            font-size: 1em;
         }
 
         .trust-divider {
             color: var(--card-border);
-            font-size: 10px;
-            opacity: 0.7;
-            user-select: none;
-        }
-
-        .trust-divider {
-            color: var(--card-border);
-            font-size: 10px;
-            opacity: 0.7;
+            font-size: 9px;
+            opacity: 0.6;
             user-select: none;
         }
 
@@ -1933,13 +2059,7 @@
 
 
             border-radius: 64px;
-
-
-
-            padding: 40px;
-
-
-
+            padding: 42px 32px;
             border: 1px solid var(--card-border);
 
 
@@ -1989,62 +2109,20 @@
 
 
         .mock-grid {
-
-
-
             display: grid;
-
-
-
             grid-template-columns: repeat(2, 1fr);
-
-
-
             gap: 20px;
-
-
-
         }
 
-
-
-
-
-
-
         .mock-card {
-
-
-
             background: var(--bg-secondary);
-
-
-
             border-radius: 40px;
-
-
-
-            padding: 32px 20px;
-
-
-
+            padding: 34px 20px;
             border: 1px solid var(--card-border);
-
-
-
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-
-
             text-align: center;
-
-
-
             cursor: pointer;
-
-
-
-            min-height: 160px;
+            min-height: 178px;
 
 
 
@@ -2221,69 +2299,21 @@
 
 
         .mock-card i {
-
-
-
             font-size: 42px;
-
-
-
-            margin-bottom: 16px;
-
-
-
+            margin-bottom: 15px;
         }
-
-
-
-
-
-
 
         .mock-card h4 {
-
-
-
             font-size: 1.2rem;
-
-
-
             font-weight: 700;
-
-
-
             margin-bottom: 4px;
-
-
-
             color: var(--text-primary);
-
-
-
         }
 
-
-
-
-
-
-
         .mock-card p {
-
-
-
-            font-size: 0.9rem;
-
-
-
+            font-size: 0.92rem;
             color: var(--text-secondary);
-
-
-
             line-height: 1.4;
-
-
-
         }
 
 
@@ -5511,8 +5541,8 @@
                 margin: 0 auto 30px;
             }
 
-            .hero-trust {
-                justify-content: center;
+            .hero-trust-proof-card {
+                margin: 0 auto;
             }
 
 
@@ -5818,25 +5848,58 @@
 
 
             .hero-buttons {
-
-
-
                 flex-direction: column;
-
-
-
                 gap: 12px;
-
-
-
                 width: 100%;
-
-
-
                 align-items: center;
+            }
 
+            .hero-buttons .btn-primary,
+            .hero-buttons .btn-demo {
+                width: 100%;
+                max-width: 320px;
+                height: 54px;
+                flex: none;
+                font-size: 1.05rem;
+                padding: 0 24px;
+                border-radius: 9999px;
+            }
 
+            .hero-trust-proof-card {
+                width: 100%;
+                max-width: 340px;
+                margin: 16px auto 0;
+                padding: 12px 14px;
+                border-radius: 18px;
+            }
 
+            .hero-trust-proof-card .proof-top-row {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px 12px;
+                text-align: center;
+            }
+
+            .hero-trust-proof-card .proof-content {
+                align-items: center;
+                text-align: center;
+            }
+
+            .hero-trust-proof-card .proof-subtext {
+                white-space: normal;
+                text-align: center;
+                font-size: 12px;
+            }
+
+            .hero-trust-proof-card .hero-trust {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 6px 10px;
+                font-size: 11.5px;
+            }
+
+            .hero-trust-proof-card .trust-item {
+                font-size: 11.5px;
             }
 
 
@@ -5910,8 +5973,8 @@
                 margin-bottom: 28px;
             }
 
-            .hero-trust {
-                justify-content: center;
+            .hero-trust-proof-card {
+                margin: 0 auto;
             }
 
 
@@ -6580,10 +6643,44 @@
                 display: none;
             }
 
-            .hero-trust {
-                flex-direction: column;
-                gap: 8px;
+            .hero-buttons .btn-primary,
+            .hero-buttons .btn-demo {
+                width: 100%;
+                max-width: 100%;
+                height: 52px;
+                font-size: 1rem;
+                padding: 0 20px;
+                flex: none;
+            }
+
+            .hero-trust-proof-card {
+                padding: 12px 14px;
+                border-radius: 18px;
+                margin: 14px auto 0;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            .hero-trust-proof-card .proof-top-row {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .hero-trust-proof-card .proof-content {
                 align-items: center;
+            }
+
+            .hero-trust-proof-card .proof-subtext {
+                white-space: normal;
+                text-align: center;
+            }
+
+            .hero-trust-proof-card .hero-trust {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 6px 10px;
             }
 
 
@@ -7869,15 +7966,42 @@
 
                 <div class="hero-buttons">
                     <button class="btn-primary" id="btnCreatePerson"><i class="fas fa-wand-magic-sparkles"></i> Create Now <i class="fas fa-arrow-right"></i></button>
-                    <button class="btn-demo" id="btnCreateEvent" onclick="window.location.href='https://thegreeter.in/demo-raman'"><i class="fas fa-circle-play" style="color: #7b5df6;"></i> See Demo</button>
+                    <button class="btn-demo" id="btnCreateEvent" onclick="window.location.href='https://thegreeter.in/demo-raman'"><i class="fas fa-circle-play" style="color: #ffffff;"></i> See Demo</button>
                 </div>
 
-                <div class="hero-trust" id="freeStartText">
-                    <span class="trust-item"><i class="fas fa-wand-magic-sparkles" style="color: #8b5cf6;"></i> No Coding Required</span>
-                    <span class="trust-divider" aria-hidden="true">•</span>
-                    <span class="trust-item"><i class="fas fa-palette" style="color: #ec4899;"></i> Easy to Personalize</span>
-                    <span class="trust-divider" aria-hidden="true">•</span>
-                    <span class="trust-item"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Instant Sharing</span>
+                <div class="hero-trust-proof-card" id="heroTrustProof">
+                    <div class="proof-top-row">
+                        <div class="proof-avatars-group" aria-hidden="true">
+                            <div class="proof-avatar" style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&auto=format&fit=crop&crop=faces&q=80');"></div>
+                            <div class="proof-avatar" style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop&crop=faces&q=80');"></div>
+                            <div class="proof-avatar" style="background-image: url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&auto=format&fit=crop&crop=faces&q=80');"></div>
+                            <div class="proof-avatar" style="background-image: url('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&auto=format&fit=crop&crop=faces&q=80');"></div>
+                            <div class="proof-avatar proof-avatar-count">+60k</div>
+                        </div>
+                        <div class="proof-content">
+                            <div class="proof-stars" aria-label="5 out of 5 stars rating">
+                                <span class="star-icons">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </span>
+                                <span class="proof-rating-val">4.8 / 5</span>
+                            </div>
+                            <div class="proof-subtext" id="heroSocialProofText">Loved by <strong>60,000+ creators</strong> worldwide · 3k+ reviews</div>
+                        </div>
+                    </div>
+
+                    <div class="proof-card-divider" aria-hidden="true"></div>
+
+                    <div class="hero-trust" id="freeStartText">
+                        <span class="trust-item"><i class="fas fa-wand-magic-sparkles" style="color: #8b5cf6;"></i> No Coding Required</span>
+                        <span class="trust-divider" aria-hidden="true">•</span>
+                        <span class="trust-item"><i class="fas fa-palette" style="color: #ec4899;"></i> Easy to Personalize</span>
+                        <span class="trust-divider" aria-hidden="true">•</span>
+                        <span class="trust-item"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Instant Sharing</span>
+                    </div>
                 </div>
             </div>
 
@@ -8997,6 +9121,7 @@
                 btnPerson: "Create Now",
                 btnEvent: "See Demo",
                 freeText: `<span class="trust-item"><i class="fas fa-wand-magic-sparkles" style="color: #8b5cf6;"></i> No Coding Required</span><span class="trust-divider" aria-hidden="true">•</span><span class="trust-item"><i class="fas fa-palette" style="color: #ec4899;"></i> Easy to Personalize</span><span class="trust-divider" aria-hidden="true">•</span><span class="trust-item"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Instant Sharing</span>`,
+                proofSubtext: `Loved by <strong>60,000+ creators</strong> worldwide · 3k+ reviews`,
 
 
 
@@ -9078,6 +9203,7 @@
                 btnPerson: "अभी बनाएं",
                 btnEvent: "डेमो देखें",
                 freeText: `<span class="trust-item"><i class="fas fa-wand-magic-sparkles" style="color: #8b5cf6;"></i> बिना कोडिंग के</span><span class="trust-divider" aria-hidden="true">•</span><span class="trust-item"><i class="fas fa-palette" style="color: #ec4899;"></i> आसान कस्टमाइज़ेशन</span><span class="trust-divider" aria-hidden="true">•</span><span class="trust-item"><i class="fas fa-bolt" style="color: #f59e0b;"></i> तुरंत शेयर करें</span>`,
+                proofSubtext: `<strong>60,000+ खुश यूज़र्स</strong> का भरोसा · 3k+ समीक्षाएं`,
 
 
 
@@ -9201,12 +9327,16 @@
 
             if (document.getElementById('btnCreateEvent')) {
                 document.getElementById('btnCreateEvent').className = 'btn-demo';
-                document.getElementById('btnCreateEvent').innerHTML = `<i class="fas fa-circle-play" style="color: #7b5df6;"></i> ${t.btnEvent}`;
+                document.getElementById('btnCreateEvent').innerHTML = `<i class="fas fa-circle-play" style="color: #ffffff;"></i> ${t.btnEvent}`;
                 document.getElementById('btnCreateEvent').setAttribute('onclick', "window.location.href='https://thegreeter.in/demo-raman'");
             }
 
             if (document.getElementById('freeStartText')) {
                 document.getElementById('freeStartText').innerHTML = t.freeText;
+            }
+
+            if (document.getElementById('heroSocialProofText') && t.proofSubtext) {
+                document.getElementById('heroSocialProofText').innerHTML = t.proofSubtext;
             }
 
 
