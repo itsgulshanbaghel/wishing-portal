@@ -482,7 +482,7 @@
         if (!audioEl) {
             audioEl = d.createElement('audio');
             audioEl.id = 'magic-named-card-audio';
-            audioEl.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+            audioEl.src = '/assets/sounds/final-revel.mp3';
             audioEl.preload = 'auto';
             audioEl.volume = 0.6;
             audioEl.style.display = 'none';
@@ -697,7 +697,7 @@
                 overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(135deg, rgba(26, 16, 37, 0.95) 0%, rgba(123, 93, 246, 0.8) 50%, rgba(255, 122, 47, 0.8) 100%); z-index:2147483649; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Inter', sans-serif; color:white; backdrop-filter:blur(15px); opacity:0; transition:opacity 0.8s ease-in-out;";
                 // Preload unlock audio
                 const unlockAudio = d.createElement('audio');
-                unlockAudio.src = 'https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1';
+                unlockAudio.src = '/assets/sounds/unlocked.mp3';
                 unlockAudio.volume = 0.5;
                 unlockAudio.preload = 'auto';
                 overlay.appendChild(unlockAudio);
@@ -741,7 +741,7 @@
                 overlay.appendChild(input);
                 // Preload wrong password audio
                 const wrongAudio = d.createElement('audio');
-                wrongAudio.src = 'https://www.dropbox.com/scl/fi/2xafqlh97rmbmwmgdphcy/Wrong-input.mp3?rlkey=cwdu72jsm54f1n9vlfh4c7f6z&st=ec5jqt1g&dl=1';
+                wrongAudio.src = '/assets/sounds/wrong-input.mp3';
                 wrongAudio.volume = 0.5;
                 wrongAudio.preload = 'auto';
                 overlay.appendChild(wrongAudio);
@@ -756,7 +756,7 @@
                         // Play unlock sound
                         unlockAudio.currentTime = 0;
                         unlockAudio.play().catch(e => console.log('Unlock audio failed:', e));
-                        try { const bgAudio = d.getElementById('magic-bg-audio'); if (bgAudio && bgAudio.paused) bgAudio.play().catch(() => { }); } catch (e) { }
+                        // Background music will resume cleanly once unlock sound finishes and lockUnlocked event fires
                         overlay.style.opacity = '0';
                         setTimeout(() => {
                             overlay.remove();
@@ -1094,7 +1094,7 @@
                         try {
                             const audio = d.createElement('audio');
                             audio.id = 'magic-welcome-audio';
-                            audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1';
+                            audio.src = '/assets/sounds/typing.mp3';
                             audio.loop = true; audio.volume = 0.5; audio.preload = 'auto';
                             d.body.appendChild(audio);
                             audio.play().catch(() => { });
@@ -1421,7 +1421,7 @@
                 d.body.appendChild(c);
                 const popAudio = d.createElement('audio');
                 popAudio.id = 'magic-balloon-pop-audio';
-                popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
+                popAudio.src = '/assets/sounds/balloon-pop.mp3';
                 popAudio.volume = 0.5;
                 popAudio.preload = 'auto';
                 popAudio.style.display = 'none';
@@ -1439,7 +1439,11 @@
                 const el = d?.getElementById("magic-balloon-root");
                 if (el && el._interval) clearInterval(el._interval);
                 el?.remove();
-                d?.getElementById("magic-balloon-pop-audio")?.remove();
+                const popAudio = d?.getElementById("magic-balloon-pop-audio");
+                if (popAudio) {
+                    try { popAudio.pause(); popAudio.currentTime = 0; popAudio.src = ""; popAudio.load(); } catch (e) { }
+                    popAudio.remove();
+                }
             }
         },
 
@@ -1451,7 +1455,7 @@
                 d.body.appendChild(c);
                 const popAudio = d.createElement('audio');
                 popAudio.id = 'magic-named-balloon-audio';
-                popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
+                popAudio.src = '/assets/sounds/balloon-pop.mp3';
                 popAudio.volume = 0.5;
                 popAudio.preload = 'auto';
                 popAudio.style.display = 'none';
@@ -1474,7 +1478,11 @@
                 const el = d?.getElementById("magic-named-balloons");
                 if (el && el._interval) clearInterval(el._interval);
                 el?.remove();
-                d?.getElementById("magic-named-balloon-audio")?.remove();
+                const popAudio = d?.getElementById("magic-named-balloon-audio");
+                if (popAudio) {
+                    try { popAudio.pause(); popAudio.currentTime = 0; popAudio.src = ""; popAudio.load(); } catch (e) { }
+                    popAudio.remove();
+                }
             }
         },
 
@@ -1485,7 +1493,7 @@
                 d.body.appendChild(can); const ctx = can.getContext("2d"); let parts = []; let anim = null;
                 const blastAudio = d.createElement('audio');
                 blastAudio.id = 'magic-blast-audio';
-                blastAudio.src = 'https://www.dropbox.com/scl/fi/ehjb0y79mov2gfdh5rnyo/Click-Blast.mp3?rlkey=7du7vkr32l4wrevd8ubygxfua&st=lstqlns4&dl=1';
+                blastAudio.src = '/assets/sounds/click-blast.mp3';
                 blastAudio.volume = 0.5;
                 blastAudio.preload = 'auto';
                 blastAudio.style.display = 'none';
@@ -1516,7 +1524,11 @@
                 const can = d?.getElementById("magic-firework-canvas");
                 if (can && can._cleanup) can._cleanup();
                 can?.remove();
-                d?.getElementById("magic-blast-audio")?.remove();
+                const blastAudio = d?.getElementById("magic-blast-audio");
+                if (blastAudio) {
+                    try { blastAudio.pause(); blastAudio.currentTime = 0; blastAudio.src = ""; blastAudio.load(); } catch (e) { }
+                    blastAudio.remove();
+                }
             }
         },
 
@@ -1528,7 +1540,7 @@
                 root.innerHTML = `<div id="magic-bomb-body" style="font-size:80px; position:relative; animation: bombWobble 0.5s infinite alternate ease-in-out;">\uD83D\uDCA3<div id="magic-bomb-fuse" style="position:absolute; top:5px; right:15px; width:8px; height:8px; background:#ff4500; border-radius:50%; box-shadow:0 0 10px #ff0, 0 0 20px #ff4500; animation: fuseSpark 0.1s infinite;"></div></div>`;
                 d.body.appendChild(root);
                 const bombAudio = d.createElement('audio');
-                bombAudio.src = 'https://www.dropbox.com/scl/fi/4j1vqur7916vat9blg3py/Bomb-blast.mp3?rlkey=reii9xaahc9sjajvl1ed3i30z&st=ko4cdgyx&dl=1';
+                bombAudio.src = '/assets/sounds/bomb-blast.mp3';
                 bombAudio.volume = 0.5;
                 bombAudio.preload = 'auto';
                 bombAudio.style.display = 'none';
@@ -1549,7 +1561,14 @@
                 };
                 root.addEventListener("click", explode); return { listeners: [{ target: root, type: "click", handler: explode }] };
             },
-            disable(d) { d?.getElementById("magic-bomb-root")?.remove(); }
+            disable(d) {
+                d?.getElementById("magic-bomb-root")?.remove();
+                const bombAudio = d?.getElementById("magic-bomb-audio");
+                if (bombAudio) {
+                    try { bombAudio.pause(); bombAudio.currentTime = 0; bombAudio.src = ""; bombAudio.load(); } catch (e) { }
+                    bombAudio.remove();
+                }
+            }
         },
 
         giftBoxOpen: {
@@ -1562,7 +1581,7 @@
                 giftContainer.innerHTML = `<div id="gift-box-emoji" style="font-size: 7rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">\uD83C\uDF81</div><p style="margin-top: 15px; font-weight:bold; color:#ffd700;">\u2728 Click to unlock the magic \u2728</p>`;
                 section.appendChild(giftContainer);
                 const giftAudio = d.createElement('audio');
-                giftAudio.src = 'https://www.dropbox.com/scl/fi/44xjwhb6s5l9yd2q23xh2/Gift-box.mp3?rlkey=51q76p6d3juxz2o67fq0fsx2t&st=ct9t6n6u&dl=1';
+                giftAudio.src = '/assets/sounds/gift-box.mp3';
                 giftAudio.volume = 0.5;
                 giftAudio.preload = 'auto';
                 giftAudio.style.display = 'none';
@@ -1640,7 +1659,7 @@
                     card.style.opacity = "1";
                     const audio = d.createElement('audio');
                     audio.id = 'magic-text-formation-audio';
-                    audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1';
+                    audio.src = '/assets/sounds/typing.mp3';
                     audio.loop = true;
                     audio.volume = 0.5;
                     audio.preload = 'auto';
@@ -1754,7 +1773,7 @@
                     }
                     else { const p = d.createElement("p"); p.innerText = item; p.style.cssText = "color:#fff; font-size:18px; font-weight:bold; font-family:'Poppins', sans-serif;"; bgContent.appendChild(p); }
                     cardDiv.appendChild(bgContent); cardDiv.appendChild(canvas);
-                    const audio = d.createElement('audio'); audio.src = 'https://www.dropbox.com/scl/fi/wb10jz9mqsy44buyqwrfw/Scratch.mp3?rlkey=ugmhbv0hav9shkxkmik7bcdvs&st=7zi6cnpj&dl=1'; audio.loop = true; audio.volume = 0.3; cardDiv.appendChild(audio);
+                    const audio = d.createElement('audio'); audio.src = '/assets/sounds/scratch.mp3'; audio.preload = 'auto'; audio.loop = true; audio.volume = 0.3; cardDiv.appendChild(audio);
                     const ctx = canvas.getContext("2d", { willReadFrequently: true });
                     const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height); grad.addColorStop(0, "#ff6ec7"); grad.addColorStop(0.5, "#ff9a44"); grad.addColorStop(1, "#7873f5");
                     ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#ffffff20";
@@ -1904,7 +1923,7 @@
                 let used = false;
                 const audio = d.createElement('audio');
                 audio.id = 'letterClickAudio';
-                audio.src = 'https://www.dropbox.com/scl/fi/uaz5w4s5zj3yr0i0dl951/Letter-click.mp3?rlkey=cvjgdol3purgj9qqw7ih00h9b&st=z5v4omeb&dl=1';
+                audio.src = '/assets/sounds/letter-click.mp3';
                 audio.preload = 'auto';
                 audio.style.display = 'none';
                 d.body.appendChild(audio);
@@ -2616,7 +2635,7 @@
                 const section = d.createElement("section"); section.id = "magic-final-surprise-section"; section.style.cssText = "padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 24px); text-align: center; margin: 50px auto 40px auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center; clear: both; position: relative; z-index: 10;";
                 const audioEl = d.createElement('audio');
                 audioEl.id = 'finalSurpriseAudio';
-                audioEl.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+                audioEl.src = '/assets/sounds/final-revel.mp3';
                 audioEl.preload = 'auto';
                 audioEl.volume = 0.7;
                 audioEl.style.display = 'none';
@@ -2696,7 +2715,9 @@
 
         magicMusic: {
             enable(d, w, userName, customText, audio) {
-                if (d.getElementById("magic-bg-audio")) return {};
+                if (d.getElementById("magic-bg-audio")) {
+                    this.disable(d, w);
+                }
                 const DEFAULT_BG_AUDIO = "/assets/Happy Birthday short.mp3";
                 let srcUrl = audio || customText;
                 if (typeof srcUrl === 'string' && srcUrl.startsWith('blob:') && typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) {
@@ -2837,11 +2858,17 @@
                     }
                 });
 
+                // User manual pause tracker
+                let userManuallyPaused = false;
                 widget.onclick = () => {
                     if (isBlocked()) return;
                     if (a.paused) {
+                        userManuallyPaused = false;
+                        wasPlayingBeforeInterrupt = false;
                         a.play().catch(() => { });
                     } else {
+                        userManuallyPaused = true;
+                        wasPlayingBeforeInterrupt = false;
                         a.pause();
                     }
                 };
@@ -2859,9 +2886,77 @@
                     tooltip.style.transform = "translateX(10px)";
                 };
 
+                // Track interrupting sound effects and gracefully pause background music
+                const activeOtherAudios = new Set();
+                let wasPlayingBeforeInterrupt = false;
+                let resumeTimer = null;
+
+                const pauseBgMusicForSound = (otherAudio) => {
+                    if (!otherAudio || otherAudio === a || otherAudio.id === "magic-bg-audio") return;
+
+                    if (resumeTimer) {
+                        clearTimeout(resumeTimer);
+                        resumeTimer = null;
+                    }
+
+                    // Remember if background music was actively playing prior to this interruption
+                    if (!a.paused) {
+                        wasPlayingBeforeInterrupt = true;
+                        a.pause();
+                    }
+
+                    activeOtherAudios.add(otherAudio);
+
+                    const onSoundFinish = () => {
+                        activeOtherAudios.delete(otherAudio);
+                        otherAudio.removeEventListener('ended', onSoundFinish);
+                        otherAudio.removeEventListener('pause', onSoundFinish);
+                        otherAudio.removeEventListener('error', onSoundFinish);
+                        scheduleCheckResume();
+                    };
+
+                    otherAudio.addEventListener('ended', onSoundFinish);
+                    otherAudio.addEventListener('pause', onSoundFinish);
+                    otherAudio.addEventListener('error', onSoundFinish);
+                };
+
+                const scheduleCheckResume = () => {
+                    if (resumeTimer) clearTimeout(resumeTimer);
+                    // 200ms buffer to seamlessly bridge overlapping or rapid sounds without audio stutter
+                    resumeTimer = setTimeout(() => {
+                        for (const aud of activeOtherAudios) {
+                            if (aud.paused || aud.ended) {
+                                activeOtherAudios.delete(aud);
+                            }
+                        }
+
+                        // Verify no active audio is currently playing in document or parent document
+                        const inDocPlaying = Array.from(d.querySelectorAll('audio')).some(aud => aud !== a && aud.id !== 'magic-bg-audio' && !aud.paused && !aud.ended);
+                        let inParentPlaying = false;
+                        try {
+                            if (window.parent && window.parent.document && window.parent.document !== d) {
+                                inParentPlaying = Array.from(window.parent.document.querySelectorAll('audio')).some(aud => aud !== a && aud.id !== 'magic-bg-audio' && !aud.paused && !aud.ended);
+                            }
+                        } catch (e) { }
+
+                        if (activeOtherAudios.size === 0 && !inDocPlaying && !inParentPlaying) {
+                            if (wasPlayingBeforeInterrupt && !userManuallyPaused && !isBlocked()) {
+                                a.play().catch(() => { });
+                            }
+                            wasPlayingBeforeInterrupt = false;
+                        }
+                    }, 200);
+                };
+
                 // Auto play logic after conditions are met
                 const checkAndPlay = () => {
-                    if (!isBlocked()) {
+                    if (!isBlocked() && !userManuallyPaused) {
+                        // Only play if no other sound effects are currently playing
+                        const anyOtherPlaying = Array.from(d.querySelectorAll('audio')).some(aud => aud !== a && aud.id !== 'magic-bg-audio' && !aud.paused && !aud.ended);
+                        if (anyOtherPlaying || activeOtherAudios.size > 0) {
+                            wasPlayingBeforeInterrupt = true;
+                            return;
+                        }
                         a.play().then(() => {
                             // Cleanup doc listeners once started successfully
                             d.removeEventListener('click', playAudio);
@@ -2888,6 +2983,10 @@
                 window.addEventListener('curtainOpened', checkAndPlay);
                 window.addEventListener('welcomeTypingFinished', checkAndPlay);
                 window.addEventListener('countdownFinished', checkAndPlay);
+                try { (w || window).addEventListener('lockUnlocked', checkAndPlay); } catch (e) { }
+                try { (w || window).addEventListener('curtainOpened', checkAndPlay); } catch (e) { }
+                try { (w || window).addEventListener('welcomeTypingFinished', checkAndPlay); } catch (e) { }
+                try { (w || window).addEventListener('countdownFinished', checkAndPlay); } catch (e) { }
 
                 const playAudio = () => {
                     if (isBlocked()) return;
@@ -2900,25 +2999,13 @@
                     window.parent.document.addEventListener('keydown', playAudio);
                 } catch (err) { }
 
-                // Handle interrupting audio (pause bg audio for that moment)
-                let wasPlayingBeforeInterrupt = false;
                 const onOtherAudioPlay = (e) => {
-                    if (e.target === a) return;
-                    if (!a.paused) {
-                        a.pause();
-                        wasPlayingBeforeInterrupt = true;
-                    }
+                    pauseBgMusicForSound(e.target);
                 };
                 const onOtherAudioPauseOrEnd = (e) => {
-                    if (e.target === a) return;
-                    const audios = Array.from(d.querySelectorAll('audio'));
-                    const anyOtherPlaying = audios.some(other => other !== a && !other.paused);
-                    if (!anyOtherPlaying && wasPlayingBeforeInterrupt) {
-                        if (!isBlocked()) {
-                            a.play().catch(() => { });
-                        }
-                        wasPlayingBeforeInterrupt = false;
-                    }
+                    if (e.target === a || e.target?.id === 'magic-bg-audio') return;
+                    activeOtherAudios.delete(e.target);
+                    scheduleCheckResume();
                 };
 
                 d.addEventListener('play', onOtherAudioPlay, true);
@@ -2930,43 +3017,155 @@
                     window.parent.document.addEventListener('ended', onOtherAudioPauseOrEnd, true);
                 } catch (err) { }
 
+                // Listen for YouTube & Spotify iframe postMessages to auto-pause background music
+                const onWindowMessage = (e) => {
+                    let data = e.data;
+                    if (typeof data === 'string') {
+                        try { data = JSON.parse(data); } catch (err) { return; }
+                    }
+                    if (!data || typeof data !== 'object') return;
+
+                    // YouTube onStateChange or infoDelivery playerState
+                    // 1: PLAYING, 3: BUFFERING, 2: PAUSED, 0: ENDED
+                    const isYtPlay = (data.event === 'onStateChange' && (data.info === 1 || data.info === 3)) ||
+                        (data.event === 'infoDelivery' && data.info && (data.info.playerState === 1 || data.info.playerState === 3));
+
+                    const isYtPause = (data.event === 'onStateChange' && (data.info === 2 || data.info === 0)) ||
+                        (data.event === 'infoDelivery' && data.info && (data.info.playerState === 2 || data.info.playerState === 0));
+
+                    // Spotify playback updates
+                    const isSpotifyPlay = data.type === 'playback_update' && data.data && data.data.is_paused === false;
+                    const isSpotifyPause = data.type === 'playback_update' && data.data && data.data.is_paused === true;
+
+                    if (isYtPlay || isSpotifyPlay) {
+                        if (resumeTimer) {
+                            clearTimeout(resumeTimer);
+                            resumeTimer = null;
+                        }
+                        if (!a.paused) {
+                            wasPlayingBeforeInterrupt = true;
+                            a.pause();
+                        }
+                        activeOtherAudios.add(isYtPlay ? 'youtube' : 'spotify');
+                    } else if (isYtPause || isSpotifyPause) {
+                        activeOtherAudios.delete(isYtPause ? 'youtube' : 'spotify');
+                        scheduleCheckResume();
+                    }
+                };
+
+                const msgTargets = [w, window];
+                try {
+                    if (window.parent && window.parent !== window) msgTargets.push(window.parent);
+                } catch (e) { }
+
+                msgTargets.forEach(tgt => {
+                    try { tgt.addEventListener('message', onWindowMessage); } catch (e) { }
+                });
+
+                // Synchronously intercept HTMLAudioElement.prototype.play in window and parent window
+                const winTargets = [w, window];
+                try {
+                    if (window.parent && window.parent !== window) winTargets.push(window.parent);
+                } catch (e) { }
+
+                const originalPlayMap = new Map();
+                winTargets.forEach(winObj => {
+                    try {
+                        if (winObj && winObj.HTMLAudioElement && winObj.HTMLAudioElement.prototype && !winObj.HTMLAudioElement.__magicAudioIntercepted) {
+                            const origPlay = winObj.HTMLAudioElement.prototype.play;
+                            originalPlayMap.set(winObj, origPlay);
+                            winObj.HTMLAudioElement.__magicAudioIntercepted = true;
+                            winObj.HTMLAudioElement.prototype.play = function () {
+                                if (this !== a && this.id !== 'magic-bg-audio') {
+                                    pauseBgMusicForSound(this);
+                                }
+                                return origPlay.apply(this, arguments);
+                            };
+                        }
+                    } catch (e) { }
+                });
+
                 // Try to play initially (will only succeed if not blocked and browser allows)
                 checkAndPlay();
 
-                return {
-                    cleanup: () => {
-                        a.remove();
-                        widget.remove();
-                        tooltip.remove();
-                        observer.disconnect();
-                        window.removeEventListener('lockUnlocked', checkAndPlay);
-                        window.removeEventListener('curtainOpened', checkAndPlay);
-                        window.removeEventListener('welcomeTypingFinished', checkAndPlay);
-                        window.removeEventListener('countdownFinished', checkAndPlay);
-                        d.removeEventListener('click', playAudio);
-                        d.removeEventListener('keydown', playAudio);
-                        d.removeEventListener('play', onOtherAudioPlay, true);
-                        d.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
-                        d.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
-                        try {
-                            window.parent.document.removeEventListener('click', playAudio);
-                            window.parent.document.removeEventListener('keydown', playAudio);
-                            window.parent.document.removeEventListener('play', onOtherAudioPlay, true);
-                            window.parent.document.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
-                            window.parent.document.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
-                        } catch (err) { }
+                const cleanupFn = () => {
+                    if (resumeTimer) {
+                        clearTimeout(resumeTimer);
+                        resumeTimer = null;
                     }
+                    winTargets.forEach(winObj => {
+                        try {
+                            if (winObj && winObj.HTMLAudioElement && originalPlayMap.has(winObj)) {
+                                winObj.HTMLAudioElement.prototype.play = originalPlayMap.get(winObj);
+                                delete winObj.HTMLAudioElement.__magicAudioIntercepted;
+                            }
+                        } catch (e) { }
+                    });
+                    msgTargets.forEach(tgt => {
+                        try { tgt.removeEventListener('message', onWindowMessage); } catch (e) { }
+                    });
+                    try {
+                        a.pause();
+                        a.currentTime = 0;
+                        a.src = "";
+                        a.load();
+                    } catch (e) { }
+                    a.remove();
+                    widget?.remove();
+                    tooltip?.remove();
+                    observer?.disconnect();
+                    window.removeEventListener('lockUnlocked', checkAndPlay);
+                    window.removeEventListener('curtainOpened', checkAndPlay);
+                    window.removeEventListener('welcomeTypingFinished', checkAndPlay);
+                    window.removeEventListener('countdownFinished', checkAndPlay);
+                    try { (w || window).removeEventListener('lockUnlocked', checkAndPlay); } catch (e) { }
+                    try { (w || window).removeEventListener('curtainOpened', checkAndPlay); } catch (e) { }
+                    try { (w || window).removeEventListener('welcomeTypingFinished', checkAndPlay); } catch (e) { }
+                    try { (w || window).removeEventListener('countdownFinished', checkAndPlay); } catch (e) { }
+                    d.removeEventListener('click', playAudio);
+                    d.removeEventListener('keydown', playAudio);
+                    d.removeEventListener('play', onOtherAudioPlay, true);
+                    d.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
+                    d.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
+                    try {
+                        window.parent.document.removeEventListener('click', playAudio);
+                        window.parent.document.removeEventListener('keydown', playAudio);
+                        window.parent.document.removeEventListener('play', onOtherAudioPlay, true);
+                        window.parent.document.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
+                        window.parent.document.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
+                    } catch (err) { }
+                    if (d) d.__magicMusicCleanup = null;
+                };
+
+                if (d) d.__magicMusicCleanup = cleanupFn;
+
+                return {
+                    cleanup: cleanupFn
                 };
             },
-            disable(d) {
-                d?.getElementById("magic-bg-audio")?.remove();
+            disable(d, w) {
+                if (d?.__magicMusicCleanup) {
+                    try { d.__magicMusicCleanup(); } catch (e) { }
+                    d.__magicMusicCleanup = null;
+                }
+                const a = d?.getElementById("magic-bg-audio");
+                if (a) {
+                    try {
+                        a.pause();
+                        a.currentTime = 0;
+                        a.src = "";
+                        a.load();
+                    } catch (e) { }
+                    a.remove();
+                }
                 d?.getElementById("magic-music-widget")?.remove();
+                d?.getElementById("magic-music-tooltip")?.remove();
             }
         },
 
         voiceNote: {
             enable(d, w, userName, customText, audio) {
-                const defaultVoiceSample = "https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1";
+                const defaultVoiceSample = "/assets/sounds/unlocked.mp3";
                 let srcUrl = audio || customText || defaultVoiceSample;
                 if (typeof srcUrl === 'string' && srcUrl.startsWith('blob:') && typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) {
                     srcUrl = defaultVoiceSample;
@@ -3323,7 +3522,7 @@
                 overlay.appendChild(style);
 
                 const unlockAudio = d.createElement('audio');
-                unlockAudio.src = 'https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1';
+                unlockAudio.src = '/assets/sounds/unlocked.mp3';
                 unlockAudio.volume = 0.5;
                 overlay.appendChild(unlockAudio);
 
@@ -3541,13 +3740,36 @@
                 }
 
                 if (embedUrl) {
+                    let finalEmbedUrl = embedUrl;
+                    if (typeof finalEmbedUrl === 'string' && (finalEmbedUrl.includes('youtube.com/embed/') || finalEmbedUrl.includes('youtube-nocookie.com/embed/'))) {
+                        const hasQuery = finalEmbedUrl.includes('?');
+                        if (!finalEmbedUrl.includes('enablejsapi=1')) {
+                            finalEmbedUrl += (hasQuery ? '&' : '?') + 'enablejsapi=1';
+                        }
+                    }
                     const iframe = d.createElement("iframe");
-                    iframe.src = embedUrl;
+                    iframe.id = "magic-music-iframe";
+                    iframe.src = finalEmbedUrl;
                     iframe.style.cssText = "width: 100%; height: 100%; border: none; border-radius: 24px;";
-                    iframe.allow = "encrypted-media; fullscreen";
+                    iframe.allow = "autoplay; encrypted-media; fullscreen";
                     iframe.setAttribute("allowfullscreen", "");
                     iframe.loading = "lazy";
                     embedWrap.appendChild(iframe);
+
+                    // Notify YouTube player to broadcast playback state changes
+                    const sendYtListening = () => {
+                        try {
+                            if (iframe.contentWindow) {
+                                iframe.contentWindow.postMessage('{"event":"listening"}', '*');
+                                iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+                            }
+                        } catch (e) { }
+                    };
+                    iframe.onload = () => {
+                        sendYtListening();
+                        setTimeout(sendYtListening, 800);
+                        setTimeout(sendYtListening, 2000);
+                    };
 
                     const isEditMode = !w.__IS_GENERATED_PAGE__ && (!w.parent || !w.parent.__IS_GENERATED_PAGE__) && (w.location.search.includes("mode=edit") || d.body.classList.contains("edit-mode") || (w.parent && w.parent !== w));
                     if (isEditMode) {
@@ -3826,7 +4048,7 @@
                 // Add crackers sound
                 const crackersAudio = d.createElement('audio');
                 crackersAudio.id = 'crackersAudio';
-                crackersAudio.src = 'https://www.dropbox.com/scl/fi/veung117ggbzx65sxlj98/Crackers-mini.mp3?rlkey=tfheg9i04k6upkavcpdsrghle&st=koce788t&dl=1';
+                crackersAudio.src = '/assets/sounds/crackers-mini.mp3';
                 crackersAudio.volume = 0.6;
                 crackersAudio.preload = 'auto';
                 crackersAudio.style.display = 'none';
@@ -4219,7 +4441,7 @@
                 // Add audio element for celebratory tap
                 const tapAudio = d.createElement('audio');
                 tapAudio.id = 'magic-named-card-audio';
-                tapAudio.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+                tapAudio.src = '/assets/sounds/final-revel.mp3';
                 tapAudio.preload = 'auto';
                 tapAudio.volume = 0.6;
                 tapAudio.style.display = 'none';
@@ -5842,7 +6064,7 @@
                 </div>
 
                 <audio id="vc-audio"
-                    src="https://www.dropbox.com/scl/fi/veung117ggbzx65sxlj98/Crackers-mini.mp3?rlkey=tfheg9i04k6upkavcpdsrghle&st=koce788t&dl=1"
+                    src="/assets/sounds/crackers-mini.mp3"
                     preload="auto" style="display:none;"></audio>
                 `;
 

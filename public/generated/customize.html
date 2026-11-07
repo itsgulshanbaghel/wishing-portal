@@ -4478,7 +4478,7 @@
   </div>
 
   <audio id="generateShareAudio"
-    src="https://www.dropbox.com/scl/fi/yzsnnfxh7a3eyzmgtnbkx/Generated.mp3?rlkey=xqe3p3l6ax1q4ozkjh7iwi3qo&st=mvdt1go2&dl=1"
+    src="/assets/sounds/generated.mp3"
     preload="auto"></audio>
 
   <script>
@@ -4797,7 +4797,7 @@
         if (!item) return;
         let embedUrl = '';
         if (item.id) {
-          embedUrl = `https://www.youtube.com/embed/${item.id}`;
+          embedUrl = `https://www.youtube.com/embed/${item.id}?enablejsapi=1`;
         }
         if (!embedUrl) {
           musicStatus.textContent = currentLang === 'hi' ? 'अमान्य परिणाम' : 'Invalid result';
@@ -4842,7 +4842,7 @@
           type = 'spotify';
         } else if (ytMatch) {
           const id = ytMatch[1];
-          embedUrl = `https://www.youtube.com/embed/${id}`;
+          embedUrl = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
           type = 'youtube';
         } else if (instaMatch) {
           const kind = instaMatch[1];
@@ -5363,9 +5363,15 @@
         if (file.size > MAX_SIZE) {
           throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया 6MB से छोटी ऑडियो फाइल चुनें।" : "Audio file exceeds 6 MB limit. Please choose a file under 6 MB.");
         }
-        if (file.size <= MAX_SIZE && isPremium) return file;
+        // If file is already within size limit and encoded in standard compressed audio format (MP3, M4A, AAC, OGG, WEBM),
+        // keep it as-is without re-encoding to raw WAV (which bloats size and delays buffering).
+        const isAlreadyCompressed = file.type === 'audio/mpeg' || file.type === 'audio/mp3' || file.type === 'audio/m4a' ||
+          file.type === 'audio/aac' || file.type === 'audio/ogg' || file.type === 'audio/webm' ||
+          /\.(mp3|m4a|aac|ogg|webm)$/i.test(file.name || '');
+        if (file.size <= MAX_SIZE && (isPremium || isAlreadyCompressed)) return file;
+        let audioCtx = null;
         try {
-          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
           const arrayBuffer = await file.arrayBuffer();
           const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
           const duration = audioBuffer.duration;
@@ -5387,6 +5393,10 @@
           if (compressedFile.size <= MAX_SIZE) return compressedFile;
         } catch (err) {
           console.error('Audio compression failed', err);
+        } finally {
+          if (audioCtx) {
+            try { await audioCtx.close(); } catch(e) {}
+          }
         }
         if (file.size > MAX_SIZE) {
           throw new Error(currentLang === 'hi' ? "ऑडियो फाइल 6MB से बड़ी है। कृपया 6MB से छोटी ऑडियो फाइल चुनें।" : "Audio file exceeds 6 MB limit. Please use an audio file under 6 MB.");
@@ -6717,12 +6727,14 @@
             FEATURE_MAP.ballonParty.enable = function (doc, win, userName, customText, images, emoji) {
               originalEnable.call(this, doc, win, userName, customText, images, emoji);
               // Preload pop audio
-              const popAudio = doc.createElement('audio');
-              popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
+              const existingPop = doc.getElementById('magic-balloon-pop-audio');
+              const popAudio = existingPop || doc.createElement('audio');
+              popAudio.id = 'magic-balloon-pop-audio';
+              popAudio.src = '/assets/sounds/balloon-pop.mp3';
               popAudio.volume = 0.5;
               popAudio.preload = 'auto';
               popAudio.style.display = 'none';
-              doc.body.appendChild(popAudio);
+              if (!existingPop) doc.body.appendChild(popAudio);
               // Use MutationObserver to attach listeners to dynamically added balloons
               const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
@@ -6759,12 +6771,14 @@
             FEATURE_MAP.floatingBalloonsNamed.enable = function (doc, win, userName, customText, images, emoji) {
               originalEnable.call(this, doc, win, userName, customText, images, emoji);
               // Preload pop audio
-              const popAudio = doc.createElement('audio');
-              popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
+              const existingPop = doc.getElementById('magic-named-balloon-audio');
+              const popAudio = existingPop || doc.createElement('audio');
+              popAudio.id = 'magic-named-balloon-audio';
+              popAudio.src = '/assets/sounds/balloon-pop.mp3';
               popAudio.volume = 0.5;
               popAudio.preload = 'auto';
               popAudio.style.display = 'none';
-              doc.body.appendChild(popAudio);
+              if (!existingPop) doc.body.appendChild(popAudio);
               // Use MutationObserver to attach listeners to dynamically added named balloons
               const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
@@ -6967,7 +6981,7 @@
             overlay.style.transition = 'opacity 0.8s ease-in-out';
             // Preload unlock audio
             const unlockAudio = doc.createElement('audio');
-            unlockAudio.src = 'https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1';
+            unlockAudio.src = '/assets/sounds/unlocked.mp3';
             unlockAudio.volume = 0.5;
             unlockAudio.preload = 'auto';
             overlay.appendChild(unlockAudio);
@@ -7099,7 +7113,7 @@
             };
             // Preload audio for instant playback
             const wrongAudio = doc.createElement('audio');
-            wrongAudio.src = 'https://www.dropbox.com/scl/fi/2xafqlh97rmbmwmgdphcy/Wrong-input.mp3?rlkey=cwdu72jsm54f1n9vlfh4c7f6z&st=ec5jqt1g&dl=1';
+            wrongAudio.src = '/assets/sounds/wrong-input.mp3';
             wrongAudio.volume = 0.5;
             wrongAudio.preload = 'auto';
             overlay.appendChild(wrongAudio);
