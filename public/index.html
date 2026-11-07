@@ -154,9 +154,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style"
-        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap">
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
@@ -1663,313 +1663,255 @@
 
 
         .hero-content {
-
-
-
             display: flex;
-
-
-
             flex-direction: column;
-
-
-
             align-items: flex-start;
-
-
-
+            max-width: 620px;
         }
-
-
-
-
-
-
-
-        .hero-title {
-
-
-
-            font-size: clamp(42px, 7vw, 64px);
-
-
-
-            font-weight: 800;
-
-
-
-            line-height: 1.1;
-
-
-
-            letter-spacing: -0.04em;
-
-
-
-            margin-bottom: 24px;
-
-
-
-            font-family: 'Outfit', sans-serif;
-
-
-
-            animation: titleGlow 1.2s ease-out;
-
-
-
-            color: var(--text-primary);
-
-
-
-        }
-
-
-
-
-
-
-
-        @keyframes titleGlow {
-
-
-
-            0% {
-
-
-
-                opacity: 0;
-
-
-
-                filter: blur(8px);
-
-
-
-            }
-
-
-
-
-
-
-
-            100% {
-
-
-
-                opacity: 1;
-
-
-
-                filter: blur(0);
-
-
-
-            }
-
-
-
-        }
-
-
-
-
-
-
-
-        .hero-title span {
-
-
-
-            background: var(--accent-gradient);
-
-
-
-            -webkit-background-clip: text;
-
-
-
-            background-clip: text;
-
-
-
-            color: transparent;
-
-
-
-        }
-
-
-
-
-
-
-
-        .hero-description {
-
-
-
-            font-size: clamp(1.1rem, 3.5vw, 1.25rem);
-
-
-
-            color: var(--text-secondary);
-
-
-
-            max-width: 580px;
-
-
-
-            margin-bottom: 48px;
-
-
-
-            line-height: 1.6;
-
-
-
-            animation: fadeUp 0.8s ease-out 0.2s both;
-
-
-
-        }
-
-
-
-
-
-
-
-        @keyframes fadeUp {
-
-
-
-            from {
-
-
-
-                opacity: 0;
-
-
-
-                transform: translateY(30px);
-
-
-
-            }
-
-
-
-
-
-
-
-            to {
-
-
-
-                opacity: 1;
-
-
-
-                transform: translateY(0);
-
-
-
-            }
-
-
-
-        }
-
-
-
-
-
-
-
-        .hero-buttons {
-
-
-
-            display: flex;
-
-
-
-            gap: 20px;
-
-
-
-            flex-wrap: wrap;
-
-
-
-            justify-content: center;
-
-
-
-        }
-
-
-
-
-
-
 
         .hero-badge {
-
-
-
             display: inline-flex;
-
-
-
             align-items: center;
-
-
-
             gap: 10px;
-
-
-
-            background: var(--bg-secondary);
-
-
-
-            padding: 10px 24px;
-
-
-
+            background: linear-gradient(135deg, rgba(123, 93, 246, 0.12) 0%, rgba(236, 72, 153, 0.1) 50%, rgba(255, 122, 47, 0.12) 100%);
+            padding: 8px 20px;
             border-radius: 100px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: clamp(12px, 1.05vw, 13.5px);
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+            border: 1.5px solid rgba(168, 85, 247, 0.35);
+            box-shadow: 0 4px 18px -2px rgba(123, 93, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            transition: all 0.35s ease;
+        }
 
+        .hero-badge .badge-text {
+            background: linear-gradient(90deg, #7b5df6 0%, #d946ef 50%, #ff6b35 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
 
+        .hero-badge .badge-sparkle {
+            font-size: 1.15rem;
+            display: inline-block;
+            animation: sparklePulse 2.5s infinite ease-in-out;
+        }
 
-            font-size: 0.95rem;
+        @keyframes sparklePulse {
+            0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5)); }
+            50% { transform: scale(1.22) rotate(12deg); filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.8)); }
+        }
 
+        body.dark .hero-badge {
+            background: linear-gradient(135deg, rgba(123, 93, 246, 0.22) 0%, rgba(236, 72, 153, 0.2) 50%, rgba(255, 122, 47, 0.22) 100%);
+            border-color: rgba(192, 132, 252, 0.45);
+            box-shadow: 0 4px 22px -2px rgba(168, 85, 247, 0.35);
+        }
 
+        body.dark .hero-badge .badge-text {
+            background: linear-gradient(90deg, #a78bfa 0%, #f472b6 50%, #fb923c 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
 
-            font-weight: 600;
+        .hero-title {
+            font-size: clamp(48px, 4.6vw, 64px);
+            font-weight: 800;
+            line-height: 1.13;
+            letter-spacing: -0.038em;
+            text-wrap: balance;
+            margin-bottom: 24px;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            animation: titleGlow 1.2s ease-out;
+            color: var(--text-primary);
+        }
 
+        @keyframes titleGlow {
+            0% {
+                opacity: 0;
+                filter: blur(8px);
+            }
+            100% {
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
 
+        /* Gradient for Surprise Websites (Electric Indigo to Vivid Magenta) */
+        .gradient-surprise {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 45%, #d946ef 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline;
+            filter: drop-shadow(0 2px 14px rgba(139, 92, 246, 0.25));
+        }
 
-            color: #7b5df6;
+        /* Gradient for People You Love (Radiant Rose to Sunset Coral) */
+        .gradient-love {
+            background: linear-gradient(135deg, #ec4899 0%, #f43f5e 40%, #ff7a2f 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline;
+            filter: drop-shadow(0 2px 14px rgba(244, 63, 94, 0.25));
+        }
 
+        .hero-title span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline;
+        }
 
-
+        .hero-description {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: clamp(16px, 1.25vw, 17.5px);
+            color: var(--text-secondary);
+            max-width: 550px;
             margin-bottom: 32px;
+            line-height: 1.7;
+            letter-spacing: -0.01em;
+            opacity: 0.94;
+            animation: fadeUp 0.8s ease-out 0.22s both;
+        }
 
+        .hero-description strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
 
+        body.dark .hero-description {
+            color: #b9aed6;
+        }
 
-            box-shadow: var(--shadow-sm);
+        body.dark .hero-description strong {
+            color: #f0edff;
+        }
 
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 24px;
+            animation: fadeUp 0.8s ease-out 0.32s both;
+        }
 
-            border: 1px solid var(--card-border);
+        .hero-buttons .btn-primary,
+        .hero-buttons .btn-demo {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: -0.01em;
+            height: 56px;
+            min-width: 200px;
+            padding: 0 28px;
+            border-radius: 9999px;
+            box-sizing: border-box;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            cursor: pointer;
+            flex: initial;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
+        .hero-buttons .btn-primary {
+            background: linear-gradient(135deg, #7b5df6 0%, #d946ef 50%, #ff6b35 100%);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 14px 32px -6px rgba(217, 70, 239, 0.42);
+        }
 
+        .hero-buttons .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 42px -8px rgba(255, 107, 53, 0.55);
+            filter: brightness(1.05);
+        }
 
+        .hero-buttons .btn-demo {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            color: var(--text-primary);
+            border: 1.5px solid rgba(123, 93, 246, 0.28);
+            box-shadow: 0 4px 16px rgba(123, 93, 246, 0.08);
+        }
+
+        .hero-buttons .btn-demo:hover {
+            transform: translateY(-2px);
+            border-color: #ec4899;
+            box-shadow: 0 10px 26px -4px rgba(236, 72, 153, 0.25);
+            background: #ffffff;
+        }
+
+        body.dark .hero-buttons .btn-demo {
+            background: rgba(30, 20, 55, 0.85);
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #f0edff;
+        }
+
+        body.dark .hero-buttons .btn-demo:hover {
+            border-color: #f472b6;
+            box-shadow: 0 10px 26px -4px rgba(244, 114, 182, 0.3);
+            background: rgba(45, 28, 80, 0.95);
+        }
+
+        .hero-trust {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 18px;
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(13px, 1.15vw, 14px);
+            font-weight: 500;
+            color: var(--text-secondary);
+            opacity: 0.95;
+            margin-top: 4px;
+            animation: fadeUp 0.8s ease-out 0.42s both;
+        }
+
+        .trust-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trust-item i {
+            font-size: 1.05em;
+        }
+
+        .trust-divider {
+            color: var(--card-border);
+            font-size: 10px;
+            opacity: 0.7;
+            user-select: none;
+        }
+
+        .trust-divider {
+            color: var(--card-border);
+            font-size: 10px;
+            opacity: 0.7;
+            user-select: none;
         }
 
 
@@ -5551,13 +5493,26 @@
 
 
             .hero-content {
-
-
-
                 align-items: center;
+                text-align: center;
+                max-width: 100%;
+            }
 
+            .hero-title {
+                font-size: clamp(44px, 5.4vw, 54px);
+            }
 
+            .hero-subtitle {
+                font-size: clamp(20px, 2.5vw, 22px);
+            }
 
+            .hero-description {
+                font-size: clamp(15px, 1.8vw, 17px);
+                margin: 0 auto 30px;
+            }
+
+            .hero-trust {
+                justify-content: center;
             }
 
 
@@ -5936,41 +5891,27 @@
 
 
             .hero-title {
-
-
-
-                font-size: clamp(32px, 7vw, 38px);
-
-
-
-                line-height: 1.2;
-
-
-
+                font-size: clamp(38px, 6vw, 46px);
+                line-height: 1.15;
+                letter-spacing: -0.035em;
             }
 
-
-
-
-
-
+            .hero-subtitle {
+                font-size: clamp(18px, 3.2vw, 21px);
+                line-height: 1.35;
+                margin-bottom: 16px;
+            }
 
             .hero-description {
-
-
-
-                font-size: clamp(0.9rem, 3vw, 1rem);
-
-
-
+                font-size: clamp(14.5px, 2.4vw, 16px);
+                line-height: 1.6;
                 text-align: center;
+                padding: 0 16px;
+                margin-bottom: 28px;
+            }
 
-
-
-                padding: 0 20px;
-
-
-
+            .hero-trust {
+                justify-content: center;
             }
 
 
@@ -6609,38 +6550,40 @@
 
 
 
-            .hero-title {
-
-
-
-                font-size: clamp(28px, 6vw, 32px);
-
-
-
+            .hero-badge {
+                font-size: 0.72rem;
+                padding: 6px 14px;
+                margin-bottom: 16px;
             }
 
+            .hero-title {
+                font-size: clamp(34px, 8.8vw, 42px);
+                line-height: 1.16;
+                letter-spacing: -0.025em;
+            }
 
-
-
-
-
+            .hero-subtitle {
+                font-size: clamp(18px, 4.4vw, 20px);
+                line-height: 1.35;
+                margin-bottom: 14px;
+            }
 
             .hero-description {
-
-
-
-                font-size: 0.85rem;
-
-
-
+                font-size: clamp(14px, 3.8vw, 15.5px);
+                line-height: 1.55;
                 text-align: center;
+                padding: 0 8px;
+                margin-bottom: 24px;
+            }
 
+            .trust-divider {
+                display: none;
+            }
 
-
-                padding: 0 20px;
-
-
-
+            .hero-trust {
+                flex-direction: column;
+                gap: 8px;
+                align-items: center;
             }
 
 
@@ -7916,56 +7859,26 @@
 
 
         <div class="hero">
-
-
-
             <div class="hero-content">
-
-
-
                 <div class="hero-badge" id="heroBadge">
+                    <span class="badge-sparkle">✨</span>
+                    <span class="badge-text">PERSONALIZED SURPRISE WEBSITES</span>
+                </div>
+                <h1 class="hero-title" id="heroTitle">Create Beautiful <span class="gradient-surprise">Surprise Websites</span> for People You Love</h1>
+                <p class="hero-description" id="heroDesc">Create personalized websites for <strong>Birthdays, Proposals, Anniversaries</strong> and more. Add beautiful animations, photos, music, heartfelt messages and interactive surprises. No coding required.</p>
 
-
-
-                    <span style="font-size: 1.2rem;">✨</span> AI + Handcrafted templates
-
-
-
+                <div class="hero-buttons">
+                    <button class="btn-primary" id="btnCreatePerson"><i class="fas fa-wand-magic-sparkles"></i> Create Now <i class="fas fa-arrow-right"></i></button>
+                    <button class="btn-demo" id="btnCreateEvent" onclick="window.location.href='https://thegreeter.in/demo-raman'"><i class="fas fa-circle-play" style="color: #7b5df6;"></i> See Demo</button>
                 </div>
 
-
-
-                <h1 class="hero-title" id="heroTitle">Create a digital surprise and <span>Interactive</span> websites
-                </h1>
-                <p class="hero-description" id="heroDesc">Discover smart ways to wish your loved ones globally. No
-                    coding. Customize beautiful animations and share a unique site for proposals, birthdays, and
-                    festivals — in seconds.</p>
-
-
-
-                <div class="hero-buttons"><button class="btn-primary" id="btnCreatePerson"><i
-                            class="fas fa-user-heart"></i> Create Now</button><button class="btn-demo"
-                        id="btnCreateEvent" onclick="window.location.href='https://thegreeter.in/demo-raman'"><i
-                            class="fas fa-circle-play"></i> See Demo</button>
+                <div class="hero-trust" id="freeStartText">
+                    <span class="trust-item"><i class="fas fa-wand-magic-sparkles" style="color: #8b5cf6;"></i> No Coding Required</span>
+                    <span class="trust-divider" aria-hidden="true">•</span>
+                    <span class="trust-item"><i class="fas fa-palette" style="color: #ec4899;"></i> Easy to Personalize</span>
+                    <span class="trust-divider" aria-hidden="true">•</span>
+                    <span class="trust-item"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Instant Sharing</span>
                 </div>
-
-
-
-                <p style="margin-top: 24px; opacity: 0.8; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;"
-                    id="freeStartText">
-
-
-
-                    <i class="fas fa-bolt" style="color: #ffb703; font-size: 1.3rem;"></i> <span
-                        style="color: var(--text-primary);">Instant &
-                        Ad-Free · Easy to Share</span>
-
-
-
-                </p>
-
-
-
             </div>
 
 
@@ -9078,17 +8991,12 @@
             en: {
                 nav: ["Home", "Create", "Why Greeter", "Pricing", "Blog", "Contact Us"], signin: "Sign in",
 
-
-
-                heroBadge: "✨ Customizable templates", heroTitlePre: "Turn moments into ", heroTitleSpan: "Interactive", heroTitlePost: " websites",
-
-
-
-                heroDesc: "No coding. Choose a mood, customize with animations, and share a unique site for proposals, birthdays, festivals — in minutes.",
-
-
-
-                btnPerson: "Create Now", btnEvent: "See Demo", freeText: "Instant & Ad-Free · Easy to Share",
+                heroBadge: `<span class="badge-sparkle">✨</span> <span class="badge-text">PERSONALIZED SURPRISE WEBSITES</span>`,
+                heroTitleHtml: `Create Beautiful <span class="gradient-surprise">Surprise Websites</span> for People You Love`,
+                heroDesc: `Create personalized websites for <strong>Birthdays, Proposals, Anniversaries</strong> and more. Add beautiful animations, photos, music, heartfelt messages and interactive surprises. No coding required.`,
+                btnPerson: "Create Now",
+                btnEvent: "See Demo",
+                freeText: `<span class="trust-item"><i class="fas fa-wand-magic-sparkles" style="color: #8b5cf6;"></i> No Coding Required</span><span class="trust-divider" aria-hidden="true">•</span><span class="trust-item"><i class="fas fa-palette" style="color: #ec4899;"></i> Easy to Personalize</span><span class="trust-divider" aria-hidden="true">•</span><span class="trust-item"><i class="fas fa-bolt" style="color: #f59e0b;"></i> Instant Sharing</span>`,
 
 
 
@@ -9164,17 +9072,12 @@
             hi: {
                 nav: ["होम", "बनाएं", "ग्रीटर क्यों?", "मूल्य (Pricing)", "ब्लॉग", "संपर्क करें"], signin: "लॉगिन करें",
 
-
-
-                heroBadge: "✨ AI + खुद के बनाए टेम्पलेट", heroTitlePre: "हर पल बनाएं यादगार ", heroTitleSpan: "दिलचस्प", heroTitlePost: " वेबसाइट",
-
-
-
-                heroDesc: "कोडिंग की ज़रूरत नहीं। मूड चुनो, एनिमेशन से सजाओ, और प्रपोज़ल, जन्मदिन, त्योहारों के लिए अनोखी साइट बनाकर शेयर करो — बस कुछ मिनटों में।",
-
-
-
-                btnPerson: "अभी बनाएं", btnEvent: "डेमो देखें", freeText: "इंस्टेंट और ऐड-फ्री · शेयर करने में आसान",
+                heroBadge: `<span class="badge-sparkle">✨</span> <span class="badge-text">पर्सनलाइज़्ड सरप्राइज़ वेबसाइट्स</span>`,
+                heroTitleHtml: `अपनों के लिए बनाएं खूबसूरत <span class="gradient-surprise">सरप्राइज़ वेबसाइट्स</span>`,
+                heroDesc: `<strong>जन्मदिन, प्रपोज़ल और सालगिरह</strong> आदि के लिए पर्सनलाइज़्ड वेबसाइट बनाएं। खूबसूरत एनिमेशन, फोटो, संगीत, दिल छू लेने वाले संदेश और इंटरैक्टिव सरप्राइज़ जोड़ें — बिना किसी कोडिंग के।`,
+                btnPerson: "अभी बनाएं",
+                btnEvent: "डेमो देखें",
+                freeText: `<span class="trust-item"><i class="fas fa-wand-magic-sparkles" style="color: #8b5cf6;"></i> बिना कोडिंग के</span><span class="trust-divider" aria-hidden="true">•</span><span class="trust-item"><i class="fas fa-palette" style="color: #ec4899;"></i> आसान कस्टमाइज़ेशन</span><span class="trust-divider" aria-hidden="true">•</span><span class="trust-item"><i class="fas fa-bolt" style="color: #f59e0b;"></i> तुरंत शेयर करें</span>`,
 
 
 
@@ -9284,29 +9187,27 @@
 
 
 
-            document.getElementById('heroBadge').innerHTML = `<i class="fas fa-sparkles"></i> ${t.heroBadge}`;
+            if (document.getElementById('heroBadge')) document.getElementById('heroBadge').innerHTML = t.heroBadge;
+            if (document.getElementById('heroTitle')) {
+                document.getElementById('heroTitle').innerHTML = t.heroTitleHtml || `${t.heroTitlePre}<span>${t.heroTitleSpan}</span>${t.heroTitlePost}`;
+            }
+            if (document.getElementById('heroDesc')) {
+                document.getElementById('heroDesc').innerHTML = t.heroDesc;
+            }
 
+            if (document.getElementById('btnCreatePerson')) {
+                document.getElementById('btnCreatePerson').innerHTML = `<i class="fas fa-wand-magic-sparkles"></i> ${t.btnPerson} <i class="fas fa-arrow-right"></i>`;
+            }
 
+            if (document.getElementById('btnCreateEvent')) {
+                document.getElementById('btnCreateEvent').className = 'btn-demo';
+                document.getElementById('btnCreateEvent').innerHTML = `<i class="fas fa-circle-play" style="color: #7b5df6;"></i> ${t.btnEvent}`;
+                document.getElementById('btnCreateEvent').setAttribute('onclick', "window.location.href='https://thegreeter.in/demo-raman'");
+            }
 
-            document.getElementById('heroTitle').innerHTML = `${t.heroTitlePre}<span>${t.heroTitleSpan}</span>${t.heroTitlePost}`;
-
-
-
-            document.getElementById('heroDesc').innerText = t.heroDesc;
-
-
-
-            document.getElementById('btnCreatePerson').innerHTML = `<i class="fas fa-user-heart"></i> ${t.btnPerson}`;
-
-
-
-            document.getElementById('btnCreateEvent').className = 'btn-demo';
-            document.getElementById('btnCreateEvent').innerHTML = `<i class="fas fa-circle-play"></i> ${t.btnEvent}`;
-            document.getElementById('btnCreateEvent').setAttribute('onclick', "window.location.href='https://thegreeter.in/demo-raman'");
-
-
-
-            document.getElementById('freeStartText').innerHTML = `<i class="fas fa-bolt" style="color: #ffb703; font-size: 1.3rem;"></i> <span style="color: var(--text-primary);">${t.freeText}</span>`;
+            if (document.getElementById('freeStartText')) {
+                document.getElementById('freeStartText').innerHTML = t.freeText;
+            }
 
 
 
