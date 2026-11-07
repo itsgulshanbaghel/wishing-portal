@@ -176,7 +176,7 @@
                     }
                 }
             }
-        } catch(e) {}
+        } catch (e) { }
 
         rotator.classList.add('is-stopped');
         rotator.style.animation = 'none';
@@ -249,7 +249,7 @@
             if (cutLine) cutLine.classList.add('flash');
             if (knife) knife.style.opacity = '0';
 
-            if (audio) { audio.currentTime = 0; const p = audio.play(); if (p && p.catch) p.catch(() => {}); }
+            if (audio) { audio.currentTime = 0; const p = audio.play(); if (p && p.catch) p.catch(() => { }); }
         }, 1250);
 
         /* PHASE 4: Confetti bursts, Wish Card & Slices Showcase reveal (1350ms - 1700ms) */
@@ -482,7 +482,7 @@
         if (!audioEl) {
             audioEl = d.createElement('audio');
             audioEl.id = 'magic-named-card-audio';
-            audioEl.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+            audioEl.src = '/assets/sounds/final-revel.mp3';
             audioEl.preload = 'auto';
             audioEl.volume = 0.6;
             audioEl.style.display = 'none';
@@ -490,7 +490,7 @@
         }
         if (audioEl) {
             audioEl.currentTime = 0;
-            audioEl.play().catch(() => {});
+            audioEl.play().catch(() => { });
         }
 
         // Calculate celebration center origin (from badge or card center)
@@ -697,7 +697,7 @@
                 overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(135deg, rgba(26, 16, 37, 0.95) 0%, rgba(123, 93, 246, 0.8) 50%, rgba(255, 122, 47, 0.8) 100%); z-index:2147483649; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Inter', sans-serif; color:white; backdrop-filter:blur(15px); opacity:0; transition:opacity 0.8s ease-in-out;";
                 // Preload unlock audio
                 const unlockAudio = d.createElement('audio');
-                unlockAudio.src = 'https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1';
+                unlockAudio.src = '/assets/sounds/unlocked.mp3';
                 unlockAudio.volume = 0.5;
                 unlockAudio.preload = 'auto';
                 overlay.appendChild(unlockAudio);
@@ -741,7 +741,7 @@
                 overlay.appendChild(input);
                 // Preload wrong password audio
                 const wrongAudio = d.createElement('audio');
-                wrongAudio.src = 'https://www.dropbox.com/scl/fi/2xafqlh97rmbmwmgdphcy/Wrong-input.mp3?rlkey=cwdu72jsm54f1n9vlfh4c7f6z&st=ec5jqt1g&dl=1';
+                wrongAudio.src = '/assets/sounds/wrong-input.mp3';
                 wrongAudio.volume = 0.5;
                 wrongAudio.preload = 'auto';
                 overlay.appendChild(wrongAudio);
@@ -756,7 +756,7 @@
                         // Play unlock sound
                         unlockAudio.currentTime = 0;
                         unlockAudio.play().catch(e => console.log('Unlock audio failed:', e));
-                        try { const bgAudio = d.getElementById('magic-bg-audio'); if (bgAudio && bgAudio.paused) bgAudio.play().catch(() => { }); } catch (e) { }
+                        // Background music will resume cleanly once unlock sound finishes and lockUnlocked event fires
                         overlay.style.opacity = '0';
                         setTimeout(() => {
                             overlay.remove();
@@ -1094,7 +1094,7 @@
                         try {
                             const audio = d.createElement('audio');
                             audio.id = 'magic-welcome-audio';
-                            audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1';
+                            audio.src = '/assets/sounds/typing.mp3';
                             audio.loop = true; audio.volume = 0.5; audio.preload = 'auto';
                             d.body.appendChild(audio);
                             audio.play().catch(() => { });
@@ -1421,7 +1421,7 @@
                 d.body.appendChild(c);
                 const popAudio = d.createElement('audio');
                 popAudio.id = 'magic-balloon-pop-audio';
-                popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
+                popAudio.src = '/assets/sounds/balloon-pop.mp3';
                 popAudio.volume = 0.5;
                 popAudio.preload = 'auto';
                 popAudio.style.display = 'none';
@@ -1439,7 +1439,11 @@
                 const el = d?.getElementById("magic-balloon-root");
                 if (el && el._interval) clearInterval(el._interval);
                 el?.remove();
-                d?.getElementById("magic-balloon-pop-audio")?.remove();
+                const popAudio = d?.getElementById("magic-balloon-pop-audio");
+                if (popAudio) {
+                    try { popAudio.pause(); popAudio.currentTime = 0; popAudio.src = ""; popAudio.load(); } catch (e) { }
+                    popAudio.remove();
+                }
             }
         },
 
@@ -1451,7 +1455,7 @@
                 d.body.appendChild(c);
                 const popAudio = d.createElement('audio');
                 popAudio.id = 'magic-named-balloon-audio';
-                popAudio.src = 'https://www.dropbox.com/scl/fi/7f8ol07qp5zrskaxqb284/Ballon-Pop.mp3?rlkey=w144fxdnvmzlqc6szxodz13js&st=3676eshv&dl=1';
+                popAudio.src = '/assets/sounds/balloon-pop.mp3';
                 popAudio.volume = 0.5;
                 popAudio.preload = 'auto';
                 popAudio.style.display = 'none';
@@ -1474,7 +1478,11 @@
                 const el = d?.getElementById("magic-named-balloons");
                 if (el && el._interval) clearInterval(el._interval);
                 el?.remove();
-                d?.getElementById("magic-named-balloon-audio")?.remove();
+                const popAudio = d?.getElementById("magic-named-balloon-audio");
+                if (popAudio) {
+                    try { popAudio.pause(); popAudio.currentTime = 0; popAudio.src = ""; popAudio.load(); } catch (e) { }
+                    popAudio.remove();
+                }
             }
         },
 
@@ -1485,7 +1493,7 @@
                 d.body.appendChild(can); const ctx = can.getContext("2d"); let parts = []; let anim = null;
                 const blastAudio = d.createElement('audio');
                 blastAudio.id = 'magic-blast-audio';
-                blastAudio.src = 'https://www.dropbox.com/scl/fi/ehjb0y79mov2gfdh5rnyo/Click-Blast.mp3?rlkey=7du7vkr32l4wrevd8ubygxfua&st=lstqlns4&dl=1';
+                blastAudio.src = '/assets/sounds/click-blast.mp3';
                 blastAudio.volume = 0.5;
                 blastAudio.preload = 'auto';
                 blastAudio.style.display = 'none';
@@ -1516,7 +1524,11 @@
                 const can = d?.getElementById("magic-firework-canvas");
                 if (can && can._cleanup) can._cleanup();
                 can?.remove();
-                d?.getElementById("magic-blast-audio")?.remove();
+                const blastAudio = d?.getElementById("magic-blast-audio");
+                if (blastAudio) {
+                    try { blastAudio.pause(); blastAudio.currentTime = 0; blastAudio.src = ""; blastAudio.load(); } catch (e) { }
+                    blastAudio.remove();
+                }
             }
         },
 
@@ -1528,7 +1540,7 @@
                 root.innerHTML = `<div id="magic-bomb-body" style="font-size:80px; position:relative; animation: bombWobble 0.5s infinite alternate ease-in-out;">\uD83D\uDCA3<div id="magic-bomb-fuse" style="position:absolute; top:5px; right:15px; width:8px; height:8px; background:#ff4500; border-radius:50%; box-shadow:0 0 10px #ff0, 0 0 20px #ff4500; animation: fuseSpark 0.1s infinite;"></div></div>`;
                 d.body.appendChild(root);
                 const bombAudio = d.createElement('audio');
-                bombAudio.src = 'https://www.dropbox.com/scl/fi/4j1vqur7916vat9blg3py/Bomb-blast.mp3?rlkey=reii9xaahc9sjajvl1ed3i30z&st=ko4cdgyx&dl=1';
+                bombAudio.src = '/assets/sounds/bomb-blast.mp3';
                 bombAudio.volume = 0.5;
                 bombAudio.preload = 'auto';
                 bombAudio.style.display = 'none';
@@ -1549,7 +1561,14 @@
                 };
                 root.addEventListener("click", explode); return { listeners: [{ target: root, type: "click", handler: explode }] };
             },
-            disable(d) { d?.getElementById("magic-bomb-root")?.remove(); }
+            disable(d) {
+                d?.getElementById("magic-bomb-root")?.remove();
+                const bombAudio = d?.getElementById("magic-bomb-audio");
+                if (bombAudio) {
+                    try { bombAudio.pause(); bombAudio.currentTime = 0; bombAudio.src = ""; bombAudio.load(); } catch (e) { }
+                    bombAudio.remove();
+                }
+            }
         },
 
         giftBoxOpen: {
@@ -1562,7 +1581,7 @@
                 giftContainer.innerHTML = `<div id="gift-box-emoji" style="font-size: 7rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">\uD83C\uDF81</div><p style="margin-top: 15px; font-weight:bold; color:#ffd700;">\u2728 Click to unlock the magic \u2728</p>`;
                 section.appendChild(giftContainer);
                 const giftAudio = d.createElement('audio');
-                giftAudio.src = 'https://www.dropbox.com/scl/fi/44xjwhb6s5l9yd2q23xh2/Gift-box.mp3?rlkey=51q76p6d3juxz2o67fq0fsx2t&st=ct9t6n6u&dl=1';
+                giftAudio.src = '/assets/sounds/gift-box.mp3';
                 giftAudio.volume = 0.5;
                 giftAudio.preload = 'auto';
                 giftAudio.style.display = 'none';
@@ -1640,7 +1659,7 @@
                     card.style.opacity = "1";
                     const audio = d.createElement('audio');
                     audio.id = 'magic-text-formation-audio';
-                    audio.src = 'https://www.dropbox.com/scl/fi/chvq5b2ekx51h8e3tc4n0/Typing.mp3?rlkey=9vvndv4gkkrzdbiis2fnfin3k&e=1&st=pj2hwihs&dl=1';
+                    audio.src = '/assets/sounds/typing.mp3';
                     audio.loop = true;
                     audio.volume = 0.5;
                     audio.preload = 'auto';
@@ -1754,7 +1773,7 @@
                     }
                     else { const p = d.createElement("p"); p.innerText = item; p.style.cssText = "color:#fff; font-size:18px; font-weight:bold; font-family:'Poppins', sans-serif;"; bgContent.appendChild(p); }
                     cardDiv.appendChild(bgContent); cardDiv.appendChild(canvas);
-                    const audio = d.createElement('audio'); audio.src = 'https://www.dropbox.com/scl/fi/wb10jz9mqsy44buyqwrfw/Scratch.mp3?rlkey=ugmhbv0hav9shkxkmik7bcdvs&st=7zi6cnpj&dl=1'; audio.loop = true; audio.volume = 0.3; cardDiv.appendChild(audio);
+                    const audio = d.createElement('audio'); audio.src = '/assets/sounds/scratch.mp3'; audio.preload = 'auto'; audio.loop = true; audio.volume = 0.3; cardDiv.appendChild(audio);
                     const ctx = canvas.getContext("2d", { willReadFrequently: true });
                     const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height); grad.addColorStop(0, "#ff6ec7"); grad.addColorStop(0.5, "#ff9a44"); grad.addColorStop(1, "#7873f5");
                     ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#ffffff20";
@@ -1904,16 +1923,16 @@
                 let used = false;
                 const audio = d.createElement('audio');
                 audio.id = 'letterClickAudio';
-                audio.src = 'https://www.dropbox.com/scl/fi/uaz5w4s5zj3yr0i0dl951/Letter-click.mp3?rlkey=cvjgdol3purgj9qqw7ih00h9b&st=z5v4omeb&dl=1';
+                audio.src = '/assets/sounds/letter-click.mp3';
                 audio.preload = 'auto';
                 audio.style.display = 'none';
                 d.body.appendChild(audio);
 
-                const env = d.createElement("div"); 
-                env.id = "magic-old-letter-envelope"; 
+                const env = d.createElement("div");
+                env.id = "magic-old-letter-envelope";
                 env.innerHTML = "\u2709\uFE0F";
                 env.style.cssText = "position:fixed; bottom:25px; left:25px; font-size:55px; cursor:pointer; z-index:1000; background:#fff; border-radius:50%; width:75px; height:75px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(0,0,0,0.4); transition:0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid #ffd700; opacity:0; visibility:hidden; pointer-events:none;";
-                env.onmouseenter = () => env.style.transform = "scale(1.15) rotate(5deg)"; 
+                env.onmouseenter = () => env.style.transform = "scale(1.15) rotate(5deg)";
                 env.onmouseleave = () => env.style.transform = "scale(1)";
 
                 const showEnvelope = () => {
@@ -2616,7 +2635,7 @@
                 const section = d.createElement("section"); section.id = "magic-final-surprise-section"; section.style.cssText = "padding: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 24px); text-align: center; margin: 50px auto 40px auto; width: 92%; max-width: 560px; box-sizing: border-box; align-self: center; clear: both; position: relative; z-index: 10;";
                 const audioEl = d.createElement('audio');
                 audioEl.id = 'finalSurpriseAudio';
-                audioEl.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+                audioEl.src = '/assets/sounds/final-revel.mp3';
                 audioEl.preload = 'auto';
                 audioEl.volume = 0.7;
                 audioEl.style.display = 'none';
@@ -2646,10 +2665,10 @@
                     const overlay = d.createElement("div");
                     overlay.id = "magic-final-message-root";
                     overlay.style.cssText = "position: fixed; inset: 0; background: radial-gradient(circle at center, #6a0000, #2a0000); z-index: 2147483646; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 1.5s ease; opacity: 1; cursor: pointer; padding: 20px; box-sizing: border-box;";
-                    
+
                     const container = d.createElement("div");
                     container.style.cssText = "display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transform: scale(0.5); opacity: 0; transition: transform 3.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2s ease; max-width: 94vw;";
-                    
+
                     let mediaHtml = '';
                     if (mediaSource) {
                         if (mediaSource.match(/\.(webm|mp4|mov)$/i)) {
@@ -2671,7 +2690,7 @@
                     // Trigger celebration confetti
                     ensureConfetti((cfn) => {
                         if (cfn) {
-                            try { cfn({ particleCount: 70, spread: 80, origin: { y: 0.6 } }); } catch(e) {}
+                            try { cfn({ particleCount: 70, spread: 80, origin: { y: 0.6 } }); } catch (e) { }
                         }
                     });
 
@@ -2696,7 +2715,9 @@
 
         magicMusic: {
             enable(d, w, userName, customText, audio) {
-                if (d.getElementById("magic-bg-audio")) return {};
+                if (d.getElementById("magic-bg-audio")) {
+                    this.disable(d, w);
+                }
                 const DEFAULT_BG_AUDIO = "/assets/Happy Birthday short.mp3";
                 let srcUrl = audio || customText;
                 if (typeof srcUrl === 'string' && srcUrl.startsWith('blob:') && typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) {
@@ -2716,7 +2737,7 @@
                         a.src = DEFAULT_BG_AUDIO;
                         a.load();
                         if (!a.paused) {
-                            a.play().catch(() => {});
+                            a.play().catch(() => { });
                         }
                     };
                 } else {
@@ -2837,11 +2858,17 @@
                     }
                 });
 
+                // User manual pause tracker
+                let userManuallyPaused = false;
                 widget.onclick = () => {
                     if (isBlocked()) return;
                     if (a.paused) {
+                        userManuallyPaused = false;
+                        wasPlayingBeforeInterrupt = false;
                         a.play().catch(() => { });
                     } else {
+                        userManuallyPaused = true;
+                        wasPlayingBeforeInterrupt = false;
                         a.pause();
                     }
                 };
@@ -2859,9 +2886,77 @@
                     tooltip.style.transform = "translateX(10px)";
                 };
 
+                // Track interrupting sound effects and gracefully pause background music
+                const activeOtherAudios = new Set();
+                let wasPlayingBeforeInterrupt = false;
+                let resumeTimer = null;
+
+                const pauseBgMusicForSound = (otherAudio) => {
+                    if (!otherAudio || otherAudio === a || otherAudio.id === "magic-bg-audio") return;
+
+                    if (resumeTimer) {
+                        clearTimeout(resumeTimer);
+                        resumeTimer = null;
+                    }
+
+                    // Remember if background music was actively playing prior to this interruption
+                    if (!a.paused) {
+                        wasPlayingBeforeInterrupt = true;
+                        a.pause();
+                    }
+
+                    activeOtherAudios.add(otherAudio);
+
+                    const onSoundFinish = () => {
+                        activeOtherAudios.delete(otherAudio);
+                        otherAudio.removeEventListener('ended', onSoundFinish);
+                        otherAudio.removeEventListener('pause', onSoundFinish);
+                        otherAudio.removeEventListener('error', onSoundFinish);
+                        scheduleCheckResume();
+                    };
+
+                    otherAudio.addEventListener('ended', onSoundFinish);
+                    otherAudio.addEventListener('pause', onSoundFinish);
+                    otherAudio.addEventListener('error', onSoundFinish);
+                };
+
+                const scheduleCheckResume = () => {
+                    if (resumeTimer) clearTimeout(resumeTimer);
+                    // 200ms buffer to seamlessly bridge overlapping or rapid sounds without audio stutter
+                    resumeTimer = setTimeout(() => {
+                        for (const aud of activeOtherAudios) {
+                            if (aud.paused || aud.ended) {
+                                activeOtherAudios.delete(aud);
+                            }
+                        }
+
+                        // Verify no active audio is currently playing in document or parent document
+                        const inDocPlaying = Array.from(d.querySelectorAll('audio')).some(aud => aud !== a && aud.id !== 'magic-bg-audio' && !aud.paused && !aud.ended);
+                        let inParentPlaying = false;
+                        try {
+                            if (window.parent && window.parent.document && window.parent.document !== d) {
+                                inParentPlaying = Array.from(window.parent.document.querySelectorAll('audio')).some(aud => aud !== a && aud.id !== 'magic-bg-audio' && !aud.paused && !aud.ended);
+                            }
+                        } catch (e) { }
+
+                        if (activeOtherAudios.size === 0 && !inDocPlaying && !inParentPlaying) {
+                            if (wasPlayingBeforeInterrupt && !userManuallyPaused && !isBlocked()) {
+                                a.play().catch(() => { });
+                            }
+                            wasPlayingBeforeInterrupt = false;
+                        }
+                    }, 200);
+                };
+
                 // Auto play logic after conditions are met
                 const checkAndPlay = () => {
-                    if (!isBlocked()) {
+                    if (!isBlocked() && !userManuallyPaused) {
+                        // Only play if no other sound effects are currently playing
+                        const anyOtherPlaying = Array.from(d.querySelectorAll('audio')).some(aud => aud !== a && aud.id !== 'magic-bg-audio' && !aud.paused && !aud.ended);
+                        if (anyOtherPlaying || activeOtherAudios.size > 0) {
+                            wasPlayingBeforeInterrupt = true;
+                            return;
+                        }
                         a.play().then(() => {
                             // Cleanup doc listeners once started successfully
                             d.removeEventListener('click', playAudio);
@@ -2888,6 +2983,10 @@
                 window.addEventListener('curtainOpened', checkAndPlay);
                 window.addEventListener('welcomeTypingFinished', checkAndPlay);
                 window.addEventListener('countdownFinished', checkAndPlay);
+                try { (w || window).addEventListener('lockUnlocked', checkAndPlay); } catch (e) { }
+                try { (w || window).addEventListener('curtainOpened', checkAndPlay); } catch (e) { }
+                try { (w || window).addEventListener('welcomeTypingFinished', checkAndPlay); } catch (e) { }
+                try { (w || window).addEventListener('countdownFinished', checkAndPlay); } catch (e) { }
 
                 const playAudio = () => {
                     if (isBlocked()) return;
@@ -2900,25 +2999,13 @@
                     window.parent.document.addEventListener('keydown', playAudio);
                 } catch (err) { }
 
-                // Handle interrupting audio (pause bg audio for that moment)
-                let wasPlayingBeforeInterrupt = false;
                 const onOtherAudioPlay = (e) => {
-                    if (e.target === a) return;
-                    if (!a.paused) {
-                        a.pause();
-                        wasPlayingBeforeInterrupt = true;
-                    }
+                    pauseBgMusicForSound(e.target);
                 };
                 const onOtherAudioPauseOrEnd = (e) => {
-                    if (e.target === a) return;
-                    const audios = Array.from(d.querySelectorAll('audio'));
-                    const anyOtherPlaying = audios.some(other => other !== a && !other.paused);
-                    if (!anyOtherPlaying && wasPlayingBeforeInterrupt) {
-                        if (!isBlocked()) {
-                            a.play().catch(() => { });
-                        }
-                        wasPlayingBeforeInterrupt = false;
-                    }
+                    if (e.target === a || e.target?.id === 'magic-bg-audio') return;
+                    activeOtherAudios.delete(e.target);
+                    scheduleCheckResume();
                 };
 
                 d.addEventListener('play', onOtherAudioPlay, true);
@@ -2930,43 +3017,155 @@
                     window.parent.document.addEventListener('ended', onOtherAudioPauseOrEnd, true);
                 } catch (err) { }
 
+                // Listen for YouTube & Spotify iframe postMessages to auto-pause background music
+                const onWindowMessage = (e) => {
+                    let data = e.data;
+                    if (typeof data === 'string') {
+                        try { data = JSON.parse(data); } catch (err) { return; }
+                    }
+                    if (!data || typeof data !== 'object') return;
+
+                    // YouTube onStateChange or infoDelivery playerState
+                    // 1: PLAYING, 3: BUFFERING, 2: PAUSED, 0: ENDED
+                    const isYtPlay = (data.event === 'onStateChange' && (data.info === 1 || data.info === 3)) ||
+                        (data.event === 'infoDelivery' && data.info && (data.info.playerState === 1 || data.info.playerState === 3));
+
+                    const isYtPause = (data.event === 'onStateChange' && (data.info === 2 || data.info === 0)) ||
+                        (data.event === 'infoDelivery' && data.info && (data.info.playerState === 2 || data.info.playerState === 0));
+
+                    // Spotify playback updates
+                    const isSpotifyPlay = data.type === 'playback_update' && data.data && data.data.is_paused === false;
+                    const isSpotifyPause = data.type === 'playback_update' && data.data && data.data.is_paused === true;
+
+                    if (isYtPlay || isSpotifyPlay) {
+                        if (resumeTimer) {
+                            clearTimeout(resumeTimer);
+                            resumeTimer = null;
+                        }
+                        if (!a.paused) {
+                            wasPlayingBeforeInterrupt = true;
+                            a.pause();
+                        }
+                        activeOtherAudios.add(isYtPlay ? 'youtube' : 'spotify');
+                    } else if (isYtPause || isSpotifyPause) {
+                        activeOtherAudios.delete(isYtPause ? 'youtube' : 'spotify');
+                        scheduleCheckResume();
+                    }
+                };
+
+                const msgTargets = [w, window];
+                try {
+                    if (window.parent && window.parent !== window) msgTargets.push(window.parent);
+                } catch (e) { }
+
+                msgTargets.forEach(tgt => {
+                    try { tgt.addEventListener('message', onWindowMessage); } catch (e) { }
+                });
+
+                // Synchronously intercept HTMLAudioElement.prototype.play in window and parent window
+                const winTargets = [w, window];
+                try {
+                    if (window.parent && window.parent !== window) winTargets.push(window.parent);
+                } catch (e) { }
+
+                const originalPlayMap = new Map();
+                winTargets.forEach(winObj => {
+                    try {
+                        if (winObj && winObj.HTMLAudioElement && winObj.HTMLAudioElement.prototype && !winObj.HTMLAudioElement.__magicAudioIntercepted) {
+                            const origPlay = winObj.HTMLAudioElement.prototype.play;
+                            originalPlayMap.set(winObj, origPlay);
+                            winObj.HTMLAudioElement.__magicAudioIntercepted = true;
+                            winObj.HTMLAudioElement.prototype.play = function () {
+                                if (this !== a && this.id !== 'magic-bg-audio') {
+                                    pauseBgMusicForSound(this);
+                                }
+                                return origPlay.apply(this, arguments);
+                            };
+                        }
+                    } catch (e) { }
+                });
+
                 // Try to play initially (will only succeed if not blocked and browser allows)
                 checkAndPlay();
 
-                return {
-                    cleanup: () => {
-                        a.remove();
-                        widget.remove();
-                        tooltip.remove();
-                        observer.disconnect();
-                        window.removeEventListener('lockUnlocked', checkAndPlay);
-                        window.removeEventListener('curtainOpened', checkAndPlay);
-                        window.removeEventListener('welcomeTypingFinished', checkAndPlay);
-                        window.removeEventListener('countdownFinished', checkAndPlay);
-                        d.removeEventListener('click', playAudio);
-                        d.removeEventListener('keydown', playAudio);
-                        d.removeEventListener('play', onOtherAudioPlay, true);
-                        d.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
-                        d.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
-                        try {
-                            window.parent.document.removeEventListener('click', playAudio);
-                            window.parent.document.removeEventListener('keydown', playAudio);
-                            window.parent.document.removeEventListener('play', onOtherAudioPlay, true);
-                            window.parent.document.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
-                            window.parent.document.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
-                        } catch (err) { }
+                const cleanupFn = () => {
+                    if (resumeTimer) {
+                        clearTimeout(resumeTimer);
+                        resumeTimer = null;
                     }
+                    winTargets.forEach(winObj => {
+                        try {
+                            if (winObj && winObj.HTMLAudioElement && originalPlayMap.has(winObj)) {
+                                winObj.HTMLAudioElement.prototype.play = originalPlayMap.get(winObj);
+                                delete winObj.HTMLAudioElement.__magicAudioIntercepted;
+                            }
+                        } catch (e) { }
+                    });
+                    msgTargets.forEach(tgt => {
+                        try { tgt.removeEventListener('message', onWindowMessage); } catch (e) { }
+                    });
+                    try {
+                        a.pause();
+                        a.currentTime = 0;
+                        a.src = "";
+                        a.load();
+                    } catch (e) { }
+                    a.remove();
+                    widget?.remove();
+                    tooltip?.remove();
+                    observer?.disconnect();
+                    window.removeEventListener('lockUnlocked', checkAndPlay);
+                    window.removeEventListener('curtainOpened', checkAndPlay);
+                    window.removeEventListener('welcomeTypingFinished', checkAndPlay);
+                    window.removeEventListener('countdownFinished', checkAndPlay);
+                    try { (w || window).removeEventListener('lockUnlocked', checkAndPlay); } catch (e) { }
+                    try { (w || window).removeEventListener('curtainOpened', checkAndPlay); } catch (e) { }
+                    try { (w || window).removeEventListener('welcomeTypingFinished', checkAndPlay); } catch (e) { }
+                    try { (w || window).removeEventListener('countdownFinished', checkAndPlay); } catch (e) { }
+                    d.removeEventListener('click', playAudio);
+                    d.removeEventListener('keydown', playAudio);
+                    d.removeEventListener('play', onOtherAudioPlay, true);
+                    d.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
+                    d.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
+                    try {
+                        window.parent.document.removeEventListener('click', playAudio);
+                        window.parent.document.removeEventListener('keydown', playAudio);
+                        window.parent.document.removeEventListener('play', onOtherAudioPlay, true);
+                        window.parent.document.removeEventListener('pause', onOtherAudioPauseOrEnd, true);
+                        window.parent.document.removeEventListener('ended', onOtherAudioPauseOrEnd, true);
+                    } catch (err) { }
+                    if (d) d.__magicMusicCleanup = null;
+                };
+
+                if (d) d.__magicMusicCleanup = cleanupFn;
+
+                return {
+                    cleanup: cleanupFn
                 };
             },
-            disable(d) {
-                d?.getElementById("magic-bg-audio")?.remove();
+            disable(d, w) {
+                if (d?.__magicMusicCleanup) {
+                    try { d.__magicMusicCleanup(); } catch (e) { }
+                    d.__magicMusicCleanup = null;
+                }
+                const a = d?.getElementById("magic-bg-audio");
+                if (a) {
+                    try {
+                        a.pause();
+                        a.currentTime = 0;
+                        a.src = "";
+                        a.load();
+                    } catch (e) { }
+                    a.remove();
+                }
                 d?.getElementById("magic-music-widget")?.remove();
+                d?.getElementById("magic-music-tooltip")?.remove();
             }
         },
 
         voiceNote: {
             enable(d, w, userName, customText, audio) {
-                const defaultVoiceSample = "https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1";
+                const defaultVoiceSample = "/assets/sounds/unlocked.mp3";
                 let srcUrl = audio || customText || defaultVoiceSample;
                 if (typeof srcUrl === 'string' && srcUrl.startsWith('blob:') && typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) {
                     srcUrl = defaultVoiceSample;
@@ -3262,6 +3461,7 @@
             enable(d, w, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl) {
                 if (!customText) return {};
                 const parseLocalTime = (str) => {
+                    if (typeof str !== 'string') return new Date(str);
                     const parts = str.split('T');
                     if (parts.length !== 2) return new Date(str);
                     const dateParts = parts[0].split('-');
@@ -3276,11 +3476,46 @@
                         0, 0
                     );
                 };
-                const targetTime = parseLocalTime(customText).getTime();
-                if (isNaN(targetTime)) return {};
 
-                const now = Date.now();
-                if (now >= targetTime) return {}; // Already passed
+                let isDuration = false;
+                let durationSec = 15;
+
+                if (typeof customText === 'object' && customText) {
+                    if (customText.mode === 'duration') {
+                        isDuration = true;
+                        durationSec = parseInt(customText.duration || customText.seconds, 10) || 15;
+                    } else if (typeof customText.text === 'string' && customText.text.startsWith('duration:')) {
+                        isDuration = true;
+                        durationSec = parseInt(customText.text.replace('duration:', ''), 10) || 15;
+                    } else if (customText.duration && (!customText.text || !customText.text.includes('-'))) {
+                        isDuration = true;
+                        durationSec = parseInt(customText.duration, 10) || 15;
+                    }
+                } else if (typeof customText === 'string' && customText.startsWith('duration:')) {
+                    isDuration = true;
+                    durationSec = parseInt(customText.replace('duration:', ''), 10) || 15;
+                }
+
+                if (!isDuration) {
+                    const cdData = (w?.customData?.get?.('countdown')) || (typeof window !== 'undefined' && window.customData?.get?.('countdown'));
+                    if (cdData && (cdData.mode === 'duration' || (typeof cdData.text === 'string' && cdData.text.startsWith('duration:')))) {
+                        isDuration = true;
+                        durationSec = parseInt(cdData.duration || (typeof cdData.text === 'string' ? cdData.text.replace('duration:', '') : 15), 10) || 15;
+                    }
+                }
+
+                let targetTime;
+                if (isDuration) {
+                    if (durationSec <= 0) durationSec = 15;
+                    targetTime = Date.now() + (durationSec * 1000) + 250;
+                } else {
+                    const targetTimeStr = (typeof customText === 'object' && customText.text) ? customText.text : (typeof customText === 'string' ? customText : '');
+                    targetTime = parseLocalTime(targetTimeStr).getTime();
+                    if (isNaN(targetTime)) return {};
+
+                    const now = Date.now();
+                    if (now >= targetTime) return {}; // Already passed
+                }
 
                 const existing = d.getElementById("magic-countdown-overlay");
                 if (existing) {
@@ -3290,140 +3525,729 @@
                     existing.remove();
                 }
 
-                const overlay = d.createElement("div");
-                overlay.id = "magic-countdown-overlay";
-                overlay.style.cssText = "position:fixed; inset:0; background:linear-gradient(45deg, #090214, #2a0b4e, #090214); background-size:200% 200%; z-index:2147483650; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit', sans-serif; color:white; backdrop-filter:blur(15px); transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); animation: bgShift 10s ease infinite; padding: 20px 15px; box-sizing: border-box; overflow-y: auto;";
+                const THEMES = {
+                    'romantic-couple': {
+                        id: 'romantic-couple',
+                        name: 'Romantic Couple',
+                        titleEn: 'The Surprise Begins In',
+                        titleHi: 'सरप्राइज खुलने में...',
+                        cardSubtitleEn: '✦ SPECIAL SURPRISE MOMENT ✦',
+                        cardSubtitleHi: '✦ स्पेशल सरप्राइज मोमेंट ✦',
+                        badgeIcon: '💖',
+                        badgeBg: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+                        cardBg: 'rgba(255, 255, 255, 0.82)',
+                        cardBorder: 'rgba(255, 255, 255, 0.94)',
+                        cardShadow: '0 24px 54px rgba(219, 39, 119, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        cardSubColor: '#be185d',
+                        haloGradient: 'radial-gradient(circle, #f472b6 0%, #fda4af 60%, transparent 100%)',
+                        decorLeft: '♡',
+                        decorRight: '♡',
+                        decorUnder: '♡',
+                        bgGradient: 'linear-gradient(135deg, #fff0f3 0%, #fde2e4 45%, #fbcfe8 100%)',
+                        textColor: '#9d174d',
+                        titleColor: '#be185d',
+                        pillBg: 'rgba(255, 255, 255, 0.62)',
+                        pillBorder: 'rgba(255, 255, 255, 0.88)',
+                        pillShadow: '0 16px 36px rgba(219, 39, 119, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        numColor: '#9d174d',
+                        colonColor: '#ec4899',
+                        labelColor: '#be185d',
+                        defaultMedia: '/assets/media/countdown/theme-couple.jpg',
+                        confettiColors: ['#ff4081', '#f06292', '#f48fb1', '#ffffff', '#ff80ab', '#ad1457'],
+                        particleEmoji: ['💖', '💕', '🌸', '✨', '🤍']
+                    },
+                    'birthday-bear': {
+                        id: 'birthday-bear',
+                        name: 'Birthday Bear',
+                        titleEn: 'The Surprise Begins In',
+                        titleHi: 'सरप्राइज खुलने में...',
+                        cardSubtitleEn: '✦ BIRTHDAY CELEBRATION ✦',
+                        cardSubtitleHi: '✦ जन्मदिन का जश्न ✦',
+                        badgeIcon: '🎂',
+                        badgeBg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        cardBg: 'rgba(255, 255, 255, 0.86)',
+                        cardBorder: 'rgba(255, 255, 255, 0.95)',
+                        cardShadow: '0 24px 54px rgba(217, 119, 6, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        cardSubColor: '#b45309',
+                        haloGradient: 'radial-gradient(circle, #fbbf24 0%, #fde68a 60%, transparent 100%)',
+                        decorLeft: '⊰',
+                        decorRight: '⊱',
+                        decorUnder: '♥',
+                        bgGradient: 'linear-gradient(135deg, #fffdf0 0%, #fef3c7 45%, #fde68a 100%)',
+                        textColor: '#9a3412',
+                        titleColor: '#b45309',
+                        pillBg: 'rgba(255, 255, 255, 0.68)',
+                        pillBorder: 'rgba(255, 255, 255, 0.92)',
+                        pillShadow: '0 16px 36px rgba(217, 119, 6, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        numColor: '#991b1b',
+                        colonColor: '#ea580c',
+                        labelColor: '#9a3412',
+                        defaultMedia: '/assets/media/countdown/theme-bear.jpg',
+                        confettiColors: ['#ffca28', '#ff7043', '#ec407a', '#26a69a', '#ab47bc', '#ffd54f'],
+                        particleEmoji: ['🎉', '⭐', '🎈', '✨', '🍰']
+                    },
+                    'star-kitten': {
+                        id: 'star-kitten',
+                        name: 'Sleeping Star Kitten',
+                        titleEn: 'The Surprise Begins In',
+                        titleHi: 'सरप्राइज खुलने में...',
+                        cardSubtitleEn: '✦ MAGICAL STARRY NIGHT ✦',
+                        cardSubtitleHi: '✦ तारों भरी रात ✦',
+                        badgeIcon: '⭐',
+                        badgeBg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                        cardBg: 'rgba(255, 255, 255, 0.82)',
+                        cardBorder: 'rgba(255, 255, 255, 0.94)',
+                        cardShadow: '0 24px 54px rgba(124, 58, 237, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        cardSubColor: '#6d28d9',
+                        haloGradient: 'radial-gradient(circle, #c084fc 0%, #ddd6fe 60%, transparent 100%)',
+                        decorLeft: '♡',
+                        decorRight: '♡',
+                        decorUnder: '♡',
+                        bgGradient: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 45%, #ddd6fe 100%)',
+                        textColor: '#5b21b6',
+                        titleColor: '#6d28d9',
+                        pillBg: 'rgba(255, 255, 255, 0.62)',
+                        pillBorder: 'rgba(255, 255, 255, 0.88)',
+                        pillShadow: '0 16px 36px rgba(124, 58, 237, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        numColor: '#4c1d95',
+                        colonColor: '#7c3aed',
+                        labelColor: '#5b21b6',
+                        defaultMedia: '/assets/media/countdown/theme-star-cat.jpg',
+                        confettiColors: ['#c084fc', '#a855f7', '#7c3aed', '#ffffff', '#fde047'],
+                        particleEmoji: ['⭐', '✨', '🌙', '💜', '☁️']
+                    },
+                    'lavender-bouquet': {
+                        id: 'lavender-bouquet',
+                        name: 'Lavender Bouquet',
+                        titleEn: 'The Surprise Begins In',
+                        titleHi: 'सरप्राइज खुलने में...',
+                        cardSubtitleEn: '✦ FLORAL BOUQUET MOMENT ✦',
+                        cardSubtitleHi: '✦ महकते फूलों का तोहफा ✦',
+                        badgeIcon: '🌸',
+                        badgeBg: 'linear-gradient(135deg, #d946ef 0%, #a21caf 100%)',
+                        cardBg: 'rgba(255, 255, 255, 0.82)',
+                        cardBorder: 'rgba(255, 255, 255, 0.94)',
+                        cardShadow: '0 24px 54px rgba(162, 28, 175, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        cardSubColor: '#86198f',
+                        haloGradient: 'radial-gradient(circle, #e879f9 0%, #f3e8ff 60%, transparent 100%)',
+                        decorLeft: '❧',
+                        decorRight: '❧',
+                        decorUnder: '♡',
+                        bgGradient: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 45%, #e9d5ff 100%)',
+                        textColor: '#701a75',
+                        titleColor: '#86198f',
+                        pillBg: 'rgba(255, 255, 255, 0.62)',
+                        pillBorder: 'rgba(255, 255, 255, 0.88)',
+                        pillShadow: '0 16px 36px rgba(162, 28, 175, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        numColor: '#701a75',
+                        colonColor: '#c026d3',
+                        labelColor: '#86198f',
+                        defaultMedia: '/assets/media/countdown/theme-bouquet.jpg',
+                        confettiColors: ['#e879f9', '#c026d3', '#a21caf', '#ffffff', '#f472b6'],
+                        particleEmoji: ['🌸', '🦋', '💐', '✨', '💜']
+                    },
+                    'sunset-cat': {
+                        id: 'sunset-cat',
+                        name: 'Sunset Kitten',
+                        titleEn: 'The Surprise Begins In',
+                        titleHi: 'सरप्राइज खुलने में...',
+                        cardSubtitleEn: '✦ GOLDEN SUNSET MAGIC ✦',
+                        cardSubtitleHi: '✦ सुनहरी शाम का जादू ✦',
+                        badgeIcon: '☀️',
+                        badgeBg: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                        cardBg: 'rgba(255, 255, 255, 0.84)',
+                        cardBorder: 'rgba(255, 255, 255, 0.95)',
+                        cardShadow: '0 24px 54px rgba(234, 88, 12, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        cardSubColor: '#c2410c',
+                        haloGradient: 'radial-gradient(circle, #fb923c 0%, #fed7aa 60%, transparent 100%)',
+                        decorLeft: '♡',
+                        decorRight: '♡',
+                        decorUnder: '♡',
+                        bgGradient: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 35%, #fed7aa 70%, #fecdd3 100%)',
+                        textColor: '#9a3412',
+                        titleColor: '#c2410c',
+                        pillBg: 'rgba(255, 255, 255, 0.64)',
+                        pillBorder: 'rgba(255, 255, 255, 0.88)',
+                        pillShadow: '0 16px 36px rgba(234, 88, 12, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+                        numColor: '#9a3412',
+                        colonColor: '#ea580c',
+                        labelColor: '#c2410c',
+                        defaultMedia: '/assets/media/countdown/theme-sunset-cat.jpg',
+                        confettiColors: ['#fb7185', '#f43f5e', '#fb923c', '#ffffff', '#fde047'],
+                        particleEmoji: ['🐾', '☀️', '☁️', '🧡', '✨']
+                    },
+                    'midnight-stars': {
+                        id: 'midnight-stars',
+                        name: 'Midnight Celestial',
+                        titleEn: 'The Surprise Begins In',
+                        titleHi: 'सरप्राइज खुलने में...',
+                        cardSubtitleEn: '✦ MIDNIGHT CELESTIAL MAGIC ✦',
+                        cardSubtitleHi: '✦ मिडनाइट सेलेस्टियल मैजिक ✦',
+                        badgeIcon: '🌙',
+                        badgeBg: 'linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%)',
+                        cardBg: 'rgba(18, 24, 54, 0.74)',
+                        cardBorder: 'rgba(255, 255, 255, 0.32)',
+                        cardShadow: '0 24px 56px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.28)',
+                        cardSubColor: '#facc15',
+                        haloGradient: 'radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, rgba(129, 140, 248, 0.15) 50%, transparent 100%)',
+                        decorLeft: '★',
+                        decorRight: '★',
+                        decorUnder: '★',
+                        bgGradient: 'radial-gradient(ellipse at top, #141b3d 0%, #0a0d24 60%, #030511 100%)',
+                        textColor: '#f8fafc',
+                        titleColor: '#f1f5f9',
+                        pillBg: 'rgba(255, 255, 255, 0.12)',
+                        pillBorder: 'rgba(255, 255, 255, 0.32)',
+                        pillShadow: '0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.25)',
+                        numColor: '#ffffff',
+                        colonColor: '#facc15',
+                        labelColor: '#cbd5e1',
+                        defaultMedia: '/assets/media/countdown/theme-midnight.jpg',
+                        confettiColors: ['#facc15', '#38bdf8', '#818cf8', '#ffffff', '#c084fc'],
+                        particleEmoji: ['⭐', '🌟', '🌙', '✨', '💫']
+                    }
+                };
 
-                // Add styles for rich animations
-                const style = d.createElement('style');
-                style.innerHTML = `
-              @keyframes bgShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-              @keyframes pulseGlow { 0% { box-shadow: 0 0 15px rgba(255,215,0,0.1); transform: translateY(0); } 50% { box-shadow: 0 10px 30px rgba(255,215,0,0.3); transform: translateY(-5px); border-color: rgba(255,215,0,0.6); } 100% { box-shadow: 0 0 15px rgba(255,215,0,0.1); transform: translateY(0); } }
-              @keyframes numberPop { 0% { transform: scale(1); text-shadow: 0 0 10px rgba(255,215,0,0.3); } 50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(255,255,255,0.8); color: #fff; } 100% { transform: scale(1); text-shadow: 0 0 10px rgba(255,215,0,0.3); } }
-              @keyframes floatIcon { 0% { transform: translateY(0) rotate(-3deg); filter: drop-shadow(0 0 20px rgba(255,215,0,0.4)); } 50% { transform: translateY(-10px) rotate(3deg); filter: drop-shadow(0 0 35px rgba(255,215,0,0.8)); } 100% { transform: translateY(0) rotate(-3deg); filter: drop-shadow(0 0 20px rgba(255,215,0,0.4)); } }
-              .countdown-unit {
-                  background: rgba(255, 255, 255, 0.05);
-                  border: 1px solid rgba(255, 215, 0, 0.25);
-                  border-radius: 20px;
-                  padding: clamp(14px, 2.5vh, 22px) clamp(12px, 2.2vw, 20px);
-                  min-width: clamp(72px, 19vw, 110px);
-                  text-align: center;
-                  backdrop-filter: blur(12px);
-                  animation: pulseGlow 3s infinite ease-in-out;
-                  box-shadow: inset 0 0 20px rgba(255,215,0,0.05);
-                  transition: transform 0.3s;
-              }
-              .countdown-unit:hover { transform: scale(1.05) translateY(-5px); border-color: #ffd700; }
-              .countdown-unit:nth-child(2) { animation-delay: 0.5s; }
-              .countdown-unit:nth-child(3) { animation-delay: 1s; }
-              .countdown-unit:nth-child(4) { animation-delay: 1.5s; }
-              .num-val { display: inline-block; font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 800; color: #ffd700; text-shadow: 0 0 12px rgba(255,215,0,0.35); font-variant-numeric: tabular-nums; }
-              .num-val.changed { animation: numberPop 0.5s ease-out; }
-            `;
-                overlay.appendChild(style);
-
-                const unlockAudio = d.createElement('audio');
-                unlockAudio.src = 'https://www.dropbox.com/scl/fi/2fvwa7pe48d02xla74az0/unlocked.mp3?rlkey=w7gjgzekpt22kyly1c2pivyxq&st=eekkhktb&dl=1';
-                unlockAudio.volume = 0.5;
-                overlay.appendChild(unlockAudio);
-
-                const DEFAULT_PORTAL_MEDIA = '/assets/media/72c9cd1c-0372-4837-a25d-7d1a68cb9e92-1_all_3565.webm';
-                let mediaSource = (mediaUrl !== undefined && mediaUrl !== '') ? mediaUrl : ((typeof images === 'string' && images) ? images : (images && images.length ? images[0] : '')) || (typeof customText === 'object' ? customText.mediaUrl : '') || (typeof audio === 'string' && (audio.endsWith('.webm') || audio.endsWith('.png') || audio.endsWith('.mp4') || audio.endsWith('.webp')) ? audio : '') || DEFAULT_PORTAL_MEDIA;
+                let mediaSource = (mediaUrl !== undefined && mediaUrl !== '') ? mediaUrl : ((typeof images === 'string' && images) ? images : (images && images.length ? images[0] : '')) || (typeof customText === 'object' ? customText.mediaUrl : '') || (typeof audio === 'string' && (audio.endsWith('.webm') || audio.endsWith('.png') || audio.endsWith('.jpg') || audio.endsWith('.mp4') || audio.endsWith('.webp')) ? audio : '') || '';
                 if (mediaSource === 'none' || mediaSource === 'null' || mediaSource === false) {
                     mediaSource = '';
                 }
-                const decor = d.createElement("div");
-                decor.className = "magic-countdown-decor-wrap";
-                if (mediaSource) {
-                    decor.style.cssText = "margin-bottom: clamp(10px, 2vh, 18px); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 100%; flex-shrink: 0;";
-                    if (mediaSource.match(/\.(webm|mp4|mov)$/i)) {
+
+                // Detect selected theme
+                let selectedTheme = THEMES['romantic-couple'];
+                const mediaStr = String(mediaSource || '');
+                const isNone = (mediaSource === 'none' || mediaUrl === 'none');
+                if (mediaStr.includes('bear')) selectedTheme = THEMES['birthday-bear'];
+                else if (mediaStr.includes('star-cat') || mediaStr.includes('star_cat')) selectedTheme = THEMES['star-kitten'];
+                else if (mediaStr.includes('bouquet')) selectedTheme = THEMES['lavender-bouquet'];
+                else if (mediaStr.includes('sunset')) selectedTheme = THEMES['sunset-cat'];
+                else if (mediaStr.includes('midnight')) selectedTheme = THEMES['midnight-stars'];
+                else if (mediaStr.includes('couple')) selectedTheme = THEMES['romantic-couple'];
+                else if (mediaStr.match(/\.(webm|mp4|mov)$/i) || isNone || mediaStr.includes('10000098') || mediaStr.includes('3565')) selectedTheme = THEMES['midnight-stars'];
+
+                // Detect custom title override
+                let headerText = '';
+                if (typeof customText === 'object' && customText && customText.title) {
+                    headerText = String(customText.title).trim();
+                } else if (typeof customEmoji === 'string' && customEmoji.trim()) {
+                    headerText = customEmoji.trim();
+                } else if (w?.customData?.get?.('countdown')?.title) {
+                    headerText = String(w.customData.get('countdown').title).trim();
+                } else if (typeof window !== 'undefined' && window.customData?.get?.('countdown')?.title) {
+                    headerText = String(window.customData.get('countdown').title).trim();
+                } else if (w?.parent?.customData?.get?.('countdown')?.title) {
+                    headerText = String(w.parent.customData.get('countdown').title).trim();
+                } else if (typeof window !== 'undefined' && window.parent?.customData?.get?.('countdown')?.title) {
+                    headerText = String(window.parent.customData.get('countdown').title).trim();
+                } else if (d?.defaultView?.parent?.customData?.get?.('countdown')?.title) {
+                    headerText = String(d.defaultView.parent.customData.get('countdown').title).trim();
+                } else if (d?.defaultView?.customData?.get?.('countdown')?.title) {
+                    headerText = String(d.defaultView.customData.get('countdown').title).trim();
+                }
+                const isHi = (window.currentLang === 'hi' || w?.currentLang === 'hi' || (typeof window !== 'undefined' && window.parent?.currentLang === 'hi'));
+                if (!headerText) {
+                    headerText = isHi ? selectedTheme.titleHi : selectedTheme.titleEn;
+                }
+
+                const overlay = d.createElement("div");
+                overlay.id = "magic-countdown-overlay";
+                overlay.style.cssText = `position:fixed; inset:0; background:${selectedTheme.bgGradient}; z-index:2147483650; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color:${selectedTheme.textColor}; backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); padding: clamp(14px, 2.5vh, 28px) clamp(16px, 3vw, 32px); box-sizing:border-box; overflow-y:auto; overflow-x:hidden;`;
+
+                // Add style tag for keyframes and responsive rules
+                const style = d.createElement('style');
+                style.innerHTML = `
+                    @keyframes floatDecor {
+                        0%, 100% { transform: translateY(0) scale(1); }
+                        50% { transform: translateY(-7px) scale(1.015); }
+                    }
+                    @keyframes floatCard {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-7px); }
+                    }
+                    @keyframes floatAmbient {
+                        0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+                        20% { opacity: 0.7; }
+                        80% { opacity: 0.7; }
+                        100% { transform: translateY(-110vh) rotate(360deg) scale(1.1); opacity: 0; }
+                    }
+                    @keyframes pulseHeart {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.22); }
+                    }
+                    .magic-countdown-content-wrap {
+                        position: relative;
+                        z-index: 2;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        max-width: 520px;
+                        margin: auto;
+                        box-sizing: border-box;
+                    }
+                    .magic-countdown-stage-left {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 100%;
+                        flex-shrink: 0;
+                    }
+                    .magic-countdown-stage-right {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        text-align: center;
+                        flex: 1 1 auto;
+                    }
+                    .magic-countdown-arch-card {
+                        will-change: transform;
+                    }
+                    .magic-countdown-video-wrap {
+                        will-change: transform;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        position: relative;
+                        margin-bottom: clamp(10px, 1.8vh, 18px);
+                    }
+                    .magic-countdown-frameless-video {
+                        width: auto;
+                        height: auto;
+                        max-width: min(88vw, 320px);
+                        max-height: clamp(220px, 40vh, 340px);
+                        object-fit: contain;
+                        pointer-events: none;
+                        display: block;
+                        filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.45));
+                    }
+                    .magic-countdown-pill:hover {
+                        transform: translateY(-2px);
+                    }
+                    .magic-countdown-eyebrow {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        font-size: clamp(0.72rem, 1.2vw, 0.85rem);
+                        font-weight: 700;
+                        letter-spacing: 2.2px;
+                        text-transform: uppercase;
+                        color: ${selectedTheme.titleColor};
+                        opacity: 0.88;
+                        margin-bottom: clamp(6px, 1.2vh, 10px);
+                    }
+                    .magic-countdown-footer-note {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+                        font-weight: 500;
+                        letter-spacing: 0.4px;
+                        color: ${selectedTheme.textColor};
+                        opacity: 0.82;
+                        text-align: center;
+                        line-height: 1.4;
+                    }
+
+                    /* TABLET, LAPTOP & PC RESPONSIVE 2-SIDE VIEW (Scaled-up & Screen-Filling) */
+                    @media (min-width: 650px) and (min-height: 420px) {
+                        #magic-countdown-overlay {
+                            padding: clamp(36px, 5vh, 68px) clamp(20px, 3.5vw, 60px) !important;
+                            justify-content: center !important;
+                        }
+                        .magic-countdown-content-wrap {
+                            flex-direction: row !important;
+                            justify-content: center !important;
+                            align-items: center !important;
+                            max-width: 1320px !important;
+                            gap: clamp(32px, 5.5vw, 88px) !important;
+                            padding: clamp(14px, 2.5vw, 40px) !important;
+                            margin: auto !important;
+                        }
+                        .magic-countdown-stage-left {
+                            flex: 0 0 auto !important;
+                            justify-content: flex-end !important;
+                            align-items: center !important;
+                            width: auto !important;
+                        }
+                        .magic-countdown-stage-left .magic-countdown-arch-card {
+                            width: clamp(280px, 29vw, 460px) !important;
+                            margin-bottom: 0 !important;
+                        }
+                        .magic-countdown-stage-left .magic-countdown-video-wrap {
+                            margin-bottom: 0 !important;
+                        }
+                        .magic-countdown-stage-left .magic-countdown-frameless-video {
+                            width: 100% !important;
+                            max-width: clamp(320px, 33vw, 540px) !important;
+                            max-height: clamp(320px, 55vh, 560px) !important;
+                            filter: drop-shadow(0 20px 48px rgba(0, 0, 0, 0.55)) !important;
+                        }
+                        .magic-countdown-stage-right {
+                            align-items: flex-start !important;
+                            text-align: left !important;
+                            max-width: clamp(420px, 50vw, 660px) !important;
+                            width: auto !important;
+                            flex: 1 1 auto !important;
+                        }
+                        .magic-countdown-eyebrow {
+                            justify-content: flex-start !important;
+                            text-align: left !important;
+                            font-size: clamp(0.78rem, 1.1vw, 1.05rem) !important;
+                            letter-spacing: 2.8px !important;
+                            margin-bottom: clamp(10px, 1.6vh, 16px) !important;
+                            gap: 10px !important;
+                        }
+                        .magic-countdown-title-wrap {
+                            align-items: flex-start !important;
+                            text-align: left !important;
+                            margin-bottom: clamp(14px, 2.4vh, 26px) !important;
+                        }
+                        .magic-countdown-title-el {
+                            justify-content: flex-start !important;
+                            text-align: left !important;
+                            font-size: clamp(2rem, 3.4vw, 3.8rem) !important;
+                            gap: clamp(8px, 1.4vw, 16px) !important;
+                            letter-spacing: -0.5px !important;
+                        }
+                        .magic-countdown-title-under {
+                            margin: clamp(10px, 1.4vh, 16px) 0 0 0 !important;
+                            width: clamp(64px, 10vw, 100px) !important;
+                        }
+                        .magic-countdown-pill {
+                            margin-left: 0 !important;
+                            margin-right: auto !important;
+                            margin-top: clamp(16px, 2.5vh, 28px) !important;
+                            margin-bottom: clamp(14px, 2vh, 22px) !important;
+                            padding: clamp(14px, 2.2vh, 26px) clamp(24px, 3.6vw, 60px) !important;
+                        }
+                        .magic-countdown-stage-right .magic-countdown-unit-wrap {
+                            min-width: clamp(66px, 11vw, 110px) !important;
+                        }
+                        .magic-countdown-stage-right .magic-countdown-num {
+                            font-size: clamp(2.2rem, 4.5vw, 4.5rem) !important;
+                        }
+                        .magic-countdown-stage-right .magic-countdown-colon {
+                            font-size: clamp(1.8rem, 3.6vw, 3.6rem) !important;
+                            margin: 0 clamp(4px, 1.2vw, 12px) !important;
+                        }
+                        .magic-countdown-stage-right .magic-countdown-unit-lbl {
+                            font-size: clamp(0.66rem, 1vw, 0.9rem) !important;
+                            letter-spacing: 2px !important;
+                            margin-top: 7px !important;
+                        }
+                        .magic-countdown-footer-note {
+                            justify-content: flex-start !important;
+                            text-align: left !important;
+                            font-size: clamp(0.82rem, 1.15vw, 1.05rem) !important;
+                            gap: 10px !important;
+                            opacity: 0.85 !important;
+                        }
+                    }
+
+                    /* SOLO CENTERED MODE (When No Art / None is selected) */
+                    .magic-countdown-stage-right.magic-countdown-solo {
+                        align-items: center !important;
+                        text-align: center !important;
+                        max-width: 680px !important;
+                        margin: 0 auto !important;
+                    }
+                    .magic-countdown-stage-right.magic-countdown-solo .magic-countdown-eyebrow,
+                    .magic-countdown-stage-right.magic-countdown-solo .magic-countdown-title-wrap,
+                    .magic-countdown-stage-right.magic-countdown-solo .magic-countdown-title-el,
+                    .magic-countdown-stage-right.magic-countdown-solo .magic-countdown-pill,
+                    .magic-countdown-stage-right.magic-countdown-solo .magic-countdown-footer-note {
+                        justify-content: center !important;
+                        text-align: center !important;
+                        margin-left: auto !important;
+                        margin-right: auto !important;
+                    }
+                    .magic-countdown-stage-right.magic-countdown-solo .magic-countdown-title-under {
+                        margin: 10px auto 0 !important;
+                    }
+                `;
+                overlay.appendChild(style);
+
+                // Ambient floating particle layer
+                const particleBox = d.createElement('div');
+                particleBox.style.cssText = "position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0;";
+                for (let i = 0; i < 14; i++) {
+                    const p = d.createElement('span');
+                    const em = selectedTheme.particleEmoji[Math.floor(Math.random() * selectedTheme.particleEmoji.length)];
+                    p.innerText = em;
+                    const size = Math.random() * 14 + 14;
+                    const left = Math.random() * 94 + 3;
+                    const dur = Math.random() * 6 + 6;
+                    const delay = Math.random() * 5;
+                    p.style.cssText = `position:absolute; left:${left}%; bottom:-40px; font-size:${size}px; opacity:0; animation: floatAmbient ${dur}s ease-in-out infinite ${delay}s; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));`;
+                    particleBox.appendChild(p);
+                }
+                overlay.appendChild(particleBox);
+
+                // Content wrapper for layering above particles
+                const contentWrap = d.createElement('div');
+                contentWrap.className = 'magic-countdown-content-wrap';
+                overlay.appendChild(contentWrap);
+
+                const stageLeft = d.createElement('div');
+                stageLeft.className = 'magic-countdown-stage-left';
+
+                const stageRight = d.createElement('div');
+                stageRight.className = 'magic-countdown-stage-right';
+
+                // Audio elements
+                const unlockAudio = d.createElement('audio');
+                unlockAudio.src = '/assets/sounds/unlocked.mp3';
+                unlockAudio.volume = 0.5;
+                overlay.appendChild(unlockAudio);
+
+                // Web Audio tick sound for last 10 seconds
+                const playTickSound = () => {
+                    try {
+                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioCtx) return;
+                        if (!window._countdownAudioCtx) {
+                            window._countdownAudioCtx = new AudioCtx();
+                        }
+                        const ctx = window._countdownAudioCtx;
+                        if (ctx.state === 'suspended') ctx.resume();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(800, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.04);
+                        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.045);
+                    } catch(e) {}
+                };
+
+                // Media Presentation (Frameless for Videos, Luxury Arched Card for Images)
+                let mediaStage = null;
+                const activeMedia = mediaSource || selectedTheme.defaultMedia;
+                const isVideo = Boolean(activeMedia && activeMedia.match(/\.(webm|mp4|mov)$/i));
+
+                if (!isNone && activeMedia) {
+                    if (isVideo) {
+                        // Frameless video presentation so animated stickers and videos float freely & fully without frame clipping
+                        mediaStage = d.createElement("div");
+                        mediaStage.className = "magic-countdown-video-wrap";
+                        mediaStage.style.cssText = "position:relative; display:flex; align-items:center; justify-content:center; animation:floatCard 4.6s ease-in-out infinite; box-sizing:border-box; flex-shrink:0;";
+
+                        // Ambient theme-tinted glowing halo behind video
+                        const halo = d.createElement("div");
+                        halo.className = "magic-countdown-video-halo";
+                        halo.style.cssText = `position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; height:90%; border-radius:50%; filter:blur(44px); opacity:0.6; pointer-events:none; z-index:-1; background:${selectedTheme.haloGradient};`;
+                        mediaStage.appendChild(halo);
+
                         const vid = d.createElement('video');
-                        vid.className = "magic-countdown-media";
-                        vid.src = mediaSource;
+                        vid.className = "magic-countdown-media magic-countdown-frameless-video";
+                        vid.src = activeMedia;
                         vid.autoplay = true;
                         vid.loop = true;
                         vid.muted = true;
                         vid.setAttribute('playsinline', '');
                         vid.setAttribute('preload', 'auto');
-                        vid.style.cssText = "width: min(94vw, 560px); height: auto; max-height: clamp(200px, 36vh, 420px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; will-change: transform; transform: translateZ(0); backface-visibility: hidden; animation: floatIcon 4s ease-in-out infinite;";
-                        decor.appendChild(vid);
+                        mediaStage.appendChild(vid);
+
+                        stageLeft.appendChild(mediaStage);
+                        contentWrap.appendChild(stageLeft);
                     } else {
+                        // Luxury Arched Invitation Card for static images/illustrations
+                        mediaStage = d.createElement("div");
+                        mediaStage.className = "magic-countdown-arch-card";
+                        mediaStage.style.cssText = `position:relative; width:min(86vw, clamp(250px, 44vh, 340px)); padding:clamp(7px, 1.2vw, 10px); padding-bottom:clamp(12px, 1.6vh, 16px); border-radius:999px 999px 24px 24px; background:${selectedTheme.cardBg}; backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); border:2px solid ${selectedTheme.cardBorder}; box-shadow:${selectedTheme.cardShadow}; animation:floatCard 4.6s ease-in-out infinite; margin-bottom:clamp(8px, 1.4vh, 14px); display:flex; flex-direction:column; align-items:center; justify-content:center; box-sizing:border-box; flex-shrink:0;`;
+
+                        // Ambient theme-tinted glowing halo behind card
+                        const halo = d.createElement("div");
+                        halo.className = "magic-countdown-card-halo";
+                        halo.style.cssText = `position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:92%; height:92%; border-radius:50%; filter:blur(36px); opacity:0.65; pointer-events:none; z-index:-1; background:${selectedTheme.haloGradient};`;
+                        mediaStage.appendChild(halo);
+
+                        // Top Apex Badge Pin
+                        const badge = d.createElement("div");
+                        badge.className = "magic-countdown-arch-badge";
+                        badge.style.cssText = `position:absolute; top:-14px; left:50%; transform:translateX(-50%); width:32px; height:32px; border-radius:50%; background:${selectedTheme.badgeBg}; border:2.5px solid #ffffff; box-shadow:0 4px 12px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; font-size:15px; z-index:5;`;
+                        badge.innerHTML = `<span>${selectedTheme.badgeIcon}</span>`;
+                        mediaStage.appendChild(badge);
+
+                        // Inner Arched Media Window (1:1 aspect ratio)
+                        const windowBox = d.createElement("div");
+                        windowBox.className = "magic-countdown-arch-window";
+                        windowBox.style.cssText = `width:100%; aspect-ratio:1 / 1; border-radius:999px 999px 16px 16px; overflow:hidden; border:1px solid rgba(255, 255, 255, 0.65); box-shadow:inset 0 2px 8px rgba(0,0,0,0.06); margin-bottom:clamp(8px, 1.2vh, 11px); display:flex; align-items:center; justify-content:center; position:relative; background:rgba(0,0,0,0.03);`;
+
                         const img = d.createElement('img');
                         img.className = "magic-countdown-media";
-                        img.src = mediaSource;
-                        img.alt = "Countdown animation";
-                        img.style.cssText = "width: min(94vw, 520px); height: auto; max-height: clamp(190px, 34vh, 380px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,215,0,0.55)); pointer-events: none; animation: floatIcon 4s ease-in-out infinite;";
-                        decor.appendChild(img);
+                        img.src = activeMedia;
+                        img.alt = selectedTheme.name;
+                        img.style.cssText = "width:100%; height:100%; object-fit:cover; object-position:center center; pointer-events:none; display:block;";
+                        windowBox.appendChild(img);
+                        mediaStage.appendChild(windowBox);
+
+                        // Bottom Card Subtitle Ribbon
+                        const subtitle = d.createElement("div");
+                        subtitle.className = "magic-countdown-arch-subtitle";
+                        subtitle.style.cssText = `font-size:clamp(0.66rem, 1.4vw, 0.76rem); font-weight:700; letter-spacing:clamp(1px, 0.2vw, 1.6px); text-transform:uppercase; color:${selectedTheme.cardSubColor}; opacity:0.92; display:flex; align-items:center; justify-content:center; gap:6px; text-align:center; line-height:1.2; margin-top:2px;`;
+                        subtitle.innerText = isHi ? selectedTheme.cardSubtitleHi : selectedTheme.cardSubtitleEn;
+                        mediaStage.appendChild(subtitle);
+
+                        stageLeft.appendChild(mediaStage);
+                        contentWrap.appendChild(stageLeft);
                     }
                 } else {
-                    decor.innerHTML = "&#x23F3;";
-                    decor.style.cssText = "font-size: 4rem; margin-bottom: 15px; animation: floatIcon 4s ease-in-out infinite;";
+                    stageRight.classList.add('magic-countdown-solo');
                 }
-                overlay.appendChild(decor);
 
-                const title = d.createElement('div');
-                title.style.cssText = "font-size: clamp(1.8rem, 5vw, 3rem); font-family: 'Great Vibes', cursive; margin-bottom: clamp(15px, 3vh, 30px); text-align: center; background: linear-gradient(to right, #ffd700, #ff8c00, #ffd700); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 5px 15px rgba(255,140,0,0.3)); animation: bgShift 4s linear infinite; flex-shrink: 0;";
-                title.innerText = window.currentLang === 'hi' ? 'सरप्राइज खुलने में...' : 'Surprise Unlocks In...';
-                overlay.appendChild(title);
+                // Eyebrow tag above title on right side
+                const eyebrow = d.createElement('div');
+                eyebrow.className = "magic-countdown-eyebrow";
+                eyebrow.innerHTML = `<span>✨</span><span>${isHi ? 'जादुई काउंटडाउन' : 'SURPRISE COUNTDOWN'}</span><span>✨</span>`;
+                stageRight.appendChild(eyebrow);
 
-                const timerContainer = d.createElement('div');
-                timerContainer.style.cssText = "display:flex; gap: clamp(10px, 2.5vw, 20px); margin-bottom: clamp(20px, 3.5vh, 40px); flex-wrap:wrap; justify-content:center; perspective: 1000px; max-width: 100%; flex-shrink: 0;";
-                overlay.appendChild(timerContainer);
+                // Title section matching reference images
+                const titleWrap = d.createElement('div');
+                titleWrap.className = "magic-countdown-title-wrap";
+                titleWrap.style.cssText = "display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: clamp(14px, 2.5vh, 22px); flex-shrink: 0; text-align: center;";
 
-                const createTimeUnit = (label) => {
-                    const unitBox = d.createElement('div');
-                    unitBox.className = "countdown-unit";
+                const titleEl = d.createElement('div');
+                titleEl.className = "magic-countdown-title-el";
+                titleEl.style.cssText = `font-size: clamp(1.35rem, 3.8vw, 2.3rem); font-weight: 700; color: ${selectedTheme.titleColor}; display: flex; align-items: center; justify-content: center; gap: clamp(6px, 1.5vw, 12px); letter-spacing: -0.3px; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.06);`;
+                titleEl.innerHTML = `<span style="font-size: 0.85em; opacity: 0.85; animation: pulseHeart 2s infinite ease-in-out;">${selectedTheme.decorLeft}</span> <span class="magic-countdown-title-text">${headerText}</span> <span style="font-size: 0.85em; opacity: 0.85; animation: pulseHeart 2s infinite ease-in-out;">${selectedTheme.decorRight}</span>`;
+
+                const titleUnder = d.createElement('div');
+                titleUnder.className = "magic-countdown-title-under";
+                titleUnder.style.cssText = `display: flex; align-items: center; justify-content: center; gap: 8px; width: clamp(48px, 10vw, 76px); height: 1.5px; background: ${selectedTheme.titleColor}; opacity: 0.35; margin: 8px auto 0; position: relative;`;
+                titleUnder.innerHTML = `<span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: transparent; font-size: 0.7rem; color: ${selectedTheme.titleColor}; opacity: 0.9;">${selectedTheme.decorUnder}</span>`;
+
+                titleWrap.appendChild(titleEl);
+                titleWrap.appendChild(titleUnder);
+                stageRight.appendChild(titleWrap);
+
+                // Glassmorphism Capsule Pill Countdown
+                const pillContainer = d.createElement('div');
+                pillContainer.className = "magic-countdown-pill";
+                pillContainer.style.cssText = `display: flex; align-items: center; justify-content: center; background: ${selectedTheme.pillBg}; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1.5px solid ${selectedTheme.pillBorder}; box-shadow: ${selectedTheme.pillShadow}; border-radius: 999px; padding: clamp(12px, 2vh, 18px) clamp(20px, 4vw, 44px); width: auto; max-width: min(94vw, 560px); box-sizing: border-box; margin-bottom: clamp(16px, 2.5vh, 24px); flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;`;
+                stageRight.appendChild(pillContainer);
+
+                // Reassuring footer note
+                const footerNote = d.createElement('div');
+                footerNote.className = "magic-countdown-footer-note";
+                footerNote.innerHTML = `<span>✦</span><span>${isHi ? 'समय समाप्त होते ही आपका सरप्राइज अनलॉक हो जाएगा' : 'Unlocks automatically when the countdown reaches zero'}</span><span>✦</span>`;
+                stageRight.appendChild(footerNote);
+
+                contentWrap.appendChild(stageRight);
+
+                // Function to build unit
+                const createUnit = (label) => {
+                    const wrap = d.createElement('div');
+                    wrap.className = "magic-countdown-unit-wrap";
+                    wrap.style.cssText = "display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: clamp(52px, 14vw, 84px);";
                     const num = d.createElement('div');
-                    num.className = "num-val";
+                    num.className = "magic-countdown-num";
+                    num.style.cssText = `font-size: clamp(1.8rem, 5.2vw, 3.2rem); font-weight: 800; line-height: 1; color: ${selectedTheme.numColor}; font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);`;
                     num.innerText = "00";
                     const lbl = d.createElement('div');
-                    lbl.style.cssText = "font-size: clamp(0.75rem, 1.8vw, 0.9rem); text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.75); margin-top:8px; font-weight: 600;";
+                    lbl.className = "magic-countdown-unit-lbl";
+                    lbl.style.cssText = `font-size: clamp(0.55rem, 1.3vw, 0.72rem); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: ${selectedTheme.labelColor}; opacity: 0.85; margin-top: 5px; line-height: 1;`;
                     lbl.innerText = label;
-                    unitBox.appendChild(num);
-                    unitBox.appendChild(lbl);
-                    timerContainer.appendChild(unitBox);
-                    return num;
+                    wrap.appendChild(num);
+                    wrap.appendChild(lbl);
+                    return { wrap, num, lbl };
                 };
 
-                const daysNum = createTimeUnit(window.currentLang === 'hi' ? "दिन" : "Days");
-                const hoursNum = createTimeUnit(window.currentLang === 'hi' ? "घंटे" : "Hours");
-                const minutesNum = createTimeUnit(window.currentLang === 'hi' ? "मिनट" : "Minutes");
-                const secondsNum = createTimeUnit(window.currentLang === 'hi' ? "सेकंड" : "Seconds");
+                const createColon = () => {
+                    const col = d.createElement('div');
+                    col.className = "magic-countdown-colon";
+                    col.style.cssText = `font-size: clamp(1.6rem, 4.5vw, 2.6rem); font-weight: 700; color: ${selectedTheme.colonColor}; margin: 0 clamp(2px, 1.2vw, 8px); transform: translateY(-6px); line-height: 1; user-select: none;`;
+                    col.innerText = ":";
+                    return col;
+                };
 
-                const subtitle = d.createElement('div');
-                subtitle.style.cssText = "font-size: clamp(0.95rem, 2.5vw, 1.2rem); color:rgba(255,255,255,0.85); text-align:center; max-width:85%; line-height:1.5; font-weight: 300; background: rgba(0,0,0,0.25); padding: 8px 22px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;";
-                subtitle.innerHTML = window.currentLang === 'hi' ? 'कुछ बहुत ही खास के लिए तैयार हो जाइए! &#x1F31F;' : 'Get ready for something truly special! &#x1F31F;';
-                overlay.appendChild(subtitle);
+                let currentLayoutWithDays = null;
+                let daysUnit, hoursUnit, minutesUnit, secondsUnit;
+
+                const setupPillLayout = (includeDays) => {
+                    pillContainer.innerHTML = '';
+                    currentLayoutWithDays = includeDays;
+                    if (includeDays) {
+                        daysUnit = createUnit(isHi ? "दिन" : "Days");
+                        pillContainer.appendChild(daysUnit.wrap);
+                        pillContainer.appendChild(createColon());
+                    } else {
+                        daysUnit = null;
+                    }
+
+                    hoursUnit = createUnit(isHi ? "घंटे" : "Hours");
+                    pillContainer.appendChild(hoursUnit.wrap);
+                    pillContainer.appendChild(createColon());
+
+                    minutesUnit = createUnit(isHi ? "मिनट" : "Minutes");
+                    pillContainer.appendChild(minutesUnit.wrap);
+                    pillContainer.appendChild(createColon());
+
+                    secondsUnit = createUnit(isHi ? "सेकंड" : "Seconds");
+                    pillContainer.appendChild(secondsUnit.wrap);
+                };
 
                 d.body.appendChild(overlay);
 
-                const updateValue = (el, val) => {
+                const updateValue = (unitObj, val) => {
+                    if (!unitObj || !unitObj.num) return;
                     const strVal = val.toString().padStart(2, '0');
-                    if (el.innerText !== strVal) {
-                        el.innerText = strVal;
-                        // Trigger animation
-                        el.classList.remove("changed");
-                        void el.offsetWidth; // trigger reflow
-                        el.classList.add("changed");
+                    if (unitObj.num.innerText !== strVal) {
+                        unitObj.num.innerText = strVal;
+                        unitObj.num.style.transform = "scale(1.12)";
+                        setTimeout(() => { if (unitObj.num) unitObj.num.style.transform = "scale(1)"; }, 180);
                     }
                 };
 
+                let isUnlocking = false;
+
                 const updateTimer = () => {
-                    const now = Date.now();
-                    const diff = targetTime - now;
+                    if (isUnlocking) return;
+                    const currentTime = Date.now();
+                    const diff = targetTime - currentTime;
+
                     if (diff <= 0) {
+                        isUnlocking = true;
                         clearInterval(intervalId);
 
-                        // Final unlocking effect
-                        timerContainer.style.transform = "scale(1.2) translateY(-20px)";
-                        timerContainer.style.opacity = "0";
-                        timerContainer.style.transition = "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
-                        decor.style.transform = "scale(1.5)";
-                        decor.style.opacity = "0";
-                        decor.style.transition = "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+                        // Trigger tick and scale effect
+                        pillContainer.style.transform = "scale(1.15)";
+                        pillContainer.style.opacity = "0";
+                        pillContainer.style.transition = "all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)";
+                        if (mediaStage) {
+                            mediaStage.style.transform = "scale(1.15)";
+                            mediaStage.style.opacity = "0";
+                            mediaStage.style.transition = "all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)";
+                        }
+                        if (stageRight) {
+                            stageRight.style.transform = "scale(1.15)";
+                            stageRight.style.opacity = "0";
+                            stageRight.style.transition = "all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)";
+                        }
+
+                        if (typeof confetti === 'function') {
+                            try {
+                                confetti({
+                                    particleCount: 120,
+                                    spread: 80,
+                                    origin: { y: 0.6 },
+                                    colors: selectedTheme.confettiColors
+                                });
+                            } catch(e) {}
+                        }
+
+                        unlockAudio.play().catch(e => console.log('Countdown unlock audio failed:', e));
 
                         setTimeout(() => {
-                            unlockAudio.play().catch(e => console.log('Countdown unlock audio failed:', e));
                             overlay.style.opacity = '0';
                             setTimeout(() => {
                                 overlay.remove();
@@ -3433,18 +4257,33 @@
                                 try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
                                 try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
                             }, 800);
-                        }, 400);
+                        }, 500);
                         return;
                     }
+
+                    // Sound on last 10 seconds
+                    if (diff <= 10000 && diff > 0) {
+                        playTickSound();
+                        pillContainer.style.transform = "scale(1.025)";
+                        setTimeout(() => { pillContainer.style.transform = "scale(1)"; }, 220);
+                    }
+
                     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-                    updateValue(daysNum, days);
-                    updateValue(hoursNum, hours);
-                    updateValue(minutesNum, minutes);
-                    updateValue(secondsNum, seconds);
+                    const needDays = days > 0;
+                    if (currentLayoutWithDays !== needDays) {
+                        setupPillLayout(needDays);
+                    }
+
+                    if (needDays && daysUnit) {
+                        updateValue(daysUnit, days);
+                    }
+                    updateValue(hoursUnit, hours);
+                    updateValue(minutesUnit, minutes);
+                    updateValue(secondsUnit, seconds);
                 };
 
                 updateTimer();
@@ -3541,13 +4380,36 @@
                 }
 
                 if (embedUrl) {
+                    let finalEmbedUrl = embedUrl;
+                    if (typeof finalEmbedUrl === 'string' && (finalEmbedUrl.includes('youtube.com/embed/') || finalEmbedUrl.includes('youtube-nocookie.com/embed/'))) {
+                        const hasQuery = finalEmbedUrl.includes('?');
+                        if (!finalEmbedUrl.includes('enablejsapi=1')) {
+                            finalEmbedUrl += (hasQuery ? '&' : '?') + 'enablejsapi=1';
+                        }
+                    }
                     const iframe = d.createElement("iframe");
-                    iframe.src = embedUrl;
+                    iframe.id = "magic-music-iframe";
+                    iframe.src = finalEmbedUrl;
                     iframe.style.cssText = "width: 100%; height: 100%; border: none; border-radius: 24px;";
-                    iframe.allow = "encrypted-media; fullscreen";
+                    iframe.allow = "autoplay; encrypted-media; fullscreen";
                     iframe.setAttribute("allowfullscreen", "");
                     iframe.loading = "lazy";
                     embedWrap.appendChild(iframe);
+
+                    // Notify YouTube player to broadcast playback state changes
+                    const sendYtListening = () => {
+                        try {
+                            if (iframe.contentWindow) {
+                                iframe.contentWindow.postMessage('{"event":"listening"}', '*');
+                                iframe.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+                            }
+                        } catch (e) { }
+                    };
+                    iframe.onload = () => {
+                        sendYtListening();
+                        setTimeout(sendYtListening, 800);
+                        setTimeout(sendYtListening, 2000);
+                    };
 
                     const isEditMode = !w.__IS_GENERATED_PAGE__ && (!w.parent || !w.parent.__IS_GENERATED_PAGE__) && (w.location.search.includes("mode=edit") || d.body.classList.contains("edit-mode") || (w.parent && w.parent !== w));
                     if (isEditMode) {
@@ -3776,7 +4638,7 @@
                         if (compressor) {
                             try {
                                 fileToUpload = await compressor(file, isPrem);
-                            } catch (_) {}
+                            } catch (_) { }
                         }
 
                         const formData = new FormData();
@@ -3826,7 +4688,7 @@
                 // Add crackers sound
                 const crackersAudio = d.createElement('audio');
                 crackersAudio.id = 'crackersAudio';
-                crackersAudio.src = 'https://www.dropbox.com/scl/fi/veung117ggbzx65sxlj98/Crackers-mini.mp3?rlkey=tfheg9i04k6upkavcpdsrghle&st=koce788t&dl=1';
+                crackersAudio.src = '/assets/sounds/crackers-mini.mp3';
                 crackersAudio.volume = 0.6;
                 crackersAudio.preload = 'auto';
                 crackersAudio.style.display = 'none';
@@ -4219,7 +5081,7 @@
                 // Add audio element for celebratory tap
                 const tapAudio = d.createElement('audio');
                 tapAudio.id = 'magic-named-card-audio';
-                tapAudio.src = 'https://www.dropbox.com/scl/fi/71ubkozjspwdtby2n7f2w/Final-revel.mp3?rlkey=sn5onep6ry9tso0hd91jafm93&st=la13ckwz&dl=1';
+                tapAudio.src = '/assets/sounds/final-revel.mp3';
                 tapAudio.preload = 'auto';
                 tapAudio.volume = 0.6;
                 tapAudio.style.display = 'none';
@@ -4248,7 +5110,7 @@
                 if (audio) audio.remove();
             }
         },
-                        virtualCake: {
+        virtualCake: {
             enable(d, w, userName, customText, images, customCakeId) {
                 const existingCake = d.getElementById('magic-virtual-cake-section');
                 if (existingCake) existingCake.remove();
@@ -5842,7 +6704,7 @@
                 </div>
 
                 <audio id="vc-audio"
-                    src="https://www.dropbox.com/scl/fi/veung117ggbzx65sxlj98/Crackers-mini.mp3?rlkey=tfheg9i04k6upkavcpdsrghle&st=koce788t&dl=1"
+                    src="/assets/sounds/crackers-mini.mp3"
                     preload="auto" style="display:none;"></audio>
                 `;
 
@@ -5864,7 +6726,7 @@
                 (function createAmbientPetals() {
                     const petalColors = [
                         'rgba(255,105,180,0.7)', 'rgba(255,182,193,0.8)', 'rgba(219,112,147,0.7)',
-                        'rgba(255,215,0,0.5)',   'rgba(255,160,180,0.65)'
+                        'rgba(255,215,0,0.5)', 'rgba(255,160,180,0.65)'
                     ];
                     const count = 14;
                     for (let i = 0; i < count; i++) {
@@ -5973,7 +6835,7 @@
                     } else {
                         startRollingEntrance();
                     }
-                } catch(e) {
+                } catch (e) {
                     startRollingEntrance();
                 }
 
@@ -5995,7 +6857,7 @@
                 d?.getElementById('magic-virtual-cake-section')?.remove();
             }
         },
-virtualHug: {
+        virtualHug: {
             enable(d, w, userName, customText) {
                 const existingHug = d.getElementById('magic-virtual-hug-section');
                 if (existingHug) existingHug.remove();

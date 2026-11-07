@@ -6373,6 +6373,10 @@
               timeInput.value = data.text;
               timeInput.dispatchEvent(new Event("input"));
             }
+            const titleInput = customPanel.querySelector(".countdown-title-input");
+            if (titleInput && data.title) {
+              titleInput.value = data.title;
+            }
           }
 
           // Restore cake design card selection
@@ -6389,7 +6393,7 @@
           // Restore media preset active selection (welcomeTyping, countdown, finalSurprise)
           if (data.mediaUrl && customPanel) {
             const cards = customPanel.querySelectorAll('.media-preset-card');
-            const presetList = (id === 'finalSurprise') ? FINAL_SURPRISE_PRESETS : MEDIA_PRESETS;
+            const presetList = (id === 'finalSurprise') ? FINAL_SURPRISE_PRESETS : (id === 'countdown' ? COUNTDOWN_THEMES : MEDIA_PRESETS);
             cards.forEach((card, idx) => {
               if (presetList[idx] && presetList[idx].url === data.mediaUrl) {
                 cards.forEach(c => c.classList.remove('active'));
@@ -6500,7 +6504,7 @@
           const runStages = () => {
             if (isCountdownRunning()) {
               const data = customData.get('countdown') || {};
-              applyFeature('countdown', true, name, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
+              applyFeature('countdown', true, name, { text: data.text || "", title: data.title || "" }, data.images || [], data.title || data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
 
               applyFeature('lock', false);
               applyFeature('curtainReveal', false);
@@ -6625,6 +6629,10 @@
           const effMediaUrl = (mediaUrl !== undefined) ? mediaUrl : (curData.mediaUrl || "");
           if (id === 'addMusicSection') {
             applyFeature(id, true, userName, text, images, emoji, audio || "", spotifyEmbedUrl || "", youtubeEmbedUrl || "", instagramEmbedUrl || "");
+          } else if (id === 'countdown') {
+            const effText = (typeof text === 'object' && text !== null) ? text : { text: (typeof text === 'string' ? text : (curData.text || "")), title: (curData.title || "") };
+            const effEmoji = (typeof emoji === 'string' && emoji) ? emoji : (curData.title || "");
+            applyFeature(id, true, userName, effText, images, effEmoji, audio || "", "", "", "", effMediaUrl);
           } else {
             applyFeature(id, true, userName, text, images, emoji, audio || "", "", "", "", effMediaUrl);
           }
@@ -7527,7 +7535,25 @@
       }).catch(e => console.error("Magic API error", e));
 
       
-      const DEFAULT_COUNTDOWN_MEDIA = '/assets/media/72c9cd1c-0372-4837-a25d-7d1a68cb9e92-1_all_3565.webm';
+      const COUNTDOWN_THEMES = [
+        { id: 'romantic-couple', title: 'Romantic Couple', titleHi: 'रोमांटिक कपल', icon: '💖', type: 'image', url: '/assets/media/countdown/theme-couple.jpg' },
+        { id: 'birthday-bear', title: 'Birthday Bear', titleHi: 'बर्थडे टेडी', icon: '🧸', type: 'image', url: '/assets/media/countdown/theme-bear.jpg' },
+        { id: 'star-kitten', title: 'Star Kitten', titleHi: 'स्टार किटन', icon: '🐱', type: 'image', url: '/assets/media/countdown/theme-star-cat.jpg' },
+        { id: 'lavender-bouquet', title: 'Lavender Bouquet', titleHi: 'लैवेंडर बुके', icon: '💐', type: 'image', url: '/assets/media/countdown/theme-bouquet.jpg' },
+        { id: 'sunset-cat', title: 'Sunset Kitten', titleHi: 'सनसेट कैट', icon: '🌅', type: 'image', url: '/assets/media/countdown/theme-sunset-cat.jpg' },
+        { id: 'midnight-stars', title: 'Midnight Celestial', titleHi: 'मिडनाइट स्टार्स', icon: '🌙', type: 'image', url: '/assets/media/countdown/theme-midnight.jpg' },
+        // Classic Video Animations (with Midnight Celestial Theme)
+        { id: 'sparkle-magic', title: 'Sparkle Magic', titleHi: 'स्पार्कल्स', icon: '✨', type: 'video', url: '/assets/media/1000009888.webm' },
+        { id: 'grand-festival', title: 'Grand Festive', titleHi: 'ग्रांड फेस्टिवल', icon: '🎊', type: 'video', url: '/assets/media/72c9cd1c-0372-4837-a25d-7d1a68cb9e92-1_all_3565.webm' },
+        { id: 'magical-burst', title: 'Magical Burst', titleHi: 'मैजिक बर्स्ट', icon: '💥', type: 'video', url: '/assets/media/1000009889.webm' },
+        { id: 'golden-fireworks', title: 'Golden Glow', titleHi: 'गोल्डन ग्लो', icon: '🎆', type: 'video', url: '/assets/media/1000009890.webm' },
+        { id: 'party-glitz', title: 'Party Glitz', titleHi: 'पार्टी ग्लिट्ज़', icon: '🎉', type: 'video', url: '/assets/media/1000009891.webm' },
+        { id: 'celebration-dream', title: 'Dream Stream', titleHi: 'ड्रीम स्ट्रीम', icon: '💫', type: 'video', url: '/assets/media/1000009892.webm' },
+        { id: 'starlight-glow', title: 'Starlight Glow', titleHi: 'स्टारलाइट', icon: '⭐', type: 'video', url: '/assets/media/1000009894.webm' },
+        { id: 'none', title: 'None', titleHi: 'कोई नहीं', icon: '🚫', type: 'none', url: 'none' }
+      ];
+
+      const DEFAULT_COUNTDOWN_MEDIA = '/assets/media/countdown/theme-couple.jpg';
       const DEFAULT_WELCOME_MEDIA = '/assets/media/1000009888.webm';
       const DEFAULT_FINAL_SURPRISE_MEDIA = '/assets/media/Final1.png';
 
@@ -7560,7 +7586,12 @@
         let headerTitle = isHi ? '🎬 विजुअल थीम / ऐनिमेशन' : '🎬 Visual Animation / Theme';
         let headerIcon = 'fas fa-play-circle';
 
-        if (featureId === 'welcomeTyping') {
+        if (featureId === 'countdown') {
+          presets = COUNTDOWN_THEMES;
+          defaultUrl = DEFAULT_COUNTDOWN_MEDIA;
+          headerTitle = isHi ? '🎨 काउंटडाउन थीम चुनें (Themes)' : '🎨 Choose Countdown Theme';
+          headerIcon = 'fas fa-palette';
+        } else if (featureId === 'welcomeTyping') {
           defaultUrl = DEFAULT_WELCOME_MEDIA;
         } else if (featureId === 'finalSurprise') {
           presets = FINAL_SURPRISE_PRESETS;
@@ -7671,7 +7702,12 @@
             else if (id === "flowerBouquet" || id === "virtualCake") feature.enable(doc, win, userName, customText, images, customEmoji);
             else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "instantCamera") feature.enable(doc, win, userName, customText, images);
             else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
-            else if (id === "countdown") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
+            else if (id === "countdown") {
+              const curData = (typeof customData !== 'undefined' && customData.get) ? (customData.get('countdown') || {}) : {};
+              const effText = (typeof customText === 'object' && customText !== null) ? customText : { text: (typeof customText === 'string' ? customText : (curData.text || "")), title: (curData.title || customEmoji || "") };
+              const effEmoji = (typeof customEmoji === 'string' && customEmoji) ? customEmoji : (curData.title || "");
+              feature.enable(doc, win, userName, effText, images, effEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
+            }
             else if (id === "welcomeTyping") feature.enable(doc, win, userName, customText, images, customEmoji, audio, mediaUrl);
             else if (id === "finalSurprise") feature.enable(doc, win, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl);
             else feature.enable(doc, win, userName, customText, audio);
@@ -8936,66 +8972,6 @@
               mainContainer.className = "countdown-panel";
               mainContainer.style.padding = "10px 0";
 
-              const label = document.createElement("label");
-              label.innerText = currentLang === 'hi' ? "📅 तारीख और समय चुनें:" : "📅 Select Date & Time:";
-              label.style.cssText = "display:block; font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:8px;";
-              mainContainer.appendChild(label);
-
-              // Beautiful Trigger Button
-              const triggerBtn = document.createElement("button");
-              triggerBtn.className = "datetime-trigger-btn";
-              triggerBtn.style.cssText = "width:100%; padding:12px 15px; border:1px solid var(--toggle-bg); background:var(--bg-secondary); color:var(--text-primary); border-radius:10px; font-size:0.95rem; font-family:inherit; outline:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition: border-color 0.2s, box-shadow 0.2s;";
-              triggerBtn.innerHTML = `
-                <span class="datetime-display-val">${currentLang === 'hi' ? 'तारीख और समय चुनें...' : 'Select date & time...'}</span>
-                <i class="fas fa-calendar-alt" style="color:var(--accent-solid); font-size:1.1rem;"></i>
-              `;
-              mainContainer.appendChild(triggerBtn);
-
-              // Hidden input to maintain compatibility with auto-save/restore
-              const timeInput = document.createElement("input");
-              timeInput.type = "datetime-local";
-              timeInput.className = "countdown-time-input";
-              timeInput.max = "2099-12-31T23:59";
-              timeInput.style.display = "none";
-
-              const initCountdownData = customData.get("countdown") || {};
-              if (initCountdownData && initCountdownData.text) {
-                timeInput.value = initCountdownData.text;
-              } else {
-                const d = new Date();
-                d.setDate(d.getDate() + 1);
-                d.setHours(0, 0, 0, 0);
-                const pad = (n) => n.toString().padStart(2, '0');
-                const defaultTime = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
-                timeInput.value = defaultTime;
-                initCountdownData.text = defaultTime;
-                customData.set("countdown", initCountdownData);
-              }
-              mainContainer.appendChild(timeInput);
-
-              const livePreview = document.createElement("div");
-              livePreview.className = "countdown-live-preview";
-              livePreview.style.cssText = "margin-top:15px; padding:12px; background:rgba(123, 93, 246, 0.05); border-radius:8px; border:1px solid rgba(123, 93, 246, 0.1); text-align:center; display:none;";
-              livePreview.innerHTML = `
-                <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-solid); font-weight:600; margin-bottom:4px;">Live Preview</div>
-                <div class="countdown-preview-timer" style="font-family:'Outfit', sans-serif; font-size:1.1rem; font-weight:700; color:var(--text-primary);">00d 00h 00m 00s</div>
-              `;
-              mainContainer.appendChild(livePreview);
-
-              const countdownMediaWrap = createMediaPresetSelector('countdown', customData.get('countdown')?.mediaUrl || '', (selUrl) => {
-                const ex = customData.get('countdown') || {};
-                ex.mediaUrl = selUrl;
-                customData.set('countdown', ex);
-                const nameVal = getUserName();
-                refreshFeatureIfActive('countdown', nameVal, timeInput.value, ex.images, ex.emoji, ex.audio, "", "", "", selUrl);
-                autoSaveState();
-              });
-              mainContainer.appendChild(countdownMediaWrap);
-
-              customPanel.appendChild(mainContainer);
-
-              let previewInterval = null;
-
               const parseLocalTime = (str) => {
                 const parts = str.split('T');
                 if (parts.length !== 2) return new Date(str);
@@ -9020,39 +8996,111 @@
                 return d.toLocaleString(currentLang === 'hi' ? 'hi-IN' : 'en-US', options);
               };
 
-              const updateLivePreview = () => {
-                const targetVal = timeInput.value;
+              // 1. Date & Time Selection (AT THE VERY TOP)
+              const dateWrap = document.createElement("div");
+              dateWrap.className = "countdown-time-wrap";
+              dateWrap.style.cssText = "margin-bottom:14px;";
 
+              const dateLabel = document.createElement("label");
+              dateLabel.innerText = currentLang === 'hi' ? "📅 तारीख और समय चुनें:" : "📅 Select Date & Time:";
+              dateLabel.style.cssText = "display:block; font-size:0.88rem; font-weight:600; color:var(--text-primary); margin-bottom:6px;";
+              dateWrap.appendChild(dateLabel);
+
+              // Beautiful Trigger Button
+              const triggerBtn = document.createElement("button");
+              triggerBtn.className = "datetime-trigger-btn";
+              triggerBtn.style.cssText = "width:100%; padding:12px 15px; border:1px solid var(--toggle-bg); background:var(--bg-secondary); color:var(--text-primary); border-radius:10px; font-size:0.95rem; font-family:inherit; outline:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition: border-color 0.2s, box-shadow 0.2s;";
+              triggerBtn.innerHTML = `
+                <span class="datetime-display-val">${currentLang === 'hi' ? 'तारीख और समय चुनें...' : 'Select date & time...'}</span>
+                <i class="fas fa-calendar-alt" style="color:var(--accent-solid); font-size:1.1rem;"></i>
+              `;
+              dateWrap.appendChild(triggerBtn);
+
+              // Hidden input to maintain compatibility with auto-save/restore
+              const timeInput = document.createElement("input");
+              timeInput.type = "datetime-local";
+              timeInput.className = "countdown-time-input";
+              timeInput.max = "2099-12-31T23:59";
+              timeInput.style.display = "none";
+
+              const initCountdownData = customData.get("countdown") || {};
+              if (initCountdownData && initCountdownData.text) {
+                timeInput.value = initCountdownData.text;
+              } else {
+                const d = new Date();
+                d.setDate(d.getDate() + 1);
+                d.setHours(0, 0, 0, 0);
+                const pad = (n) => n.toString().padStart(2, '0');
+                const defaultTime = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
+                timeInput.value = defaultTime;
+                initCountdownData.text = defaultTime;
+                if (!initCountdownData.mediaUrl) {
+                  initCountdownData.mediaUrl = DEFAULT_COUNTDOWN_MEDIA;
+                }
+                customData.set("countdown", initCountdownData);
+              }
+              dateWrap.appendChild(timeInput);
+              mainContainer.appendChild(dateWrap);
+
+              const updateDisplayValue = () => {
+                const targetVal = timeInput.value;
                 const displaySpan = triggerBtn.querySelector(".datetime-display-val");
                 if (displaySpan) {
                   displaySpan.innerText = formatDisplayTime(targetVal);
                 }
-
-                if (!targetVal) {
-                  livePreview.style.display = "none";
-                  clearInterval(previewInterval);
-                  return;
-                }
-
-                const targetTime = parseLocalTime(targetVal).getTime();
-                const now = Date.now();
-                const diff = targetTime - now;
-
-                if (isNaN(targetTime) || diff <= 0) {
-                  livePreview.style.display = "block";
-                  livePreview.querySelector(".countdown-preview-timer").innerText = currentLang === 'hi' ? "समय समाप्त! (अनलॉक हो चुका है)" : "Time reached! (Unlocked)";
-                  clearInterval(previewInterval);
-                  return;
-                }
-
-                livePreview.style.display = "block";
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                livePreview.querySelector(".countdown-preview-timer").innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
               };
+              updateDisplayValue();
+
+              // 2. Optional Custom Heading Input
+              const titleWrap = document.createElement("div");
+              titleWrap.style.cssText = "margin-bottom:16px;";
+
+              const titleLabel = document.createElement("label");
+              titleLabel.innerText = currentLang === 'hi' ? "✏️ हेडिंग / शीर्षक (वैकल्पिक):" : "✏️ Custom Heading (Optional):";
+              titleLabel.style.cssText = "display:block; font-size:0.88rem; font-weight:600; color:var(--text-primary); margin-bottom:6px;";
+              titleWrap.appendChild(titleLabel);
+
+              const titleInput = document.createElement("input");
+              titleInput.type = "text";
+              titleInput.className = "countdown-title-input";
+              titleInput.placeholder = currentLang === 'hi' ? "उदा: सरप्राइज खुलने में... / बर्थडे शुरू होने में..." : "e.g. The Surprise Begins In / Birthday Begins In...";
+              titleInput.value = customData.get('countdown')?.title || "";
+              titleInput.style.cssText = "width:100%; padding:10px 14px; border:1px solid var(--toggle-bg); background:var(--bg-secondary); color:var(--text-primary); border-radius:10px; font-size:0.92rem; font-family:inherit; outline:none; box-sizing:border-box; transition:border-color 0.2s, box-shadow 0.2s;";
+              titleInput.oninput = () => {
+                const ex = customData.get('countdown') || {};
+                ex.title = titleInput.value;
+                customData.set('countdown', ex);
+
+                // Directly update live heading on mounted countdown overlay in preview iframe
+                try {
+                  const doc = getIframeDocument();
+                  if (doc) {
+                    const titleText = doc.querySelector('#magic-countdown-overlay .magic-countdown-title-text');
+                    if (titleText) {
+                      titleText.innerText = titleInput.value.trim() || (currentLang === 'hi' ? 'सरप्राइज खुलने में...' : 'The Surprise Begins In');
+                    }
+                  }
+                } catch(e) {}
+
+                const nameVal = getUserName();
+                refreshFeatureIfActive('countdown', nameVal, { text: timeInput.value, title: titleInput.value }, ex.images, titleInput.value, ex.audio, "", "", "", ex.mediaUrl);
+                autoSaveState();
+              };
+              titleWrap.appendChild(titleInput);
+              mainContainer.appendChild(titleWrap);
+
+              // 3. Visual Countdown Themes Selector
+              const countdownMediaWrap = createMediaPresetSelector('countdown', customData.get('countdown')?.mediaUrl || DEFAULT_COUNTDOWN_MEDIA, (selUrl) => {
+                const ex = customData.get('countdown') || {};
+                ex.mediaUrl = selUrl;
+                customData.set('countdown', ex);
+                const nameVal = getUserName();
+                refreshFeatureIfActive('countdown', nameVal, { text: timeInput.value, title: ex.title || titleInput.value || "" }, ex.images, ex.title || titleInput.value || "", ex.audio, "", "", "", selUrl);
+                autoSaveState();
+              });
+              mainContainer.appendChild(countdownMediaWrap);
+
+              customPanel.appendChild(mainContainer);
 
               const openModal = () => {
                 const existing = document.getElementById("magic-datetime-modal");
@@ -9257,12 +9305,10 @@
                 ex.text = timeInput.value;
                 customData.set("countdown", ex);
 
-                clearInterval(previewInterval);
-                updateLivePreview();
-                previewInterval = setInterval(updateLivePreview, 1000);
+                updateDisplayValue();
 
                 const nameVal = getUserName();
-                refreshFeatureIfActive("countdown", nameVal, timeInput.value);
+                refreshFeatureIfActive("countdown", nameVal, { text: timeInput.value, title: ex.title || titleInput.value || "" }, ex.images, ex.title || titleInput.value || "", ex.audio, "", "", "", ex.mediaUrl);
                 autoSaveState();
               };
             }
@@ -10716,7 +10762,7 @@
       const runStages = () => {
         if (isCountdownRunning()) {
           const data = customData.get('countdown') || {};
-          window.applyFeature('countdown', true, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "");
+          window.applyFeature('countdown', true, userName, { text: data.text || "", title: data.title || "" }, data.images || [], data.title || data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
           
           window.applyFeature('lock', false);
           window.applyFeature('curtainReveal', false);
@@ -11673,7 +11719,7 @@
           const data = customData.get('countdown') || {};
           if (window.FEATURE_MAP.countdown) {
             try {
-              window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
+              window.FEATURE_MAP.countdown.enable(document, window, userName, { text: data.text || "", title: data.title || "" }, data.images || [], data.title || data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
             } catch(e) {}
           }
           window._countdownFinishedHandler = () => {
@@ -13157,7 +13203,7 @@
           const data = customData.get('countdown') || {};
           if (window.FEATURE_MAP.countdown) {
             try {
-              window.FEATURE_MAP.countdown.enable(document, window, userName, data.text || "", data.images || [], data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
+              window.FEATURE_MAP.countdown.enable(document, window, userName, { text: data.text || "", title: data.title || "" }, data.images || [], data.title || data.emoji || "", data.audio || "", "", "", "", data.mediaUrl || "");
             } catch(e) { console.warn('countdown enable error:', e); }
           }
           window._countdownFinishedHandler = () => {
