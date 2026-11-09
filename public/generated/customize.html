@@ -53,6 +53,7 @@
     })();
   </script>
   <script src="/assets/config.js"></script>
+  <script src="/assets/js/greeter-lock-screens.js"></script>
 
   <style>
     /* ---------- MEDIA / ANIMATION THEME PRESET SELECTOR ---------- */
@@ -6533,7 +6534,16 @@
               const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
               applyFeature('curtainReveal', false);
               applyFeature('welcomeTyping', false);
-              applyFeature('lock', true, name, lockPass, data.images || [], data.emoji || "");
+              applyFeature('lock', true, name, {
+                text: lockPass,
+                lockType: data.lockType || 'keypad',
+                theme: data.theme || 'romantic-pink',
+                digits: data.digits || 4,
+                hintEnabled: !!data.hintEnabled,
+                hintText: data.hintText || '',
+                customImage: data.customImage || '',
+                soundEnabled: data.soundEnabled !== false
+              }, data.images || [], data.emoji || "");
 
               window.curtainOpened = !curtainActive;
               window.welcomeFinished = !welcomeActive;
@@ -6629,6 +6639,9 @@
           const effMediaUrl = (mediaUrl !== undefined) ? mediaUrl : (curData.mediaUrl || "");
           if (id === 'addMusicSection') {
             applyFeature(id, true, userName, text, images, emoji, audio || "", spotifyEmbedUrl || "", youtubeEmbedUrl || "", instagramEmbedUrl || "");
+          } else if (id === 'lock') {
+            const effLock = (typeof text === 'object' && text !== null) ? text : curData;
+            applyFeature(id, true, userName, effLock);
           } else if (id === 'countdown') {
             const effText = (typeof text === 'object' && text !== null) ? text : { text: (typeof text === 'string' ? text : (curData.text || "")), title: (curData.title || "") };
             const effEmoji = (typeof emoji === 'string' && emoji) ? emoji : (curData.title || "");
@@ -6947,221 +6960,34 @@
         }
         FEATURE_MAP.lock = {
           enable: function (doc, win, userName, customText) {
-            const existing = doc.getElementById('lock-overlay');
-            const wasExisting = !!existing;
-            if (existing) existing.remove();
-            const existingCurtain = doc.getElementById('magic-curtain-reveal-root');
-            if (existingCurtain) {
-              if (doc.body && existingCurtain._prevOverflow !== undefined) doc.body.style.overflow = existingCurtain._prevOverflow || "";
-              existingCurtain.remove();
+            const curData = (typeof customData !== 'undefined' && customData.get) ? (customData.get('lock') || {}) : {};
+            const lockObj = (typeof customText === 'object' && customText !== null) ? customText : {
+              text: typeof customText === 'string' && customText ? customText : (curData.text || '1234'),
+              lockType: curData.lockType || 'keypad',
+              theme: curData.theme || 'romantic-pink',
+              digits: curData.digits || 4,
+              hintEnabled: !!curData.hintEnabled,
+              hintText: curData.hintText || '',
+              customImage: curData.customImage || '',
+              soundEnabled: curData.soundEnabled !== false
+            };
+            if (typeof renderGreeterLock === 'function') {
+              return renderGreeterLock(doc, win, userName, lockObj, true);
+            } else if (win && typeof win.renderGreeterLock === 'function') {
+              return win.renderGreeterLock(doc, win, userName, lockObj, true);
+            } else if (typeof window !== 'undefined' && typeof window.renderGreeterLock === 'function') {
+              return window.renderGreeterLock(doc, win, userName, lockObj, true);
             }
-            const existingWelcome = doc.getElementById('magic-welcome-typing-root');
-            if (existingWelcome) {
-              existingWelcome.remove();
-              if (doc.body) doc.body.classList.remove('magic-noscroll');
-            }
-            if (window.lockUnlocked) return {};
-            if (typeof editModeActive !== 'undefined') {
-              editModeBeforeLock = editModeActive;
-              editModeActive = false;
-            }
-            if (doc && doc.body) doc.body.contentEditable = false;
-            const editToggleBtnEl = (doc && doc.getElementById && doc.getElementById('editToggleBtn')) || (typeof document !== 'undefined' && document.getElementById ? document.getElementById('editToggleBtn') : null);
-            if (editToggleBtnEl) editToggleBtnEl.classList.remove('active');
-            const password = (customText && customText.trim()) ? customText.trim() : '1234';
-            const overlay = doc.createElement('div');
-            overlay.id = 'lock-overlay';
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.background = 'linear-gradient(135deg, rgba(26, 16, 37, 0.95) 0%, rgba(123, 93, 246, 0.8) 50%, rgba(255, 122, 47, 0.8) 100%)';
-            overlay.style.zIndex = '2147483649';
-            overlay.style.display = 'flex';
-            overlay.style.flexDirection = 'column';
-            overlay.style.alignItems = 'center';
-            overlay.style.justifyContent = 'center';
-            overlay.style.fontFamily = "'Inter', sans-serif";
-            overlay.style.color = 'white';
-            overlay.style.backdropFilter = 'blur(15px)';
-            overlay.style.opacity = '0';
-            overlay.style.transition = 'opacity 0.8s ease-in-out';
-            // Preload unlock audio
-            const unlockAudio = doc.createElement('audio');
-            unlockAudio.src = '/assets/sounds/unlocked.mp3';
-            unlockAudio.volume = 0.5;
-            unlockAudio.preload = 'auto';
-            overlay.appendChild(unlockAudio);
-            // Animated particles
-            const particlesContainer = doc.createElement('div');
-            particlesContainer.style.position = 'absolute';
-            particlesContainer.style.top = '0';
-            particlesContainer.style.left = '0';
-            particlesContainer.style.width = '100%';
-            particlesContainer.style.height = '100%';
-            particlesContainer.style.pointerEvents = 'none';
-            particlesContainer.style.overflow = 'hidden';
-            overlay.appendChild(particlesContainer);
-            const icon = doc.createElement('div');
-            icon.innerHTML = '<i class="fas fa-lock" style="font-size: 120px; color: #ffffff; margin-bottom: 20px; text-shadow: 0 0 30px rgba(255, 255, 255, 0.5); animation: pulse 2s infinite;"></i>';
-            overlay.appendChild(icon);
-            const title = doc.createElement('div');
-            title.innerText = '🔒 This Website Is Locked 🔒';
-            title.style.fontSize = '32px';
-            title.style.fontWeight = '700';
-            title.style.marginBottom = '10px';
-            title.style.textAlign = 'center';
-            title.style.background = 'linear-gradient(145deg, #ffffff 0%, #e0d9f0 100%)';
-            title.style.webkitBackgroundClip = 'text';
-            title.style.backgroundClip = 'text';
-            title.style.color = 'transparent';
-            overlay.appendChild(title);
-            const msg = doc.createElement('div');
-            msg.innerText = 'Enter the secret password to unlock your surprise!';
-            msg.style.fontSize = '20px';
-            msg.style.marginBottom = '30px';
-            msg.style.textAlign = 'center';
-            msg.style.maxWidth = '400px';
-            msg.style.lineHeight = '1.4';
-            overlay.appendChild(msg);
-            const inputContainer = doc.createElement('div');
-            inputContainer.style.position = 'relative';
-            inputContainer.style.marginBottom = '20px';
-            const input = doc.createElement('input');
-            input.type = 'password';
-            input.placeholder = '✨ Enter the Password ✨';
-            input.style.padding = '18px 20px';
-            input.style.fontSize = '18px';
-            input.style.border = '2px solid rgba(255, 255, 255, 0.3)';
-            input.style.borderRadius = '50px';
-            input.style.width = '280px';
-            input.style.outline = 'none';
-            input.style.background = 'rgba(255, 255, 255, 0.1)';
-            input.style.color = 'white';
-            input.style.textAlign = 'center';
-            input.style.backdropFilter = 'blur(10px)';
-            input.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.2)';
-            input.style.transition = 'all 0.3s ease';
-            input.onfocus = () => {
-              input.style.borderColor = '#ffffff';
-              input.style.boxShadow = '0 8px 32px rgba(255, 255, 255, 0.2)';
-            };
-            input.onblur = () => {
-              input.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-              input.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.2)';
-            };
-            inputContainer.appendChild(input);
-            overlay.appendChild(inputContainer);
-            const btn = doc.createElement('button');
-            btn.innerText = '🔑 Unlock Surprise🔑';
-            btn.style.padding = '18px 40px';
-            btn.style.fontSize = '18px';
-            btn.style.fontWeight = '600';
-            btn.style.background = 'linear-gradient(145deg, #7b5df6 0%, #ff7a2f 100%)';
-            btn.style.color = 'white';
-            btn.style.border = 'none';
-            btn.style.borderRadius = '50px';
-            btn.style.cursor = 'pointer';
-            btn.style.boxShadow = '0 8px 25px rgba(123, 93, 246, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)';
-            btn.style.transition = 'all 0.3s ease';
-            btn.style.position = 'relative';
-            btn.style.overflow = 'hidden';
-            btn.onmouseover = () => {
-              btn.style.transform = 'translateY(-3px) scale(1.05)';
-              btn.style.boxShadow = '0 12px 35px rgba(123, 93, 246, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2)';
-            };
-            btn.onmouseout = () => {
-              btn.style.transform = 'translateY(0) scale(1)';
-              btn.style.boxShadow = '0 8px 25px rgba(123, 93, 246, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)';
-            };
-            input.addEventListener('keydown', (e) => {
-              e.stopPropagation();
-              if (e.key === 'Enter') btn.click();
-            });
-            input.addEventListener('keyup', (e) => e.stopPropagation());
-            input.addEventListener('keypress', (e) => e.stopPropagation());
-            input.addEventListener('input', (e) => e.stopPropagation());
-            btn.onclick = () => {
-              if (input.value.trim().toLowerCase() === password.trim().toLowerCase()) {
-                // Play unlock sound
-                unlockAudio.currentTime = 0;
-                unlockAudio.play().catch(e => console.log('Unlock audio failed:', e));
-                overlay.style.opacity = '0';
-                setTimeout(() => {
-                  overlay.remove();
-                  window.lockUnlocked = true;
-                  if (win) win.lockUnlocked = true;
-                  try { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
-                  try { if (win && win !== window) win.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
-                  try { if (doc && typeof doc.dispatchEvent === 'function') doc.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
-                  if (typeof editModeBeforeLock !== 'undefined') {
-                    if (doc && doc.body) doc.body.contentEditable = editModeBeforeLock;
-                    editModeActive = editModeBeforeLock;
-                  }
-                  const editToggleBtnEl = (doc && doc.getElementById && doc.getElementById('editToggleBtn')) || (typeof document !== 'undefined' && document.getElementById ? document.getElementById('editToggleBtn') : null);
-                  if (editToggleBtnEl && typeof editModeBeforeLock !== 'undefined') {
-                    editToggleBtnEl.classList.toggle('active', editModeBeforeLock);
-                  }
-                }, 800);
-              } else {
-                // Play preloaded wrong password sound
-                wrongAudio.currentTime = 0;
-                wrongAudio.play().catch(e => console.log('Audio play failed:', e));
-                // Add slow left-right shake animation to input
-                input.style.borderColor = '#ff4da6';
-                input.style.animation = 'shake-slow 1.5s';
-                input.style.boxShadow = '0 8px 32px rgba(255, 77, 166, 0.3)';
-                setTimeout(() => {
-                  input.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                  input.style.animation = '';
-                  input.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.2)';
-                }, 1500);
-              }
-            };
-            // Preload audio for instant playback
-            const wrongAudio = doc.createElement('audio');
-            wrongAudio.src = '/assets/sounds/wrong-input.mp3';
-            wrongAudio.volume = 0.5;
-            wrongAudio.preload = 'auto';
-            overlay.appendChild(wrongAudio);
-            overlay.appendChild(btn);
-            doc.body.appendChild(overlay);
-            if (!wasExisting) input.focus();
-            setTimeout(() => overlay.style.opacity = '1', 100);
-            // Add styles
-            const style = doc.createElement('style');
-            style.setAttribute('data-lock-styles', 'true');
-            style.textContent = `
-              @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-              @keyframes shake-strong { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
-              @keyframes shake-slow { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-20px); } 40% { transform: translateX(20px); } 60% { transform: translateX(-10px); } 80% { transform: translateX(10px); } }
-              @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
-              @keyframes float {
-                0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
-                50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
-              }
-              #lock-overlay input::placeholder { color: rgba(255, 255, 255, 0.7); }
-            `;
-            doc.head.appendChild(style);
+            return {};
           },
           disable: function (doc, win) {
-            const overlay = doc.getElementById('lock-overlay');
-            if (overlay) overlay.remove();
-            window.lockUnlocked = false;
-            const editToggleBtnEl = (doc && doc.getElementById && doc.getElementById('editToggleBtn')) || (typeof document !== 'undefined' && document.getElementById ? document.getElementById('editToggleBtn') : null);
-            if (typeof editModeBeforeLock !== 'undefined' && typeof editModeActive !== 'undefined' && editModeBeforeLock && editModeActive) {
-              if (doc && doc.body) doc.body.contentEditable = true;
-              if (editToggleBtnEl) editToggleBtnEl.classList.add('active');
-            } else {
-              if (doc && doc.body) doc.body.contentEditable = false;
-              if (editToggleBtnEl) editToggleBtnEl.classList.remove('active');
+            if (typeof removeGreeterLock === 'function') {
+              removeGreeterLock(doc, win, true);
+            } else if (win && typeof win.removeGreeterLock === 'function') {
+              win.removeGreeterLock(doc, win, true);
+            } else if (typeof window !== 'undefined' && typeof window.removeGreeterLock === 'function') {
+              window.removeGreeterLock(doc, win, true);
             }
-            // Clean up any inline styles that might have been applied to prevent color traces
-            doc.body.style = '';
-            // Remove any lock-related styles from head
-            const lockStyles = doc.querySelector('style[data-lock-styles]');
-            if (lockStyles) lockStyles.remove();
           }
         };
         FEATURE_MAP.addImages = FEATURE_MAP.resizableImages;
@@ -7702,6 +7528,20 @@
             else if (id === "flowerBouquet" || id === "virtualCake") feature.enable(doc, win, userName, customText, images, customEmoji);
             else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "instantCamera") feature.enable(doc, win, userName, customText, images);
             else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
+            else if (id === "lock") {
+              const curData = (typeof customData !== 'undefined' && customData.get) ? (customData.get('lock') || {}) : {};
+              const lockObj = (typeof customText === 'object' && customText !== null) ? customText : {
+                text: typeof customText === 'string' && customText ? customText : (curData.text || '1234'),
+                lockType: curData.lockType || 'keypad',
+                theme: curData.theme || 'romantic-pink',
+                digits: curData.digits || 4,
+                hintEnabled: !!curData.hintEnabled,
+                hintText: curData.hintText || '',
+                customImage: curData.customImage || '',
+                soundEnabled: curData.soundEnabled !== false
+              };
+              feature.enable(doc, win, userName, lockObj);
+            }
             else if (id === "countdown") {
               const curData = (typeof customData !== 'undefined' && customData.get) ? (customData.get('countdown') || {}) : {};
               const effText = (typeof customText === 'object' && customText !== null) ? customText : { text: (typeof customText === 'string' ? customText : (curData.text || "")), title: (curData.title || customEmoji || "") };
@@ -8189,7 +8029,7 @@
               customPanel.appendChild(vcWrap);
             }
 
-            if (hasCustom && (["lock", "welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualHug", "namedBirthdayCard"].includes(id))) {
+            if (hasCustom && (["welcomeTyping", "fireworksText", "textFormation", "oldPaperLetter", "finalSurprise", "giftBoxOpen", "memoryTimeline", "scratchReveal", "hugSkyLetter", "floatingBalloonsNamed", "floatingPolaroids", "imageExplosion", "virtualHug", "namedBirthdayCard"].includes(id))) {
               textarea = document.createElement("textarea"); textarea.placeholder = t.placeholderText; textarea.setAttribute('data-placeholder-key', 'text');
               if (id === "lock") textarea.placeholder = currentLang === 'en' ? "Set the Password here (e.g. 1234)" : "यहाँ पासवर्ड दर्ज करें (उदा. 1234)";
               let def = "";
@@ -8967,6 +8807,647 @@
               };
             }
 
+// --- RICH LOCK CUSTOMIZER STUDIO PANEL ---
+            function createLockCustomPanel(customPanel) {
+  const isHi = (typeof currentLang !== 'undefined' && currentLang === 'hi');
+  const lockData = customData.get('lock') || {};
+  let currentLockType = lockData.lockType || 'keypad';
+  if (currentLockType === 'rotary') currentLockType = 'keypad';
+  let currentTheme = lockData.theme || 'romantic-pink';
+  let currentCode = (lockData.text && String(lockData.text).trim()) ? String(lockData.text).trim() : '1234';
+  let cleanInit = currentCode.replace(/\D/g, '');
+  let currentDigits = Math.max(3, Math.min(6, cleanInit.length || 4));
+  let currentHintEnabled = !!lockData.hintEnabled;
+  let currentHintText = lockData.hintText || '';
+  let currentCustomImage = lockData.customImage || '';
+  const currentSoundEnabled = true; // Sounds always ON by default
+
+  function syncAndRefresh() {
+    const updated = {
+      text: currentCode,
+      lockType: currentLockType,
+      theme: currentTheme,
+      digits: currentDigits,
+      hintEnabled: currentHintEnabled,
+      hintText: currentHintText,
+      customImage: currentCustomImage,
+      soundEnabled: true
+    };
+    customData.set('lock', updated);
+    window.lockUnlocked = false;
+    const nameVal = getUserName ? getUserName() : '';
+    if (typeof refreshFeatureIfActive === 'function') {
+      refreshFeatureIfActive('lock', nameVal, updated);
+    }
+    if (typeof autoSaveState === 'function') {
+      autoSaveState();
+    }
+  }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'lock-studio-panel';
+
+  // Inject panel styles once if not present
+  if (!document.getElementById('lock-studio-panel-styles')) {
+    const pStyle = document.createElement('style');
+    pStyle.id = 'lock-studio-panel-styles';
+    pStyle.textContent = `
+      .lock-studio-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 6px 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      .lock-studio-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .lock-studio-label {
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-primary, #333);
+      }
+      .lock-styles-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .lock-themes-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+      }
+      .lock-studio-card {
+        border: 2px solid var(--card-border, rgba(0,0,0,0.1));
+        border-radius: 14px;
+        padding: 10px 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 4px;
+        cursor: pointer;
+        background: var(--card-bg, #ffffff);
+        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.4, 1);
+        position: relative;
+        user-select: none;
+      }
+      .lock-studio-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(123, 93, 246, 0.12);
+      }
+      .lock-studio-card.active {
+        border-color: #7b5df6;
+        background: rgba(123, 93, 246, 0.08);
+        box-shadow: 0 0 0 1px #7b5df6, 0 4px 14px rgba(123, 93, 246, 0.2);
+      }
+      .lock-theme-card {
+        border: 2px solid var(--card-border, rgba(0,0,0,0.1));
+        border-radius: 12px;
+        padding: 8px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 2px;
+        cursor: pointer;
+        background: var(--card-bg, #ffffff);
+        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.4, 1);
+        position: relative;
+        user-select: none;
+      }
+      .lock-theme-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      }
+      .lock-theme-card.active {
+        border-color: var(--theme-accent, #7b5df6);
+        background: rgba(123, 93, 246, 0.09);
+        box-shadow: 0 0 0 1px var(--theme-accent, #7b5df6), 0 3px 10px rgba(123, 93, 246, 0.2);
+      }
+      .lock-theme-thumb {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--theme-accent, #7b5df6);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        pointer-events: none;
+        margin-bottom: 2px;
+      }
+      .lock-theme-icon {
+        font-size: 20px;
+        line-height: 1;
+      }
+      .lock-theme-name {
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
+      .lock-studio-card-icon {
+        font-size: 20px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .lock-studio-card-name {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--text-primary, #222);
+        line-height: 1.2;
+      }
+      .lock-studio-card-sub {
+        font-size: 9.5px;
+        opacity: 0.7;
+        line-height: 1.15;
+      }
+      .lock-studio-check {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #7b5df6;
+        color: #fff;
+        font-size: 9px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .lock-studio-card.active .lock-studio-check,
+      .lock-theme-card.active .lock-studio-check {
+        display: flex;
+      }
+      .lock-smart-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        background: linear-gradient(135deg, rgba(123, 93, 246, 0.15), rgba(192, 132, 252, 0.15));
+        color: #7b5df6;
+        border: 1px solid rgba(123, 93, 246, 0.3);
+        margin-left: auto;
+        transition: all 0.2s ease;
+      }
+      .lock-smart-note {
+        font-size: 11px;
+        color: var(--text-secondary, #666);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 2px;
+        line-height: 1.35;
+      }
+      .lock-pills-row {
+        display: flex;
+        gap: 8px;
+      }
+      .lock-pill-btn {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1.5px solid var(--card-border, #ddd);
+        background: var(--card-bg, #fff);
+        color: var(--text-primary, #333);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+      }
+      .lock-pill-btn:hover {
+        background: rgba(123, 93, 246, 0.08);
+      }
+      .lock-pill-btn.active {
+        background: #7b5df6;
+        color: #ffffff;
+        border-color: #7b5df6;
+        box-shadow: 0 2px 8px rgba(123, 93, 246, 0.35);
+      }
+      .lock-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .lock-input-text {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1.5px solid var(--card-border, #ccc);
+        background: var(--bg-secondary, #fff);
+        color: var(--text-primary, #222);
+        font-size: 14px;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .lock-input-text:focus {
+        border-color: #7b5df6;
+        box-shadow: 0 0 0 3px rgba(123, 93, 246, 0.15);
+      }
+      .lock-code-input {
+        letter-spacing: 4px;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+        font-family: 'Courier New', Courier, monospace;
+      }
+      .lock-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: rgba(0,0,0,0.03);
+      }
+      .lock-toggle-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .lock-toggle-title {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .lock-toggle-desc {
+        font-size: 11px;
+        opacity: 0.7;
+      }
+      .lock-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        cursor: pointer;
+      }
+      .lock-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .lock-slider {
+        position: absolute;
+        inset: 0;
+        background-color: #ccc;
+        transition: .3s;
+        border-radius: 24px;
+      }
+      .lock-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+      }
+      input:checked + .lock-slider {
+        background-color: #7b5df6;
+      }
+      input:checked + .lock-slider:before {
+        transform: translateX(20px);
+      }
+    `;
+    document.head.appendChild(pStyle);
+  }
+
+  // --- SECTION 1: Lock Type Selector (Keypad, Tumbler, Classic) ---
+  const typeSection = document.createElement('div');
+  typeSection.className = 'lock-studio-section';
+  typeSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-lock"></i> ${isHi ? 'लॉक स्क्रीन डिज़ाइन (Lock Style)' : 'Lock Screen Style'}</div>`;
+
+  const typeGrid = document.createElement('div');
+  typeGrid.className = 'lock-styles-grid';
+
+  const LOCK_TYPES_LIST = [
+    { id: 'keypad', name: 'Numeric Keypad', nameHi: 'डिजिटल कीपैड', icon: 'fas fa-grip-vertical', desc: 'Glass PIN' },
+    { id: 'tumbler', name: 'Number Tumbler', nameHi: 'नंबर टंबलर', icon: 'fas fa-sliders', desc: 'Roller Wheels' },
+    { id: 'classic', name: 'Classic Password', nameHi: 'क्लासिक पासवर्ड', icon: 'fas fa-key', desc: 'Text Pass' }
+  ];
+
+  LOCK_TYPES_LIST.forEach(lt => {
+    const card = document.createElement('div');
+    card.className = 'lock-studio-card' + (currentLockType === lt.id ? ' active' : '');
+    card.innerHTML = `
+      <div class="lock-studio-check"><i class="fas fa-check"></i></div>
+      <div class="lock-studio-card-icon" style="color:#7b5df6"><i class="${lt.icon}"></i></div>
+      <div class="lock-studio-card-name">${isHi ? lt.nameHi : lt.name}</div>
+      <div class="lock-studio-card-sub">${lt.desc}</div>
+    `;
+    card.onclick = () => {
+      typeGrid.querySelectorAll('.lock-studio-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      currentLockType = lt.id;
+      renderDynamicCodeSection();
+      syncAndRefresh();
+    };
+    typeGrid.appendChild(card);
+  });
+  typeSection.appendChild(typeGrid);
+  wrap.appendChild(typeSection);
+
+  // --- SECTION 2: Theme Selector (5 themes in one balanced row) ---
+  const themeSection = document.createElement('div');
+  themeSection.className = 'lock-studio-section';
+  themeSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-palette"></i> ${isHi ? 'विजुअल थीम (Visual Theme)' : 'Visual Theme'}</div>`;
+
+  const themeGrid = document.createElement('div');
+  themeGrid.className = 'lock-themes-grid';
+
+  const THEMES_PRESETS = [
+    { id: 'romantic-pink', name: 'Pink', full: 'Romantic Pink', nameHi: 'गुलाबी', icon: '💖', img: '/assets/media/lock/theme-romantic-pink.jpg', color: '#ff4d94' },
+    { id: 'dreamy-purple', name: 'Purple', full: 'Dreamy Purple', nameHi: 'बैंगनी', icon: '🌙', img: '/assets/media/lock/theme-dreamy-purple.jpg', color: '#c084fc' },
+    { id: 'luxury-gold', name: 'Gold', full: 'Luxury Gold', nameHi: 'गोल्ड', icon: '👑', img: '/assets/media/lock/theme-luxury-gold.jpg', color: '#eab308' },
+    { id: 'elegant-silver', name: 'Silver', full: 'Elegant Silver', nameHi: 'सिल्वर', icon: '💎', img: '/assets/media/lock/theme-elegant-silver.jpg', color: '#0ea5e9' },
+    { id: 'cute-pastel', name: 'Pastel', full: 'Cute Pastel', nameHi: 'पेस्टल', icon: '🧸', img: '/assets/media/lock/theme-cute-pastel.jpg', color: '#f97316' }
+  ];
+
+  THEMES_PRESETS.forEach(tp => {
+    const card = document.createElement('div');
+    card.className = 'lock-theme-card' + (currentTheme === tp.id ? ' active' : '');
+    card.style.setProperty('--theme-accent', tp.color);
+    card.title = isHi ? tp.nameHi : tp.full;
+    card.innerHTML = `
+      <div class="lock-studio-check"><i class="fas fa-check"></i></div>
+      <img src="${tp.img}" class="lock-theme-thumb" alt="${tp.full}" />
+      <div class="lock-theme-name" style="color:${tp.color}">${isHi ? tp.nameHi : tp.name}</div>
+    `;
+    card.onclick = () => {
+      themeGrid.querySelectorAll('.lock-theme-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      currentTheme = tp.id;
+      syncAndRefresh();
+    };
+    themeGrid.appendChild(card);
+  });
+  themeSection.appendChild(themeGrid);
+  wrap.appendChild(themeSection);
+
+  // --- SECTION 3: Smart Auto-Detecting Secret Code Section ---
+  const dynamicCodeContainer = document.createElement('div');
+  dynamicCodeContainer.className = 'lock-studio-section';
+
+  function renderDynamicCodeSection() {
+    dynamicCodeContainer.innerHTML = '';
+
+    const labelRow = document.createElement('div');
+    labelRow.style.display = 'flex';
+    labelRow.style.alignItems = 'center';
+    labelRow.style.justifyContent = 'space-between';
+
+    const label = document.createElement('div');
+    label.className = 'lock-studio-label';
+    label.innerHTML = `<i class="fas fa-key"></i> ${isHi ? 'सीक्रेट कोड (Secret Code)' : 'Secret Code'}`;
+    labelRow.appendChild(label);
+
+    const smartBadge = document.createElement('span');
+    smartBadge.className = 'lock-smart-badge';
+    labelRow.appendChild(smartBadge);
+    dynamicCodeContainer.appendChild(labelRow);
+
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'lock-input-group';
+
+    const codeInp = document.createElement('input');
+    codeInp.type = 'text';
+    codeInp.className = 'lock-input-text lock-code-input';
+
+    const note = document.createElement('div');
+    note.className = 'lock-smart-note';
+
+    function updateBadgeAndDigits(val) {
+      if (currentLockType === 'classic') {
+        smartBadge.innerHTML = '<i class="fas fa-lock"></i> ' + (isHi ? 'टेक्स्ट पासवर्ड' : 'Text Password');
+        smartBadge.style.background = 'rgba(123, 93, 246, 0.1)';
+        note.innerHTML = '<i class="fas fa-info-circle"></i> ' + (isHi ? 'प्राप्तकर्ता अनलॉक करने के लिए यह पासवर्ड डालेगा' : 'Recipient enters this password to unlock');
+        return;
+      }
+
+      const digitsOnly = val.replace(/\D/g, '');
+      const rawLen = digitsOnly.length;
+      const detected = Math.max(3, Math.min(6, rawLen || 4));
+      currentDigits = detected;
+
+      if (rawLen === 0) {
+        smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 4 अंक' : 'Auto: 4 Digits');
+      } else if (rawLen < 3) {
+        smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 3 अंक (न्यूनतम)' : 'Auto: 3 Digits (min 3)');
+      } else if (rawLen > 6) {
+        smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 6 अंक (अधिकतम)' : 'Auto: 6 Digits (max 6)');
+      } else {
+        smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? ('ऑटो: ' + detected + ' अंक') : ('Auto: ' + detected + ' Digits'));
+      }
+
+      if (currentLockType === 'tumbler') {
+        note.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'पहियों की संख्या कोड के अनुसार ऑटो-सेट होगी (3-6 पहिए)' : 'Wheels automatically adjust to your code length (3–6 wheels)');
+      } else {
+        note.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'पिन स्लॉट्स कोड के अनुसार ऑटो-सेट होंगे (3-6 अंक)' : 'PIN slots automatically adjust to your code length (3–6 digits)');
+      }
+    }
+
+    if (currentLockType === 'classic') {
+      codeInp.className = 'lock-input-text';
+      codeInp.placeholder = 'e.g. 1234 or love';
+      codeInp.maxLength = 32;
+      codeInp.value = currentCode;
+      updateBadgeAndDigits(currentCode);
+      codeInp.oninput = () => {
+        currentCode = codeInp.value.trim() || '1234';
+        updateBadgeAndDigits(currentCode);
+        syncAndRefresh();
+      };
+    } else {
+      codeInp.inputMode = 'numeric';
+      codeInp.maxLength = 6;
+      codeInp.placeholder = 'e.g. 1234 or 2024';
+      let cleanVal = currentCode.replace(/\D/g, '');
+      if (!cleanVal) cleanVal = '1234';
+      if (cleanVal.length > 6) cleanVal = cleanVal.slice(0, 6);
+      codeInp.value = cleanVal;
+      currentCode = cleanVal;
+      updateBadgeAndDigits(cleanVal);
+      codeInp.oninput = () => {
+        let val = codeInp.value.replace(/\D/g, '');
+        if (val.length > 6) val = val.slice(0, 6);
+        codeInp.value = val;
+        currentCode = val;
+        updateBadgeAndDigits(val);
+        syncAndRefresh();
+      };
+    }
+
+    inputWrap.appendChild(codeInp);
+    inputWrap.appendChild(note);
+    dynamicCodeContainer.appendChild(inputWrap);
+  }
+  renderDynamicCodeSection();
+  wrap.appendChild(dynamicCodeContainer);
+
+  // --- SECTION 4: Hint Configuration ---
+  const hintSection = document.createElement('div');
+  hintSection.className = 'lock-studio-section';
+
+  const hintToggleRow = document.createElement('div');
+  hintToggleRow.className = 'lock-toggle-row';
+  hintToggleRow.innerHTML = `
+    <div class="lock-toggle-info">
+      <div class="lock-toggle-title"><i class="fas fa-lightbulb" style="color:#eab308"></i> ${isHi ? 'हिंट दिखाएं (Show Hint)' : 'Show Hint'}</div>
+      <div class="lock-toggle-desc">${isHi ? 'सही कोड का अंदाज़ा लगाने के लिए क्लू दें' : 'Give recipient a clue to solve the lock'}</div>
+    </div>
+    <label class="lock-switch">
+      <input type="checkbox" ${currentHintEnabled ? 'checked' : ''}>
+      <span class="lock-slider"></span>
+    </label>
+  `;
+  const hintCheckbox = hintToggleRow.querySelector('input');
+  hintSection.appendChild(hintToggleRow);
+
+  const hintInputGroup = document.createElement('div');
+  hintInputGroup.className = 'lock-input-group';
+  hintInputGroup.style.display = currentHintEnabled ? 'flex' : 'none';
+
+  const hintInput = document.createElement('input');
+  hintInput.type = 'text';
+  hintInput.className = 'lock-input-text';
+  hintInput.placeholder = isHi ? 'उदा. हमारी सालगिरह की तारीख ❤️' : 'e.g. Our anniversary date ❤️';
+  hintInput.value = currentHintText;
+  hintInput.oninput = () => {
+    currentHintText = hintInput.value;
+    syncAndRefresh();
+  };
+  hintInputGroup.appendChild(hintInput);
+  hintSection.appendChild(hintInputGroup);
+
+  hintCheckbox.onchange = () => {
+    currentHintEnabled = hintCheckbox.checked;
+    hintInputGroup.style.display = currentHintEnabled ? 'flex' : 'none';
+    syncAndRefresh();
+  };
+  wrap.appendChild(hintSection);
+
+  // --- SECTION 5: Custom Image Upload ---
+  const mediaSection = document.createElement('div');
+  mediaSection.className = 'lock-studio-section';
+  mediaSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-image"></i> ${isHi ? 'सजावटी इमेज (Decorative Art / Photo)' : 'Decorative Art / Custom Photo'}</div>`;
+
+  const mediaPills = document.createElement('div');
+  mediaPills.className = 'lock-pills-row';
+
+  const pillDefaultArt = document.createElement('button');
+  pillDefaultArt.className = 'lock-pill-btn' + (!currentCustomImage ? ' active' : '');
+  pillDefaultArt.innerHTML = '<i class="fas fa-paint-brush"></i> ' + (isHi ? 'थीम आर्ट' : 'Built-in Theme Art');
+
+  const pillCustomPhoto = document.createElement('button');
+  pillCustomPhoto.className = 'lock-pill-btn' + (currentCustomImage ? ' active' : '');
+  pillCustomPhoto.innerHTML = '<i class="fas fa-upload"></i> ' + (isHi ? 'फोटो अपलोड' : 'Upload Own Photo');
+
+  mediaPills.appendChild(pillDefaultArt);
+  mediaPills.appendChild(pillCustomPhoto);
+  mediaSection.appendChild(mediaPills);
+
+  const uploadArea = document.createElement('div');
+  uploadArea.style.display = currentCustomImage ? 'flex' : 'none';
+  uploadArea.style.flexDirection = 'column';
+  uploadArea.style.gap = '8px';
+
+  const fileInp = document.createElement('input');
+  fileInp.type = 'file';
+  fileInp.accept = 'image/*';
+  fileInp.style.display = 'none';
+
+  const uploadBtn = document.createElement('button');
+  uploadBtn.className = 'lock-pill-btn';
+  uploadBtn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i> ' + (isHi ? 'गैलरी से इमेज चुनें...' : 'Choose Image from Device...');
+  uploadBtn.onclick = () => fileInp.click();
+
+  const previewWrap = document.createElement('div');
+  previewWrap.style.display = currentCustomImage ? 'flex' : 'none';
+  previewWrap.style.alignItems = 'center';
+  previewWrap.style.gap = '10px';
+
+  const previewImg = document.createElement('img');
+  previewImg.src = currentCustomImage;
+  previewImg.style.width = '48px';
+  previewImg.style.height = '48px';
+  previewImg.style.borderRadius = '50%';
+  previewImg.style.objectFit = 'cover';
+  previewImg.style.border = '2px solid #7b5df6';
+
+  const removeImgBtn = document.createElement('button');
+  removeImgBtn.className = 'lock-pill-btn';
+  removeImgBtn.style.color = '#ef4444';
+  removeImgBtn.innerText = isHi ? 'हटाएं (Remove)' : 'Remove Image';
+  removeImgBtn.onclick = () => {
+    currentCustomImage = '';
+    previewImg.src = '';
+    previewWrap.style.display = 'none';
+    pillDefaultArt.click();
+    syncAndRefresh();
+  };
+
+  previewWrap.appendChild(previewImg);
+  previewWrap.appendChild(removeImgBtn);
+
+  fileInp.onchange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        currentCustomImage = evt.target.result;
+        previewImg.src = currentCustomImage;
+        previewWrap.style.display = 'flex';
+        syncAndRefresh();
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  uploadArea.appendChild(fileInp);
+  uploadArea.appendChild(uploadBtn);
+  uploadArea.appendChild(previewWrap);
+  mediaSection.appendChild(uploadArea);
+
+  pillDefaultArt.onclick = () => {
+    pillDefaultArt.classList.add('active');
+    pillCustomPhoto.classList.remove('active');
+    uploadArea.style.display = 'none';
+    currentCustomImage = '';
+    syncAndRefresh();
+  };
+  pillCustomPhoto.onclick = () => {
+    pillCustomPhoto.classList.add('active');
+    pillDefaultArt.classList.remove('active');
+    uploadArea.style.display = 'flex';
+    if (!currentCustomImage) fileInp.click();
+  };
+
+  wrap.appendChild(mediaSection);
+
+  customPanel.appendChild(wrap);
+}
+
+            if (id === "lock") {
+              createLockCustomPanel(customPanel);
+            }
+
             if (id === "countdown") {
               const mainContainer = document.createElement("div");
               mainContainer.className = "countdown-panel";
@@ -9351,10 +9832,13 @@
                   window.lockUnlocked = false;
                   const existing = customData.get('lock') || {};
                   if (!existing.text || existing.text.trim() === '' || existing.text === 'password') {
-                    existing.text = (textarea && textarea.value && textarea.value.trim() && textarea.value.trim() !== 'password') ? textarea.value.trim() : '1234';
-                    customData.set('lock', existing);
-                    if (textarea) textarea.value = existing.text;
+                    existing.text = '1234';
                   }
+                  if (!existing.lockType) existing.lockType = 'keypad';
+                  if (!existing.theme) existing.theme = 'romantic-pink';
+                  if (!existing.digits) existing.digits = 4;
+                  if (existing.soundEnabled === undefined) existing.soundEnabled = true;
+                  customData.set('lock', existing);
                   if (customPanel && customPanel.style.display !== 'block' && chevron) {
                     chevron.click();
                   }
@@ -11648,7 +12132,7 @@
           const magicRaw = window._magicRaw || '';
           const magicRuntime = `
 <scr` + `ipt src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></scr` + `ipt>
-<scr` + `ipt src="/features.js?v=1793974913242"></scr` + `ipt>
+<scr` + `ipt src="/assets/js/greeter-lock-screens.js"></scr` + `ipt>\n<scr` + `ipt src="/features.js?v=1793974913242"></scr` + `ipt>
 <scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
@@ -11760,7 +12244,16 @@
           const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
           if (window.FEATURE_MAP.lock) {
             try {
-              window.FEATURE_MAP.lock.enable(document, window, userName, lockPass);
+              window.FEATURE_MAP.lock.enable(document, window, userName, {
+                text: lockPass,
+                lockType: data.lockType || 'keypad',
+                theme: data.theme || 'romantic-pink',
+                digits: data.digits || 4,
+                hintEnabled: !!data.hintEnabled,
+                hintText: data.hintText || '',
+                customImage: data.customImage || '',
+                soundEnabled: data.soundEnabled !== false
+              });
             } catch(e) {}
           }
           window._lockUnlockedHandler = () => {
@@ -13160,7 +13653,7 @@
             // Inject early bootstrap runtime into storedHtml before document.write
             const bootstrapScript = `
 <scr` + `ipt src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></scr` + `ipt>
-<scr` + `ipt src="/features.js?v=1793974913242"></scr` + `ipt>
+<scr` + `ipt src="/assets/js/greeter-lock-screens.js"></scr` + `ipt>\n<scr` + `ipt src="/features.js?v=1793974913242"></scr` + `ipt>
 <scr` + `ipt>
 (function() {
   window.APP_CONFIG = window.APP_CONFIG || {};
@@ -13272,7 +13765,16 @@
           const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
           if (window.FEATURE_MAP.lock) {
             try {
-              window.FEATURE_MAP.lock.enable(document, window, userName, lockPass);
+              window.FEATURE_MAP.lock.enable(document, window, userName, {
+                text: lockPass,
+                lockType: data.lockType || 'keypad',
+                theme: data.theme || 'romantic-pink',
+                digits: data.digits || 4,
+                hintEnabled: !!data.hintEnabled,
+                hintText: data.hintText || '',
+                customImage: data.customImage || '',
+                soundEnabled: data.soundEnabled !== false
+              });
             } catch(e) { console.warn('lock enable error:', e); }
           }
           window._lockUnlockedHandler = () => {
