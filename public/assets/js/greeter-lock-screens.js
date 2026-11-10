@@ -1614,7 +1614,7 @@
     if (parsed.lockType === 'tumbler') {
       buildTumblerLock(card, parsed, theme, soundEngine, triggerSuccess, triggerWrong, doc);
     } else if (parsed.lockType === 'classic') {
-      buildClassicLock(card, parsed, theme, soundEngine, triggerSuccess, triggerWrong, doc);
+      buildClassicLock(card, parsed, theme, soundEngine, triggerSuccess, triggerWrong, doc, win, isEditorPreview);
     } else {
       buildKeypadLock(card, parsed, theme, soundEngine, triggerSuccess, triggerWrong, doc);
     }
@@ -2123,7 +2123,7 @@
   }
 
   // --- Sub-builder 3: Classic Password Lock ---
-  function buildClassicLock(card, parsed, theme, soundEngine, onSuccess, onWrong, doc) {
+  function buildClassicLock(card, parsed, theme, soundEngine, onSuccess, onWrong, doc, win, isEditorPreview) {
     const wrap = doc.createElement('div');
     wrap.className = 'classic-container';
 
@@ -2175,7 +2175,18 @@
     wrap.appendChild(btn);
     card.appendChild(wrap);
 
-    setTimeout(() => input.focus(), 150);
+    // Never auto-focus in editor preview or inside an iframe to prevent stealing focus from the customizer's Secret Code textbox
+    if (!isEditorPreview) {
+      try {
+        const isIframe = win && win.self !== win.top;
+        const isTouch = Boolean(win && win.navigator && win.navigator.maxTouchPoints > 0);
+        if (!isIframe && !isTouch) {
+          setTimeout(() => {
+            try { input.focus(); } catch (e) {}
+          }, 150);
+        }
+      } catch (e) {}
+    }
   }
 
   return {
