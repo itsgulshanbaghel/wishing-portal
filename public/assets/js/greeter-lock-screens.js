@@ -10,19 +10,29 @@
  */
 
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) {
-    module.exports = factory();
-  } else {
-    const exports = factory();
+  const exports = factory();
+  if (root) {
     root.GreeterLockEngine = exports;
-    if (typeof window !== 'undefined') {
-      window.GreeterLockEngine = exports;
-      window.renderGreeterLock = exports.renderGreeterLock;
-      window.removeGreeterLock = exports.removeGreeterLock;
-      window.LOCK_THEMES = exports.LOCK_THEMES;
-    }
+    root.renderGreeterLock = exports.renderGreeterLock;
+    root.removeGreeterLock = exports.removeGreeterLock;
+    root.LOCK_THEMES = exports.LOCK_THEMES;
   }
-}(typeof self !== 'undefined' ? self : this, function () {
+  if (typeof window !== 'undefined') {
+    window.GreeterLockEngine = exports;
+    window.renderGreeterLock = exports.renderGreeterLock;
+    window.removeGreeterLock = exports.removeGreeterLock;
+    window.LOCK_THEMES = exports.LOCK_THEMES;
+  }
+  if (typeof global !== 'undefined') {
+    global.GreeterLockEngine = exports;
+    global.renderGreeterLock = exports.renderGreeterLock;
+    global.removeGreeterLock = exports.removeGreeterLock;
+    global.LOCK_THEMES = exports.LOCK_THEMES;
+  }
+  if (typeof module === 'object' && module.exports) {
+    module.exports = exports;
+  }
+}(typeof self !== 'undefined' ? self : (typeof window !== 'undefined' ? window : this), function () {
 
   const LOCK_THEMES = {
     'romantic-pink': {
@@ -30,13 +40,21 @@
       name: 'Romantic Pink',
       nameHi: 'रोमांटिक पिंक',
       icon: '💖',
+      ribbonText: 'SECRET SURPRISE LOCK',
+      ribbonTextHi: 'सीक्रेट सरप्राइज लॉक',
+      cornerChar: '✦',
+      frameBorder: '2px solid rgba(255, 105, 180, 0.65)',
+      frameInlay: 'rgba(255, 182, 193, 0.35)',
+      frameGlow: '0 25px 60px rgba(255, 20, 147, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35)',
+      windowBorder: '1.5px solid rgba(255, 182, 193, 0.5)',
+      windowGlow: '0 8px 24px rgba(255, 20, 147, 0.3), inset 0 2px 6px rgba(0, 0, 0, 0.35)',
       btnGradient: 'linear-gradient(135deg, #ff2d78 0%, #ff5e9c 50%, #ff85b3 100%)',
       btnGlow: 'rgba(255, 45, 120, 0.55)',
       btnGlowStrong: 'rgba(255, 45, 120, 0.85)',
       defaultMedia: '/assets/media/lock/theme-romantic-pink.jpg',
       bg: 'radial-gradient(ellipse at top, #2d0827 0%, #170415 60%, #0a0109 100%)',
-      cardBg: 'linear-gradient(145deg, rgba(255, 182, 193, 0.14), rgba(219, 112, 147, 0.08))',
-      cardBorder: 'rgba(255, 105, 180, 0.42)',
+      cardBg: 'linear-gradient(145deg, rgba(255, 182, 193, 0.16), rgba(219, 112, 147, 0.1))',
+      cardBorder: 'rgba(255, 105, 180, 0.55)',
       cardShadow: '0 25px 60px rgba(255, 20, 147, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
       accent: '#ff4d94',
       accentGlow: 'rgba(255, 77, 148, 0.75)',
@@ -58,13 +76,21 @@
       name: 'Dreamy Purple',
       nameHi: 'ड्रीम पर्पल',
       icon: '🌙',
+      ribbonText: 'CELESTIAL MOON LOCK',
+      ribbonTextHi: 'सेलेस्टियल मून लॉक',
+      cornerChar: '✧',
+      frameBorder: '2px solid rgba(192, 132, 252, 0.65)',
+      frameInlay: 'rgba(216, 180, 254, 0.35)',
+      frameGlow: '0 25px 60px rgba(147, 51, 234, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.35)',
+      windowBorder: '1.5px solid rgba(216, 180, 254, 0.5)',
+      windowGlow: '0 8px 24px rgba(147, 51, 234, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.4)',
       btnGradient: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #c084fc 100%)',
       btnGlow: 'rgba(168, 85, 247, 0.55)',
       btnGlowStrong: 'rgba(192, 132, 252, 0.85)',
       defaultMedia: '/assets/media/lock/theme-dreamy-purple.jpg',
       bg: 'radial-gradient(ellipse at top, #1e0d38 0%, #0d061c 60%, #05020c 100%)',
-      cardBg: 'linear-gradient(145deg, rgba(168, 85, 247, 0.14), rgba(126, 34, 206, 0.08))',
-      cardBorder: 'rgba(168, 85, 247, 0.45)',
+      cardBg: 'linear-gradient(145deg, rgba(168, 85, 247, 0.16), rgba(126, 34, 206, 0.1))',
+      cardBorder: 'rgba(168, 85, 247, 0.55)',
       cardShadow: '0 25px 60px rgba(147, 51, 234, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
       accent: '#c084fc',
       accentGlow: 'rgba(192, 132, 252, 0.8)',
@@ -86,13 +112,21 @@
       name: 'Luxury Black & Gold',
       nameHi: 'लक्ज़री गोल्ड',
       icon: '👑',
+      ribbonText: 'ROYAL SOVEREIGN LOCK',
+      ribbonTextHi: 'रॉयल सोवरेन लॉक',
+      cornerChar: '❖',
+      frameBorder: '2.5px solid rgba(250, 204, 21, 0.75)',
+      frameInlay: 'rgba(254, 240, 138, 0.45)',
+      frameGlow: '0 25px 60px rgba(234, 179, 8, 0.4), inset 0 1px 0 rgba(254, 240, 138, 0.5)',
+      windowBorder: '2px solid rgba(254, 240, 138, 0.7)',
+      windowGlow: '0 8px 24px rgba(234, 179, 8, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.5)',
       btnGradient: 'linear-gradient(135deg, #b45309 0%, #d97706 30%, #facc15 70%, #fef08a 100%)',
       btnGlow: 'rgba(250, 204, 21, 0.55)',
       btnGlowStrong: 'rgba(250, 204, 21, 0.9)',
       defaultMedia: '/assets/media/lock/theme-luxury-gold.jpg',
       bg: 'radial-gradient(ellipse at top, #1e1608 0%, #100b04 60%, #050301 100%)',
-      cardBg: 'linear-gradient(145deg, rgba(234, 179, 8, 0.12), rgba(161, 98, 7, 0.07))',
-      cardBorder: 'rgba(234, 179, 8, 0.5)',
+      cardBg: 'linear-gradient(145deg, rgba(234, 179, 8, 0.15), rgba(161, 98, 7, 0.09))',
+      cardBorder: 'rgba(234, 179, 8, 0.65)',
       cardShadow: '0 25px 60px rgba(234, 179, 8, 0.32), inset 0 1px 0 rgba(254, 240, 138, 0.35)',
       accent: '#facc15',
       accentGlow: 'rgba(250, 204, 21, 0.85)',
@@ -114,13 +148,21 @@
       name: 'Elegant Silver',
       nameHi: 'एलिगेंट सिल्वर',
       icon: '💎',
+      ribbonText: 'CRYSTAL DIAMOND LOCK',
+      ribbonTextHi: 'क्रिस्टल डायमंड लॉक',
+      cornerChar: '◆',
+      frameBorder: '2px solid rgba(56, 189, 248, 0.7)',
+      frameInlay: 'rgba(186, 230, 253, 0.4)',
+      frameGlow: '0 25px 60px rgba(56, 189, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45)',
+      windowBorder: '1.5px solid rgba(186, 230, 253, 0.6)',
+      windowGlow: '0 8px 24px rgba(56, 189, 248, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.35)',
       btnGradient: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #7dd3fc 100%)',
       btnGlow: 'rgba(56, 189, 248, 0.55)',
       btnGlowStrong: 'rgba(56, 189, 248, 0.85)',
       defaultMedia: '/assets/media/lock/theme-elegant-silver.jpg',
       bg: 'radial-gradient(ellipse at top, #1a222f 0%, #0d121a 60%, #06090e 100%)',
-      cardBg: 'linear-gradient(145deg, rgba(203, 213, 225, 0.12), rgba(148, 163, 184, 0.07))',
-      cardBorder: 'rgba(203, 213, 225, 0.5)',
+      cardBg: 'linear-gradient(145deg, rgba(203, 213, 225, 0.16), rgba(148, 163, 184, 0.09))',
+      cardBorder: 'rgba(203, 213, 225, 0.6)',
       cardShadow: '0 25px 60px rgba(148, 163, 184, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35)',
       accent: '#38bdf8',
       accentGlow: 'rgba(56, 189, 248, 0.8)',
@@ -142,13 +184,21 @@
       name: 'Cute Pastel',
       nameHi: 'क्यूट पेस्टल',
       icon: '🧸',
+      ribbonText: 'SWEET PASTEL LOCK',
+      ribbonTextHi: 'स्वीट पेस्टल लॉक',
+      cornerChar: '✿',
+      frameBorder: '2px solid rgba(251, 146, 60, 0.7)',
+      frameInlay: 'rgba(254, 215, 170, 0.45)',
+      frameGlow: '0 25px 60px rgba(251, 146, 60, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35)',
+      windowBorder: '1.5px solid rgba(254, 215, 170, 0.6)',
+      windowGlow: '0 8px 24px rgba(249, 115, 22, 0.32), inset 0 2px 6px rgba(0, 0, 0, 0.35)',
       btnGradient: 'linear-gradient(135deg, #ea580c 0%, #f97316 45%, #fb923c 80%, #fed7aa 100%)',
       btnGlow: 'rgba(249, 115, 22, 0.55)',
       btnGlowStrong: 'rgba(249, 115, 22, 0.85)',
       defaultMedia: '/assets/media/lock/theme-cute-pastel.jpg',
       bg: 'radial-gradient(ellipse at top, #2d1e28 0%, #18101a 60%, #0d080e 100%)',
-      cardBg: 'linear-gradient(145deg, rgba(254, 215, 170, 0.16), rgba(251, 191, 36, 0.08))',
-      cardBorder: 'rgba(251, 146, 60, 0.45)',
+      cardBg: 'linear-gradient(145deg, rgba(254, 215, 170, 0.18), rgba(251, 191, 36, 0.1))',
+      cardBorder: 'rgba(251, 146, 60, 0.55)',
       cardShadow: '0 25px 60px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
       accent: '#fb923c',
       accentGlow: 'rgba(251, 146, 60, 0.8)',
@@ -350,9 +400,9 @@
         -webkit-backdrop-filter: blur(16px);
         opacity: 0;
         transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        padding: 14px;
+        padding: clamp(6px, 1.5vh, 14px);
         box-sizing: border-box;
-        overflow-y: auto;
+        overflow: hidden; /* Zero scrollbar: Auto-Fit engine dynamically scales content to 100% viewport fit */
       }
       #lock-overlay * {
         box-sizing: border-box;
@@ -361,10 +411,10 @@
       }
       .lock-mute-btn {
         position: absolute;
-        top: 16px;
-        right: 16px;
-        width: 38px;
-        height: 38px;
+        top: clamp(10px, 1.8vh, 16px);
+        right: clamp(10px, 1.8vw, 16px);
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         background: rgba(255,255,255,0.12);
         border: 1px solid rgba(255,255,255,0.25);
@@ -373,36 +423,41 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 15px;
-        transition: all 0.2s ease;
+        font-size: 14px;
+        z-index: 40;
         backdrop-filter: blur(8px);
-        z-index: 10;
+        -webkit-backdrop-filter: blur(8px);
+        transition: background 0.2s ease, transform 0.2s ease;
       }
       .lock-mute-btn:hover {
         background: rgba(255,255,255,0.25);
-        transform: scale(1.08);
+        transform: scale(1.06);
       }
 
-      /* === TWO-SIDE RESPONSIVE ARCHITECTURE (MATCHING COUNTDOWN SCREEN) === */
+      /* Unified Content Wrapper: Scales seamlessly via Auto-Fit engine */
       .lock-content-wrap {
         position: relative;
-        z-index: 2;
+        z-index: 10;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         width: 100%;
-        max-width: 480px;
+        max-width: 460px;
+        gap: clamp(10px, 1.8vh, 18px);
         margin: auto;
         box-sizing: border-box;
-        gap: 12px;
+        transform-origin: center center;
+        will-change: transform;
+        transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
       }
+
+      /* Single Column Stage elements */
       .lock-stage-left {
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
         width: 100%;
-        flex-shrink: 0;
       }
       .lock-stage-right {
         display: flex;
@@ -411,15 +466,14 @@
         justify-content: center;
         width: 100%;
         text-align: center;
-        flex: 1 1 auto;
       }
 
-      /* Luxury Arched Invitation Card for Left Stage (Matching Countdown) */
+      /* Luxury Portrait Picture Frame for Left Stage (Never Crops Artwork) */
       .lock-arch-card {
         position: relative;
-        width: min(84vw, clamp(160px, 26vh, 200px));
-        padding: 8px 8px 12px 8px;
-        border-radius: 999px 999px 20px 20px;
+        width: min(84vw, clamp(170px, 26vh, 230px));
+        padding: clamp(10px, 1.4vw, 14px) clamp(10px, 1.4vw, 14px) clamp(12px, 1.6vh, 16px) clamp(10px, 1.4vw, 14px);
+        border-radius: clamp(22px, 2.8vw, 32px);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -429,7 +483,7 @@
         animation: floatLockCard 4.6s ease-in-out infinite;
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
       .lock-card-halo {
         position: absolute;
@@ -438,12 +492,11 @@
         transform: translate(-50%, -50%);
         width: 95%;
         height: 95%;
-        border-radius: 50%;
-        filter: blur(36px);
-        opacity: 0.65;
-        pointer-events: none;
+        border-radius: clamp(22px, 2.8vw, 32px);
+        filter: blur(34px);
+        opacity: 0.55;
         z-index: -1;
-        animation: pulseLockHalo 4s ease-in-out infinite;
+        pointer-events: none;
       }
       .lock-arch-badge {
         position: absolute;
@@ -453,82 +506,109 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        border: 2px solid #ffffff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        background: rgba(255,255,255,0.22);
+        border: 1.5px solid rgba(255,255,255,0.6);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 15px;
-        z-index: 5;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+        z-index: 8;
       }
+      /* Ornate Corner Accent Studs */
+      .lock-frame-corner {
+        position: absolute;
+        font-size: clamp(10px, 1.2vw, 13px);
+        line-height: 1;
+        pointer-events: none;
+        z-index: 6;
+        opacity: 0.85;
+        transition: transform 0.3s ease;
+      }
+      .lock-frame-corner.tl { top: clamp(8px, 1vw, 11px); left: clamp(8px, 1vw, 11px); }
+      .lock-frame-corner.tr { top: clamp(8px, 1vw, 11px); right: clamp(8px, 1vw, 11px); }
+      .lock-frame-corner.bl { bottom: clamp(9px, 1.1vh, 12px); left: clamp(8px, 1vw, 11px); }
+      .lock-frame-corner.br { bottom: clamp(9px, 1.1vh, 12px); right: clamp(8px, 1vw, 11px); }
+      .lock-arch-card:hover .lock-frame-corner {
+        transform: scale(1.15) rotate(10deg);
+      }
+      /* Picture Display Window: Always 1:1 Aspect Ratio so 600x600 Artworks are 100% Uncropped */
       .lock-arch-window {
+        position: relative;
         width: 100%;
         aspect-ratio: 1 / 1;
-        border-radius: 999px 999px 16px 16px;
+        height: auto;
+        border-radius: clamp(14px, 2vw, 20px);
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.45);
-        box-shadow: inset 0 2px 8px rgba(0,0,0,0.15);
+        border: 1.5px solid rgba(255, 255, 255, 0.35);
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.25);
+        background: rgba(0, 0, 0, 0.25);
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative;
-        background: rgba(0, 0, 0, 0.12);
-        margin-bottom: 6px;
       }
       .lock-media-img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
-        pointer-events: none;
+        object-fit: contain; /* Guarantees 100% full picture with zero cutting */
         display: block;
         border-radius: inherit;
-        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
       .lock-arch-card:hover .lock-media-img {
-        transform: scale(1.04);
+        transform: scale(1.03);
       }
       .lock-thematic-svg {
-        max-height: 95px;
-        width: auto;
-        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        filter: drop-shadow(0 6px 14px rgba(0,0,0,0.25));
-      }
-      .lock-arch-card:hover .lock-thematic-svg {
-        transform: scale(1.04);
+        width: 100%;
+        height: 100%;
+        display: block;
+        transition: transform 0.4s ease;
       }
       .lock-custom-img-wrap {
         width: 100%;
         height: 100%;
-        border-radius: inherit;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .lock-custom-img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        display: block;
       }
       .lock-arch-subtitle {
-        font-size: clamp(0.66rem, 1.2vw, 0.76rem);
+        margin-top: clamp(8px, 1.2vh, 12px);
+        font-size: clamp(0.7rem, 0.95vw, 0.82rem);
         font-weight: 700;
-        letter-spacing: clamp(1px, 0.2vw, 1.8px);
+        letter-spacing: 1.8px;
         text-transform: uppercase;
+        color: #ffffff;
         opacity: 0.92;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
-        text-align: center;
-        line-height: 1.2;
-        margin-top: 2px;
+      }
+      .lock-ribbon-sparkle {
+        opacity: 0.85;
+        font-size: 0.75em;
+        animation: sparklePulse 2s ease-in-out infinite alternate;
+      }
+      @keyframes sparklePulse {
+        0% { opacity: 0.5; transform: scale(0.9); }
+        100% { opacity: 1; transform: scale(1.2); }
       }
 
-      /* Lock Interactive Card (Right Stage) */
+            /* Interactive Lock Card (Right Stage) */
       .lock-card {
         position: relative;
         width: 100%;
-        max-width: 440px;
-        border-radius: 24px;
-        padding: 20px 18px;
+        max-width: 460px;
+        border-radius: 26px;
+        padding: clamp(16px, 2.4vh, 26px) clamp(16px, 2.2vw, 24px);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -541,80 +621,69 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        font-size: clamp(0.72rem, 1.2vw, 0.85rem);
+        font-size: clamp(0.7rem, 1vw, 0.82rem);
         font-weight: 700;
         letter-spacing: 2.2px;
         text-transform: uppercase;
         opacity: 0.88;
-        margin-bottom: clamp(4px, 1vh, 8px);
+        margin-bottom: clamp(4px, 0.8vh, 8px);
       }
       .lock-title {
-        font-size: 22px;
+        font-size: clamp(1.45rem, 2.6vw, 2.1rem);
         font-weight: 800;
         font-family: 'Outfit', 'Inter', sans-serif;
-        text-align: center;
-        margin: 4px 0 2px 0;
-        letter-spacing: -0.3px;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        letter-spacing: -0.4px;
+        margin: 0 0 clamp(4px, 0.8vh, 8px) 0;
+        line-height: 1.15;
       }
       .lock-subtitle {
-        font-size: 13.5px;
-        text-align: center;
-        opacity: 0.88;
-        margin-bottom: 12px;
+        font-size: clamp(0.85rem, 1.15vw, 1.02rem);
+        margin: 0 0 clamp(10px, 1.6vh, 16px) 0;
+        opacity: 0.86;
       }
       .lock-hint-pill {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 6px 14px;
+        padding: 5px 12px;
         border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        font-size: 12px;
         margin-bottom: 12px;
-        background: rgba(255,255,255,0.1);
-        border: 1px dashed rgba(255,255,255,0.35);
-        animation: lockHintPulse 3s infinite ease-in-out;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
       }
       .lock-status-msg {
-        min-height: 20px;
-        font-size: 13px;
+        min-height: 16px;
+        font-size: 12px;
         font-weight: 600;
-        text-align: center;
-        margin-top: 10px;
-        transition: all 0.3s;
+        margin-top: 6px;
+        transition: color 0.3s;
       }
       .lock-status-msg.error {
-        color: #ff4d6d;
-        text-shadow: 0 0 10px rgba(255,77,109,0.5);
+        color: #ef4444;
       }
       .lock-footer-note {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: clamp(0.72rem, 1.1vw, 0.85rem);
-        font-weight: 500;
-        letter-spacing: 0.4px;
-        opacity: 0.82;
-        text-align: center;
-        line-height: 1.4;
-        margin-top: clamp(10px, 1.5vh, 16px);
+        font-size: clamp(0.7rem, 0.95vw, 0.82rem);
+        opacity: 0.68;
+        margin-top: clamp(8px, 1.2vh, 12px);
+        letter-spacing: 0.5px;
       }
 
-      /* === TABLET, LAPTOP & PC RESPONSIVE 2-SIDE VIEW (MATCHING COUNTDOWN SCREEN) === */
-      @media (min-width: 650px) and (min-height: 420px) {
+      /* === TABLET, LAPTOP & PC RESPONSIVE TWO-SIDE LAYOUT (Generous & Screen-Filling) === */
+      @media (min-width: 650px) and (min-height: 380px) {
         #lock-overlay {
-          padding: clamp(24px, 4vh, 52px) clamp(20px, 3.5vw, 60px) !important;
+          padding: clamp(14px, 2.5vh, 40px) clamp(16px, 2.5vw, 48px) !important;
           justify-content: center !important;
         }
         .lock-content-wrap {
           flex-direction: row !important;
           justify-content: center !important;
           align-items: center !important;
-          max-width: 1240px !important;
-          gap: clamp(32px, 5.5vw, 84px) !important;
-          padding: clamp(14px, 2.5vw, 40px) !important;
+          max-width: clamp(980px, 86vw, 1260px) !important;
+          gap: clamp(24px, 4.5vw, 68px) !important;
+          padding: clamp(8px, 1.4vh, 20px) !important;
           margin: auto !important;
         }
         .lock-stage-left {
@@ -624,61 +693,56 @@
           width: auto !important;
         }
         .lock-stage-left .lock-arch-card {
-          width: clamp(280px, 29vw, 440px) !important;
-          padding: clamp(10px, 1.3vw, 14px) !important;
-          padding-bottom: clamp(14px, 1.8vh, 20px) !important;
-          border-radius: 999px 999px 28px 28px !important;
-          margin-bottom: 0 !important;
+          width: clamp(240px, 25vw, 360px) !important;
+          padding: clamp(12px, 1.5vw, 18px) clamp(12px, 1.5vw, 18px) clamp(16px, 1.8vh, 20px) clamp(12px, 1.5vw, 18px) !important;
+          border-radius: clamp(26px, 2.8vw, 36px) !important;
         }
         .lock-stage-left .lock-arch-window {
-          border-radius: 999px 999px 22px 22px !important;
-          margin-bottom: 10px !important;
+          width: 100% !important;
+          height: auto !important;
+          aspect-ratio: 1 / 1 !important;
+          border-radius: clamp(16px, 2vw, 22px) !important;
         }
         .lock-stage-left .lock-thematic-svg {
-          width: 82% !important;
-          height: 82% !important;
-          max-height: none !important;
-          filter: drop-shadow(0 14px 28px rgba(0,0,0,0.35)) !important;
+          transform: scale(1.02);
         }
         .lock-stage-left .lock-custom-img-wrap {
-          width: 100% !important;
-          height: 100% !important;
-          border-radius: inherit !important;
-          border: none !important;
+          border-radius: 999px 999px 22px 22px;
         }
         .lock-stage-left .lock-arch-subtitle {
-          font-size: clamp(0.72rem, 1.2vw, 0.85rem) !important;
+          margin-top: clamp(8px, 1.2vh, 14px) !important;
+          font-size: clamp(0.76rem, 1.05vw, 0.92rem) !important;
           letter-spacing: 2px !important;
-          margin-top: 10px !important;
         }
         .lock-stage-right {
+          flex: 0 1 auto !important;
           align-items: center !important;
+          justify-content: center !important;
+          max-width: clamp(380px, 42vw, 540px) !important;
           text-align: center !important;
-          max-width: clamp(420px, 50vw, 620px) !important;
-          width: auto !important;
-          flex: 1 1 auto !important;
         }
         .lock-stage-right .lock-card {
           width: 100% !important;
           max-width: 100% !important;
-          padding: clamp(24px, 3.5vh, 36px) clamp(24px, 3vw, 42px) !important;
+          padding: clamp(18px, 2.6vh, 32px) clamp(20px, 2.6vw, 36px) !important;
           border-radius: 28px !important;
         }
         .lock-stage-right .lock-eyebrow {
-          font-size: clamp(0.76rem, 1.1vw, 0.95rem) !important;
-          letter-spacing: 2.8px !important;
-          margin-bottom: clamp(8px, 1.4vh, 14px) !important;
+          font-size: clamp(0.72rem, 1vw, 0.88rem) !important;
+          letter-spacing: 2.4px !important;
+          margin-bottom: clamp(4px, 0.8vh, 8px) !important;
         }
         .lock-stage-right .lock-title {
-          font-size: clamp(1.8rem, 3.2vw, 2.7rem) !important;
-          letter-spacing: -0.5px !important;
-          margin: 0 0 clamp(6px, 1vh, 10px) 0 !important;
+          font-size: clamp(1.6rem, 2.8vw, 2.5rem) !important;
+          letter-spacing: -0.4px !important;
+          margin: 0 0 clamp(4px, 0.8vh, 8px) 0 !important;
         }
         .lock-stage-right .lock-subtitle {
-          font-size: clamp(0.92rem, 1.25vw, 1.12rem) !important;
-          margin-bottom: clamp(16px, 2.4vh, 22px) !important;
+          font-size: clamp(0.88rem, 1.2vw, 1.08rem) !important;
+          margin-bottom: clamp(10px, 1.6vh, 16px) !important;
         }
-  
+      }
+
       /* === MODERN GLASSMORPHIC NUMERIC KEYPAD === */
       .keypad-container {
         display: flex;
@@ -686,7 +750,7 @@
         align-items: center;
         justify-content: center;
         width: 100%;
-        max-width: 320px;
+        max-width: clamp(280px, 30vw, 380px);
         margin: 0 auto;
         box-sizing: border-box;
       }
@@ -694,15 +758,15 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: clamp(8px, 2vw, 14px);
-        margin: clamp(6px, 1.2vh, 12px) auto clamp(14px, 2.2vh, 22px);
+        gap: clamp(8px, 1.6vw, 15px);
+        margin: clamp(6px, 1vh, 10px) auto clamp(12px, 1.8vh, 20px);
         width: 100%;
         transition: transform 0.25s ease;
       }
       .keypad-slot {
         position: relative;
-        width: clamp(44px, 11vw, 54px);
-        height: clamp(48px, 12vw, 58px);
+        width: clamp(42px, 4.4vw, 58px);
+        height: clamp(46px, 4.8vw, 62px);
         border-radius: 18px;
         border: 2px solid rgba(255, 255, 255, 0.28);
         background: rgba(255, 255, 255, 0.08);
@@ -720,7 +784,7 @@
         background: rgba(255, 255, 255, 0.18);
       }
       .keypad-slot-dot {
-        font-size: 22px;
+        font-size: clamp(20px, 2vw, 26px);
         font-weight: 700;
         line-height: 1;
         opacity: 0;
@@ -736,20 +800,20 @@
       .keypad-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: clamp(8px, 1.4vh, 12px) clamp(10px, 2vw, 16px);
+        gap: clamp(6px, 1.1vh, 12px) clamp(10px, 1.8vw, 16px);
         width: 100%;
-        max-width: 290px;
+        max-width: clamp(270px, 28vw, 360px);
         margin: 0 auto;
         box-sizing: border-box;
       }
       .keypad-btn {
         position: relative;
         width: 100%;
-        height: clamp(46px, 6.8vh, 56px);
-        max-width: 84px;
+        height: clamp(44px, 5.8vh, 58px);
+        max-width: 96px;
         border-radius: 999px;
         font-family: 'Outfit', 'Poppins', 'Inter', -apple-system, sans-serif;
-        font-size: clamp(1.2rem, 2.2vw, 1.45rem);
+        font-size: clamp(1.2rem, 1.8vw, 1.5rem);
         font-weight: 600;
         display: flex;
         align-items: center;
@@ -780,12 +844,46 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
       }
       .keypad-btn.action-btn {
-        font-size: clamp(1rem, 1.8vw, 1.15rem);
+        font-size: clamp(1rem, 1.6vw, 1.25rem);
         color: rgba(255, 255, 255, 0.88);
         background: rgba(255, 255, 255, 0.08);
       }
       .keypad-btn.action-btn:hover {
         background: rgba(255, 255, 255, 0.2);
+      }
+
+      .lock-cta-btn {
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: clamp(11px, 1.6vh, 15px) clamp(30px, 3.5vw, 44px);
+        border-radius: 999px;
+        border: 1.5px solid rgba(255, 255, 255, 0.45);
+        background: var(--btn-gradient, linear-gradient(135deg, #7b5df6, #ff7a2f));
+        color: #ffffff;
+        font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+        font-size: clamp(13px, 1.4vw, 16px);
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 24px var(--btn-glow, rgba(123, 93, 246, 0.4)), inset 0 1.5px 0 rgba(255, 255, 255, 0.55), inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+        transition: all 0.28s cubic-bezier(0.2, 0.85, 0.35, 1.2);
+        user-select: none;
+        -webkit-user-select: none;
+        margin-top: clamp(10px, 1.6vh, 16px);
+      }
+      .lock-cta-btn:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5), 0 0 32px var(--btn-glow-strong, rgba(123, 93, 246, 0.7)), inset 0 1.5px 0 rgba(255, 255, 255, 0.7);
+        border-color: rgba(255, 255, 255, 0.7);
+      }
+      .lock-cta-btn:active {
+        transform: translateY(1px) scale(0.97);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 16px var(--btn-glow, rgba(123, 93, 246, 0.3));
       }
 
       /* === 3D ROLLING TUMBLER WHEELS === */
@@ -951,7 +1049,7 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
-        padding: 14px 38px;
+        padding: clamp(10px, 1.5vh, 13px) clamp(26px, 3.5vw, 36px);
         border-radius: 999px;
         border: 1.5px solid rgba(255, 255, 255, 0.45);
         background: var(--btn-gradient, linear-gradient(135deg, #7b5df6, #ff7a2f));
@@ -966,7 +1064,7 @@
         transition: all 0.28s cubic-bezier(0.2, 0.85, 0.35, 1.2);
         user-select: none;
         -webkit-user-select: none;
-        margin-top: 14px;
+        margin-top: clamp(8px, 1.4vh, 14px);
       }
       .lock-cta-btn:hover {
         transform: translateY(-2px) scale(1.025);
@@ -1095,9 +1193,19 @@
   function removeGreeterLock(doc, win, isEditorPreview) {
     if (!doc) return;
     const overlay = doc.getElementById('lock-overlay');
-    if (overlay) overlay.remove();
-    if (win) win.lockUnlocked = false;
-    if (typeof window !== 'undefined') window.lockUnlocked = false;
+    if (overlay) {
+      if (typeof overlay._fitCleanup === 'function') {
+        try { overlay._fitCleanup(); } catch(e){}
+      }
+      overlay.remove();
+    }
+    if (doc.body) doc.body.classList.remove('magic-noscroll');
+    // When lock is removed or disabled, mark unlocked and notify any deferred features
+    if (win) win.lockUnlocked = true;
+    if (typeof window !== 'undefined') window.lockUnlocked = true;
+    try { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
+    try { if (win && win !== window) win.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
+    try { if (doc && typeof doc.dispatchEvent === 'function') doc.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
 
     if (isEditorPreview && typeof editModeBeforeLock !== 'undefined' && typeof editModeActive !== 'undefined') {
       if (editModeBeforeLock && editModeActive) {
@@ -1114,8 +1222,18 @@
   function renderGreeterLock(doc, win, userName, lockConfig, isEditorPreview) {
     if (!doc || !doc.body) return {};
 
-    // Remove existing lock
-    removeGreeterLock(doc, win, isEditorPreview);
+    // Clean up any existing lock instance before rendering new one
+    const prevOverlay = doc.getElementById('lock-overlay');
+    if (prevOverlay) {
+      if (typeof prevOverlay._fitCleanup === 'function') {
+        try { prevOverlay._fitCleanup(); } catch(e){}
+      }
+      prevOverlay.remove();
+    }
+
+    // Actively rendering lock: mark as locked
+    if (win) win.lockUnlocked = false;
+    if (typeof window !== 'undefined') window.lockUnlocked = false;
 
     // If countdown is active, defer lock screen until countdown finishes (for shared page)
     if (!isEditorPreview) {
@@ -1145,8 +1263,7 @@
       if (doc.body) doc.body.classList.remove('magic-noscroll');
     }
 
-    // Check if already unlocked
-    if (win?.lockUnlocked || (typeof window !== 'undefined' && window.lockUnlocked)) return {};
+// Lock unlocked check handled at start
 
     // Editor mode save/restore
     if (isEditorPreview && typeof editModeActive !== 'undefined') {
@@ -1230,21 +1347,35 @@
     const contentWrap = doc.createElement('div');
     contentWrap.className = 'lock-content-wrap';
 
-    // --- STAGE LEFT: Luxury Arched Card with Artwork (Matching Countdown Arched Card) ---
+    // --- STAGE LEFT: Luxury Portrait Picture Frame (Never Crops Artwork) ---
     const stageLeft = doc.createElement('div');
     stageLeft.className = 'lock-stage-left';
 
     const archCard = doc.createElement('div');
-    archCard.className = 'lock-arch-card';
+    archCard.className = 'lock-arch-card theme-' + theme.id;
     archCard.style.background = theme.cardBg;
-    archCard.style.border = '2px solid ' + theme.cardBorder;
-    archCard.style.boxShadow = theme.cardShadow;
+    archCard.style.border = theme.frameBorder || ('2px solid ' + theme.cardBorder);
+    archCard.style.boxShadow = theme.frameGlow || theme.cardShadow;
+    if (theme.frameInlay) {
+      archCard.style.outline = '1.5px solid ' + theme.frameInlay;
+      archCard.style.outlineOffset = '-5px';
+    }
 
     // Glowing theme-tinted halo behind card
     const halo = doc.createElement('div');
     halo.className = 'lock-card-halo';
     halo.style.background = 'radial-gradient(circle, ' + (theme.accentGlow || theme.accent) + ' 0%, transparent 70%)';
     archCard.appendChild(halo);
+
+    // Ornate Corner Accent Studs
+    const cornerIcon = theme.cornerChar || '✦';
+    ['tl', 'tr', 'bl', 'br'].forEach(pos => {
+      const cornerEl = doc.createElement('span');
+      cornerEl.className = 'lock-frame-corner ' + pos;
+      cornerEl.style.color = theme.accent;
+      cornerEl.textContent = cornerIcon;
+      archCard.appendChild(cornerEl);
+    });
 
     // Top Apex Badge Pin with theme emoji
     const archBadge = doc.createElement('div');
@@ -1253,18 +1384,32 @@
     archBadge.innerHTML = `<span>${theme.icon || '🔒'}</span>`;
     archCard.appendChild(archBadge);
 
-    // Inner Arched Window for Artwork / Photo (Cute & Attractive Imagery matching Countdown)
+    // Picture Window: 1:1 Aspect Ratio with Zero-Cutting contain fit
     const archWindow = doc.createElement('div');
     archWindow.className = 'lock-arch-window';
+    if (theme.windowBorder) archWindow.style.border = theme.windowBorder;
+    if (theme.windowGlow) archWindow.style.boxShadow = theme.windowGlow;
+
     const activeMedia = parsed.customImage || theme.defaultMedia || '/assets/media/lock/theme-romantic-pink.jpg';
-    archWindow.innerHTML = '<img src="' + activeMedia + '" class="lock-media-img" alt="' + theme.name + '" />';
+    const imgEl = doc.createElement('img');
+    imgEl.className = 'lock-media-img';
+    imgEl.src = activeMedia;
+    imgEl.alt = theme.name;
+    imgEl.loading = 'eager';
+    imgEl.onerror = () => {
+      if (theme.defaultMedia && imgEl.src !== theme.defaultMedia) {
+        imgEl.src = theme.defaultMedia;
+      }
+    };
+    archWindow.appendChild(imgEl);
     archCard.appendChild(archWindow);
 
-    // Bottom Subtitle Ribbon
+    // Bottom Subtitle Ribbon Plaque
     const archSubtitle = doc.createElement('div');
     archSubtitle.className = 'lock-arch-subtitle';
     archSubtitle.style.color = theme.subtextColor || theme.accent;
-    archSubtitle.innerHTML = `<span>✦</span><span>${isHi ? 'सीक्रेट सरप्राइज लॉक' : 'SECRET SURPRISE LOCK'}</span><span>✦</span>`;
+    const ribbonText = isHi ? (theme.ribbonTextHi || 'सीक्रेट सरप्राइज लॉक') : (theme.ribbonText || 'SECRET SURPRISE LOCK');
+    archSubtitle.innerHTML = `<span class="lock-ribbon-sparkle">✦</span><span class="lock-ribbon-text">${ribbonText}</span><span class="lock-ribbon-sparkle">✦</span>`;
     archCard.appendChild(archSubtitle);
 
     stageLeft.appendChild(archCard);
@@ -1403,8 +1548,72 @@
     overlay.appendChild(contentWrap);
     doc.body.appendChild(overlay);
 
-    // Smooth entrance
+    // === DYNAMIC AUTO-FIT SCALE CONTROLLER ===
+    // Guarantees zero cut-off content across any short or narrow viewport (preview pane & live devices)
+    function fitContentToViewport() {
+      if (!overlay || !overlay.isConnected || !contentWrap || !contentWrap.isConnected) return;
+
+      // Temporarily remove transform to measure natural unconstrained dimensions
+      contentWrap.style.transform = '';
+
+      const winH = (win && win.innerHeight) ? win.innerHeight : (typeof window !== 'undefined' ? window.innerHeight : 600);
+      const winW = (win && win.innerWidth) ? win.innerWidth : (typeof window !== 'undefined' ? window.innerWidth : 800);
+      const overlayH = overlay.clientHeight || winH;
+      const overlayW = overlay.clientWidth || winW;
+
+      // Safe breathing margins (leave at least 16px vertical, 16px horizontal)
+      const maxH = Math.max(120, overlayH - 20);
+      const maxW = Math.max(160, overlayW - 20);
+
+      const naturalH = contentWrap.scrollHeight;
+      const naturalW = contentWrap.scrollWidth;
+
+      if (naturalH > maxH || naturalW > maxW) {
+        const scaleH = maxH / naturalH;
+        const scaleW = maxW / naturalW;
+        const scale = Math.min(1, Math.min(scaleH, scaleW));
+        // Bound minimum scale to 0.5 so content remains readable
+        const finalScale = Math.max(0.5, Math.min(1, scale));
+        contentWrap.style.transform = `scale(${finalScale.toFixed(4)})`;
+      } else {
+        contentWrap.style.transform = '';
+      }
+    }
+
+    // Run fit immediately and on animation frames to settle initial layout
+    fitContentToViewport();
     const raf = (win && win.requestAnimationFrame) ? win.requestAnimationFrame : (typeof requestAnimationFrame !== "undefined" ? requestAnimationFrame : (fn) => setTimeout(fn, 16));
+    raf(() => {
+      fitContentToViewport();
+      setTimeout(fitContentToViewport, 40);
+      setTimeout(fitContentToViewport, 180);
+    });
+
+    const targetWin = win || (typeof window !== 'undefined' ? window : null);
+    const resizeListener = () => fitContentToViewport();
+    if (targetWin && targetWin.addEventListener) {
+      targetWin.addEventListener('resize', resizeListener);
+    }
+
+    let resizeObs = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      try {
+        resizeObs = new ResizeObserver(() => fitContentToViewport());
+        resizeObs.observe(overlay);
+        resizeObs.observe(contentWrap);
+      } catch(e) {}
+    }
+
+    overlay._fitCleanup = () => {
+      if (targetWin && targetWin.removeEventListener) {
+        targetWin.removeEventListener('resize', resizeListener);
+      }
+      if (resizeObs) {
+        try { resizeObs.disconnect(); } catch(e){}
+      }
+    };
+
+    // Smooth entrance
     raf(() => {
       setTimeout(() => {
         overlay.style.opacity = '1';

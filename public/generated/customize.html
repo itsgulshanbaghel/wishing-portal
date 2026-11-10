@@ -11741,17 +11741,6 @@
           // Auto-save current customization state
           if (typeof autoSaveState === 'function') autoSaveState();
 
-          // Reset interactive feature states so curtains, lock, countdown, welcome typing load fresh
-          const countdownActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('countdown') : false;
-          const lockActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('lock') : false;
-          const curtainActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('curtainReveal') : false;
-          const welcomeActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('welcomeTyping') : false;
-
-          window.countdownFinished = !countdownActive;
-          window.lockUnlocked = !lockActive;
-          window.curtainOpened = !curtainActive;
-          window.welcomeFinished = !welcomeActive;
-
           // Clean & disable all active feature DOM elements in preview iframe so they re-render fresh in initial state
           const f = document.getElementById("frame");
           const win = f ? f.contentWindow : null;
@@ -11767,6 +11756,23 @@
             } catch(e) {}
           }
           try { if (win) win.scrollTo(0, 0); } catch(e) {}
+
+          // Reset interactive feature states AFTER disable so lock, countdown, curtains, welcome load fresh
+          const countdownActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('countdown') : false;
+          const lockActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('lock') : false;
+          const curtainActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('curtainReveal') : false;
+          const welcomeActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('welcomeTyping') : false;
+
+          window.countdownFinished = !countdownActive;
+          window.lockUnlocked = !lockActive;
+          window.curtainOpened = !curtainActive;
+          window.welcomeFinished = !welcomeActive;
+          if (win) {
+            win.countdownFinished = !countdownActive;
+            win.lockUnlocked = !lockActive;
+            win.curtainOpened = !curtainActive;
+            win.welcomeFinished = !welcomeActive;
+          }
         }
         const bodyEl = document.body;
         const topBar = document.getElementById('fullPreviewTopBar');
@@ -11789,6 +11795,27 @@
           bodyEl.classList.remove('stage-screen2');
           if (topBar) topBar.style.display = 'none';
           showStage(1);
+
+          const countdownActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('countdown') : false;
+          const lockActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('lock') : false;
+          const curtainActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('curtainReveal') : false;
+          const welcomeActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('welcomeTyping') : false;
+
+          window.countdownFinished = !countdownActive;
+          window.lockUnlocked = !lockActive;
+          window.curtainOpened = !curtainActive;
+          window.welcomeFinished = !welcomeActive;
+          const f = document.getElementById("frame");
+          const win = f ? f.contentWindow : null;
+          if (win) {
+            win.countdownFinished = !countdownActive;
+            win.lockUnlocked = !lockActive;
+            win.curtainOpened = !curtainActive;
+            win.welcomeFinished = !welcomeActive;
+          }
+          if (typeof debouncedRefreshAll === 'function') {
+            debouncedRefreshAll();
+          }
         }
       };
 
