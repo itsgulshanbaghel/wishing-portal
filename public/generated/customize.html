@@ -3879,8 +3879,7 @@
         <div class="preview-panel" id="previewPanel">
           <div class="preview-header"></div>
           <div class="preview-box">
-            <iframe id="frame"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads allow-presentation"></iframe>
+            <iframe id="frame" title="Live Website Preview"></iframe>
           </div>
           <div class="preview-actions">
             <button class="preview-action-btn" id="editToggleBtn" onclick="toggleEditMode(event)"
@@ -5075,10 +5074,15 @@
         const restoreParam = urlParams.get('restore');
         const viewParam = urlParams.get('view');
         let fromUserData = null;
+        let isFromCreate = false;
         try {
           const ud = JSON.parse(localStorage.getItem('userData') || '{}');
           fromUserData = ud.websiteId || null;
+          isFromCreate = !!ud._fromCreate;
         } catch (e) {}
+        if (isFromCreate && !restoreParam && !viewParam) {
+          return null;
+        }
         return restoreParam || 
                (urlParams.get('fresh') ? null : viewParam) || 
                window._activeWebsiteId || 
@@ -5116,6 +5120,12 @@
         return { event: 'birthday', name: 'Loved One' };
       }
       function getUserName() {
+        const ev = getEventData();
+        const evName = ev.recipientName || ev.name;
+        if (evName && evName !== 'Loved One' && evName !== 'Special One' && evName !== 'Friend' && evName !== 'Guest') {
+          return evName;
+        }
+
         if (window._sharedUserName && window._sharedUserName !== 'Loved One' && window._sharedUserName !== 'Special One') return window._sharedUserName;
 
         const storedName = localStorage.getItem('userDataName') || sessionStorage.getItem('userDataName');
@@ -5143,8 +5153,7 @@
           }
         } catch (e) { }
 
-        const ev = getEventData();
-        return ev.recipientName || ev.name || window._sharedUserName || "Loved One";
+        return evName || window._sharedUserName || "Loved One";
       }
       let activeFeatureStates = new Map(), customData = new Map(), openPanelId = null, refreshDebounceTimer = null, isFrameLoaded = false, isPageInitializing = true;
 
@@ -10175,6 +10184,92 @@
 
       // IFRAME LOAD
       const frame = document.getElementById("frame");
+
+      function applyUserDataToIframe(doc, win, uData) {
+        if (!doc || !uData) return;
+        // 1. Sync userData into iframe localStorage & window object
+        try {
+          if (win && win.localStorage) {
+            win.localStorage.setItem('userData', JSON.stringify(uData));
+            const uName = uData.recipientName || uData.name;
+            if (uName) {
+              win.localStorage.setItem('userDataName', uName);
+            }
+          }
+          if (win) {
+            win._userData = uData;
+            const uName = uData.recipientName || uData.name;
+            if (uName) {
+              win.getUserName = () => uName;
+              win._sharedUserName = uName;
+            }
+          }
+        } catch (e) {}
+
+        // Check if user has already custom edited DOM elements with pencil
+        let customEdits = {};
+        try {
+          const raw = localStorage.getItem('greeter_custom_dom_texts') || sessionStorage.getItem('greeter_custom_dom_texts');
+          if (raw) customEdits = JSON.parse(raw);
+        } catch(e) {}
+
+        // 2. Call template's own refresh / apply function if present
+        try {
+          if (win && typeof win.applyLanguageAndData === 'function') win.applyLanguageAndData();
+          else if (win && typeof win.refreshAll === 'function') win.refreshAll();
+          else if (win && typeof win.applyLang === 'function') win.applyLang();
+        } catch(e) {}
+
+        // 3. Directly update template DOM elements with user's data (only if not customized via pencil)
+        try {
+          const targetName = uData.recipientName || uData.name;
+          const hasCustomTitle = customEdits['heroTitle'] || customEdits['nameSub'] || customEdits['bookTitle'];
+          if (!hasCustomTitle && targetName && targetName !== 'Loved One' && targetName !== 'Special One' && targetName !== 'Friend' && targetName !== 'Guest') {
+            const nameSelectors = ['#heroTitle', '#heroMeta', '#nameSub', '#bookTitle', '#n1', '.name-sub', '.recipient-name', '.user-name', '#namesDuo', '.names-duo', '.name-tag', '#nameTag'];
+            nameSelectors.forEach(sel => {
+              const el = doc.querySelector(sel);
+              if (el && !customEdits[sel] && !customEdits[el.id]) {
+                if (sel === '#n1' || sel.includes('recipient-name') || sel.includes('user-name')) {
+                  el.innerText = targetName;
+                } else if (!el.textContent.includes(targetName)) {
+                  el.innerHTML = el.innerHTML.replace(/(Loved One|My Sunshine|Special One|Celebrate|\{name\}|My Love|Friend|Loved One|मेरे प्यार|मेरी जान)/gi, targetName);
+                }
+              }
+            });
+          }
+
+          const hasCustomStory = customEdits['storyBody'] || customEdits['storyText'] || customEdits['#storyBody'] || customEdits['.story-body'] || customEdits['insideMsg'];
+          if (!hasCustomStory && uData.story) {
+            const storyEl = doc.getElementById('storyText') || doc.getElementById('storyBody') || doc.querySelector('.story-body') || doc.getElementById('insideMsg');
+            if (storyEl) {
+              storyEl.innerHTML = uData.story.replace(/\n/g, '<br>');
+            }
+          }
+
+          const hasCustomWish = customEdits['wishText'] || customEdits['wishesText'] || customEdits['#wishText'] || customEdits['.wish-text'] || customEdits['cardBody'];
+          if (!hasCustomWish && uData.wishes) {
+            const wishEl = doc.getElementById('wishesText') || doc.getElementById('wishText') || doc.querySelector('.wish-text') || doc.getElementById('cardBody');
+            if (wishEl) {
+              wishEl.innerHTML = uData.wishes.replace(/\n/g, '<br>');
+            }
+          }
+
+          if (Array.isArray(uData.memories) && uData.memories.length > 0) {
+            const gal = doc.getElementById('gallery') || doc.getElementById('galleryContainer');
+            if (gal) {
+              gal.innerHTML = '';
+              uData.memories.forEach((mem, idx) => {
+                const div = doc.createElement('div');
+                div.className = 'mem-thumb gallery-item';
+                if (mem.img) div.innerHTML = '<img src="' + mem.img + '" alt="memory ' + (idx+1) + '">';
+                else div.innerText = mem.text || '🎈';
+                gal.appendChild(div);
+              });
+            }
+          }
+        } catch(e) {}
+      }
+
       function loadSelectedTemplate() {
         isFrameLoaded = false;
         const urlParams = new URLSearchParams(window.location.search);
@@ -10214,11 +10309,16 @@
           }
         }
 
-        if (!tp || tp === "null") tp = "../templates/birthday1.html";
-        tp = resolveTemplateUrl(tp);
+        const uData = getEventData();
+        if (!tp || tp === "null") {
+          tp = localStorage.getItem("selectedTemplate");
+        }
+        tp = resolveTemplateUrl(tp, uData.event);
         const separator = tp.includes('?') ? '&' : '?';
+        const uName = uData.recipientName || uData.name || '';
+        const nameParam = uName ? `&name=${encodeURIComponent(uName)}` : '';
         // Add mode=edit to enable image upload buttons inside the template
-        frame.src = `${tp}${separator}v=${Date.now()}&mode=edit&lang=${currentLang}`;
+        frame.src = `${tp}${separator}v=${Date.now()}&mode=edit&lang=${currentLang}${nameParam}`;
       }
       frame.onload = () => {
         isFrameLoaded = true;
@@ -10252,7 +10352,15 @@
           `;
           iframeDoc.head.appendChild(style);
         }
+
+        const currentUData = getEventData();
+        applyUserDataToIframe(iframeDoc, iframeWin, currentUData);
+
         refreshAll();
+        if (typeof updateHubSummary === 'function') {
+          updateHubSummary();
+        }
+
         // Restore user custom text edits directly onto the template DOM
         if (typeof window.restoreCustomDomEdits === 'function' && iframeDoc) {
           window.restoreCustomDomEdits(iframeDoc);
@@ -10361,6 +10469,16 @@
         const isExplicitShared = (urlParams.get('_v') === 'c' || urlParams.get('slug') || urlParams.get('mode') === 'share' || urlParams.get('mode') === 'view' || (viewId && !restoreId));
         if (isExplicitShared) {
           return;
+        }
+        const uData = getEventData();
+        if (uData && uData._fromCreate) {
+          try {
+            uData._fromCreate = false;
+            localStorage.setItem('userData', JSON.stringify(uData));
+          } catch(e) {}
+        }
+        if (typeof updateHubSummary === 'function') {
+          updateHubSummary();
         }
         const isFresh = urlParams.get('fresh') === '1' || urlParams.has('t') || urlParams.get('src') === 'edit';
         const websiteId = (typeof window.getActiveWebsiteId === 'function' ? window.getActiveWebsiteId() : null) || viewId || restoreId;
@@ -10605,7 +10723,11 @@
             const el = doc.querySelector(sel);
             if (el && el.innerText && el.innerText.trim()) {
               const text = el.innerText.trim();
-              if (text && text !== currentEventData.story) {
+              const isDefaultStory = text.includes('Your birthday is the day the world received') ||
+                                    text.includes('Every anniversary is a celebration') ||
+                                    text.includes('Every anniversary reminds me why') ||
+                                    text.includes('A beautiful story waiting');
+              if (text && text !== currentEventData.story && (!isDefaultStory || notify)) {
                 currentEventData.story = text;
                 hasChanges = true;
                 break;
@@ -10619,7 +10741,11 @@
             const el = doc.querySelector(sel);
             if (el && el.innerText && el.innerText.trim()) {
               const text = el.innerText.trim();
-              if (text && text !== currentEventData.wishes) {
+              const isDefaultWish = text.includes('May your days be filled') ||
+                                   text.includes('You deserve the universe') ||
+                                   text.includes('May every year be sweeter') ||
+                                   text.includes('May every year we share');
+              if (text && text !== currentEventData.wishes && (!isDefaultWish || notify)) {
                 currentEventData.wishes = text;
                 hasChanges = true;
                 break;

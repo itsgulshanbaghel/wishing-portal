@@ -3766,9 +3766,17 @@
         if (!showFirstValidationError()) return;
         localStorage.removeItem('activeCustomizerWebsiteId');
         localStorage.removeItem('customizationState');
+        localStorage.removeItem('greeter_custom_dom_texts');
+        sessionStorage.removeItem('greeter_custom_dom_texts');
+        localStorage.removeItem('userDataName');
+        sessionStorage.removeItem('userDataName');
         sessionStorage.removeItem('pendingPremiumForNextWebsite');
         const formData = collectFormData({ _fromCreate: true });
         localStorage.setItem('userData', JSON.stringify(formData));
+        if (formData.name) {
+          localStorage.setItem('userDataName', formData.name);
+          sessionStorage.setItem('userDataName', formData.name);
+        }
         localStorage.setItem('create_form_draft', JSON.stringify(formData));
         window.location.href = 'generated/preview.html';
       });

@@ -2226,17 +2226,24 @@
         }
         localStorage.setItem("selectedTemplate", selectedTemplate);
         localStorage.setItem("userData", JSON.stringify(userData));
+        if (userData && (userData.name || userData.recipientName)) {
+          const uName = userData.recipientName || userData.name;
+          localStorage.setItem('userDataName', uName);
+          sessionStorage.setItem('userDataName', uName);
+        }
 
         // If user has pending premium payment, set a flag to be used when website is saved
         if (userData.pendingPremiumPayment) {
           localStorage.setItem('pendingPremiumForNextWebsite', 'true');
         }
 
-        const viewId = new URLSearchParams(window.location.search).get('view') || 
-                       new URLSearchParams(window.location.search).get('restore') || 
+        const isFromCreate = !!(userData && userData._fromCreate);
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewId = (!isFromCreate) ? (urlParams.get('view') || 
+                       urlParams.get('restore') || 
                        userData.websiteId || 
                        localStorage.getItem('activeCustomizerWebsiteId') || 
-                       '';
+                       '') : '';
         window.location.href = viewId ? `customize.html?restore=${encodeURIComponent(viewId)}` : "customize.html";
       }
 
