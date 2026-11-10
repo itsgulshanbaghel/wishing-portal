@@ -20,20 +20,21 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&family=Caveat:wght@400;700&family=Roboto:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Dancing+Script:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Merriweather:wght@300;400;700&family=Pacifico&display=swap">
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&family=Caveat:wght@400;700&family=Roboto:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Dancing+Script:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Merriweather:wght@300;400;700&family=Pacifico&display=swap">
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&family=Caveat:wght@400;700&family=Roboto:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Dancing+Script:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Merriweather:wght@300;400;700&family=Pacifico&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script>
-    window.togglePinVisibility = function(inputId, btn) {
+    window.togglePinVisibility = function (inputId, btn) {
       const input = document.getElementById(inputId);
       if (!input) return;
       const isPassword = input.type === 'password';
       input.type = isPassword ? 'text' : 'password';
       if (btn) {
-        btn.innerHTML = isPassword 
-          ? '<i class="fas fa-eye-slash" style="pointer-events: none;"></i>' 
+        btn.innerHTML = isPassword
+          ? '<i class="fas fa-eye-slash" style="pointer-events: none;"></i>'
           : '<i class="fas fa-eye" style="pointer-events: none;"></i>';
         btn.setAttribute('title', isPassword ? 'Hide PIN' : 'Show PIN');
         btn.setAttribute('aria-label', isPassword ? 'Hide PIN' : 'Show PIN');
@@ -67,12 +68,14 @@
       box-sizing: border-box;
       transition: all 0.3s ease;
     }
+
     .media-preset-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
     }
+
     .media-preset-title {
       font-size: 0.82rem;
       font-weight: 700;
@@ -83,6 +86,7 @@
       align-items: center;
       gap: 6px;
     }
+
     .media-preset-grid {
       display: flex;
       flex-direction: row;
@@ -93,13 +97,16 @@
       -webkit-overflow-scrolling: touch;
       scroll-snap-type: x mandatory;
     }
+
     .media-preset-grid::-webkit-scrollbar {
       height: 5px;
     }
+
     .media-preset-grid::-webkit-scrollbar-thumb {
       background: rgba(123, 93, 246, 0.35);
       border-radius: 4px;
     }
+
     .media-preset-card {
       flex: 0 0 100px;
       min-width: 100px;
@@ -118,16 +125,19 @@
       user-select: none;
       box-sizing: border-box;
     }
+
     .media-preset-card:hover {
       transform: translateY(-2px) scale(1.02);
       border-color: var(--accent-solid);
       box-shadow: 0 6px 14px var(--glow);
     }
+
     .media-preset-card.active {
       border-color: var(--accent-solid);
       background: rgba(123, 93, 246, 0.1);
       box-shadow: 0 0 0 2px var(--accent-solid), 0 6px 18px var(--glow);
     }
+
     .media-preset-thumb-wrap {
       width: 100%;
       height: 60px;
@@ -140,6 +150,7 @@
       position: relative;
       margin-bottom: 5px;
     }
+
     .media-preset-thumb-wrap video,
     .media-preset-thumb-wrap img {
       width: 100%;
@@ -147,10 +158,12 @@
       object-fit: contain;
       pointer-events: none;
     }
+
     .media-preset-none-icon {
       font-size: 1.6rem;
       opacity: 0.6;
     }
+
     .media-preset-name {
       font-size: 0.72rem;
       font-weight: 600;
@@ -161,10 +174,12 @@
       text-overflow: ellipsis;
       max-width: 100%;
     }
+
     .media-preset-card.active .media-preset-name {
       color: var(--accent-solid);
       font-weight: 700;
     }
+
     .media-preset-active-check {
       position: absolute;
       top: 5px;
@@ -183,9 +198,11 @@
       z-index: 10;
       pointer-events: none;
     }
+
     .media-preset-card.active .media-preset-active-check {
       display: flex;
     }
+
     /* ---------- ORIGINAL VARIABLES + MOBILE RESIZER EXTENSIONS ---------- */
     :root {
       --bg-primary: #f9f7ff;
@@ -2413,8 +2430,19 @@
     }
 
     @keyframes pulseGlow {
-      0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 10px #10b981; }
-      50% { transform: scale(1.25); opacity: 0.8; box-shadow: 0 0 16px #10b981; }
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 10px #10b981;
+      }
+
+      50% {
+        transform: scale(1.25);
+        opacity: 0.8;
+        box-shadow: 0 0 16px #10b981;
+      }
     }
 
     .hub-summary-box {
@@ -2826,18 +2854,23 @@
         gap: 12px 8px;
         margin-top: 22px;
       }
+
       .plan-pill {
         padding-top: 13px !important;
       }
+
       .cmp-price-big {
         font-size: 2.2rem;
       }
+
       .cmp-price-row {
         gap: 6px;
       }
+
       .cmp-price-orig {
         font-size: 1.15rem;
       }
+
       .cmp-price-period {
         font-size: 0.92rem;
       }
@@ -2983,7 +3016,8 @@
       transform: translateY(-2px);
     }
 
-    .btn-free-card-mobile, .btn-prem-card-mobile {
+    .btn-free-card-mobile,
+    .btn-prem-card-mobile {
       width: 100%;
       padding: 14px;
       border-radius: 40px;
@@ -3233,10 +3267,12 @@
         margin-top: 12px !important;
         padding: 0 4px !important;
       }
+
       #intlContactSupportContainer p {
         font-size: 0.84rem !important;
         line-height: 1.45 !important;
       }
+
       #intlContactUsBtn {
         font-size: 0.84rem !important;
         padding: 2px 4px !important;
@@ -3271,7 +3307,8 @@
       }
 
       .optional-contact-input {
-        font-size: 16px !important; /* Prevents auto-zoom on iOS mobile safari */
+        font-size: 16px !important;
+        /* Prevents auto-zoom on iOS mobile safari */
         padding: 12px 14px !important;
         width: 100% !important;
         box-sizing: border-box !important;
@@ -3297,6 +3334,7 @@
     }
 
     @media (min-width: 769px) {
+
       .single-plan-showcase-card,
       #premiumCard {
         max-width: 660px;
@@ -3341,8 +3379,13 @@
     }
 
     @keyframes fadeInOverlay {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     .notice-modal-card {
@@ -3359,8 +3402,15 @@
     }
 
     @keyframes scaleInCard {
-      from { transform: scale(0.88); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+      from {
+        transform: scale(0.88);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .notice-modal-close {
@@ -3495,6 +3545,7 @@
       justify-content: center;
       padding: 20px;
     }
+
     .media-upload-card {
       background: var(--card-bg, #ffffff);
       border: 1.5px solid var(--card-border, rgba(123, 93, 246, 0.25));
@@ -3506,6 +3557,7 @@
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
       animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     .upload-icon-pulse {
       width: 68px;
       height: 68px;
@@ -3521,25 +3573,37 @@
       box-shadow: 0 10px 25px rgba(123, 93, 246, 0.25);
       animation: pulseGlow 2s infinite alternate;
     }
+
     @keyframes pulseGlow {
-      from { transform: scale(1); box-shadow: 0 10px 25px rgba(123, 93, 246, 0.25); }
-      to { transform: scale(1.08); box-shadow: 0 14px 35px rgba(255, 122, 47, 0.35); }
+      from {
+        transform: scale(1);
+        box-shadow: 0 10px 25px rgba(123, 93, 246, 0.25);
+      }
+
+      to {
+        transform: scale(1.08);
+        box-shadow: 0 14px 35px rgba(255, 122, 47, 0.35);
+      }
     }
+
     .upload-modal-title {
       font-size: 1.35rem;
       font-weight: 800;
       color: var(--text-primary);
       margin: 0 0 6px;
     }
+
     .upload-modal-status {
       font-size: 0.88rem;
       color: var(--text-secondary);
       line-height: 1.4;
       margin: 0 0 20px;
     }
+
     .upload-progress-container {
       margin-bottom: 8px;
     }
+
     .upload-progress-bar {
       height: 10px;
       background: rgba(123, 93, 246, 0.12);
@@ -3547,12 +3611,14 @@
       overflow: hidden;
       position: relative;
     }
+
     .upload-progress-fill {
       height: 100%;
       background: linear-gradient(90deg, #7b5df6 0%, #ff7a2f 100%);
       border-radius: 10px;
       transition: width 0.25s ease;
     }
+
     .upload-progress-info {
       display: flex;
       justify-content: space-between;
@@ -3561,6 +3627,7 @@
       font-weight: 700;
       color: var(--text-secondary);
     }
+
     .upload-error-box {
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.3);
@@ -3575,11 +3642,13 @@
       gap: 8px;
       text-align: left;
     }
+
     .upload-modal-actions {
       display: flex;
       gap: 12px;
       margin-top: 18px;
     }
+
     .upload-modal-btn {
       flex: 1;
       padding: 12px 18px;
@@ -3594,20 +3663,24 @@
       justify-content: center;
       gap: 8px;
     }
+
     .upload-modal-btn.btn-primary {
       background: linear-gradient(135deg, #7b5df6, #ff7a2f);
       color: #fff;
       box-shadow: 0 8px 20px rgba(123, 93, 246, 0.3);
     }
+
     .upload-modal-btn.btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 12px 26px rgba(123, 93, 246, 0.4);
     }
+
     .upload-modal-btn.btn-secondary {
       background: rgba(255, 255, 255, 0.08);
       color: var(--text-primary);
       border: 1px solid var(--card-border);
     }
+
     .upload-modal-btn.btn-secondary:hover {
       background: rgba(255, 255, 255, 0.15);
     }
@@ -3628,9 +3701,11 @@
       box-sizing: border-box;
       animation: fadeInOverlay 0.22s ease-out;
     }
+
     body.dark .intl-modal-overlay {
       background: rgba(10, 6, 20, 0.82);
     }
+
     .intl-modal-card {
       background: var(--bg-secondary, #ffffff);
       color: var(--text-primary, #1a1025);
@@ -3649,12 +3724,14 @@
       animation: scaleInCard 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
     }
+
     body.dark .intl-modal-card {
       background: var(--bg-secondary, #1e1635);
       color: var(--text-primary, #f5f0ff);
       border-color: rgba(123, 93, 246, 0.38);
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(123, 93, 246, 0.22);
     }
+
     .intl-modal-close {
       position: absolute;
       top: 16px;
@@ -3672,16 +3749,19 @@
       justify-content: center;
       transition: all 0.2s ease;
     }
+
     body.dark .intl-modal-close {
       background: rgba(255, 255, 255, 0.08);
       border-color: rgba(255, 255, 255, 0.12);
       color: var(--text-secondary, #cbbff0);
     }
+
     .intl-modal-close:hover {
       background: rgba(239, 68, 68, 0.14);
       color: #ef4444;
       transform: scale(1.05);
     }
+
     .intl-modal-header-icon {
       width: 56px;
       height: 56px;
@@ -3695,11 +3775,13 @@
       font-size: 24px;
       color: var(--accent-solid, #7b5df6);
     }
+
     body.dark .intl-modal-header-icon {
       background: linear-gradient(135deg, rgba(123, 93, 246, 0.22), rgba(255, 122, 47, 0.22));
       border-color: rgba(123, 93, 246, 0.45);
       color: #a78bfa;
     }
+
     .intl-modal-title {
       font-size: 1.35rem;
       font-weight: 800;
@@ -3707,12 +3789,14 @@
       color: var(--text-primary);
       letter-spacing: -0.3px;
     }
+
     .intl-modal-desc {
       font-size: 0.88rem;
       color: var(--text-secondary);
       margin: 0 0 18px;
       line-height: 1.45;
     }
+
     .intl-channel-link {
       display: flex;
       align-items: center;
@@ -3726,48 +3810,59 @@
       transition: all 0.2s ease;
       box-sizing: border-box;
     }
+
     .intl-channel-link:hover {
       transform: translateY(-2px);
     }
+
     /* Instagram channel */
     .intl-channel-ig {
       background: linear-gradient(135deg, rgba(225, 48, 108, 0.08), rgba(131, 58, 180, 0.08));
       border: 1.5px solid rgba(225, 48, 108, 0.25);
     }
+
     body.dark .intl-channel-ig {
       background: linear-gradient(135deg, rgba(225, 48, 108, 0.16), rgba(131, 58, 180, 0.16));
       border-color: rgba(225, 48, 108, 0.38);
     }
+
     .intl-channel-ig:hover {
       border-color: #e1306c;
       box-shadow: 0 6px 18px rgba(225, 48, 108, 0.2);
     }
+
     /* Telegram channel */
     .intl-channel-tg {
       background: rgba(0, 136, 204, 0.07);
       border: 1.5px solid rgba(0, 136, 204, 0.22);
     }
+
     body.dark .intl-channel-tg {
       background: rgba(0, 136, 204, 0.14);
       border-color: rgba(0, 136, 204, 0.38);
     }
+
     .intl-channel-tg:hover {
       border-color: #0088cc;
       box-shadow: 0 6px 18px rgba(0, 136, 204, 0.2);
     }
+
     /* Email channel */
     .intl-channel-mail {
       background: rgba(16, 185, 129, 0.07);
       border: 1.5px solid rgba(16, 185, 129, 0.22);
     }
+
     body.dark .intl-channel-mail {
       background: rgba(16, 185, 129, 0.14);
       border-color: rgba(16, 185, 129, 0.38);
     }
+
     .intl-channel-mail:hover {
       border-color: #10b981;
       box-shadow: 0 6px 18px rgba(16, 185, 129, 0.2);
     }
+
     /* Full form link */
     .intl-channel-form {
       display: flex;
@@ -3784,25 +3879,30 @@
       font-size: 0.84rem;
       transition: all 0.2s ease;
     }
+
     body.dark .intl-channel-form {
       background: rgba(255, 255, 255, 0.03);
       border-color: rgba(255, 255, 255, 0.18);
       color: var(--text-secondary);
     }
+
     .intl-channel-form:hover {
       border-color: var(--accent-solid, #7b5df6);
       color: var(--accent-solid, #7b5df6);
       background: rgba(123, 93, 246, 0.06);
     }
+
     @media (max-width: 480px) {
       .intl-modal-overlay {
         padding: 12px;
       }
+
       .intl-modal-card {
         padding: 22px 16px 18px;
         border-radius: 20px;
         max-height: calc(100vh - 24px);
       }
+
       .intl-modal-close {
         top: 12px;
         right: 12px;
@@ -3810,19 +3910,23 @@
         height: 30px;
         font-size: 13px;
       }
+
       .intl-modal-header-icon {
         width: 46px;
         height: 46px;
         font-size: 20px;
         margin-bottom: 10px;
       }
+
       .intl-modal-title {
         font-size: 1.2rem;
       }
+
       .intl-modal-desc {
         font-size: 0.82rem;
         margin-bottom: 14px;
       }
+
       .intl-channel-link {
         padding: 11px 12px;
         font-size: 0.86rem;
@@ -3901,8 +4005,8 @@
           <div class="action-bar">
             <button class="action-btn" id="backBtn"><i class="fas fa-chevron-left"></i> <span
                 id="backBtnText">Back</span></button>
-            <button class="action-btn" id="generateLinkBtn" onclick="showStage(2)"><i class="fas fa-arrow-right"></i> <span
-                id="generateBtnText">Next</span></button>
+            <button class="action-btn" id="generateLinkBtn" onclick="showStage(2)"><i class="fas fa-arrow-right"></i>
+              <span id="generateBtnText">Next</span></button>
           </div>
         </div>
       </div>
@@ -3912,17 +4016,24 @@
     <div id="stage2PublishHub" class="stage-container" style="display: none;">
       <div class="hub-card">
         <div class="hub-header">
-          <div class="hub-badge" style="background: rgba(123, 93, 246, 0.12); color: #7b5df6; border: 1px solid rgba(123, 93, 246, 0.25); font-weight: 800; padding: 5px 16px; border-radius: 20px; font-size: 0.76rem; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px;">
+          <div class="hub-badge"
+            style="background: rgba(123, 93, 246, 0.12); color: #7b5df6; border: 1px solid rgba(123, 93, 246, 0.25); font-weight: 800; padding: 5px 16px; border-radius: 20px; font-size: 0.76rem; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px;">
             ✨ STEP 2 OF 3 · VERIFY &amp; PUBLISH
           </div>
-          <h2 class="hub-title" style="font-size: 2.2rem; font-weight: 900; margin: 12px 0 10px; background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">Review &amp; Finalize Your Surprise</h2>
-          <p class="hub-subtitle" style="font-size: 0.95rem; color: var(--text-secondary); max-width: 620px; margin: 0 auto; line-height: 1.5;">Double-check your customized details below, launch full-screen preview to test your website, or proceed directly to publish.</p>
+          <h2 class="hub-title"
+            style="font-size: 2.2rem; font-weight: 900; margin: 12px 0 10px; background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">
+            Review &amp; Finalize Your Surprise</h2>
+          <p class="hub-subtitle"
+            style="font-size: 0.95rem; color: var(--text-secondary); max-width: 620px; margin: 0 auto; line-height: 1.5;">
+            Double-check your customized details below, launch full-screen preview to test your website, or proceed
+            directly to publish.</p>
         </div>
 
 
         <div class="hub-summary-box">
           <div class="hub-summary-item">
-            <div class="hub-summary-icon" style="background: rgba(123, 93, 246, 0.15); color: #7b5df6;"><i class="fas fa-user"></i></div>
+            <div class="hub-summary-icon" style="background: rgba(123, 93, 246, 0.15); color: #7b5df6;"><i
+                class="fas fa-user"></i></div>
             <div>
               <div class="hub-summary-label">RECIPIENT</div>
               <div class="hub-summary-val" id="hubRecipientName">Someone Special</div>
@@ -3930,7 +4041,8 @@
           </div>
 
           <div class="hub-summary-item">
-            <div class="hub-summary-icon" style="background: rgba(245, 158, 11, 0.15); color: #d97706;"><i class="fas fa-gift"></i></div>
+            <div class="hub-summary-icon" style="background: rgba(245, 158, 11, 0.15); color: #d97706;"><i
+                class="fas fa-gift"></i></div>
             <div>
               <div class="hub-summary-label">OCCASION</div>
               <div class="hub-summary-val" id="hubEventType">Celebration</div>
@@ -3938,7 +4050,8 @@
           </div>
 
           <div class="hub-summary-item">
-            <div class="hub-summary-icon" style="background: rgba(6, 182, 212, 0.15); color: #0891b2;"><i class="fas fa-palette"></i></div>
+            <div class="hub-summary-icon" style="background: rgba(6, 182, 212, 0.15); color: #0891b2;"><i
+                class="fas fa-palette"></i></div>
             <div>
               <div class="hub-summary-label">SELECTED TEMPLATE</div>
               <div class="hub-summary-val" id="hubTemplateName">Preset Design</div>
@@ -3946,7 +4059,8 @@
           </div>
 
           <div class="hub-summary-item">
-            <div class="hub-summary-icon" style="background: rgba(236, 72, 153, 0.15); color: #db2777;"><i class="fas fa-magic"></i></div>
+            <div class="hub-summary-icon" style="background: rgba(236, 72, 153, 0.15); color: #db2777;"><i
+                class="fas fa-magic"></i></div>
             <div>
               <div class="hub-summary-label">ACTIVE FEATURES</div>
               <div class="hub-summary-val" id="hubFeaturesCount">Standard</div>
@@ -3973,7 +4087,8 @@
         </div>
 
         <!-- Trust Badges Row -->
-        <div style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--card-border); display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">
+        <div
+          style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--card-border); display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">
           <span>⚡ Instant Generation</span>
           <span>•</span>
           <span>📱 100% Responsive</span>
@@ -3991,27 +4106,40 @@
             <i class="fas fa-arrow-left"></i>
             <span>Back &amp; Edit Details</span>
           </button>
-          <div style="font-size: 0.8rem; font-weight: 800; color: var(--accent-solid); background: rgba(123, 93, 246, 0.12); padding: 4px 14px; border-radius: 14px;">✨ STEP 3 OF 3</div>
+          <div
+            style="font-size: 0.8rem; font-weight: 800; color: var(--accent-solid); background: rgba(123, 93, 246, 0.12); padding: 4px 14px; border-radius: 14px;">
+            ✨ STEP 3 OF 3</div>
         </div>
 
         <div class="step2-header" style="text-align: center; margin-bottom: 24px;">
           <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-            <span style="background: rgba(255, 122, 47, 0.12); color: #ff7a2f; border: 1px solid rgba(255, 122, 47, 0.25); font-size: 0.72rem; font-weight: 800; padding: 4px 16px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;">✨ SELECT YOUR PLAN</span>
+            <span
+              style="background: rgba(255, 122, 47, 0.12); color: #ff7a2f; border: 1px solid rgba(255, 122, 47, 0.25); font-size: 0.72rem; font-weight: 800; padding: 4px 16px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;">✨
+              SELECT YOUR PLAN</span>
           </div>
-          <h2 class="step2-title" style="font-size: 2.2rem; font-weight: 900; margin: 0 0 10px; background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">Make Your Surprise Truly Unforgettable</h2>
-          <p class="step2-sub" style="font-size: 0.92rem; color: var(--text-secondary); max-width: 620px; margin: 0 auto;">Select how long you want your personalized surprise website to remain live, interactive, and ad-free.</p>
+          <h2 class="step2-title"
+            style="font-size: 2.2rem; font-weight: 900; margin: 0 0 10px; background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">
+            Make Your Surprise Truly Unforgettable</h2>
+          <p class="step2-sub"
+            style="font-size: 0.92rem; color: var(--text-secondary); max-width: 620px; margin: 0 auto;">Select how long
+            you want your personalized surprise website to remain live, interactive, and ad-free.</p>
         </div>
 
         <!-- SINGLE PLAN SHOWCASE CARD -->
-        <div class="single-plan-showcase-card" id="premiumCard" style="max-width: 660px; margin: 0 auto 30px; background: var(--bg-secondary); border: 2px solid var(--accent-solid); border-radius: 28px; padding: 28px 24px; box-shadow: 0 20px 45px -12px var(--glow); position: relative;">
-          <div class="premium-badge" style="left: 50%; transform: translateX(-50%); right: auto; top: -14px; background: linear-gradient(135deg, #7b5df6 0%, #e83a59 100%); color: #fff; font-size: 0.72rem; font-weight: 900; padding: 4px 18px; border-radius: 20px; letter-spacing: .5px; box-shadow: 0 4px 14px rgba(123, 93, 246, 0.4); white-space: nowrap;">👑 UNLOCK FULL EXPERIENCE</div>
+        <div class="single-plan-showcase-card" id="premiumCard"
+          style="max-width: 660px; margin: 0 auto 30px; background: var(--bg-secondary); border: 2px solid var(--accent-solid); border-radius: 28px; padding: 28px 24px; box-shadow: 0 20px 45px -12px var(--glow); position: relative;">
+          <div class="premium-badge"
+            style="left: 50%; transform: translateX(-50%); right: auto; top: -14px; background: linear-gradient(135deg, #7b5df6 0%, #e83a59 100%); color: #fff; font-size: 0.72rem; font-weight: 900; padding: 4px 18px; border-radius: 20px; letter-spacing: .5px; box-shadow: 0 4px 14px rgba(123, 93, 246, 0.4); white-space: nowrap;">
+            👑 UNLOCK FULL EXPERIENCE</div>
 
           <div>
             <div style="text-align: center; margin-bottom: 18px;">
-              <div class="cmp-title" style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <div class="cmp-title"
+                style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 8px;">
                 <span style="color: #f59e0b;">✨</span> Choose Website Duration
               </div>
-              <div id="cmpSubtitle" style="font-size: 0.88rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px;">
+              <div id="cmpSubtitle"
+                style="font-size: 0.88rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px;">
                 Keep the moment alive for 30 Days
               </div>
             </div>
@@ -4019,27 +4147,34 @@
             <!-- 4-tier pill switcher -->
             <div class="plan-switcher" id="planSwitcher">
               <button class="plan-pill" data-price="49" data-days="14" data-label="14 Days" data-plan="starter">
-                <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Starter</span>
+                <span class="pill-title"
+                  style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Starter</span>
                 <span class="pill-period">14 Days</span>
                 <span class="pill-price"></span>
               </button>
 
               <button class="plan-pill sel" data-price="99" data-days="30" data-label="30 Days" data-plan="pro">
-                <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
-                <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro</span>
+                <span class="pill-hot"
+                  style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
+                <span class="pill-title"
+                  style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro</span>
                 <span class="pill-period">30 Days</span>
                 <span class="pill-price"></span>
               </button>
 
               <button class="plan-pill" data-price="149" data-days="100" data-label="100 Days" data-plan="pro_plus">
-                <span class="pill-hot" style="top: -11px; background: linear-gradient(135deg, #10b981, #059669); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">BEST VALUE</span>
-                <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro+</span>
+                <span class="pill-hot"
+                  style="top: -11px; background: linear-gradient(135deg, #10b981, #059669); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">BEST
+                  VALUE</span>
+                <span class="pill-title"
+                  style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Pro+</span>
                 <span class="pill-period">100 Days</span>
                 <span class="pill-price"></span>
               </button>
 
               <button class="plan-pill" data-price="299" data-days="99999" data-label="Lifetime" data-plan="forever">
-                <span class="pill-title" style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Infinity</span>
+                <span class="pill-title"
+                  style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Infinity</span>
                 <span class="pill-period">Lifetime</span>
                 <span class="pill-price"></span>
               </button>
@@ -4058,125 +4193,168 @@
               <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
                 One-time payment • No subscription • No hidden fees
               </div>
-              <span class="validity-chip prem" id="validityChip" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; border-radius: 20px; padding: 5px 16px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;">
+              <span class="validity-chip prem" id="validityChip"
+                style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; border-radius: 20px; padding: 5px 16px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;">
                 <i class="fas fa-check-circle" style="color: #10b981;"></i> Active 30 Days · 100% Ad-Free
               </span>
             </div>
 
             <ul class="feat-list" id="planFeatList" style="margin: 24px 0 20px;">
               <li class="feat-item star" style="display: flex; align-items: center;">
-                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>✏️ <strong>Unlimited Free Edits</strong> — Edit photos, notes &amp; music anytime</span>
+                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>✏️ <strong>Unlimited Free
+                    Edits</strong> — Edit photos, notes &amp; music anytime</span>
                 <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
               </li>
               <li class="feat-item star" style="display: flex; align-items: center;">
-                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>🚫 100% Ad-Free &amp; High-Speed Hosting</span>
+                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>🚫 100% Ad-Free &amp;
+                  High-Speed Hosting</span>
                 <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
               </li>
               <li class="feat-item star" style="display: flex; align-items: center;">
-                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>⏰ Midnight Surprise Countdown Timer</span>
+                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>⏰ Midnight Surprise Countdown
+                  Timer</span>
                 <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
               </li>
               <li class="feat-item star" style="display: flex; align-items: center;">
-                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span id="featValidityText">📅 Guaranteed Active Hosting for 30 Days</span>
+                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span id="featValidityText">📅
+                  Guaranteed Active Hosting for 30 Days</span>
                 <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
               </li>
               <li class="feat-item star" id="featCustomUrl" style="align-items: flex-start;">
                 <i class="fas fa-check-circle fi-yes" style="color: #7b5df6; margin-top: 2px;"></i>
                 <div style="flex: 1;">
                   <span>✨ Custom URL + Personalised QR Code</span>
-                  <div style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; margin-top: 2px;">(e.g., thegreeter.in/YourCustomName)</div>
-                  <div class="feat-exclusion-note" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; margin-top: 2px;">(e.g.,
+                    thegreeter.in/YourCustomName)</div>
+                  <div class="feat-exclusion-note"
+                    style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
                     <i class="fas fa-lock"></i> (Included in Pro / Pro+ / Infinity)
                   </div>
                 </div>
-                <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem; margin-top: 2px;"></i>
+                <i class="fas fa-info-circle"
+                  style="margin-left: auto; opacity: 0.45; font-size: 0.8rem; margin-top: 2px;"></i>
               </li>
               <li class="feat-item star" id="featVirtualCake" style="align-items: flex-start;">
                 <i class="fas fa-check-circle fi-yes" style="color: #7b5df6; margin-top: 2px;"></i>
                 <div style="flex: 1;">
                   <span>🎂 Cake Celebration with Blow Candles</span>
-                  <div class="feat-exclusion-note" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
+                  <div class="feat-exclusion-note"
+                    style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
                     <i class="fas fa-lock"></i> (Included in Pro / Pro+ / Infinity)
                   </div>
                 </div>
-                <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem; margin-top: 2px;"></i>
+                <i class="fas fa-info-circle"
+                  style="margin-left: auto; opacity: 0.45; font-size: 0.8rem; margin-top: 2px;"></i>
               </li>
               <li class="feat-item star" id="featVirtualHug" style="align-items: flex-start;">
                 <i class="fas fa-check-circle fi-yes" style="color: #7b5df6; margin-top: 2px;"></i>
                 <div style="flex: 1;">
                   <span>🤗 Virtual Hug with Rose Petal Heart Animation</span>
-                  <div class="feat-exclusion-note" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
+                  <div class="feat-exclusion-note"
+                    style="display:none; font-size:0.75rem; color:#ef4444; font-weight:600; margin-top:3px;">
                     <i class="fas fa-lock"></i> (Included in Pro / Pro+ / Infinity)
                   </div>
                 </div>
-                <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem; margin-top: 2px;"></i>
+                <i class="fas fa-info-circle"
+                  style="margin-left: auto; opacity: 0.45; font-size: 0.8rem; margin-top: 2px;"></i>
               </li>
               <li class="feat-item star" id="featPrioritySupport" style="display: flex; align-items: center;">
-                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>⚡ Priority Customer Support</span>
+                <i class="fas fa-check-circle fi-yes" style="color: #7b5df6;"></i> <span>⚡ Priority Customer
+                  Support</span>
                 <i class="fas fa-info-circle" style="margin-left: auto; opacity: 0.45; font-size: 0.8rem;"></i>
               </li>
             </ul>
 
             <div style="display: flex; justify-content: center; width: 100%; margin-top: 24px;">
-              <button class="btn-stage3-continue" id="proceedToPayBtn" onclick="revealInlineCheckout()" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 520px; padding: 16px 28px; border-radius: 50px; font-size: 1.15rem; font-weight: 800; font-family: inherit; border: none; cursor: pointer; color: #ffffff; background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); box-shadow: 0 10px 25px rgba(123, 93, 246, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+              <button class="btn-stage3-continue" id="proceedToPayBtn" onclick="revealInlineCheckout()"
+                style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 520px; padding: 16px 28px; border-radius: 50px; font-size: 1.15rem; font-weight: 800; font-family: inherit; border: none; cursor: pointer; color: #ffffff; background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); box-shadow: 0 10px 25px rgba(123, 93, 246, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
                 <i class="fas fa-crown"></i> <span id="proceedToPayBtnText">Continue with Pro – $1.99</span>
               </button>
             </div>
           </div>
 
           <!-- INLINE CHECKOUT DETAILS (Appended on Click) -->
-          <div class="checkout-details-card" id="inlineCheckout" style="display: none; margin-top: 24px; padding: 26px 22px; border-radius: 24px; background: rgba(123, 93, 246, 0.04); border: 1.5px solid var(--card-border); text-align: center; animation: fadeInSlideDown 0.35s ease;">
-            <h3 class="checkout-title" style="font-size: 1.22rem; font-weight: 800; margin-bottom: 4px; color: var(--text-primary);">Where should we send your receipt?</h3>
-            <p class="checkout-note" style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 20px;">We'll send your payment confirmation &amp; receipt directly to you.</p>
+          <div class="checkout-details-card" id="inlineCheckout"
+            style="display: none; margin-top: 24px; padding: 26px 22px; border-radius: 24px; background: rgba(123, 93, 246, 0.04); border: 1.5px solid var(--card-border); text-align: center; animation: fadeInSlideDown 0.35s ease;">
+            <h3 class="checkout-title"
+              style="font-size: 1.22rem; font-weight: 800; margin-bottom: 4px; color: var(--text-primary);">Where should
+              we send your receipt?</h3>
+            <p class="checkout-note" style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 20px;">
+              We'll send your payment confirmation &amp; receipt directly to you.</p>
 
             <div class="checkout-fields-grid" style="text-align: left; margin: 0 auto 22px; max-width: 520px;">
               <div>
-                <div class="optional-contact-label" style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-envelope" style="color: #7b5df6;"></i> Email Address <span class="opt-badge" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(123, 93, 246, 0.12); color: #7b5df6; font-weight: 800;">Recommended</span>
+                <div class="optional-contact-label"
+                  style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-envelope" style="color: #7b5df6;"></i> Email Address <span class="opt-badge"
+                    style="font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(123, 93, 246, 0.12); color: #7b5df6; font-weight: 800;">Recommended</span>
                 </div>
-                <input type="email" id="checkoutEmail" class="optional-contact-input" placeholder="e.g. you@gmail.com" autocomplete="email" style="width: 100%; box-sizing: border-box; padding: 13px 16px; border-radius: 14px; border: 1.5px solid var(--card-border); background: var(--bg-primary); color: var(--text-primary); font-size: 0.95rem;">
+                <input type="email" id="checkoutEmail" class="optional-contact-input" placeholder="e.g. you@gmail.com"
+                  autocomplete="email"
+                  style="width: 100%; box-sizing: border-box; padding: 13px 16px; border-radius: 14px; border: 1.5px solid var(--card-border); background: var(--bg-primary); color: var(--text-primary); font-size: 0.95rem;">
               </div>
 
               <div style="margin-top: 14px;">
-                <div class="optional-contact-label" style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-phone-alt" style="color: #10b981;"></i> Phone Number <span class="opt-badge" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800;">Optional</span>
+                <div class="optional-contact-label"
+                  style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-phone-alt" style="color: #10b981;"></i> Phone Number <span class="opt-badge"
+                    style="font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800;">Optional</span>
                 </div>
-                <input type="tel" id="checkoutPhone" class="optional-contact-input" placeholder="e.g. 9876543210" autocomplete="tel" style="width: 100%; box-sizing: border-box; padding: 13px 16px; border-radius: 14px; border: 1.5px solid var(--card-border); background: var(--bg-primary); color: var(--text-primary); font-size: 0.95rem;">
+                <input type="tel" id="checkoutPhone" class="optional-contact-input" placeholder="e.g. 9876543210"
+                  autocomplete="tel"
+                  style="width: 100%; box-sizing: border-box; padding: 13px 16px; border-radius: 14px; border: 1.5px solid var(--card-border); background: var(--bg-primary); color: var(--text-primary); font-size: 0.95rem;">
               </div>
 
               <!-- Creator Edit PIN Protection -->
-              <div id="checkoutPinCard" style="margin-top: 16px; padding: 14px 16px; border-radius: 16px; background: rgba(245, 158, 11, 0.06); border: 1.5px dashed rgba(245, 158, 11, 0.4); transition: border-color 0.25s, background-color 0.25s;">
-                <div class="optional-contact-label" style="font-size: 0.84rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <div id="checkoutPinCard"
+                style="margin-top: 16px; padding: 14px 16px; border-radius: 16px; background: rgba(245, 158, 11, 0.06); border: 1.5px dashed rgba(245, 158, 11, 0.4); transition: border-color 0.25s, background-color 0.25s;">
+                <div class="optional-contact-label"
+                  style="font-size: 0.84rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
                   <span style="display: flex; align-items: center; gap: 6px;">
-                    <i class="fas fa-lock" style="color: #f59e0b;"></i> Set 4–6 Digit Edit PIN <span style="color: #ef4444; font-weight: 900;">*</span>
+                    <i class="fas fa-lock" style="color: #f59e0b;"></i> Set 4–6 Digit Edit PIN <span
+                      style="color: #ef4444; font-weight: 900;">*</span>
                   </span>
-                  <span class="req-badge" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); color: #ef4444; font-weight: 800;"><i class="fas fa-asterisk" style="font-size: 0.55rem;"></i> Required</span>
+                  <span class="req-badge"
+                    style="font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); color: #ef4444; font-weight: 800;"><i
+                      class="fas fa-asterisk" style="font-size: 0.55rem;"></i> Required</span>
                 </div>
                 <div style="position: relative;">
-                  <input type="password" id="checkoutEditPin" required minlength="4" maxlength="6" pattern="[0-9]{4,6}" inputmode="numeric" placeholder="Enter 4–6 digit numeric PIN (Required)" autocomplete="new-password" style="width: 100%; box-sizing: border-box; padding: 12px 42px 12px 14px; border-radius: 12px; border: 1.5px solid var(--card-border); background: var(--bg-primary); color: var(--text-primary); font-size: 0.95rem; letter-spacing: 2px;">
-                  <button type="button" id="toggleCheckoutPinBtn" onclick="togglePinVisibility('checkoutEditPin', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 8px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center;" title="Show/Hide PIN" aria-label="Toggle PIN visibility">
+                  <input type="password" id="checkoutEditPin" required minlength="4" maxlength="6" pattern="[0-9]{4,6}"
+                    inputmode="numeric" placeholder="Enter 4–6 digit numeric PIN (Required)" autocomplete="new-password"
+                    style="width: 100%; box-sizing: border-box; padding: 12px 42px 12px 14px; border-radius: 12px; border: 1.5px solid var(--card-border); background: var(--bg-primary); color: var(--text-primary); font-size: 0.95rem; letter-spacing: 2px;">
+                  <button type="button" id="toggleCheckoutPinBtn" onclick="togglePinVisibility('checkoutEditPin', this)"
+                    style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 8px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center;"
+                    title="Show/Hide PIN" aria-label="Toggle PIN visibility">
                     <i class="fas fa-eye" style="pointer-events: none;"></i>
                   </button>
                 </div>
-                <div id="checkoutPinError" style="display: none; color: #ef4444; font-size: 0.78rem; font-weight: 700; margin-top: 6px; align-items: center; gap: 6px;">
-                  <i class="fas fa-exclamation-circle"></i> <span id="checkoutPinErrorText">Please set a 4–6 digit Edit PIN before proceeding.</span>
+                <div id="checkoutPinError"
+                  style="display: none; color: #ef4444; font-size: 0.78rem; font-weight: 700; margin-top: 6px; align-items: center; gap: 6px;">
+                  <i class="fas fa-exclamation-circle"></i> <span id="checkoutPinErrorText">Please set a 4–6 digit Edit
+                    PIN before proceeding.</span>
                 </div>
-                <p style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.35; text-align: left;">
+                <p
+                  style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.35; text-align: left;">
                   🔒 Setting this PIN is mandatory. Only someone who knows this PIN can edit this website in the future.
                 </p>
               </div>
             </div>
 
             <div style="display: flex; justify-content: center; width: 100%;">
-              <button class="btn-stage3-pay" id="finalPayBtn" onclick="handleFinalPay()" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 520px; padding: 16px 28px; border-radius: 50px; font-size: 1.15rem; font-weight: 800; font-family: inherit; border: none; cursor: pointer; color: #ffffff; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 10px 28px rgba(16, 185, 129, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-                <i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ₹99 Securely</span>
+              <button class="btn-stage3-pay" id="finalPayBtn" onclick="handleFinalPay()"
+                style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 520px; padding: 16px 28px; border-radius: 50px; font-size: 1.15rem; font-weight: 800; font-family: inherit; border: none; cursor: pointer; color: #ffffff; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 10px 28px rgba(16, 185, 129, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                <i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ₹99
+                  Securely</span>
               </button>
             </div>
 
             <!-- Payment Support Line (Indian & International) -->
             <div id="intlContactSupportContainer" style="display: block; margin-top: 14px; text-align: center;">
               <p style="font-size: 0.88rem; color: var(--text-secondary, #94a3b8); margin: 0; font-weight: 500;">
-                Facing issues with payment? <button type="button" id="intlContactUsBtn" onclick="window.openIntlPaymentModal()" style="background: none; border: none; padding: 2px 4px; color: #7b5df6; font-weight: 700; text-decoration: underline; cursor: pointer; font-size: inherit; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Contact us</button>
+                Facing issues with payment? <button type="button" id="intlContactUsBtn"
+                  onclick="window.openIntlPaymentModal()"
+                  style="background: none; border: none; padding: 2px 4px; color: #7b5df6; font-weight: 700; text-decoration: underline; cursor: pointer; font-size: inherit; font-family: inherit; transition: opacity 0.2s;"
+                  onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Contact us</button>
               </p>
             </div>
 
@@ -4186,7 +4364,8 @@
             <p style="font-size: 0.84rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px;">
               ❤️ One small upgrade for you, a lifetime memory for them.
             </p>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">
+            <div
+              style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">
               <span>🔒 256-Bit SSL Encryption</span>
               <span>•</span>
               <span>⚡ Instant Activation</span>
@@ -4270,7 +4449,7 @@
   <!-- Contact Us Modal (Theme-Adaptive) -->
   <div class="intl-modal-overlay" id="intlPaymentModal" style="display: none;">
     <div class="intl-modal-card">
-      
+
       <!-- Close button -->
       <button type="button" class="intl-modal-close" onclick="window.closeIntlPaymentModal()" aria-label="Close">
         <i class="fas fa-times"></i>
@@ -4289,16 +4468,21 @@
       <!-- Quick Contact Channels -->
       <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px;">
         <!-- Instagram -->
-        <a href="https://instagram.com/thegreeter.in" target="_blank" rel="noopener noreferrer" class="intl-channel-link intl-channel-ig">
+        <a href="https://instagram.com/thegreeter.in" target="_blank" rel="noopener noreferrer"
+          class="intl-channel-link intl-channel-ig">
           <span style="display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left;">
             <i class="fab fa-instagram" style="color: #e1306c; font-size: 1.2rem; flex-shrink: 0;"></i>
-            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Instagram DM (@thegreeter.in)</span>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Instagram DM
+              (@thegreeter.in)</span>
           </span>
-          <span style="font-size: 0.68rem; padding: 2px 7px; border-radius: 8px; background: rgba(225, 48, 108, 0.14); color: #e1306c; font-weight: 800; white-space: nowrap; flex-shrink: 0;">Fast Response</span>
+          <span
+            style="font-size: 0.68rem; padding: 2px 7px; border-radius: 8px; background: rgba(225, 48, 108, 0.14); color: #e1306c; font-weight: 800; white-space: nowrap; flex-shrink: 0;">Fast
+            Response</span>
         </a>
 
         <!-- Telegram -->
-        <a href="https://t.me/TheGreeter" target="_blank" rel="noopener noreferrer" class="intl-channel-link intl-channel-tg">
+        <a href="https://t.me/TheGreeter" target="_blank" rel="noopener noreferrer"
+          class="intl-channel-link intl-channel-tg">
           <span style="display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left;">
             <i class="fab fa-telegram-plane" style="color: #0088cc; font-size: 1.2rem; flex-shrink: 0;"></i>
             <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Telegram (@TheGreeter)</span>
@@ -4310,7 +4494,8 @@
         <a href="mailto:greeterindia@gmail.com" class="intl-channel-link intl-channel-mail">
           <span style="display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left;">
             <i class="fas fa-envelope" style="color: #10b981; font-size: 1.15rem; flex-shrink: 0;"></i>
-            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Email (greeterindia@gmail.com)</span>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Email
+              (greeterindia@gmail.com)</span>
           </span>
           <i class="fas fa-arrow-right" style="font-size: 0.8rem; opacity: 0.5; flex-shrink: 0;"></i>
         </a>
@@ -4324,12 +4509,16 @@
   </div>
 
   <!-- Creator Edit PIN Protection Unlock Modal -->
-  <div class="pin-unlock-overlay" id="pinUnlockOverlay" style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); align-items: center; justify-content: center; padding: 20px;">
-    <div class="pin-unlock-card" style="background: var(--card-bg, #ffffff); border: 1.5px solid var(--card-border, rgba(123, 93, 246, 0.2)); border-radius: 28px; max-width: 440px; width: 100%; padding: 36px 28px; text-align: center; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35); position: relative;">
-      <div style="width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.2) 100%); border: 1.5px solid rgba(245, 158, 11, 0.35); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 1.8rem; color: #f59e0b;">
+  <div class="pin-unlock-overlay" id="pinUnlockOverlay"
+    style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); align-items: center; justify-content: center; padding: 20px;">
+    <div class="pin-unlock-card"
+      style="background: var(--card-bg, #ffffff); border: 1.5px solid var(--card-border, rgba(123, 93, 246, 0.2)); border-radius: 28px; max-width: 440px; width: 100%; padding: 36px 28px; text-align: center; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35); position: relative;">
+      <div
+        style="width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.2) 100%); border: 1.5px solid rgba(245, 158, 11, 0.35); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 1.8rem; color: #f59e0b;">
         <i class="fas fa-lock"></i>
       </div>
-      <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.45rem; font-weight: 800; color: var(--text-primary, #1e293b); margin-bottom: 8px;">
+      <h3
+        style="font-family: 'Outfit', sans-serif; font-size: 1.45rem; font-weight: 800; color: var(--text-primary, #1e293b); margin-bottom: 8px;">
         Creator Protected
       </h3>
       <p style="font-size: 0.88rem; color: var(--text-secondary, #64748b); line-height: 1.5; margin-bottom: 24px;">
@@ -4338,14 +4527,18 @@
 
       <form id="pinUnlockForm" onsubmit="handlePinUnlock(event)" style="margin-bottom: 20px;">
         <div style="position: relative; margin-bottom: 14px;">
-          <input type="password" id="pinUnlockInput" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="Enter Edit PIN" autocomplete="current-password" autofocus required
+          <input type="password" id="pinUnlockInput" maxlength="6" pattern="[0-9]*" inputmode="numeric"
+            placeholder="Enter Edit PIN" autocomplete="current-password" autofocus required
             style="width: 100%; box-sizing: border-box; padding: 15px 46px 15px 18px; border-radius: 16px; border: 2px solid var(--card-border, #e2e8f0); background: var(--bg-primary, #f8fafc); color: var(--text-primary, #0f172a); font-size: 1.25rem; letter-spacing: 6px; text-align: center; font-weight: 700; transition: border-color 0.2s;">
-          <button type="button" id="toggleUnlockPinBtn" onclick="togglePinVisibility('pinUnlockInput', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; cursor: pointer; color: var(--text-secondary, #94a3b8); padding: 8px; font-size: 1rem; display: flex; align-items: center; justify-content: center;" title="Show/Hide PIN" aria-label="Toggle PIN visibility">
+          <button type="button" id="toggleUnlockPinBtn" onclick="togglePinVisibility('pinUnlockInput', this)"
+            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; cursor: pointer; color: var(--text-secondary, #94a3b8); padding: 8px; font-size: 1rem; display: flex; align-items: center; justify-content: center;"
+            title="Show/Hide PIN" aria-label="Toggle PIN visibility">
             <i class="fas fa-eye" style="pointer-events: none;"></i>
           </button>
         </div>
 
-        <div id="pinUnlockError" style="display: none; color: #ef4444; font-size: 0.84rem; font-weight: 600; margin-bottom: 14px; align-items: center; justify-content: center; gap: 6px;">
+        <div id="pinUnlockError"
+          style="display: none; color: #ef4444; font-size: 0.84rem; font-weight: 600; margin-bottom: 14px; align-items: center; justify-content: center; gap: 6px;">
           <i class="fas fa-exclamation-circle"></i> <span>Incorrect PIN. Please try again.</span>
         </div>
 
@@ -4409,7 +4602,8 @@
           style="background: linear-gradient(135deg, #7b5df6, #ff7a2f); color: white; border: none; font-weight: 700; padding: 16px 28px; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 20px rgba(123, 93, 246, 0.35); font-size: 1.05rem; font-family: 'Outfit', sans-serif; transition: 0.2s;">Upgrade
           to Premium</button>
         <button class="modal-button secondary" id="upgradeCancelBtn"
-          style="background: transparent; color: var(--text-secondary); border: 1.5px solid var(--card-border); font-weight: 600; padding: 12px 28px; border-radius: 50px; cursor: pointer; font-size: 0.9rem; font-family: 'Outfit', sans-serif;">✏️ Back to Edit Features</button>
+          style="background: transparent; color: var(--text-secondary); border: 1.5px solid var(--card-border); font-weight: 600; padding: 12px 28px; border-radius: 50px; cursor: pointer; font-size: 0.9rem; font-family: 'Outfit', sans-serif;">✏️
+          Back to Edit Features</button>
       </div>
     </div>
   </div>
@@ -4460,26 +4654,29 @@
       <div class="modal-icon" style="color: #ef4444; font-size: 3.2rem; margin-bottom: 16px;">
         <i class="fas fa-exclamation-circle"></i>
       </div>
-      <h3 id="saveErrorModalTitle" style="font-size: 1.45rem; font-weight: 800; margin-bottom: 12px; font-family: 'Outfit', sans-serif; color: var(--text-primary);">
+      <h3 id="saveErrorModalTitle"
+        style="font-size: 1.45rem; font-weight: 800; margin-bottom: 12px; font-family: 'Outfit', sans-serif; color: var(--text-primary);">
         Save Failed
       </h3>
-      <div class="modal-message" id="saveErrorModalMsg" style="font-size: 0.96rem; line-height: 1.55; margin-bottom: 22px; color: var(--text-secondary);">
+      <div class="modal-message" id="saveErrorModalMsg"
+        style="font-size: 0.96rem; line-height: 1.55; margin-bottom: 22px; color: var(--text-secondary);">
         We couldn't save your changes right now. Please retry or contact support if the issue persists.
       </div>
       <div class="modal-buttons" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-        <button class="modal-button" id="saveErrorRetryBtn" type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+        <button class="modal-button" id="saveErrorRetryBtn" type="button"
+          style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
           <i class="fas fa-redo-alt"></i> <span>Retry</span>
         </button>
-        <a class="modal-button secondary" id="saveErrorContactBtn" href="/ContactUs.html" target="_blank" rel="noopener noreferrer" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+        <a class="modal-button secondary" id="saveErrorContactBtn" href="/ContactUs.html" target="_blank"
+          rel="noopener noreferrer"
+          style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
           <i class="fas fa-headset"></i> <span>Contact Us</span>
         </a>
       </div>
     </div>
   </div>
 
-  <audio id="generateShareAudio"
-    src="/assets/sounds/generated.mp3"
-    preload="auto"></audio>
+  <audio id="generateShareAudio" src="/assets/sounds/generated.mp3" preload="auto"></audio>
 
   <script>
     (function () {
@@ -5079,16 +5276,16 @@
           const ud = JSON.parse(localStorage.getItem('userData') || '{}');
           fromUserData = ud.websiteId || null;
           isFromCreate = !!ud._fromCreate;
-        } catch (e) {}
+        } catch (e) { }
         if (isFromCreate && !restoreParam && !viewParam) {
           return null;
         }
-        return restoreParam || 
-               (urlParams.get('fresh') ? null : viewParam) || 
-               window._activeWebsiteId || 
-               localStorage.getItem('activeCustomizerWebsiteId') || 
-               fromUserData || 
-               null;
+        return restoreParam ||
+          (urlParams.get('fresh') ? null : viewParam) ||
+          window._activeWebsiteId ||
+          localStorage.getItem('activeCustomizerWebsiteId') ||
+          fromUserData ||
+          null;
       };
 
       // Theme & Nav
@@ -5405,7 +5602,7 @@
           console.error('Audio compression failed', err);
         } finally {
           if (audioCtx) {
-            try { await audioCtx.close(); } catch(e) {}
+            try { await audioCtx.close(); } catch (e) { }
           }
         }
         if (file.size > MAX_SIZE) {
@@ -5538,7 +5735,7 @@
               tx.oncomplete = () => resolve(true);
               tx.onerror = () => resolve(false);
             });
-          } catch (e) {}
+          } catch (e) { }
         },
 
         async clearAll() {
@@ -5555,7 +5752,7 @@
               tx.oncomplete = () => resolve(true);
               tx.onerror = () => resolve(false);
             });
-          } catch (e) {}
+          } catch (e) { }
         }
       };
 
@@ -5820,7 +6017,7 @@
                       const doc = getIframeDocument();
                       if (doc) {
                         doc.querySelectorAll(`audio[src*="${blobUrl}"], source[src*="${blobUrl}"]`).forEach(aud => {
-                          try { aud.pause(); aud.remove(); } catch (e) {}
+                          try { aud.pause(); aud.remove(); } catch (e) { }
                         });
                       }
                     }
@@ -5851,7 +6048,7 @@
                 // Remove from Map and IndexedDB
                 window._pendingLocalFiles.delete(blobUrl);
                 await MediaStorageManager.deletePendingMedia(blobUrl);
-                try { URL.revokeObjectURL(blobUrl); } catch (e) {}
+                try { URL.revokeObjectURL(blobUrl); } catch (e) { }
 
                 fileProgressMap.set(blobUrl, 100);
                 completedCount++;
@@ -6038,20 +6235,20 @@
               const ud = Object.assign({}, config.userData, { websiteId: websiteId });
               localStorage.setItem('userData', JSON.stringify(ud));
               sessionStorage.setItem('userData', JSON.stringify(ud));
-            } catch (e) {}
+            } catch (e) { }
           } else {
             try {
               const ud = JSON.parse(localStorage.getItem('userData') || '{}');
               ud.websiteId = websiteId;
               localStorage.setItem('userData', JSON.stringify(ud));
               sessionStorage.setItem('userData', JSON.stringify(ud));
-            } catch (e) {}
+            } catch (e) { }
           }
           if (config.userName) {
             try {
               localStorage.setItem('userDataName', config.userName);
               sessionStorage.setItem('userDataName', config.userName);
-            } catch (e) {}
+            } catch (e) { }
           }
 
           // Extract & restore user custom DOM text edits (pencil edits) from server config and saved HTML
@@ -6090,7 +6287,7 @@
             }
             localStorage.setItem('greeter_custom_dom_texts', JSON.stringify(finalDomTexts));
             sessionStorage.setItem('greeter_custom_dom_texts', JSON.stringify(finalDomTexts));
-          } catch (e) {}
+          } catch (e) { }
 
           // Also keep userData story & wishes in sync if pencil edits changed them
           try {
@@ -6110,7 +6307,7 @@
               if (textContent.trim()) currentUd.wishes = textContent.trim();
             }
             localStorage.setItem('userData', JSON.stringify(currentUd));
-          } catch (e) {}
+          } catch (e) { }
 
           // Restore and switch to the correct saved template
           const templateRaw = config.template || config.templateName ||
@@ -6177,21 +6374,21 @@
         }
       }
 
-      window.togglePinVisibility = function(inputId, btn) {
+      window.togglePinVisibility = function (inputId, btn) {
         const input = document.getElementById(inputId);
         if (!input) return;
         const isPassword = input.type === 'password';
         input.type = isPassword ? 'text' : 'password';
         if (btn) {
-          btn.innerHTML = isPassword 
-            ? '<i class="fas fa-eye-slash" style="pointer-events: none;"></i>' 
+          btn.innerHTML = isPassword
+            ? '<i class="fas fa-eye-slash" style="pointer-events: none;"></i>'
             : '<i class="fas fa-eye" style="pointer-events: none;"></i>';
           btn.setAttribute('title', isPassword ? 'Hide PIN' : 'Show PIN');
           btn.setAttribute('aria-label', isPassword ? 'Hide PIN' : 'Show PIN');
         }
       };
 
-      window.showPinUnlockModal = function(id) {
+      window.showPinUnlockModal = function (id) {
         const overlay = document.getElementById('pinUnlockOverlay');
         if (!overlay) return;
         overlay.style.display = 'flex';
@@ -6206,7 +6403,7 @@
         }
       };
 
-      window.handlePinUnlock = async function(e) {
+      window.handlePinUnlock = async function (e) {
         if (e && typeof e.preventDefault === 'function') e.preventDefault();
         const input = document.getElementById('pinUnlockInput');
         const btn = document.getElementById('pinUnlockSubmitBtn');
@@ -6648,7 +6845,7 @@
           const doc = getIframeDocument();
           const win = doc ? (document.getElementById("frame")?.contentWindow) : null;
           if (doc && win && FEATURE_MAP && FEATURE_MAP[id]?.disable) {
-            try { FEATURE_MAP[id].disable(doc, win); } catch (e) {}
+            try { FEATURE_MAP[id].disable(doc, win); } catch (e) { }
           }
           const curData = customData.get(id) || {};
           const effMediaUrl = (mediaUrl !== undefined) ? mediaUrl : (curData.mediaUrl || "");
@@ -6752,7 +6949,7 @@
           let decoded;
           try {
             decoded = new TextDecoder('utf-8').decode(Uint8Array.from(atob(data.magic), c => c.charCodeAt(0)));
-          } catch(e) {
+          } catch (e) {
             decoded = decodeURIComponent(escape(atob(data.magic)));
           }
           window._magicRaw = data.magic; // Preserve raw base64 for standalone injection
@@ -7375,7 +7572,7 @@
         }
       }).catch(e => console.error("Magic API error", e));
 
-      
+
       const COUNTDOWN_THEMES = [
         { id: 'romantic-couple', title: 'Romantic Couple', titleHi: 'रोमांटिक कपल', icon: '💖', type: 'image', url: '/assets/media/countdown/theme-couple.jpg' },
         { id: 'birthday-bear', title: 'Birthday Bear', titleHi: 'बर्थडे टेडी', icon: '🧸', type: 'image', url: '/assets/media/countdown/theme-bear.jpg' },
@@ -7469,9 +7666,9 @@
             vid.loop = true;
             vid.playsInline = true;
             vid.preload = 'metadata';
-            vid.play().catch(() => {});
-            card.onmouseenter = () => vid.play().catch(() => {});
-            card.onmouseleave = () => vid.play().catch(() => {});
+            vid.play().catch(() => { });
+            card.onmouseenter = () => vid.play().catch(() => { });
+            card.onmouseleave = () => vid.play().catch(() => { });
             thumbWrap.appendChild(vid);
           } else if (preset.type === 'image') {
             const img = document.createElement("img");
@@ -7903,11 +8100,11 @@
 
                 return '<svg viewBox="0 0 100 84" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="overflow:visible; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.18));">' +
                   '<defs>' +
-                    '<radialGradient id="standGrad-' + c.id + '" cx="50%" cy="30%" r="70%">' +
-                      '<stop offset="0%" stop-color="' + standTop + '"/>' +
-                      '<stop offset="60%" stop-color="' + standFill + '"/>' +
-                      '<stop offset="100%" stop-color="' + (c.standDark || standFill) + '"/>' +
-                    '</radialGradient>' +
+                  '<radialGradient id="standGrad-' + c.id + '" cx="50%" cy="30%" r="70%">' +
+                  '<stop offset="0%" stop-color="' + standTop + '"/>' +
+                  '<stop offset="60%" stop-color="' + standFill + '"/>' +
+                  '<stop offset="100%" stop-color="' + (c.standDark || standFill) + '"/>' +
+                  '</radialGradient>' +
                   '</defs>' +
                   '<ellipse cx="50" cy="76" rx="28" ry="4" fill="rgba(0,0,0,0.15)"/>' +
                   '<ellipse cx="50" cy="74" rx="26" ry="3.5" fill="url(#standGrad-' + c.id + ')"/>' +
@@ -7917,9 +8114,9 @@
                   '<path d="M 18,48 L 18,62 C 18,67 82,67 82,62 L 82,48 Z" fill="' + sponge + '"/>' +
                   '<path d="M 18,60 C 28,65 72,65 82,60 L 82,62 C 82,67 18,67 18,62 Z" fill="' + biscuit + '" opacity="0.8"/>' +
                   '<g fill="' + pearl + '">' +
-                    '<circle cx="21" cy="62" r="1.3"/><circle cx="27" cy="63.5" r="1.3"/><circle cx="34" cy="64.5" r="1.3"/>' +
-                    '<circle cx="42" cy="65.2" r="1.3"/><circle cx="50" cy="65.5" r="1.3"/><circle cx="58" cy="65.2" r="1.3"/>' +
-                    '<circle cx="66" cy="64.5" r="1.3"/><circle cx="73" cy="63.5" r="1.3"/><circle cx="79" cy="62" r="1.3"/>' +
+                  '<circle cx="21" cy="62" r="1.3"/><circle cx="27" cy="63.5" r="1.3"/><circle cx="34" cy="64.5" r="1.3"/>' +
+                  '<circle cx="42" cy="65.2" r="1.3"/><circle cx="50" cy="65.5" r="1.3"/><circle cx="58" cy="65.2" r="1.3"/>' +
+                  '<circle cx="66" cy="64.5" r="1.3"/><circle cx="73" cy="63.5" r="1.3"/><circle cx="79" cy="62" r="1.3"/>' +
                   '</g>' +
                   '<ellipse cx="50" cy="48" rx="32" ry="5.2" fill="' + drip + '"/>' +
                   '<path d="M 18,48 C 22,55 25,58 29,58 C 32,58 34,53 37,50 C 40,55 43,61 47,61 C 51,61 54,54 57,50 C 60,54 64,59 68,59 C 72,59 75,54 82,48 Z" fill="' + drip + '"/>' +
@@ -7930,49 +8127,49 @@
                   '<path d="M 29,32 C 33,38 36,41 39,41 C 42,41 45,36 48,34 C 51,37 54,42 58,42 C 62,42 65,37 71,32 Z" fill="' + drip + '"/>' +
                   '<path d="M 33,33 C 35,36 38,36 39,33 M 52,34 C 54,37 57,37 58,34" stroke="' + dripHighlight + '" stroke-width="0.9" stroke-linecap="round" fill="none" opacity="0.5"/>' +
                   '<g transform="translate(35, 17)">' +
-                    '<rect x="-1.2" y="3" width="2.4" height="12" rx="0.8" fill="' + candleWax + '"/>' +
-                    '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
-                    '<path d="M 0,1.5 C -1.6,-1.5 -1.2,-4.5 0,-6.5 C 1.2,-4.5 1.6,-1.5 0,1.5 Z" fill="#FF9100"/>' +
-                    '<ellipse cx="0" cy="-2.5" rx="0.7" ry="2.2" fill="#FFF8E1"/>' +
+                  '<rect x="-1.2" y="3" width="2.4" height="12" rx="0.8" fill="' + candleWax + '"/>' +
+                  '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
+                  '<path d="M 0,1.5 C -1.6,-1.5 -1.2,-4.5 0,-6.5 C 1.2,-4.5 1.6,-1.5 0,1.5 Z" fill="#FF9100"/>' +
+                  '<ellipse cx="0" cy="-2.5" rx="0.7" ry="2.2" fill="#FFF8E1"/>' +
                   '</g>' +
                   '<g transform="translate(42.5, 15)">' +
-                    '<rect x="-1.2" y="3" width="2.4" height="14" rx="0.8" fill="' + candleWax + '"/>' +
-                    '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="-1.2" y1="14" x2="1.2" y2="16" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
-                    '<path d="M 0,1.5 C -1.8,-1.8 -1.4,-5.2 0,-7.5 C 1.4,-5.2 1.8,-1.8 0,1.5 Z" fill="#FF9100"/>' +
-                    '<ellipse cx="0" cy="-3" rx="0.8" ry="2.6" fill="#FFF8E1"/>' +
+                  '<rect x="-1.2" y="3" width="2.4" height="14" rx="0.8" fill="' + candleWax + '"/>' +
+                  '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="-1.2" y1="14" x2="1.2" y2="16" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
+                  '<path d="M 0,1.5 C -1.8,-1.8 -1.4,-5.2 0,-7.5 C 1.4,-5.2 1.8,-1.8 0,1.5 Z" fill="#FF9100"/>' +
+                  '<ellipse cx="0" cy="-3" rx="0.8" ry="2.6" fill="#FFF8E1"/>' +
                   '</g>' +
                   '<g transform="translate(50, 13)">' +
-                    '<rect x="-1.4" y="3" width="2.8" height="16" rx="0.9" fill="' + candleWax + '"/>' +
-                    '<line x1="-1.4" y1="6" x2="1.4" y2="8" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
-                    '<line x1="-1.4" y1="10" x2="1.4" y2="12" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
-                    '<line x1="-1.4" y1="14" x2="1.4" y2="16" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
-                    '<line x1="0" y1="3" x2="0" y2="1.2" stroke="#333" stroke-width="0.7"/>' +
-                    '<path d="M 0,1.2 C -2,-2 -1.5,-6 0,-8.5 C 1.5,-6 2,-2 0,1.2 Z" fill="#FF9100"/>' +
-                    '<ellipse cx="0" cy="-3.5" rx="0.9" ry="3" fill="#FFF8E1"/>' +
+                  '<rect x="-1.4" y="3" width="2.8" height="16" rx="0.9" fill="' + candleWax + '"/>' +
+                  '<line x1="-1.4" y1="6" x2="1.4" y2="8" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
+                  '<line x1="-1.4" y1="10" x2="1.4" y2="12" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
+                  '<line x1="-1.4" y1="14" x2="1.4" y2="16" stroke="' + candleStripe + '" stroke-width="0.9"/>' +
+                  '<line x1="0" y1="3" x2="0" y2="1.2" stroke="#333" stroke-width="0.7"/>' +
+                  '<path d="M 0,1.2 C -2,-2 -1.5,-6 0,-8.5 C 1.5,-6 2,-2 0,1.2 Z" fill="#FF9100"/>' +
+                  '<ellipse cx="0" cy="-3.5" rx="0.9" ry="3" fill="#FFF8E1"/>' +
                   '</g>' +
                   '<g transform="translate(57.5, 15)">' +
-                    '<rect x="-1.2" y="3" width="2.4" height="14" rx="0.8" fill="' + candleWax + '"/>' +
-                    '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="-1.2" y1="14" x2="1.2" y2="16" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
-                    '<path d="M 0,1.5 C -1.8,-1.8 -1.4,-5.2 0,-7.5 C 1.4,-5.2 1.8,-1.8 0,1.5 Z" fill="#FF9100"/>' +
-                    '<ellipse cx="0" cy="-3" rx="0.8" ry="2.6" fill="#FFF8E1"/>' +
+                  '<rect x="-1.2" y="3" width="2.4" height="14" rx="0.8" fill="' + candleWax + '"/>' +
+                  '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="-1.2" y1="14" x2="1.2" y2="16" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
+                  '<path d="M 0,1.5 C -1.8,-1.8 -1.4,-5.2 0,-7.5 C 1.4,-5.2 1.8,-1.8 0,1.5 Z" fill="#FF9100"/>' +
+                  '<ellipse cx="0" cy="-3" rx="0.8" ry="2.6" fill="#FFF8E1"/>' +
                   '</g>' +
                   '<g transform="translate(65, 17)">' +
-                    '<rect x="-1.2" y="3" width="2.4" height="12" rx="0.8" fill="' + candleWax + '"/>' +
-                    '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
-                    '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
-                    '<path d="M 0,1.5 C -1.6,-1.5 -1.2,-4.5 0,-6.5 C 1.2,-4.5 1.6,-1.5 0,1.5 Z" fill="#FF9100"/>' +
-                    '<ellipse cx="0" cy="-2.5" rx="0.7" ry="2.2" fill="#FFF8E1"/>' +
+                  '<rect x="-1.2" y="3" width="2.4" height="12" rx="0.8" fill="' + candleWax + '"/>' +
+                  '<line x1="-1.2" y1="6" x2="1.2" y2="8" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="-1.2" y1="10" x2="1.2" y2="12" stroke="' + candleStripe + '" stroke-width="0.8"/>' +
+                  '<line x1="0" y1="3" x2="0" y2="1.5" stroke="#333" stroke-width="0.6"/>' +
+                  '<path d="M 0,1.5 C -1.6,-1.5 -1.2,-4.5 0,-6.5 C 1.2,-4.5 1.6,-1.5 0,1.5 Z" fill="#FF9100"/>' +
+                  '<ellipse cx="0" cy="-2.5" rx="0.7" ry="2.2" fill="#FFF8E1"/>' +
                   '</g>' +
-                '</svg>';
+                  '</svg>';
               }
 
               CAKE_OPTIONS.forEach(c => {
@@ -8822,51 +9019,51 @@
               };
             }
 
-// --- RICH LOCK CUSTOMIZER STUDIO PANEL ---
+            // --- RICH LOCK CUSTOMIZER STUDIO PANEL ---
             function createLockCustomPanel(customPanel) {
-  const isHi = (typeof currentLang !== 'undefined' && currentLang === 'hi');
-  const lockData = customData.get('lock') || {};
-  let currentLockType = lockData.lockType || 'keypad';
-  if (currentLockType === 'rotary') currentLockType = 'keypad';
-  let currentTheme = lockData.theme || 'romantic-pink';
-  let currentCode = (lockData.text && String(lockData.text).trim()) ? String(lockData.text).trim() : '1234';
-  let cleanInit = currentCode.replace(/\D/g, '');
-  let currentDigits = Math.max(3, Math.min(6, cleanInit.length || 4));
-  let currentHintEnabled = !!lockData.hintEnabled;
-  let currentHintText = lockData.hintText || '';
-  let currentCustomImage = lockData.customImage || '';
-  const currentSoundEnabled = true; // Sounds always ON by default
+              const isHi = (typeof currentLang !== 'undefined' && currentLang === 'hi');
+              const lockData = customData.get('lock') || {};
+              let currentLockType = lockData.lockType || 'keypad';
+              if (currentLockType === 'rotary') currentLockType = 'keypad';
+              let currentTheme = lockData.theme || 'romantic-pink';
+              let currentCode = (lockData.text && String(lockData.text).trim()) ? String(lockData.text).trim() : '1234';
+              let cleanInit = currentCode.replace(/\D/g, '');
+              let currentDigits = Math.max(3, Math.min(6, cleanInit.length || 4));
+              let currentHintEnabled = !!lockData.hintEnabled;
+              let currentHintText = lockData.hintText || '';
+              let currentCustomImage = lockData.customImage || '';
+              const currentSoundEnabled = true; // Sounds always ON by default
 
-  function syncAndRefresh() {
-    const updated = {
-      text: currentCode,
-      lockType: currentLockType,
-      theme: currentTheme,
-      digits: currentDigits,
-      hintEnabled: currentHintEnabled,
-      hintText: currentHintText,
-      customImage: currentCustomImage,
-      soundEnabled: true
-    };
-    customData.set('lock', updated);
-    window.lockUnlocked = false;
-    const nameVal = getUserName ? getUserName() : '';
-    if (typeof refreshFeatureIfActive === 'function') {
-      refreshFeatureIfActive('lock', nameVal, updated);
-    }
-    if (typeof autoSaveState === 'function') {
-      autoSaveState();
-    }
-  }
+              function syncAndRefresh() {
+                const updated = {
+                  text: currentCode,
+                  lockType: currentLockType,
+                  theme: currentTheme,
+                  digits: currentDigits,
+                  hintEnabled: currentHintEnabled,
+                  hintText: currentHintText,
+                  customImage: currentCustomImage,
+                  soundEnabled: true
+                };
+                customData.set('lock', updated);
+                window.lockUnlocked = false;
+                const nameVal = getUserName ? getUserName() : '';
+                if (typeof refreshFeatureIfActive === 'function') {
+                  refreshFeatureIfActive('lock', nameVal, updated);
+                }
+                if (typeof autoSaveState === 'function') {
+                  autoSaveState();
+                }
+              }
 
-  const wrap = document.createElement('div');
-  wrap.className = 'lock-studio-panel';
+              const wrap = document.createElement('div');
+              wrap.className = 'lock-studio-panel';
 
-  // Inject panel styles once if not present
-  if (!document.getElementById('lock-studio-panel-styles')) {
-    const pStyle = document.createElement('style');
-    pStyle.id = 'lock-studio-panel-styles';
-    pStyle.textContent = `
+              // Inject panel styles once if not present
+              if (!document.getElementById('lock-studio-panel-styles')) {
+                const pStyle = document.createElement('style');
+                pStyle.id = 'lock-studio-panel-styles';
+                pStyle.textContent = `
       .lock-studio-panel {
         display: flex;
         flex-direction: column;
@@ -9141,188 +9338,188 @@
         transform: translateX(20px);
       }
     `;
-    document.head.appendChild(pStyle);
-  }
+                document.head.appendChild(pStyle);
+              }
 
-  // --- SECTION 1: Lock Type Selector (Keypad, Tumbler, Classic) ---
-  const typeSection = document.createElement('div');
-  typeSection.className = 'lock-studio-section';
-  typeSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-lock"></i> ${isHi ? 'लॉक स्क्रीन डिज़ाइन (Lock Style)' : 'Lock Screen Style'}</div>`;
+              // --- SECTION 1: Lock Type Selector (Keypad, Tumbler, Classic) ---
+              const typeSection = document.createElement('div');
+              typeSection.className = 'lock-studio-section';
+              typeSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-lock"></i> ${isHi ? 'लॉक स्क्रीन डिज़ाइन (Lock Style)' : 'Lock Screen Style'}</div>`;
 
-  const typeGrid = document.createElement('div');
-  typeGrid.className = 'lock-styles-grid';
+              const typeGrid = document.createElement('div');
+              typeGrid.className = 'lock-styles-grid';
 
-  const LOCK_TYPES_LIST = [
-    { id: 'keypad', name: 'Numeric Keypad', nameHi: 'डिजिटल कीपैड', icon: 'fas fa-grip-vertical', desc: 'Glass PIN' },
-    { id: 'tumbler', name: 'Number Tumbler', nameHi: 'नंबर टंबलर', icon: 'fas fa-sliders', desc: 'Roller Wheels' },
-    { id: 'classic', name: 'Classic Password', nameHi: 'क्लासिक पासवर्ड', icon: 'fas fa-key', desc: 'Text Pass' }
-  ];
+              const LOCK_TYPES_LIST = [
+                { id: 'keypad', name: 'Numeric Keypad', nameHi: 'डिजिटल कीपैड', icon: 'fas fa-grip-vertical', desc: 'Glass PIN' },
+                { id: 'tumbler', name: 'Number Tumbler', nameHi: 'नंबर टंबलर', icon: 'fas fa-sliders', desc: 'Roller Wheels' },
+                { id: 'classic', name: 'Classic Password', nameHi: 'क्लासिक पासवर्ड', icon: 'fas fa-key', desc: 'Text Pass' }
+              ];
 
-  LOCK_TYPES_LIST.forEach(lt => {
-    const card = document.createElement('div');
-    card.className = 'lock-studio-card' + (currentLockType === lt.id ? ' active' : '');
-    card.innerHTML = `
+              LOCK_TYPES_LIST.forEach(lt => {
+                const card = document.createElement('div');
+                card.className = 'lock-studio-card' + (currentLockType === lt.id ? ' active' : '');
+                card.innerHTML = `
       <div class="lock-studio-check"><i class="fas fa-check"></i></div>
       <div class="lock-studio-card-icon" style="color:#7b5df6"><i class="${lt.icon}"></i></div>
       <div class="lock-studio-card-name">${isHi ? lt.nameHi : lt.name}</div>
       <div class="lock-studio-card-sub">${lt.desc}</div>
     `;
-    card.onclick = () => {
-      typeGrid.querySelectorAll('.lock-studio-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      currentLockType = lt.id;
-      renderDynamicCodeSection();
-      syncAndRefresh();
-    };
-    typeGrid.appendChild(card);
-  });
-  typeSection.appendChild(typeGrid);
-  wrap.appendChild(typeSection);
+                card.onclick = () => {
+                  typeGrid.querySelectorAll('.lock-studio-card').forEach(c => c.classList.remove('active'));
+                  card.classList.add('active');
+                  currentLockType = lt.id;
+                  renderDynamicCodeSection();
+                  syncAndRefresh();
+                };
+                typeGrid.appendChild(card);
+              });
+              typeSection.appendChild(typeGrid);
+              wrap.appendChild(typeSection);
 
-  // --- SECTION 2: Theme Selector (5 themes in one balanced row) ---
-  const themeSection = document.createElement('div');
-  themeSection.className = 'lock-studio-section';
-  themeSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-palette"></i> ${isHi ? 'विजुअल थीम (Visual Theme)' : 'Visual Theme'}</div>`;
+              // --- SECTION 2: Theme Selector (5 themes in one balanced row) ---
+              const themeSection = document.createElement('div');
+              themeSection.className = 'lock-studio-section';
+              themeSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-palette"></i> ${isHi ? 'विजुअल थीम (Visual Theme)' : 'Visual Theme'}</div>`;
 
-  const themeGrid = document.createElement('div');
-  themeGrid.className = 'lock-themes-grid';
+              const themeGrid = document.createElement('div');
+              themeGrid.className = 'lock-themes-grid';
 
-  const THEMES_PRESETS = [
-    { id: 'romantic-pink', name: 'Pink', full: 'Romantic Pink', nameHi: 'गुलाबी', icon: '💖', img: '/assets/media/lock/theme-romantic-pink.jpg', color: '#ff4d94' },
-    { id: 'dreamy-purple', name: 'Purple', full: 'Dreamy Purple', nameHi: 'बैंगनी', icon: '🌙', img: '/assets/media/lock/theme-dreamy-purple.jpg', color: '#c084fc' },
-    { id: 'luxury-gold', name: 'Gold', full: 'Luxury Gold', nameHi: 'गोल्ड', icon: '👑', img: '/assets/media/lock/theme-luxury-gold.jpg', color: '#eab308' },
-    { id: 'elegant-silver', name: 'Silver', full: 'Elegant Silver', nameHi: 'सिल्वर', icon: '💎', img: '/assets/media/lock/theme-elegant-silver.jpg', color: '#0ea5e9' },
-    { id: 'cute-pastel', name: 'Pastel', full: 'Cute Pastel', nameHi: 'पेस्टल', icon: '🧸', img: '/assets/media/lock/theme-cute-pastel.jpg', color: '#f97316' }
-  ];
+              const THEMES_PRESETS = [
+                { id: 'romantic-pink', name: 'Pink', full: 'Romantic Pink', nameHi: 'गुलाबी', icon: '💖', img: '/assets/media/lock/theme-romantic-pink.jpg', color: '#ff4d94' },
+                { id: 'dreamy-purple', name: 'Purple', full: 'Dreamy Purple', nameHi: 'बैंगनी', icon: '🌙', img: '/assets/media/lock/theme-dreamy-purple.jpg', color: '#c084fc' },
+                { id: 'luxury-gold', name: 'Gold', full: 'Luxury Gold', nameHi: 'गोल्ड', icon: '👑', img: '/assets/media/lock/theme-luxury-gold.jpg', color: '#eab308' },
+                { id: 'elegant-silver', name: 'Silver', full: 'Elegant Silver', nameHi: 'सिल्वर', icon: '💎', img: '/assets/media/lock/theme-elegant-silver.jpg', color: '#0ea5e9' },
+                { id: 'cute-pastel', name: 'Pastel', full: 'Cute Pastel', nameHi: 'पेस्टल', icon: '🧸', img: '/assets/media/lock/theme-cute-pastel.jpg', color: '#f97316' }
+              ];
 
-  THEMES_PRESETS.forEach(tp => {
-    const card = document.createElement('div');
-    card.className = 'lock-theme-card' + (currentTheme === tp.id ? ' active' : '');
-    card.style.setProperty('--theme-accent', tp.color);
-    card.title = isHi ? tp.nameHi : tp.full;
-    card.innerHTML = `
+              THEMES_PRESETS.forEach(tp => {
+                const card = document.createElement('div');
+                card.className = 'lock-theme-card' + (currentTheme === tp.id ? ' active' : '');
+                card.style.setProperty('--theme-accent', tp.color);
+                card.title = isHi ? tp.nameHi : tp.full;
+                card.innerHTML = `
       <div class="lock-studio-check"><i class="fas fa-check"></i></div>
       <img src="${tp.img}" class="lock-theme-thumb" alt="${tp.full}" />
       <div class="lock-theme-name" style="color:${tp.color}">${isHi ? tp.nameHi : tp.name}</div>
     `;
-    card.onclick = () => {
-      themeGrid.querySelectorAll('.lock-theme-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      currentTheme = tp.id;
-      syncAndRefresh();
-    };
-    themeGrid.appendChild(card);
-  });
-  themeSection.appendChild(themeGrid);
-  wrap.appendChild(themeSection);
+                card.onclick = () => {
+                  themeGrid.querySelectorAll('.lock-theme-card').forEach(c => c.classList.remove('active'));
+                  card.classList.add('active');
+                  currentTheme = tp.id;
+                  syncAndRefresh();
+                };
+                themeGrid.appendChild(card);
+              });
+              themeSection.appendChild(themeGrid);
+              wrap.appendChild(themeSection);
 
-  // --- SECTION 3: Smart Auto-Detecting Secret Code Section ---
-  const dynamicCodeContainer = document.createElement('div');
-  dynamicCodeContainer.className = 'lock-studio-section';
+              // --- SECTION 3: Smart Auto-Detecting Secret Code Section ---
+              const dynamicCodeContainer = document.createElement('div');
+              dynamicCodeContainer.className = 'lock-studio-section';
 
-  function renderDynamicCodeSection() {
-    dynamicCodeContainer.innerHTML = '';
+              function renderDynamicCodeSection() {
+                dynamicCodeContainer.innerHTML = '';
 
-    const labelRow = document.createElement('div');
-    labelRow.style.display = 'flex';
-    labelRow.style.alignItems = 'center';
-    labelRow.style.justifyContent = 'space-between';
+                const labelRow = document.createElement('div');
+                labelRow.style.display = 'flex';
+                labelRow.style.alignItems = 'center';
+                labelRow.style.justifyContent = 'space-between';
 
-    const label = document.createElement('div');
-    label.className = 'lock-studio-label';
-    label.innerHTML = `<i class="fas fa-key"></i> ${isHi ? 'सीक्रेट कोड (Secret Code)' : 'Secret Code'}`;
-    labelRow.appendChild(label);
+                const label = document.createElement('div');
+                label.className = 'lock-studio-label';
+                label.innerHTML = `<i class="fas fa-key"></i> ${isHi ? 'सीक्रेट कोड (Secret Code)' : 'Secret Code'}`;
+                labelRow.appendChild(label);
 
-    const smartBadge = document.createElement('span');
-    smartBadge.className = 'lock-smart-badge';
-    labelRow.appendChild(smartBadge);
-    dynamicCodeContainer.appendChild(labelRow);
+                const smartBadge = document.createElement('span');
+                smartBadge.className = 'lock-smart-badge';
+                labelRow.appendChild(smartBadge);
+                dynamicCodeContainer.appendChild(labelRow);
 
-    const inputWrap = document.createElement('div');
-    inputWrap.className = 'lock-input-group';
+                const inputWrap = document.createElement('div');
+                inputWrap.className = 'lock-input-group';
 
-    const codeInp = document.createElement('input');
-    codeInp.type = 'text';
-    codeInp.className = 'lock-input-text lock-code-input';
+                const codeInp = document.createElement('input');
+                codeInp.type = 'text';
+                codeInp.className = 'lock-input-text lock-code-input';
 
-    const note = document.createElement('div');
-    note.className = 'lock-smart-note';
+                const note = document.createElement('div');
+                note.className = 'lock-smart-note';
 
-    function updateBadgeAndDigits(val) {
-      if (currentLockType === 'classic') {
-        smartBadge.innerHTML = '<i class="fas fa-lock"></i> ' + (isHi ? 'टेक्स्ट पासवर्ड' : 'Text Password');
-        smartBadge.style.background = 'rgba(123, 93, 246, 0.1)';
-        note.innerHTML = '<i class="fas fa-info-circle"></i> ' + (isHi ? 'प्राप्तकर्ता अनलॉक करने के लिए यह पासवर्ड डालेगा' : 'Recipient enters this password to unlock');
-        return;
-      }
+                function updateBadgeAndDigits(val) {
+                  if (currentLockType === 'classic') {
+                    smartBadge.innerHTML = '<i class="fas fa-lock"></i> ' + (isHi ? 'टेक्स्ट पासवर्ड' : 'Text Password');
+                    smartBadge.style.background = 'rgba(123, 93, 246, 0.1)';
+                    note.innerHTML = '<i class="fas fa-info-circle"></i> ' + (isHi ? 'प्राप्तकर्ता अनलॉक करने के लिए यह पासवर्ड डालेगा' : 'Recipient enters this password to unlock');
+                    return;
+                  }
 
-      const digitsOnly = val.replace(/\D/g, '');
-      const rawLen = digitsOnly.length;
-      const detected = Math.max(3, Math.min(6, rawLen || 4));
-      currentDigits = detected;
+                  const digitsOnly = val.replace(/\D/g, '');
+                  const rawLen = digitsOnly.length;
+                  const detected = Math.max(3, Math.min(6, rawLen || 4));
+                  currentDigits = detected;
 
-      if (rawLen === 0) {
-        smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 4 अंक' : 'Auto: 4 Digits');
-      } else if (rawLen < 3) {
-        smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 3 अंक (न्यूनतम)' : 'Auto: 3 Digits (min 3)');
-      } else if (rawLen > 6) {
-        smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 6 अंक (अधिकतम)' : 'Auto: 6 Digits (max 6)');
-      } else {
-        smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? ('ऑटो: ' + detected + ' अंक') : ('Auto: ' + detected + ' Digits'));
-      }
+                  if (rawLen === 0) {
+                    smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 4 अंक' : 'Auto: 4 Digits');
+                  } else if (rawLen < 3) {
+                    smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 3 अंक (न्यूनतम)' : 'Auto: 3 Digits (min 3)');
+                  } else if (rawLen > 6) {
+                    smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'ऑटो: 6 अंक (अधिकतम)' : 'Auto: 6 Digits (max 6)');
+                  } else {
+                    smartBadge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? ('ऑटो: ' + detected + ' अंक') : ('Auto: ' + detected + ' Digits'));
+                  }
 
-      if (currentLockType === 'tumbler') {
-        note.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'पहियों की संख्या कोड के अनुसार ऑटो-सेट होगी (3-6 पहिए)' : 'Wheels automatically adjust to your code length (3–6 wheels)');
-      } else {
-        note.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'पिन स्लॉट्स कोड के अनुसार ऑटो-सेट होंगे (3-6 अंक)' : 'PIN slots automatically adjust to your code length (3–6 digits)');
-      }
-    }
+                  if (currentLockType === 'tumbler') {
+                    note.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'पहियों की संख्या कोड के अनुसार ऑटो-सेट होगी (3-6 पहिए)' : 'Wheels automatically adjust to your code length (3–6 wheels)');
+                  } else {
+                    note.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> ' + (isHi ? 'पिन स्लॉट्स कोड के अनुसार ऑटो-सेट होंगे (3-6 अंक)' : 'PIN slots automatically adjust to your code length (3–6 digits)');
+                  }
+                }
 
-    if (currentLockType === 'classic') {
-      codeInp.className = 'lock-input-text';
-      codeInp.placeholder = 'e.g. 1234 or love';
-      codeInp.maxLength = 32;
-      codeInp.value = currentCode;
-      updateBadgeAndDigits(currentCode);
-      codeInp.oninput = () => {
-        currentCode = codeInp.value.trim() || '1234';
-        updateBadgeAndDigits(currentCode);
-        syncAndRefresh();
-      };
-    } else {
-      codeInp.inputMode = 'numeric';
-      codeInp.maxLength = 6;
-      codeInp.placeholder = 'e.g. 1234 or 2024';
-      let cleanVal = currentCode.replace(/\D/g, '');
-      if (!cleanVal) cleanVal = '1234';
-      if (cleanVal.length > 6) cleanVal = cleanVal.slice(0, 6);
-      codeInp.value = cleanVal;
-      currentCode = cleanVal;
-      updateBadgeAndDigits(cleanVal);
-      codeInp.oninput = () => {
-        let val = codeInp.value.replace(/\D/g, '');
-        if (val.length > 6) val = val.slice(0, 6);
-        codeInp.value = val;
-        currentCode = val;
-        updateBadgeAndDigits(val);
-        syncAndRefresh();
-      };
-    }
+                if (currentLockType === 'classic') {
+                  codeInp.className = 'lock-input-text';
+                  codeInp.placeholder = 'e.g. 1234 or love';
+                  codeInp.maxLength = 32;
+                  codeInp.value = currentCode;
+                  updateBadgeAndDigits(currentCode);
+                  codeInp.oninput = () => {
+                    currentCode = codeInp.value.trim() || '1234';
+                    updateBadgeAndDigits(currentCode);
+                    syncAndRefresh();
+                  };
+                } else {
+                  codeInp.inputMode = 'numeric';
+                  codeInp.maxLength = 6;
+                  codeInp.placeholder = 'e.g. 1234 or 2024';
+                  let cleanVal = currentCode.replace(/\D/g, '');
+                  if (!cleanVal) cleanVal = '1234';
+                  if (cleanVal.length > 6) cleanVal = cleanVal.slice(0, 6);
+                  codeInp.value = cleanVal;
+                  currentCode = cleanVal;
+                  updateBadgeAndDigits(cleanVal);
+                  codeInp.oninput = () => {
+                    let val = codeInp.value.replace(/\D/g, '');
+                    if (val.length > 6) val = val.slice(0, 6);
+                    codeInp.value = val;
+                    currentCode = val;
+                    updateBadgeAndDigits(val);
+                    syncAndRefresh();
+                  };
+                }
 
-    inputWrap.appendChild(codeInp);
-    inputWrap.appendChild(note);
-    dynamicCodeContainer.appendChild(inputWrap);
-  }
-  renderDynamicCodeSection();
-  wrap.appendChild(dynamicCodeContainer);
+                inputWrap.appendChild(codeInp);
+                inputWrap.appendChild(note);
+                dynamicCodeContainer.appendChild(inputWrap);
+              }
+              renderDynamicCodeSection();
+              wrap.appendChild(dynamicCodeContainer);
 
-  // --- SECTION 4: Hint Configuration ---
-  const hintSection = document.createElement('div');
-  hintSection.className = 'lock-studio-section';
+              // --- SECTION 4: Hint Configuration ---
+              const hintSection = document.createElement('div');
+              hintSection.className = 'lock-studio-section';
 
-  const hintToggleRow = document.createElement('div');
-  hintToggleRow.className = 'lock-toggle-row';
-  hintToggleRow.innerHTML = `
+              const hintToggleRow = document.createElement('div');
+              hintToggleRow.className = 'lock-toggle-row';
+              hintToggleRow.innerHTML = `
     <div class="lock-toggle-info">
       <div class="lock-toggle-title"><i class="fas fa-lightbulb" style="color:#eab308"></i> ${isHi ? 'हिंट दिखाएं (Show Hint)' : 'Show Hint'}</div>
       <div class="lock-toggle-desc">${isHi ? 'सही कोड का अंदाज़ा लगाने के लिए क्लू दें' : 'Give recipient a clue to solve the lock'}</div>
@@ -9332,132 +9529,132 @@
       <span class="lock-slider"></span>
     </label>
   `;
-  const hintCheckbox = hintToggleRow.querySelector('input');
-  hintSection.appendChild(hintToggleRow);
+              const hintCheckbox = hintToggleRow.querySelector('input');
+              hintSection.appendChild(hintToggleRow);
 
-  const hintInputGroup = document.createElement('div');
-  hintInputGroup.className = 'lock-input-group';
-  hintInputGroup.style.display = currentHintEnabled ? 'flex' : 'none';
+              const hintInputGroup = document.createElement('div');
+              hintInputGroup.className = 'lock-input-group';
+              hintInputGroup.style.display = currentHintEnabled ? 'flex' : 'none';
 
-  const hintInput = document.createElement('input');
-  hintInput.type = 'text';
-  hintInput.className = 'lock-input-text';
-  hintInput.placeholder = isHi ? 'उदा. हमारी सालगिरह की तारीख ❤️' : 'e.g. Our anniversary date ❤️';
-  hintInput.value = currentHintText;
-  hintInput.oninput = () => {
-    currentHintText = hintInput.value;
-    syncAndRefresh();
-  };
-  hintInputGroup.appendChild(hintInput);
-  hintSection.appendChild(hintInputGroup);
+              const hintInput = document.createElement('input');
+              hintInput.type = 'text';
+              hintInput.className = 'lock-input-text';
+              hintInput.placeholder = isHi ? 'उदा. हमारी सालगिरह की तारीख ❤️' : 'e.g. Our anniversary date ❤️';
+              hintInput.value = currentHintText;
+              hintInput.oninput = () => {
+                currentHintText = hintInput.value;
+                syncAndRefresh();
+              };
+              hintInputGroup.appendChild(hintInput);
+              hintSection.appendChild(hintInputGroup);
 
-  hintCheckbox.onchange = () => {
-    currentHintEnabled = hintCheckbox.checked;
-    hintInputGroup.style.display = currentHintEnabled ? 'flex' : 'none';
-    syncAndRefresh();
-  };
-  wrap.appendChild(hintSection);
+              hintCheckbox.onchange = () => {
+                currentHintEnabled = hintCheckbox.checked;
+                hintInputGroup.style.display = currentHintEnabled ? 'flex' : 'none';
+                syncAndRefresh();
+              };
+              wrap.appendChild(hintSection);
 
-  // --- SECTION 5: Custom Image Upload ---
-  const mediaSection = document.createElement('div');
-  mediaSection.className = 'lock-studio-section';
-  mediaSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-image"></i> ${isHi ? 'सजावटी इमेज (Decorative Art / Photo)' : 'Decorative Art / Custom Photo'}</div>`;
+              // --- SECTION 5: Custom Image Upload ---
+              const mediaSection = document.createElement('div');
+              mediaSection.className = 'lock-studio-section';
+              mediaSection.innerHTML = `<div class="lock-studio-label"><i class="fas fa-image"></i> ${isHi ? 'सजावटी इमेज (Decorative Art / Photo)' : 'Decorative Art / Custom Photo'}</div>`;
 
-  const mediaPills = document.createElement('div');
-  mediaPills.className = 'lock-pills-row';
+              const mediaPills = document.createElement('div');
+              mediaPills.className = 'lock-pills-row';
 
-  const pillDefaultArt = document.createElement('button');
-  pillDefaultArt.className = 'lock-pill-btn' + (!currentCustomImage ? ' active' : '');
-  pillDefaultArt.innerHTML = '<i class="fas fa-paint-brush"></i> ' + (isHi ? 'थीम आर्ट' : 'Built-in Theme Art');
+              const pillDefaultArt = document.createElement('button');
+              pillDefaultArt.className = 'lock-pill-btn' + (!currentCustomImage ? ' active' : '');
+              pillDefaultArt.innerHTML = '<i class="fas fa-paint-brush"></i> ' + (isHi ? 'थीम आर्ट' : 'Built-in Theme Art');
 
-  const pillCustomPhoto = document.createElement('button');
-  pillCustomPhoto.className = 'lock-pill-btn' + (currentCustomImage ? ' active' : '');
-  pillCustomPhoto.innerHTML = '<i class="fas fa-upload"></i> ' + (isHi ? 'फोटो अपलोड' : 'Upload Own Photo');
+              const pillCustomPhoto = document.createElement('button');
+              pillCustomPhoto.className = 'lock-pill-btn' + (currentCustomImage ? ' active' : '');
+              pillCustomPhoto.innerHTML = '<i class="fas fa-upload"></i> ' + (isHi ? 'फोटो अपलोड' : 'Upload Own Photo');
 
-  mediaPills.appendChild(pillDefaultArt);
-  mediaPills.appendChild(pillCustomPhoto);
-  mediaSection.appendChild(mediaPills);
+              mediaPills.appendChild(pillDefaultArt);
+              mediaPills.appendChild(pillCustomPhoto);
+              mediaSection.appendChild(mediaPills);
 
-  const uploadArea = document.createElement('div');
-  uploadArea.style.display = currentCustomImage ? 'flex' : 'none';
-  uploadArea.style.flexDirection = 'column';
-  uploadArea.style.gap = '8px';
+              const uploadArea = document.createElement('div');
+              uploadArea.style.display = currentCustomImage ? 'flex' : 'none';
+              uploadArea.style.flexDirection = 'column';
+              uploadArea.style.gap = '8px';
 
-  const fileInp = document.createElement('input');
-  fileInp.type = 'file';
-  fileInp.accept = 'image/*';
-  fileInp.style.display = 'none';
+              const fileInp = document.createElement('input');
+              fileInp.type = 'file';
+              fileInp.accept = 'image/*';
+              fileInp.style.display = 'none';
 
-  const uploadBtn = document.createElement('button');
-  uploadBtn.className = 'lock-pill-btn';
-  uploadBtn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i> ' + (isHi ? 'गैलरी से इमेज चुनें...' : 'Choose Image from Device...');
-  uploadBtn.onclick = () => fileInp.click();
+              const uploadBtn = document.createElement('button');
+              uploadBtn.className = 'lock-pill-btn';
+              uploadBtn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i> ' + (isHi ? 'गैलरी से इमेज चुनें...' : 'Choose Image from Device...');
+              uploadBtn.onclick = () => fileInp.click();
 
-  const previewWrap = document.createElement('div');
-  previewWrap.style.display = currentCustomImage ? 'flex' : 'none';
-  previewWrap.style.alignItems = 'center';
-  previewWrap.style.gap = '10px';
+              const previewWrap = document.createElement('div');
+              previewWrap.style.display = currentCustomImage ? 'flex' : 'none';
+              previewWrap.style.alignItems = 'center';
+              previewWrap.style.gap = '10px';
 
-  const previewImg = document.createElement('img');
-  previewImg.src = currentCustomImage;
-  previewImg.style.width = '48px';
-  previewImg.style.height = '48px';
-  previewImg.style.borderRadius = '50%';
-  previewImg.style.objectFit = 'cover';
-  previewImg.style.border = '2px solid #7b5df6';
+              const previewImg = document.createElement('img');
+              previewImg.src = currentCustomImage;
+              previewImg.style.width = '48px';
+              previewImg.style.height = '48px';
+              previewImg.style.borderRadius = '50%';
+              previewImg.style.objectFit = 'cover';
+              previewImg.style.border = '2px solid #7b5df6';
 
-  const removeImgBtn = document.createElement('button');
-  removeImgBtn.className = 'lock-pill-btn';
-  removeImgBtn.style.color = '#ef4444';
-  removeImgBtn.innerText = isHi ? 'हटाएं (Remove)' : 'Remove Image';
-  removeImgBtn.onclick = () => {
-    currentCustomImage = '';
-    previewImg.src = '';
-    previewWrap.style.display = 'none';
-    pillDefaultArt.click();
-    syncAndRefresh();
-  };
+              const removeImgBtn = document.createElement('button');
+              removeImgBtn.className = 'lock-pill-btn';
+              removeImgBtn.style.color = '#ef4444';
+              removeImgBtn.innerText = isHi ? 'हटाएं (Remove)' : 'Remove Image';
+              removeImgBtn.onclick = () => {
+                currentCustomImage = '';
+                previewImg.src = '';
+                previewWrap.style.display = 'none';
+                pillDefaultArt.click();
+                syncAndRefresh();
+              };
 
-  previewWrap.appendChild(previewImg);
-  previewWrap.appendChild(removeImgBtn);
+              previewWrap.appendChild(previewImg);
+              previewWrap.appendChild(removeImgBtn);
 
-  fileInp.onchange = (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        currentCustomImage = evt.target.result;
-        previewImg.src = currentCustomImage;
-        previewWrap.style.display = 'flex';
-        syncAndRefresh();
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+              fileInp.onchange = (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (evt) => {
+                    currentCustomImage = evt.target.result;
+                    previewImg.src = currentCustomImage;
+                    previewWrap.style.display = 'flex';
+                    syncAndRefresh();
+                  };
+                  reader.readAsDataURL(file);
+                }
+              };
 
-  uploadArea.appendChild(fileInp);
-  uploadArea.appendChild(uploadBtn);
-  uploadArea.appendChild(previewWrap);
-  mediaSection.appendChild(uploadArea);
+              uploadArea.appendChild(fileInp);
+              uploadArea.appendChild(uploadBtn);
+              uploadArea.appendChild(previewWrap);
+              mediaSection.appendChild(uploadArea);
 
-  pillDefaultArt.onclick = () => {
-    pillDefaultArt.classList.add('active');
-    pillCustomPhoto.classList.remove('active');
-    uploadArea.style.display = 'none';
-    currentCustomImage = '';
-    syncAndRefresh();
-  };
-  pillCustomPhoto.onclick = () => {
-    pillCustomPhoto.classList.add('active');
-    pillDefaultArt.classList.remove('active');
-    uploadArea.style.display = 'flex';
-    if (!currentCustomImage) fileInp.click();
-  };
+              pillDefaultArt.onclick = () => {
+                pillDefaultArt.classList.add('active');
+                pillCustomPhoto.classList.remove('active');
+                uploadArea.style.display = 'none';
+                currentCustomImage = '';
+                syncAndRefresh();
+              };
+              pillCustomPhoto.onclick = () => {
+                pillCustomPhoto.classList.add('active');
+                pillDefaultArt.classList.remove('active');
+                uploadArea.style.display = 'flex';
+                if (!currentCustomImage) fileInp.click();
+              };
 
-  wrap.appendChild(mediaSection);
+              wrap.appendChild(mediaSection);
 
-  customPanel.appendChild(wrap);
-}
+              customPanel.appendChild(wrap);
+            }
 
             if (id === "lock") {
               createLockCustomPanel(customPanel);
@@ -9775,7 +9972,7 @@
                 try {
                   const iframeWin = document.getElementById('frame')?.contentWindow;
                   if (iframeWin) iframeWin.countdownFinished = false;
-                } catch(e) {}
+                } catch (e) { }
 
                 const nameVal = getUserName ? getUserName() : '';
                 const titleVal = titleInput ? titleInput.value : (ex.title || '');
@@ -9817,7 +10014,7 @@
                       titleText.innerText = titleInput.value.trim() || (currentLang === 'hi' ? 'सरप्राइज खुलने में...' : 'The Surprise Begins In');
                     }
                   }
-                } catch(e) {}
+                } catch (e) { }
 
                 const nameVal = getUserName();
                 refreshFeatureIfActive('countdown', nameVal, { text: timeInput.value, title: titleInput.value }, ex.images, titleInput.value, ex.audio, "", "", "", ex.mediaUrl);
@@ -10124,8 +10321,21 @@
                 const youtubeEmbedUrl = existingData.youtubeEmbedUrl || "";
                 const instagramEmbedUrl = existingData.instagramEmbedUrl || "";
                 const mediaUrl = existingData.mediaUrl || "";
-                const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl };
-                customData.set(id, storeData);
+                if (id === 'lock') {
+                  const existingLock = customData.get('lock') || {};
+                  const lockObj = Object.assign({
+                    text: '1234',
+                    lockType: 'keypad',
+                    theme: 'romantic-pink',
+                    digits: 4,
+                    soundEnabled: true
+                  }, existingLock);
+                  if (customText && customText.trim()) lockObj.text = customText.trim();
+                  customData.set('lock', lockObj);
+                } else {
+                  const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl };
+                  customData.set(id, storeData);
+                }
                 if (['countdown', 'lock', 'curtainReveal', 'welcomeTyping'].includes(id)) {
                   debouncedRefreshAll();
                 } else if (id === 'addMusicSection') {
@@ -10204,21 +10414,21 @@
               win._sharedUserName = uName;
             }
           }
-        } catch (e) {}
+        } catch (e) { }
 
         // Check if user has already custom edited DOM elements with pencil
         let customEdits = {};
         try {
           const raw = localStorage.getItem('greeter_custom_dom_texts') || sessionStorage.getItem('greeter_custom_dom_texts');
           if (raw) customEdits = JSON.parse(raw);
-        } catch(e) {}
+        } catch (e) { }
 
         // 2. Call template's own refresh / apply function if present
         try {
           if (win && typeof win.applyLanguageAndData === 'function') win.applyLanguageAndData();
           else if (win && typeof win.refreshAll === 'function') win.refreshAll();
           else if (win && typeof win.applyLang === 'function') win.applyLang();
-        } catch(e) {}
+        } catch (e) { }
 
         // 3. Directly update template DOM elements with user's data (only if not customized via pencil)
         try {
@@ -10261,13 +10471,13 @@
               uData.memories.forEach((mem, idx) => {
                 const div = doc.createElement('div');
                 div.className = 'mem-thumb gallery-item';
-                if (mem.img) div.innerHTML = '<img src="' + mem.img + '" alt="memory ' + (idx+1) + '">';
+                if (mem.img) div.innerHTML = '<img src="' + mem.img + '" alt="memory ' + (idx + 1) + '">';
                 else div.innerText = mem.text || '🎈';
                 gal.appendChild(div);
               });
             }
           }
-        } catch(e) {}
+        } catch (e) { }
       }
 
       function loadSelectedTemplate() {
@@ -10302,7 +10512,7 @@
                   tp = resolveTemplateUrl(parsed.template);
                 }
               }
-            } catch (e) {}
+            } catch (e) { }
           }
           if (!tp) {
             tp = localStorage.getItem("selectedTemplate");
@@ -10475,7 +10685,7 @@
           try {
             uData._fromCreate = false;
             localStorage.setItem('userData', JSON.stringify(uData));
-          } catch(e) {}
+          } catch (e) { }
         }
         if (typeof updateHubSummary === 'function') {
           updateHubSummary();
@@ -10491,7 +10701,7 @@
             if (websiteId) {
               localStorage.removeItem('customizationState_' + websiteId);
             }
-          } catch (e) {}
+          } catch (e) { }
         }
 
         // 1. Try fetching from server when we have a website ID (cross-device editing)
@@ -10605,7 +10815,7 @@
       }
 
       // Restore user custom text edits directly onto the template DOM
-      window.restoreCustomDomEdits = function(targetDoc) {
+      window.restoreCustomDomEdits = function (targetDoc) {
         const doc = targetDoc || getIframeDocument();
         if (!doc || !doc.body) return;
         try {
@@ -10613,10 +10823,10 @@
           let texts = window._serverCustomDomTexts || null;
           if (!texts) {
             const raw = (websiteId && localStorage.getItem('greeter_custom_dom_texts_' + websiteId)) ||
-                        localStorage.getItem('greeter_custom_dom_texts') ||
-                        sessionStorage.getItem('greeter_custom_dom_texts');
+              localStorage.getItem('greeter_custom_dom_texts') ||
+              sessionStorage.getItem('greeter_custom_dom_texts');
             if (raw) {
-              try { texts = JSON.parse(raw); } catch (e) {}
+              try { texts = JSON.parse(raw); } catch (e) { }
             }
           }
           if (!texts || typeof texts !== 'object') return;
@@ -10632,7 +10842,7 @@
               el.innerHTML = val;
             }
           }
-        } catch(e) {
+        } catch (e) {
           console.warn('Error restoring custom DOM edits:', e);
         }
       };
@@ -10668,7 +10878,7 @@
           try {
             localStorage.setItem('greeter_custom_dom_texts', JSON.stringify(customDomTexts));
             sessionStorage.setItem('greeter_custom_dom_texts', JSON.stringify(customDomTexts));
-          } catch(e) {}
+          } catch (e) { }
 
           // 2. Clean Recipient Name Detection with Strict Blacklist & All Template Selectors
           const nameSelectors = [
@@ -10724,9 +10934,9 @@
             if (el && el.innerText && el.innerText.trim()) {
               const text = el.innerText.trim();
               const isDefaultStory = text.includes('Your birthday is the day the world received') ||
-                                    text.includes('Every anniversary is a celebration') ||
-                                    text.includes('Every anniversary reminds me why') ||
-                                    text.includes('A beautiful story waiting');
+                text.includes('Every anniversary is a celebration') ||
+                text.includes('Every anniversary reminds me why') ||
+                text.includes('A beautiful story waiting');
               if (text && text !== currentEventData.story && (!isDefaultStory || notify)) {
                 currentEventData.story = text;
                 hasChanges = true;
@@ -10742,9 +10952,9 @@
             if (el && el.innerText && el.innerText.trim()) {
               const text = el.innerText.trim();
               const isDefaultWish = text.includes('May your days be filled') ||
-                                   text.includes('You deserve the universe') ||
-                                   text.includes('May every year be sweeter') ||
-                                   text.includes('May every year we share');
+                text.includes('You deserve the universe') ||
+                text.includes('May every year be sweeter') ||
+                text.includes('May every year we share');
               if (text && text !== currentEventData.wishes && (!isDefaultWish || notify)) {
                 currentEventData.wishes = text;
                 hasChanges = true;
@@ -10812,17 +11022,17 @@
             try {
               localStorage.setItem('userData', JSON.stringify(currentEventData));
               sessionStorage.setItem('userData', JSON.stringify(currentEventData));
-            } catch(e) {}
+            } catch (e) { }
             if (doc.defaultView) {
               try {
                 if (doc.defaultView._magicConfig) doc.defaultView._magicConfig.userName = currentName;
                 doc.defaultView.getUserName = () => currentName;
-              } catch(e) {}
+              } catch (e) { }
             }
             if (typeof autoSaveState === 'function') autoSaveState();
             if (typeof updateHubSummary === 'function') updateHubSummary();
           }
-        } catch(err) {
+        } catch (err) {
           console.warn('syncDomEditsToState error:', err);
         }
       }
@@ -10852,12 +11062,12 @@
           if (targetDoc.defaultView && targetDoc.defaultView.getSelection) {
             try {
               targetDoc.defaultView.getSelection()?.removeAllRanges();
-            } catch (e) {}
+            } catch (e) { }
           }
           if (targetDoc.activeElement && typeof targetDoc.activeElement.blur === 'function') {
             try {
               targetDoc.activeElement.blur();
-            } catch (e) {}
+            } catch (e) { }
           }
         } catch (err) {
           console.warn('cleanupEditModeArtifacts error:', err);
@@ -10896,7 +11106,7 @@
                 doc.body.contentEditable = 'true';
               }
               doc.designMode = 'on';
-            } catch (err) {}
+            } catch (err) { }
 
             // Inject styling for text editing outlines & text cursors
             let editStyle = doc.getElementById('greeter-inline-edit-style');
@@ -11021,15 +11231,15 @@
         const viewId = urlParams.get('view') || urlParams.get('restore');
         const userDataObj = JSON.parse(localStorage.getItem('userData') || '{}');
         const userPlan = (localStorage.getItem(`user_plan_${viewId}`) || localStorage.getItem('user_plan') || userDataObj.plan || '').toLowerCase();
-        
-        const isPremium = (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') || 
-                          sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' || 
-                          urlParams.get('_v') === 'c' ||
-                          urlParams.get('action') === 'payment-success';
-                          
-        const isPro = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime', 'starter', 'custom_url'].includes(userPlan) || 
-                      (viewId && sessionStorage.getItem(`pro_plan_${viewId}`) === 'true') ||
-                      isPremium; // Any paid/premium user has full PRO access
+
+        const isPremium = (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') ||
+          sessionStorage.getItem('pendingPremiumForNextWebsite') === 'true' ||
+          urlParams.get('_v') === 'c' ||
+          urlParams.get('action') === 'payment-success';
+
+        const isPro = ['pro', 'pro_plus', 'proplus', 'forever', 'infinity', 'lifetime', 'starter', 'custom_url'].includes(userPlan) ||
+          (viewId && sessionStorage.getItem(`pro_plan_${viewId}`) === 'true') ||
+          isPremium; // Any paid/premium user has full PRO access
 
         const proFeatures = ['virtualCake', 'virtualHug', 'addMusicSection', 'flowerBouquet', 'namedBirthdayCard', 'floatingPolaroids', 'instantCamera'];
         const basicPremiumFeatures = ['voiceNote', 'countdown'];
@@ -11141,7 +11351,7 @@
           // Ensure cards/books/envelopes start closed in DOM snapshot
           try {
             doc.querySelectorAll('.flipped, .book.flipped, #book.flipped, .flip-card.flipped, .secret-envelope.open, #secretEnvelope.open, #envelope.open').forEach(el => el.classList.remove('flipped', 'open'));
-          } catch(e) {}
+          } catch (e) { }
 
           // Scroll iframe to top so shared page always loads from the starting section
           try { if (frame.contentWindow) frame.contentWindow.scrollTo(0, 0); } catch (e) { }
@@ -11304,6 +11514,8 @@
 .fest-btn-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
 .name-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; align-items: center; justify-content: center; z-index: 1100000; padding: 16px; }
 .name-popup-overlay.show { display: flex; }
+.name-popup-card { background: #fff; color: #1a1025; bord
+... [truncated for diff preview]
 .name-popup-card { background: #fff; color: #1a1025; border-radius: 20px; padding: 24px 20px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; font-family: 'Inter',sans-serif; }
 .name-popup-card h3 { font-size: 1.25rem; margin: 0 0 6px; color: #e85d04; }
 .name-popup-card p { font-size: .9rem; color: #555; margin: 0 0 14px; line-height: 1.35; }
@@ -11435,14 +11647,47 @@
     const magicRaw = "${window._magicRaw || ""}";
     window._magicConfig = config;
     window.__IS_GENERATED_PAGE__ = true;
-    window.lockUnlocked = false;
-    window.curtainOpened = false;
-    window.welcomeFinished = false;
-    window.countdownFinished = false;
-    // Shared generated page: config is attached to window._magicConfig without polluting visitor storage
-    const activeFeatureStates = new Map(config.activeFeatures || []);
-    const customData = new Map(config.customData || []);
+
+    function parseActiveFeatures(raw) {
+      const map = new Map();
+      if (!raw) return map;
+      if (Array.isArray(raw)) {
+        raw.forEach(item => {
+          if (Array.isArray(item)) map.set(item[0], !!item[1]);
+          else if (typeof item === 'string') map.set(item, true);
+        });
+      } else if (typeof raw === 'object') {
+        Object.entries(raw).forEach(([k, v]) => map.set(k, !!v));
+      }
+      return map;
+    }
+
+    function parseCustomData(raw) {
+      const map = new Map();
+      if (!raw) return map;
+      if (Array.isArray(raw)) {
+        raw.forEach(item => {
+          if (Array.isArray(item)) map.set(item[0], item[1]);
+        });
+      } else if (typeof raw === 'object') {
+        Object.entries(raw).forEach(([k, v]) => map.set(k, v));
+      }
+      return map;
+    }
+
+    const activeFeatureStates = parseActiveFeatures(config.activeFeatures);
+    const customData = parseCustomData(config.customData);
     const userName = config.userName || 'Loved One';
+
+    const lockActive = activeFeatureStates.get('lock') === true;
+    const curtainActive = activeFeatureStates.get('curtainReveal') === true;
+    const countdownActive = activeFeatureStates.get('countdown') === true;
+    const welcomeActive = activeFeatureStates.get('welcomeTyping') === true;
+
+    window.countdownFinished = !countdownActive;
+    window.lockUnlocked = !lockActive;
+    window.curtainOpened = !curtainActive;
+    window.welcomeFinished = !welcomeActive;
 
     function decodeMagic(raw) {
       if (!raw) return "";
@@ -11466,53 +11711,6 @@
         console.error("Failed to decode magicRaw:", e);
       }
     }
-
-    // Lock DOM modifications to preserve user edits from the snapshot
-    let isLocked = true;
-    const lockMethod = (obj, prop, original) => {
-      if (!original) return;
-      Object.defineProperty(obj, prop, {
-        value: function(...args) { if (isLocked) return args[0]; return original.apply(this, args); },
-        writable: true, configurable: true
-      });
-    };
-    const lockAccessor = (obj, prop, originalDesc) => {
-      if (!originalDesc) return;
-      Object.defineProperty(obj, prop, {
-        set: function(val) { if (isLocked) return; originalDesc.set.call(this, val); },
-        get: originalDesc.get,
-        configurable: true
-      });
-    };
-
-        const origAppendChild = Node.prototype.appendChild;
-    const origInsertBefore = Node.prototype.insertBefore;
-    const origReplaceChild = Node.prototype.replaceChild;
-    const origRemoveChild = Node.prototype.removeChild;
-    const origAppend = Element.prototype.append;
-    const origPrepend = Element.prototype.prepend;
-    const origReplaceChildren = Element.prototype.replaceChildren;
-
-    lockMethod(Node.prototype, 'appendChild', origAppendChild);
-    lockMethod(Node.prototype, 'insertBefore', origInsertBefore);
-    lockMethod(Node.prototype, 'replaceChild', origReplaceChild);
-    lockMethod(Node.prototype, 'removeChild', origRemoveChild);
-    if (Element.prototype.append) lockMethod(Element.prototype, 'append', origAppend);
-    if (Element.prototype.prepend) lockMethod(Element.prototype, 'prepend', origPrepend);
-    if (Element.prototype.replaceChildren) lockMethod(Element.prototype, 'replaceChildren', origReplaceChildren);
-
-    const origInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
-    const origInnerText = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'innerText');
-    const origTextContent = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
-
-    lockAccessor(Element.prototype, 'innerHTML', origInnerHTML);
-    lockAccessor(HTMLElement.prototype, 'innerText', origInnerText);
-    lockAccessor(Node.prototype, 'textContent', origTextContent);
-
-    // Unlock safely after synchronous script execution
-    const unlock = () => { isLocked = false; };
-    document.addEventListener('DOMContentLoaded', unlock);
-    setTimeout(unlock, 100);
 
     window.escapeHtml = function(str) { return (str||"").replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); };
     window.getUserName = () => userName;
@@ -11640,6 +11838,7 @@
           window._countdownFinishedHandler = () => {
             window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
             window.countdownFinished = true;
+            window.lockUnlocked = !lockActive;
             runStages();
           };
           window.addEventListener('countdownFinished', window._countdownFinishedHandler);
@@ -11651,10 +11850,26 @@
 
         if (lockActive && !window.lockUnlocked) {
           const data = customData.get('lock') || {};
-          const lockPass = (data.text && data.text.trim()) ? data.text.trim() : '1234';
+          const lockPass = (data.text && String(data.text).trim()) ? String(data.text).trim() : '1234';
           window.applyFeature('curtainReveal', false);
           window.applyFeature('welcomeTyping', false);
-          window.applyFeature('lock', true, userName, lockPass, data.images || [], data.emoji || "", data.audio || "");
+          const lockCfg = {
+            text: lockPass,
+            lockType: data.lockType || 'keypad',
+            theme: data.theme || 'romantic-pink',
+            digits: data.digits || 4,
+            hintEnabled: !!data.hintEnabled,
+            hintText: data.hintText || '',
+            customImage: data.customImage || '',
+            soundEnabled: data.soundEnabled !== false
+          };
+          if (window.FEATURE_MAP && window.FEATURE_MAP.lock) {
+            try {
+              window.FEATURE_MAP.lock.enable(document, window, userName, lockCfg);
+            } catch(e) { console.warn('lock enable error:', e); }
+          } else {
+            window.applyFeature('lock', true, userName, lockCfg);
+          }
 
           window.curtainOpened = !curtainActive;
           window.welcomeFinished = !welcomeActive;
@@ -11833,6 +12048,27 @@
                 window._gtTrackFeature(featureId, 'used');
               }
             });
+          }
+
+          async function uploadPendingLocalMedia(html, config, isPremium) {
+            let updatedHtml = html;
+            let finalConfig = config;
+            if (typeof uploadAllPendingMedia === 'function') {
+              try {
+                await uploadAllPendingMedia(isPremium);
+              } catch (e) { console.warn('uploadAllPendingMedia error:', e); }
+            }
+            if (window._uploadedMediaMap && window._uploadedMediaMap.size > 0) {
+              for (const [blobUrl, cloudUrl] of window._uploadedMediaMap.entries()) {
+                if (updatedHtml.includes(blobUrl)) {
+                  updatedHtml = updatedHtml.split(blobUrl).join(cloudUrl);
+                }
+                if (typeof deepReplaceBlobUrl === 'function') {
+                  deepReplaceBlobUrl(finalConfig, blobUrl, cloudUrl);
+                }
+              }
+            }
+            return { html: updatedHtml, config: finalConfig };
           }
 
           // Save to server for cross-browser sharing
@@ -12124,15 +12360,15 @@
           if (doc && typeof activeFeatureStates !== 'undefined' && FEATURE_MAP) {
             for (let [id, active] of activeFeatureStates.entries()) {
               if (FEATURE_MAP[id] && FEATURE_MAP[id].disable) {
-                try { FEATURE_MAP[id].disable(doc, win); } catch (err) {}
+                try { FEATURE_MAP[id].disable(doc, win); } catch (err) { }
               }
             }
             // Ensure cards, books, envelopes are un-flipped and closed in starting preview state
             try {
               doc.querySelectorAll('.flipped, .book.flipped, #book.flipped, .flip-card.flipped, .secret-envelope.open, #secretEnvelope.open, #envelope.open').forEach(el => el.classList.remove('flipped', 'open'));
-            } catch(e) {}
+            } catch (e) { }
           }
-          try { if (win) win.scrollTo(0, 0); } catch(e) {}
+          try { if (win) win.scrollTo(0, 0); } catch (e) { }
 
           // Reset interactive feature states AFTER disable so lock, countdown, curtains, welcome load fresh
           const countdownActive = (typeof activeFeatureStates !== 'undefined' && activeFeatureStates.get) ? activeFeatureStates.get('countdown') : false;
@@ -12344,7 +12580,7 @@
       window.selectedGateway = selectedGateway;
       let activePlan = { plan: 'pro', price: selectedCurrency === 'INR' ? 99 : 1.99, days: 30, label: '30 Days' };
 
-      function updateGatewayToggleUI() {}
+      function updateGatewayToggleUI() { }
 
       async function detectUserLocation() {
         const cached = sessionStorage.getItem('detected_currency') || localStorage.getItem('detected_currency');
@@ -12498,7 +12734,7 @@
             template: localStorage.getItem('selectedTemplate') || '',
             userData: getEventData(),
             userName: getUserName(),
-            customDomTexts: (function() {
+            customDomTexts: (function () {
               try {
                 return JSON.parse(localStorage.getItem('greeter_custom_dom_texts') || '{}');
               } catch (e) {
@@ -12511,7 +12747,7 @@
           // Temporarily disable active features on doc to get clean DOM snapshot
           for (let [id, active] of activeFeatureStates.entries()) {
             if (active && FEATURE_MAP[id] && FEATURE_MAP[id].disable) {
-              try { FEATURE_MAP[id].disable(doc); } catch (e) {}
+              try { FEATURE_MAP[id].disable(doc); } catch (e) { }
             }
           }
 
@@ -12528,7 +12764,7 @@
           // Ensure cards/books/envelopes start closed in DOM snapshot
           try {
             docClone.querySelectorAll('.flipped, .book.flipped, #book.flipped, .flip-card.flipped, .secret-envelope.open, #secretEnvelope.open, #envelope.open').forEach(el => el.classList.remove('flipped', 'open'));
-          } catch(e) {}
+          } catch (e) { }
 
           // Re-enable features in preview iframe
           debouncedRefreshAll();
@@ -12583,14 +12819,41 @@
   }
 
   function initGeneratedPage() {
-    const activeFeatures = new Map(config.activeFeatures || []);
-    const customData = new Map(config.customData || []);
+    function parseActiveFeatures(raw) {
+      const map = new Map();
+      if (!raw) return map;
+      if (Array.isArray(raw)) {
+        raw.forEach(item => {
+          if (Array.isArray(item)) map.set(item[0], !!item[1]);
+          else if (typeof item === 'string') map.set(item, true);
+        });
+      } else if (typeof raw === 'object') {
+        Object.entries(raw).forEach(([k, v]) => map.set(k, !!v));
+      }
+      return map;
+    }
+
+    function parseCustomData(raw) {
+      const map = new Map();
+      if (!raw) return map;
+      if (Array.isArray(raw)) {
+        raw.forEach(item => {
+          if (Array.isArray(item)) map.set(item[0], item[1]);
+        });
+      } else if (typeof raw === 'object') {
+        Object.entries(raw).forEach(([k, v]) => map.set(k, v));
+      }
+      return map;
+    }
+
+    const activeFeatures = parseActiveFeatures(config.activeFeatures);
+    const customData = parseCustomData(config.customData);
     const userName = config.userName || 'Loved One';
 
-    const lockActive = activeFeatures.get('lock');
-    const curtainActive = activeFeatures.get('curtainReveal');
-    const countdownActive = activeFeatures.get('countdown');
-    const welcomeActive = activeFeatures.get('welcomeTyping');
+    const lockActive = activeFeatures.get('lock') === true;
+    const curtainActive = activeFeatures.get('curtainReveal') === true;
+    const countdownActive = activeFeatures.get('countdown') === true;
+    const welcomeActive = activeFeatures.get('welcomeTyping') === true;
 
     window.countdownFinished = !countdownActive;
     window.lockUnlocked = !lockActive;
@@ -12969,7 +13232,7 @@
               ud.websiteId = data.id;
               localStorage.setItem('userData', JSON.stringify(ud));
               sessionStorage.setItem('userData', JSON.stringify(ud));
-            } catch (e) {}
+            } catch (e) { }
 
             try {
               localStorage.setItem('final_magic_' + data.id, html);
@@ -12977,7 +13240,7 @@
               if (finalConfig && finalConfig.customDomTexts && Object.keys(finalConfig.customDomTexts).length > 0) {
                 try {
                   localStorage.setItem('greeter_custom_dom_texts_' + data.id, JSON.stringify(finalConfig.customDomTexts));
-                } catch(e) {}
+                } catch (e) { }
               }
               if (editPin) {
                 localStorage.setItem('creator_pin_' + data.id, editPin);
@@ -13002,8 +13265,8 @@
                   hasEditPin: !!(data.hasEditPin || editPin)
                 });
                 localStorage.setItem('greeter_my_websites', JSON.stringify(filtered.slice(0, 15)));
-              } catch (listErr) {}
-            } catch (e) {}
+              } catch (listErr) { }
+            } catch (e) { }
 
             return { success: true, id: data.id };
           } else {
@@ -13088,10 +13351,10 @@
           const isFreeUpdate = !!(paidStatus.isPaid && paidStatus.plan && (paidStatus.plan === targetPlan));
 
           if (email) {
-            try { localStorage.setItem('checkout_email', email); } catch(e){}
+            try { localStorage.setItem('checkout_email', email); } catch (e) { }
           }
           if (phone) {
-            try { localStorage.setItem('checkout_phone', phone); } catch(e){}
+            try { localStorage.setItem('checkout_phone', phone); } catch (e) { }
           }
 
           if (btn) {
@@ -13746,7 +14009,7 @@
         // Live input validation & formatting for Creator Edit PIN
         const checkoutPin = document.getElementById('checkoutEditPin');
         if (checkoutPin) {
-          checkoutPin.addEventListener('input', function() {
+          checkoutPin.addEventListener('input', function () {
             this.value = this.value.replace(/\D/g, '').slice(0, 6);
             const err = document.getElementById('checkoutPinError');
             const card = document.getElementById('checkoutPinCard');
@@ -13970,14 +14233,43 @@
         }
 
         async function applySharedView(storedHtml, storedConfig) {
-          window.lockUnlocked = false;
-          window.curtainOpened = false;
-          window.welcomeFinished = false;
-          window.countdownFinished = false;
+          function parseActiveFeatures(raw) {
+            const map = new Map();
+            if (!raw) return map;
+            if (Array.isArray(raw)) {
+              raw.forEach(item => {
+                if (Array.isArray(item)) map.set(item[0], !!item[1]);
+                else if (typeof item === 'string') map.set(item, true);
+              });
+            } else if (typeof raw === 'object') {
+              Object.entries(raw).forEach(([k, v]) => map.set(k, !!v));
+            }
+            return map;
+          }
+
+          function parseCustomData(raw) {
+            const map = new Map();
+            if (!raw) return map;
+            if (Array.isArray(raw)) {
+              raw.forEach(item => {
+                if (Array.isArray(item)) map.set(item[0], item[1]);
+              });
+            } else if (typeof raw === 'object') {
+              Object.entries(raw).forEach(([k, v]) => map.set(k, v));
+            }
+            return map;
+          }
+
           let cfgObj = {};
           try {
             cfgObj = (typeof storedConfig === 'string') ? JSON.parse(storedConfig || '{}') : (storedConfig || {});
-          } catch(e) {}
+          } catch (e) { }
+
+          const initialActiveMap = parseActiveFeatures(cfgObj.activeFeatures);
+          window.countdownFinished = !initialActiveMap.get('countdown');
+          window.lockUnlocked = !initialActiveMap.get('lock');
+          window.curtainOpened = !initialActiveMap.get('curtainReveal');
+          window.welcomeFinished = !initialActiveMap.get('welcomeTyping');
 
           const isCorruptShareHtml = typeof storedHtml === 'string' && (storedHtml.includes('Your Website is Ready') || (storedHtml.includes('<title>Share Your Surprise') && storedHtml.includes('qr-code-styling')));
 
@@ -13990,7 +14282,7 @@
               if (tpRes.ok) {
                 storedHtml = await tpRes.text();
               }
-            } catch(e) {
+            } catch (e) {
               console.error('Template recovery fetch failed:', e);
             }
           }
@@ -14026,7 +14318,7 @@
             let cfgObj = {};
             try {
               cfgObj = (typeof storedConfig === 'string') ? JSON.parse(storedConfig || '{}') : (storedConfig || {});
-            } catch(e) {}
+            } catch (e) { }
 
             if (cfgObj) {
               const configStr = JSON.stringify(cfgObj);
@@ -14036,24 +14328,24 @@
                   const uData = Object.assign({}, cfgObj.userData, { _fromCreate: false, websiteId: viewId });
                   localStorage.setItem('userData', JSON.stringify(uData));
                   sessionStorage.setItem('userData', JSON.stringify(uData));
-                } catch(e) {}
+                } catch (e) { }
               }
               if (cfgObj.userName) {
                 try {
                   localStorage.setItem('userDataName', cfgObj.userName);
                   sessionStorage.setItem('userDataName', cfgObj.userName);
-                } catch(e) {}
+                } catch (e) { }
               }
               if (cfgObj.template || cfgObj.templateName) {
                 try {
                   localStorage.setItem('selectedTemplate', cfgObj.template || cfgObj.templateName);
-                } catch(e) {}
+                } catch (e) { }
               }
               if (cfgObj.customDomTexts && Object.keys(cfgObj.customDomTexts).length > 0) {
                 try {
                   localStorage.setItem('greeter_custom_dom_texts', JSON.stringify(cfgObj.customDomTexts));
                   sessionStorage.setItem('greeter_custom_dom_texts', JSON.stringify(cfgObj.customDomTexts));
-                } catch(e) {}
+                } catch (e) { }
               }
             }
 
@@ -14105,16 +14397,43 @@
     }
   }
 
+  function parseActiveFeatures(raw) {
+    const map = new Map();
+    if (!raw) return map;
+    if (Array.isArray(raw)) {
+      raw.forEach(item => {
+        if (Array.isArray(item)) map.set(item[0], !!item[1]);
+        else if (typeof item === 'string') map.set(item, true);
+      });
+    } else if (typeof raw === 'object') {
+      Object.entries(raw).forEach(([k, v]) => map.set(k, !!v));
+    }
+    return map;
+  }
+
+  function parseCustomData(raw) {
+    const map = new Map();
+    if (!raw) return map;
+    if (Array.isArray(raw)) {
+      raw.forEach(item => {
+        if (Array.isArray(item)) map.set(item[0], item[1]);
+      });
+    } else if (typeof raw === 'object') {
+      Object.entries(raw).forEach(([k, v]) => map.set(k, v));
+    }
+    return map;
+  }
+
   function initSharedPageFeatures() {
-    const activeFeatures = new Map(config.activeFeatures || []);
-    const customData = new Map(config.customData || []);
+    const activeFeatures = parseActiveFeatures(config.activeFeatures);
+    const customData = parseCustomData(config.customData);
     const uData = config.userData || {};
     const userName = config.userName || uData.recipientName || uData.name || 'Loved One';
 
-    const lockActive = activeFeatures.get('lock');
-    const curtainActive = activeFeatures.get('curtainReveal');
-    const countdownActive = activeFeatures.get('countdown');
-    const welcomeActive = activeFeatures.get('welcomeTyping');
+    const lockActive = activeFeatures.get('lock') === true;
+    const curtainActive = activeFeatures.get('curtainReveal') === true;
+    const countdownActive = activeFeatures.get('countdown') === true;
+    const welcomeActive = activeFeatures.get('welcomeTyping') === true;
 
     window.countdownFinished = !countdownActive;
     window.lockUnlocked = !lockActive;
@@ -14158,6 +14477,9 @@
           window._countdownFinishedHandler = () => {
             window.removeEventListener('countdownFinished', window._countdownFinishedHandler);
             window.countdownFinished = true;
+            if (typeof window.lockUnlocked === 'undefined' || window.lockUnlocked === false) {
+              window.lockUnlocked = !lockActive;
+            }
             runStages();
           };
           window.addEventListener('countdownFinished', window._countdownFinishedHandler);
@@ -14342,13 +14664,13 @@
       if (ud.story) {
         const storyEl = document.getElementById('storyText') || document.getElementById('storyBody');
         if (storyEl && !customDom.storyText && !customDom.storyBody && (!storyEl.textContent.trim() || storyEl.textContent.includes('A beautiful story waiting') || storyEl.textContent.includes('Your birthday is the day the world received'))) {
-          storyEl.innerHTML = ud.story.replace(/\n/g, '<br>');
+          storyEl.innerHTML = (ud.story || '').split('\\n').join('<br>');
         }
       }
       if (ud.wishes) {
         const wishEl = document.getElementById('wishesText') || document.getElementById('wishText');
         if (wishEl && !customDom.wishesText && !customDom.wishText && (!wishEl.textContent.trim() || wishEl.textContent.includes('May your days be filled') || wishEl.textContent.includes('You deserve the universe'))) {
-          wishEl.innerHTML = ud.wishes.replace(/\n/g, '<br>');
+          wishEl.innerHTML = (ud.wishes || '').split('\\n').join('<br>');
         }
       }
       if (Array.isArray(ud.memories) && ud.memories.length > 0) {
@@ -14374,17 +14696,20 @@
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initSharedPageFeatures();
-      restoreSharedCustomDom();
-    });
-  } else {
-    setTimeout(() => {
-      initSharedPageFeatures();
-      restoreSharedCustomDom();
-    }, 50);
+  let initialized = false;
+  function triggerInit() {
+    if (initialized) return;
+    initialized = true;
+    initSharedPageFeatures();
+    restoreSharedCustomDom();
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', triggerInit);
+  }
+  window.addEventListener('load', triggerInit);
+  setTimeout(triggerInit, 60);
+  setTimeout(triggerInit, 250);
   setTimeout(restoreSharedCustomDom, 120);
   setTimeout(restoreSharedCustomDom, 350);
   setTimeout(restoreSharedCustomDom, 800);
@@ -14394,7 +14719,7 @@
             // Strip any legacy duplicate setupInteractiveElements that may have been baked into stored HTML
             storedHtml = storedHtml.replace(/function setupInteractiveElements\(\)[\s\S]*?setupInteractiveElements\(\);\s*(}\s*)?/g, '');
             // Clean lingering flipped class in stored HTML if saved previously while open
-            storedHtml = storedHtml.replace(/class=["']([^"']*\b)flipped(\b[^"']*)["']/gi, function(match, p1, p2) {
+            storedHtml = storedHtml.replace(/class=["']([^"']*\b)flipped(\b[^"']*)["']/gi, function (match, p1, p2) {
               const cleaned = (p1 + p2).replace(/\s+/g, ' ').trim();
               return cleaned ? `class="${cleaned}"` : '';
             });
@@ -14509,7 +14834,8 @@
         <button class="notice-btn notice-btn-secondary" onclick="showStage(1); closeFeatureNoticeModal();">
           <span>✏️ Back to Edit</span>
         </button>
-        <button class="notice-btn notice-btn-primary" id="noticeModalUpgradeBtn" onclick="selectCardMode('prem'); closeFeatureNoticeModal();">
+        <button class="notice-btn notice-btn-primary" id="noticeModalUpgradeBtn"
+          onclick="selectCardMode('prem'); closeFeatureNoticeModal();">
           <span>👑 Upgrade to Pro</span>
         </button>
       </div>

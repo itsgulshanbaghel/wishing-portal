@@ -1942,11 +1942,7 @@
     }
     if (doc.body) doc.body.classList.remove('magic-noscroll');
     // When lock is removed or disabled, mark unlocked and notify any deferred features
-    if (win) win.lockUnlocked = true;
-    if (typeof window !== 'undefined') window.lockUnlocked = true;
-    try { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
-    try { if (win && win !== window) win.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
-    try { if (doc && typeof doc.dispatchEvent === 'function') doc.dispatchEvent(new CustomEvent('lockUnlocked')); } catch(e){}
+    
 
     if (isEditorPreview && typeof editModeBeforeLock !== 'undefined' && typeof editModeActive !== 'undefined') {
       if (editModeBeforeLock && editModeActive) {
@@ -1977,19 +1973,19 @@
     if (typeof window !== 'undefined') window.lockUnlocked = false;
 
     // If countdown is active, defer lock screen until countdown finishes (for shared page)
-    if (!isEditorPreview) {
-      if (doc.getElementById("magic-countdown-overlay") || (win && win.countdownFinished === false) || (typeof window !== 'undefined' && window.countdownFinished === false)) {
-        const onCountdownDone = () => {
-          if (typeof window !== 'undefined') window.removeEventListener('countdownFinished', onCountdownDone);
-          if (win && win !== window) win.removeEventListener('countdownFinished', onCountdownDone);
-          if (doc && typeof doc.removeEventListener === 'function') doc.removeEventListener('countdownFinished', onCountdownDone);
-          renderGreeterLock(doc, win, userName, lockConfig, isEditorPreview);
-        };
-        if (typeof window !== 'undefined') window.addEventListener('countdownFinished', onCountdownDone);
-        if (win && win !== window) win.addEventListener('countdownFinished', onCountdownDone);
-        if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('countdownFinished', onCountdownDone);
-        return {};
-      }
+    const countdownEl = doc.getElementById("magic-countdown-overlay");
+    const isCountdownActive = !isEditorPreview && !!countdownEl && ((win && win.countdownFinished === false) || (typeof window !== 'undefined' && window.countdownFinished === false));
+    if (isCountdownActive) {
+      const onCountdownDone = () => {
+        if (typeof window !== 'undefined') window.removeEventListener('countdownFinished', onCountdownDone);
+        if (win && win !== window) win.removeEventListener('countdownFinished', onCountdownDone);
+        if (doc && typeof doc.removeEventListener === 'function') doc.removeEventListener('countdownFinished', onCountdownDone);
+        renderGreeterLock(doc, win, userName, lockConfig, isEditorPreview);
+      };
+      if (typeof window !== 'undefined') window.addEventListener('countdownFinished', onCountdownDone);
+      if (win && win !== window) win.addEventListener('countdownFinished', onCountdownDone);
+      if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('countdownFinished', onCountdownDone);
+      return {};
     }
 
     // Remove existing curtain or welcome message
