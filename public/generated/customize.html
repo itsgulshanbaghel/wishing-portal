@@ -6369,10 +6369,13 @@
 
           // Restore countdown UI
           if (id === "countdown") {
-            const timeInput = customPanel.querySelector(".countdown-time-input");
-            if (timeInput && data.text) {
-              timeInput.value = data.text;
-              timeInput.dispatchEvent(new Event("input"));
+            const isRuntime = data.mode === 'runtime' || (data.text && String(data.text).startsWith('runtime:'));
+            if (!isRuntime) {
+              const timeInput = customPanel.querySelector(".countdown-time-input");
+              if (timeInput && data.text) {
+                timeInput.value = data.text;
+                timeInput.dispatchEvent(new Event("input"));
+              }
             }
             const titleInput = customPanel.querySelector(".countdown-title-input");
             if (titleInput && data.title) {
@@ -6466,6 +6469,9 @@
             if (!countdownActive) return false;
             const data = customData.get('countdown') || {};
             if (!data.text) return false;
+            if (data.mode === 'runtime' || String(data.text).startsWith('runtime:')) {
+              return !window.countdownFinished;
+            }
             try {
               const parseLocalTime = (str) => {
                 const parts = str.split('T');
@@ -9453,7 +9459,13 @@
               mainContainer.className = "countdown-panel";
               mainContainer.style.padding = "10px 0";
 
+              const initCountdownData = customData.get("countdown") || {};
+              let currentMode = (initCountdownData.mode === 'runtime' || (initCountdownData.text && String(initCountdownData.text).startsWith('runtime:'))) ? 'runtime' : (initCountdownData.mode === 'datetime' ? 'datetime' : 'runtime');
+              let currentRuntimeDuration = Number(initCountdownData.duration) || (String(initCountdownData.text || '').startsWith('runtime:') ? parseInt(String(initCountdownData.text).replace('runtime:', ''), 10) : 10);
+              if (isNaN(currentRuntimeDuration) || currentRuntimeDuration < 3) currentRuntimeDuration = 10;
+
               const parseLocalTime = (str) => {
+                if (!str || typeof str !== 'string') return new Date();
                 const parts = str.split('T');
                 if (parts.length !== 2) return new Date(str);
                 const dateParts = parts[0].split('-');
@@ -9477,10 +9489,181 @@
                 return d.toLocaleString(currentLang === 'hi' ? 'hi-IN' : 'en-US', options);
               };
 
-              // 1. Date & Time Selection (AT THE VERY TOP)
+              // Inject mode switcher styles once
+              if (!document.getElementById('countdown-studio-styles')) {
+                const cStyle = document.createElement('style');
+                cStyle.id = 'countdown-studio-styles';
+                cStyle.textContent = `
+                  .countdown-mode-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                    padding: 4px;
+                    background: var(--bg-primary);
+                    border: 1px solid var(--toggle-bg);
+                    border-radius: 14px;
+                    margin-bottom: 16px;
+                  }
+                  .countdown-mode-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 10px 12px;
+                    border-radius: 10px;
+                    border: none;
+                    background: transparent;
+                    color: var(--text-secondary);
+                    font-size: 0.88rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.22s ease;
+                    font-family: inherit;
+                  }
+                  .countdown-mode-btn.active {
+                    background: linear-gradient(135deg, var(--accent-solid), #ec4899);
+                    color: #fff;
+                    font-weight: 700;
+                    box-shadow: 0 4px 14px rgba(123, 93, 246, 0.35);
+                  }
+                  .countdown-preset-pill {
+                    padding: 7px 13px;
+                    border-radius: 999px;
+                    border: 1px solid var(--toggle-bg);
+                    background: var(--bg-secondary);
+                    color: var(--text-primary);
+                    font-size: 0.82rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    font-family: inherit;
+                  }
+                  .countdown-preset-pill:hover {
+                    border-color: var(--accent-solid);
+                    transform: translateY(-1px);
+                  }
+                  .countdown-preset-pill.active {
+                    background: var(--accent-solid);
+                    color: #fff;
+                    border-color: var(--accent-solid);
+                    box-shadow: 0 3px 10px rgba(123, 93, 246, 0.3);
+                  }
+                  .countdown-hint-note {
+                    font-size: 0.78rem;
+                    color: var(--text-secondary);
+                    opacity: 0.88;
+                    margin-top: 8px;
+                    line-height: 1.4;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                  }
+                `;
+                document.head.appendChild(cStyle);
+              }
+
+              // Mode Switcher: Runtime Timer vs Specific Date & Time
+              const modeGrid = document.createElement("div");
+              modeGrid.className = "countdown-mode-grid";
+
+              const btnRuntime = document.createElement("button");
+              btnRuntime.type = "button";
+              btnRuntime.className = "countdown-mode-btn" + (currentMode === 'runtime' ? " active" : "");
+              btnRuntime.innerHTML = `<span style="font-size:1.05rem;">⏱️</span> <span>${currentLang === 'hi' ? 'रनटाइम टाइमर' : 'Runtime Timer'}</span>`;
+
+              const btnDatetime = document.createElement("button");
+              btnDatetime.type = "button";
+              btnDatetime.className = "countdown-mode-btn" + (currentMode === 'datetime' ? " active" : "");
+              btnDatetime.innerHTML = `<span style="font-size:1.05rem;">📅</span> <span>${currentLang === 'hi' ? 'तारीख व समय' : 'Specific Date'}</span>`;
+
+              modeGrid.appendChild(btnRuntime);
+              modeGrid.appendChild(btnDatetime);
+              mainContainer.appendChild(modeGrid);
+
+              // 1A. RUNTIME TIMER SECTION
+              const runtimeWrap = document.createElement("div");
+              runtimeWrap.className = "countdown-runtime-wrap";
+              runtimeWrap.style.cssText = "margin-bottom:16px; display:" + (currentMode === 'runtime' ? 'block' : 'none') + ";";
+
+              const runtimeLabel = document.createElement("label");
+              runtimeLabel.innerHTML = `<span>⏱️</span> <span>${currentLang === 'hi' ? 'वेबसाइट खुलने का टाइमर सेट करें:' : 'Per-Visit Runtime Countdown:'}</span>`;
+              runtimeLabel.style.cssText = "display:flex; align-items:center; gap:6px; font-size:0.88rem; font-weight:600; color:var(--text-primary); margin-bottom:8px;";
+              runtimeWrap.appendChild(runtimeLabel);
+
+              // Preset Duration Pills
+              const presetContainer = document.createElement("div");
+              presetContainer.style.cssText = "display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;";
+
+              const RUNTIME_PRESETS = [
+                { label: '5s', secs: 5 },
+                { label: '10s ⭐', secs: 10 },
+                { label: '15s', secs: 15 },
+                { label: '30s', secs: 30 },
+                { label: '1m (60s)', secs: 60 },
+                { label: '2m', secs: 120 },
+                { label: '5m', secs: 300 }
+              ];
+
+              const presetBtns = [];
+              RUNTIME_PRESETS.forEach(p => {
+                const pBtn = document.createElement("button");
+                pBtn.type = "button";
+                pBtn.className = "countdown-preset-pill" + (currentRuntimeDuration === p.secs ? " active" : "");
+                pBtn.innerText = p.label;
+                pBtn.onclick = () => {
+                  currentRuntimeDuration = p.secs;
+                  customSecInput.value = p.secs;
+                  presetBtns.forEach(b => b.classList.remove('active'));
+                  pBtn.classList.add('active');
+                  syncCountdownData('runtime');
+                };
+                presetBtns.push(pBtn);
+                presetContainer.appendChild(pBtn);
+              });
+              runtimeWrap.appendChild(presetContainer);
+
+              // Custom Seconds Input
+              const customSecRow = document.createElement("div");
+              customSecRow.style.cssText = "display:flex; align-items:center; gap:10px; margin-top:8px;";
+
+              const customSecLabel = document.createElement("span");
+              customSecLabel.style.cssText = "font-size:0.84rem; color:var(--text-secondary);";
+              customSecLabel.innerText = currentLang === 'hi' ? "कस्टम सेकंड्स:" : "Custom Seconds:";
+
+              const customSecInput = document.createElement("input");
+              customSecInput.type = "number";
+              customSecInput.min = "3";
+              customSecInput.max = "600";
+              customSecInput.value = currentRuntimeDuration;
+              customSecInput.style.cssText = "width:80px; padding:7px 10px; border:1px solid var(--toggle-bg); background:var(--bg-secondary); color:var(--text-primary); border-radius:10px; font-size:0.9rem; outline:none; font-family:inherit;";
+              customSecInput.oninput = () => {
+                let s = parseInt(customSecInput.value, 10);
+                if (isNaN(s) || s < 3) s = 3;
+                if (s > 600) s = 600;
+                currentRuntimeDuration = s;
+                presetBtns.forEach(b => {
+                  const pSec = RUNTIME_PRESETS.find(p => p.secs === s);
+                  if (pSec && b.innerText === pSec.label) b.classList.add('active');
+                  else b.classList.remove('active');
+                });
+                syncCountdownData('runtime');
+              };
+
+              customSecRow.appendChild(customSecLabel);
+              customSecRow.appendChild(customSecInput);
+              runtimeWrap.appendChild(customSecRow);
+
+              const runtimeHint = document.createElement("div");
+              runtimeHint.className = "countdown-hint-note";
+              runtimeHint.innerHTML = `<i class="fas fa-sparkles" style="color:var(--accent-solid);"></i> <span>${currentLang === 'hi' ? 'यह टाइमर वेबसाइट खुलने पर हर बार इतनी देर चलेगा।' : 'Appears and runs for this exact duration every time the website is opened.'}</span>`;
+              runtimeWrap.appendChild(runtimeHint);
+
+              mainContainer.appendChild(runtimeWrap);
+
+              // 1B. SPECIFIC DATE & TIME SECTION
               const dateWrap = document.createElement("div");
               dateWrap.className = "countdown-time-wrap";
-              dateWrap.style.cssText = "margin-bottom:14px;";
+              dateWrap.style.cssText = "margin-bottom:14px; display:" + (currentMode === 'datetime' ? 'block' : 'none') + ";";
 
               const dateLabel = document.createElement("label");
               dateLabel.innerText = currentLang === 'hi' ? "📅 तारीख और समय चुनें:" : "📅 Select Date & Time:";
@@ -9504,8 +9687,7 @@
               timeInput.max = "2099-12-31T23:59";
               timeInput.style.display = "none";
 
-              const initCountdownData = customData.get("countdown") || {};
-              if (initCountdownData && initCountdownData.text) {
+              if (initCountdownData && initCountdownData.text && !String(initCountdownData.text).startsWith('runtime:')) {
                 timeInput.value = initCountdownData.text;
               } else {
                 const d = new Date();
@@ -9514,13 +9696,28 @@
                 const pad = (n) => n.toString().padStart(2, '0');
                 const defaultTime = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
                 timeInput.value = defaultTime;
-                initCountdownData.text = defaultTime;
+                if (!initCountdownData.text) {
+                  if (currentMode === 'runtime') {
+                    initCountdownData.text = 'runtime:' + currentRuntimeDuration;
+                    initCountdownData.mode = 'runtime';
+                    initCountdownData.duration = currentRuntimeDuration;
+                  } else {
+                    initCountdownData.text = defaultTime;
+                    initCountdownData.mode = 'datetime';
+                  }
+                }
                 if (!initCountdownData.mediaUrl) {
                   initCountdownData.mediaUrl = DEFAULT_COUNTDOWN_MEDIA;
                 }
                 customData.set("countdown", initCountdownData);
               }
               dateWrap.appendChild(timeInput);
+
+              const dateHint = document.createElement("div");
+              dateHint.className = "countdown-hint-note";
+              dateHint.innerHTML = `<i class="fas fa-calendar-check" style="color:var(--accent-solid);"></i> <span>${currentLang === 'hi' ? 'आपके चुने हुए कैलेंडर समय तक लाइव काउंटडाउन चलेगा।' : 'Counts down live to your chosen future date & time.'}</span>`;
+              dateWrap.appendChild(dateHint);
+
               mainContainer.appendChild(dateWrap);
 
               const updateDisplayValue = () => {
@@ -9531,6 +9728,56 @@
                 }
               };
               updateDisplayValue();
+
+              // Mode toggle events
+              btnRuntime.onclick = () => {
+                if (currentMode === 'runtime') return;
+                currentMode = 'runtime';
+                btnRuntime.classList.add('active');
+                btnDatetime.classList.remove('active');
+                runtimeWrap.style.display = 'block';
+                dateWrap.style.display = 'none';
+                syncCountdownData('runtime');
+              };
+
+              btnDatetime.onclick = () => {
+                if (currentMode === 'datetime') return;
+                currentMode = 'datetime';
+                btnDatetime.classList.add('active');
+                btnRuntime.classList.remove('active');
+                runtimeWrap.style.display = 'none';
+                dateWrap.style.display = 'block';
+                syncCountdownData('datetime');
+              };
+
+              function syncCountdownData(modeToSync) {
+                const mode = modeToSync || currentMode;
+                const ex = customData.get('countdown') || {};
+                ex.mode = mode;
+                if (mode === 'runtime') {
+                  ex.duration = currentRuntimeDuration;
+                  ex.text = 'runtime:' + currentRuntimeDuration;
+                } else {
+                  ex.text = timeInput.value;
+                }
+                customData.set('countdown', ex);
+
+                window.countdownFinished = false;
+                try {
+                  const iframeWin = document.getElementById('frame')?.contentWindow;
+                  if (iframeWin) iframeWin.countdownFinished = false;
+                } catch(e) {}
+
+                const nameVal = getUserName ? getUserName() : '';
+                const titleVal = titleInput ? titleInput.value : (ex.title || '');
+                refreshFeatureIfActive('countdown', nameVal, {
+                  text: ex.text,
+                  mode: mode,
+                  duration: ex.duration,
+                  title: titleVal
+                }, ex.images, titleVal, ex.audio, "", "", "", ex.mediaUrl);
+                autoSaveState();
+              }
 
               // 2. Optional Custom Heading Input
               const titleWrap = document.createElement("div");
@@ -9783,6 +10030,7 @@
                   }
                 }
                 const ex = customData.get("countdown") || {};
+                ex.mode = 'datetime';
                 ex.text = timeInput.value;
                 customData.set("countdown", ex);
 
@@ -11203,6 +11451,9 @@
         if (!countdownActive) return false;
         const data = customData.get('countdown') || {};
         if (!data.text) return false;
+        if (data.mode === 'runtime' || String(data.text).startsWith('runtime:')) {
+          return !window.countdownFinished;
+        }
         try {
           const parseLocalTime = (str) => {
             const parts = str.split('T');
@@ -12224,6 +12475,9 @@
       if (!countdownActive) return false;
       const data = customData.get('countdown') || {};
       if (!data.text) return false;
+      if (data.mode === 'runtime' || String(data.text).startsWith('runtime:')) {
+        return !window.countdownFinished;
+      }
       try {
         const parts = data.text.split('T');
         if (parts.length !== 2) return new Date(data.text).getTime() > Date.now();
@@ -13745,6 +13999,9 @@
       if (!countdownActive) return false;
       const data = customData.get('countdown') || {};
       if (!data.text) return false;
+      if (data.mode === 'runtime' || String(data.text).startsWith('runtime:')) {
+        return !window.countdownFinished;
+      }
       try {
         const parts = data.text.split('T');
         if (parts.length !== 2) return new Date(data.text).getTime() > Date.now();

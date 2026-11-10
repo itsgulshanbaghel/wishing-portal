@@ -5535,29 +5535,47 @@
         countdown: {
             enable(d, w, userName, customText, images, customEmoji, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl) {
                 if (!customText) return {};
-                const parseLocalTime = (str) => {
-                    if (typeof str !== 'string') return new Date(str);
-                    const parts = str.split('T');
-                    if (parts.length !== 2) return new Date(str);
-                    const dateParts = parts[0].split('-');
-                    const timeParts = parts[1].split(':');
-                    if (dateParts.length !== 3 || timeParts.length < 2) return new Date(str);
-                    return new Date(
-                        parseInt(dateParts[0], 10),
-                        parseInt(dateParts[1], 10) - 1,
-                        parseInt(dateParts[2], 10),
-                        parseInt(timeParts[0], 10),
-                        parseInt(timeParts[1], 10),
-                        0, 0
-                    );
-                };
 
-                const targetTimeStr = (typeof customText === 'object' && customText.text) ? customText.text : (typeof customText === 'string' ? customText : '');
-                const targetTime = parseLocalTime(targetTimeStr).getTime();
-                if (isNaN(targetTime)) return {};
+                let isRuntime = false;
+                let runtimeSeconds = 10;
+                if (typeof customText === 'object' && customText) {
+                    if (customText.mode === 'runtime' || (customText.text && String(customText.text).startsWith('runtime:'))) {
+                        isRuntime = true;
+                        runtimeSeconds = Number(customText.duration) || parseInt(String(customText.text).replace('runtime:', ''), 10) || 10;
+                    }
+                } else if (typeof customText === 'string' && customText.startsWith('runtime:')) {
+                    isRuntime = true;
+                    runtimeSeconds = parseInt(customText.replace('runtime:', ''), 10) || 10;
+                }
 
-                const now = Date.now();
-                if (now >= targetTime) return {}; // Already passed
+                let targetTime;
+                if (isRuntime) {
+                    targetTime = Date.now() + (runtimeSeconds * 1000);
+                } else {
+                    const parseLocalTime = (str) => {
+                        if (typeof str !== 'string') return new Date(str);
+                        const parts = str.split('T');
+                        if (parts.length !== 2) return new Date(str);
+                        const dateParts = parts[0].split('-');
+                        const timeParts = parts[1].split(':');
+                        if (dateParts.length !== 3 || timeParts.length < 2) return new Date(str);
+                        return new Date(
+                            parseInt(dateParts[0], 10),
+                            parseInt(dateParts[1], 10) - 1,
+                            parseInt(dateParts[2], 10),
+                            parseInt(timeParts[0], 10),
+                            parseInt(timeParts[1], 10),
+                            0, 0
+                        );
+                    };
+
+                    const targetTimeStr = (typeof customText === 'object' && customText.text) ? customText.text : (typeof customText === 'string' ? customText : '');
+                    targetTime = parseLocalTime(targetTimeStr).getTime();
+                    if (isNaN(targetTime)) return {};
+
+                    const now = Date.now();
+                    if (now >= targetTime) return {}; // Already passed
+                }
 
                 const existing = d.getElementById("magic-countdown-overlay");
                 if (existing) {
@@ -6213,11 +6231,13 @@
                 };
 
                 let currentLayoutWithDays = null;
+                let currentLayoutWithHours = null;
                 let daysUnit, hoursUnit, minutesUnit, secondsUnit;
 
-                const setupPillLayout = (includeDays) => {
+                const setupPillLayout = (includeDays, includeHours = true) => {
                     pillContainer.innerHTML = '';
                     currentLayoutWithDays = includeDays;
+                    currentLayoutWithHours = includeHours;
                     if (includeDays) {
                         daysUnit = createUnit(isHi ? "दिन" : "Days");
                         pillContainer.appendChild(daysUnit.wrap);
@@ -6226,9 +6246,13 @@
                         daysUnit = null;
                     }
 
-                    hoursUnit = createUnit(isHi ? "घंटे" : "Hours");
-                    pillContainer.appendChild(hoursUnit.wrap);
-                    pillContainer.appendChild(createColon());
+                    if (includeHours) {
+                        hoursUnit = createUnit(isHi ? "घंटे" : "Hours");
+                        pillContainer.appendChild(hoursUnit.wrap);
+                        pillContainer.appendChild(createColon());
+                    } else {
+                        hoursUnit = null;
+                    }
 
                     minutesUnit = createUnit(isHi ? "मिनट" : "Minutes");
                     pillContainer.appendChild(minutesUnit.wrap);
@@ -6316,14 +6340,17 @@
                     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
                     const needDays = days > 0;
-                    if (currentLayoutWithDays !== needDays) {
-                        setupPillLayout(needDays);
+                    const needHours = (!isRuntime || hours > 0);
+                    if (currentLayoutWithDays !== needDays || currentLayoutWithHours !== needHours) {
+                        setupPillLayout(needDays, needHours);
                     }
 
                     if (needDays && daysUnit) {
                         updateValue(daysUnit, days);
                     }
-                    updateValue(hoursUnit, hours);
+                    if (needHours && hoursUnit) {
+                        updateValue(hoursUnit, hours);
+                    }
                     updateValue(minutesUnit, minutes);
                     updateValue(secondsUnit, seconds);
                 };
