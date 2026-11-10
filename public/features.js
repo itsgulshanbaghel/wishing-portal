@@ -1134,7 +1134,7 @@
         color: #ffffff;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        opacity: 0;
+        opacity: 1;
         transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         padding: clamp(6px, 1.5vh, 14px);
         box-sizing: border-box;
@@ -2032,6 +2032,7 @@
     const overlay = doc.createElement('div');
     overlay.id = 'lock-overlay';
     overlay.style.background = theme.bg;
+    overlay.style.opacity = '1';
 
     // Audio elements
     const unlockAudio = doc.createElement('audio');
@@ -2350,12 +2351,8 @@
       }
     };
 
-    // Smooth entrance
-    raf(() => {
-      setTimeout(() => {
-        overlay.style.opacity = '1';
-      }, 50);
-    });
+    // Instant entrance
+    overlay.style.opacity = '1';
 
     return { cleanup: () => removeGreeterLock(doc, win, isEditorPreview) };
   }
@@ -6309,17 +6306,17 @@
 
                         unlockAudio.play().catch(e => console.log('Countdown unlock audio failed:', e));
 
+                        // Immediately trigger next stage (e.g. Lock Screen) with zero delay
+                        if (w) w.countdownFinished = true;
+                        window.countdownFinished = true;
+                        try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
+                        try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
+                        try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
+
+                        overlay.style.opacity = '0';
                         setTimeout(() => {
-                            overlay.style.opacity = '0';
-                            setTimeout(() => {
-                                overlay.remove();
-                                if (w) w.countdownFinished = true;
-                                window.countdownFinished = true;
-                                try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
-                                try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
-                                try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
-                            }, 800);
-                        }, 500);
+                            overlay.remove();
+                        }, 300);
                         return;
                     }
 
@@ -6352,7 +6349,7 @@
                 };
 
                 updateTimer();
-                const intervalId = setInterval(updateTimer, 1000);
+                const intervalId = setInterval(updateTimer, 250);
                 overlay._timerInterval = intervalId;
                 return { cleanup: () => { clearInterval(intervalId); overlay.remove(); } };
             },

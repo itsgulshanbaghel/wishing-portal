@@ -4247,17 +4247,17 @@
 
                         unlockAudio.play().catch(e => console.log('Countdown unlock audio failed:', e));
 
+                        // Immediately trigger next stage (e.g. Lock Screen) with zero delay
+                        if (w) w.countdownFinished = true;
+                        window.countdownFinished = true;
+                        try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
+                        try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
+                        try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
+
+                        overlay.style.opacity = '0';
                         setTimeout(() => {
-                            overlay.style.opacity = '0';
-                            setTimeout(() => {
-                                overlay.remove();
-                                if (w) w.countdownFinished = true;
-                                window.countdownFinished = true;
-                                try { if (w && typeof w.dispatchEvent === 'function') w.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
-                                try { if (typeof window !== 'undefined' && window !== w) window.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
-                                try { if (d && typeof d.dispatchEvent === 'function') d.dispatchEvent(new CustomEvent('countdownFinished')); } catch (e) { }
-                            }, 800);
-                        }, 500);
+                            overlay.remove();
+                        }, 300);
                         return;
                     }
 
@@ -4287,7 +4287,7 @@
                 };
 
                 updateTimer();
-                const intervalId = setInterval(updateTimer, 1000);
+                const intervalId = setInterval(updateTimer, 250);
                 overlay._timerInterval = intervalId;
                 return { cleanup: () => { clearInterval(intervalId); overlay.remove(); } };
             },

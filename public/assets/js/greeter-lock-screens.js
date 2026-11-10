@@ -481,7 +481,7 @@
         color: #ffffff;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        opacity: 0;
+        opacity: 1;
         transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         padding: clamp(6px, 1.5vh, 14px);
         box-sizing: border-box;
@@ -1379,6 +1379,7 @@
     const overlay = doc.createElement('div');
     overlay.id = 'lock-overlay';
     overlay.style.background = theme.bg;
+    overlay.style.opacity = '1';
 
     // Audio elements
     const unlockAudio = doc.createElement('audio');
@@ -1697,12 +1698,8 @@
       }
     };
 
-    // Smooth entrance
-    raf(() => {
-      setTimeout(() => {
-        overlay.style.opacity = '1';
-      }, 50);
-    });
+    // Instant entrance
+    overlay.style.opacity = '1';
 
     return { cleanup: () => removeGreeterLock(doc, win, isEditorPreview) };
   }
