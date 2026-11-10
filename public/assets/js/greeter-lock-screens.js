@@ -218,14 +218,15 @@
   };
 
   // Zero-latency Web Audio Synthesizer - Sounds ON by default
-  function createSoundEngine(soundEnabled = true) {
+  function createSoundEngine(soundEnabled = true, win = null) {
     let audioCtx = null;
     let muted = (soundEnabled === false);
 
     function getAudioCtx() {
       if (!audioCtx) {
         try {
-          const AudioContextClass = (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext));
+          const targetWin = win || (typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : null));
+          const AudioContextClass = targetWin && (targetWin.AudioContext || targetWin.webkitAudioContext);
           if (AudioContextClass) audioCtx = new AudioContextClass();
         } catch (e) {}
       }
@@ -258,22 +259,103 @@
       } catch(e) {}
     }
 
+    function resumeAudio() {
+      const ctx = getAudioCtx();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+    }
+
+    // Authentic Mechanical Combination Lock Ratchet & Tumbler Gear Click
     function playTumbler() {
       if (muted) return;
       const ctx = getAudioCtx();
       if (!ctx) return;
       try {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(450, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.035);
-        gain.gain.setValueAtTime(0.18, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.04);
+        const t0 = ctx.currentTime;
+        // Organic micro-detune so consecutive gear teeth clicks feel physical and tactile
+        const detune = (Math.random() - 0.5) * 60;
+
+        // 1. High metallic spring-pawl snap (transient attack 0 - 15ms)
+        const snapOsc = ctx.createOscillator();
+        const snapGain = ctx.createGain();
+        const snapFilter = ctx.createBiquadFilter();
+
+        snapFilter.type = 'bandpass';
+        snapFilter.frequency.setValueAtTime(3200 + detune * 4, t0);
+        snapFilter.Q.setValueAtTime(6, t0);
+
+        snapOsc.type = 'triangle';
+        snapOsc.frequency.setValueAtTime(4200, t0);
+        snapOsc.frequency.exponentialRampToValueAtTime(800, t0 + 0.012);
+
+        snapGain.gain.setValueAtTime(0.35, t0);
+        snapGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.015);
+
+        snapOsc.connect(snapFilter);
+        snapFilter.connect(snapGain);
+        snapGain.connect(ctx.destination);
+
+        snapOsc.start(t0);
+        snapOsc.stop(t0 + 0.018);
+
+        // 2. Secondary pawl rebound tap (settling into gear tooth 7ms - 24ms)
+        const tapOsc = ctx.createOscillator();
+        const tapGain = ctx.createGain();
+        const tapFilter = ctx.createBiquadFilter();
+
+        tapFilter.type = 'bandpass';
+        tapFilter.frequency.setValueAtTime(2100 + detune * 2, t0 + 0.006);
+        tapFilter.Q.setValueAtTime(4.5, t0 + 0.006);
+
+        tapOsc.type = 'square';
+        tapOsc.frequency.setValueAtTime(2400, t0 + 0.006);
+        tapOsc.frequency.exponentialRampToValueAtTime(400, t0 + 0.022);
+
+        tapGain.gain.setValueAtTime(0.0, t0);
+        tapGain.gain.setValueAtTime(0.24, t0 + 0.006);
+        tapGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.024);
+
+        tapOsc.connect(tapFilter);
+        tapFilter.connect(tapGain);
+        tapGain.connect(ctx.destination);
+
+        tapOsc.start(t0 + 0.006);
+        tapOsc.stop(t0 + 0.026);
+
+        // 3. Resonant metallic body ring (brass/steel tumbler clink 0 - 45ms)
+        const ringOsc = ctx.createOscillator();
+        const ringGain = ctx.createGain();
+
+        ringOsc.type = 'sine';
+        ringOsc.frequency.setValueAtTime(980 + detune, t0);
+        ringOsc.frequency.exponentialRampToValueAtTime(420, t0 + 0.045);
+
+        ringGain.gain.setValueAtTime(0.18, t0);
+        ringGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.045);
+
+        ringOsc.connect(ringGain);
+        ringGain.connect(ctx.destination);
+
+        ringOsc.start(t0);
+        ringOsc.stop(t0 + 0.05);
+
+        // 4. Low mechanical lock housing thump (tactile inertia)
+        const thudOsc = ctx.createOscillator();
+        const thudGain = ctx.createGain();
+
+        thudOsc.type = 'triangle';
+        thudOsc.frequency.setValueAtTime(190, t0);
+        thudOsc.frequency.exponentialRampToValueAtTime(60, t0 + 0.035);
+
+        thudGain.gain.setValueAtTime(0.22, t0);
+        thudGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.035);
+
+        thudOsc.connect(thudGain);
+        thudGain.connect(ctx.destination);
+
+        thudOsc.start(t0);
+        thudOsc.stop(t0 + 0.04);
       } catch(e) {}
     }
 
@@ -323,6 +405,7 @@
       playBeep,
       playUnlock,
       playWrong,
+      resumeAudio,
       isMuted: () => muted,
       setMuted: (val) => { muted = !!val; }
     };
@@ -403,6 +486,16 @@
         padding: clamp(6px, 1.5vh, 14px);
         box-sizing: border-box;
         overflow: hidden; /* Zero scrollbar: Auto-Fit engine dynamically scales content to 100% viewport fit */
+        --theme-card-bg: ${theme.cardBg};
+        --theme-card-border: ${theme.cardBorder};
+        --theme-card-shadow: ${theme.cardShadow};
+        --theme-frame-border: ${theme.frameBorder || ('2px solid ' + theme.cardBorder)};
+        --theme-frame-inlay: ${theme.frameInlay || 'rgba(255,255,255,0.35)'};
+        --theme-frame-glow: ${theme.frameGlow || theme.cardShadow};
+        --theme-window-border: ${theme.windowBorder || '1.5px solid rgba(255,255,255,0.35)'};
+        --theme-window-glow: ${theme.windowGlow || '0 8px 24px rgba(0,0,0,0.35)'};
+        --theme-accent: ${theme.accent};
+        --theme-accent-glow: ${theme.accentGlow || theme.accent};
       }
       #lock-overlay * {
         box-sizing: border-box;
@@ -434,7 +527,7 @@
         transform: scale(1.06);
       }
 
-      /* Unified Content Wrapper: Scales seamlessly via Auto-Fit engine */
+      /* Unified Content Wrapper: On Mobile, combines both image and keypad into ONE seamless card */
       .lock-content-wrap {
         position: relative;
         z-index: 10;
@@ -443,16 +536,23 @@
         align-items: center;
         justify-content: center;
         width: 100%;
-        max-width: 460px;
-        gap: clamp(10px, 1.8vh, 18px);
+        max-width: clamp(320px, 92vw, 420px);
         margin: auto;
         box-sizing: border-box;
+        border-radius: clamp(24px, 4.5vw, 32px);
+        background: var(--theme-card-bg, rgba(255, 255, 255, 0.08));
+        border: 1.5px solid var(--theme-card-border, rgba(255, 255, 255, 0.28));
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.42), var(--theme-card-shadow, inset 0 1px 0 rgba(255, 255, 255, 0.25));
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        padding: clamp(14px, 2.2vh, 20px) clamp(14px, 3.5vw, 22px);
+        gap: clamp(6px, 1.2vh, 10px);
         transform-origin: center center;
         will-change: transform;
         transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      /* Single Column Stage elements */
+      /* Single Column Stage Elements on Mobile */
       .lock-stage-left {
         display: flex;
         align-items: center;
@@ -468,84 +568,62 @@
         text-align: center;
       }
 
-      /* Luxury Portrait Picture Frame for Left Stage (Never Crops Artwork) */
+      /* Mobile Hero Picture Presentation (Seamlessly Integrated inside the Unified Card) */
       .lock-arch-card {
         position: relative;
-        width: min(84vw, clamp(170px, 26vh, 230px));
-        padding: clamp(10px, 1.4vw, 14px) clamp(10px, 1.4vw, 14px) clamp(12px, 1.6vh, 16px) clamp(10px, 1.4vw, 14px);
-        border-radius: clamp(22px, 2.8vw, 32px);
+        width: auto !important;
+        max-width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+        padding: 0 !important;
+        animation: none !important;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        flex-shrink: 0;
-        animation: floatLockCard 4.6s ease-in-out infinite;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 0 auto;
       }
       .lock-card-halo {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 95%;
-        height: 95%;
-        border-radius: clamp(22px, 2.8vw, 32px);
-        filter: blur(34px);
-        opacity: 0.55;
-        z-index: -1;
-        pointer-events: none;
+        display: none !important;
+      }
+      .lock-frame-corner {
+        display: none !important;
       }
       .lock-arch-badge {
         position: absolute;
-        top: -14px;
+        top: -11px;
         left: 50%;
         transform: translateX(-50%);
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
-        background: rgba(255,255,255,0.22);
-        border: 1.5px solid rgba(255,255,255,0.6);
+        background: rgba(255, 255, 255, 0.22);
+        border: 1.5px solid rgba(255, 255, 255, 0.65);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 15px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+        font-size: 14px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
         z-index: 8;
       }
-      /* Ornate Corner Accent Studs */
-      .lock-frame-corner {
-        position: absolute;
-        font-size: clamp(10px, 1.2vw, 13px);
-        line-height: 1;
-        pointer-events: none;
-        z-index: 6;
-        opacity: 0.85;
-        transition: transform 0.3s ease;
-      }
-      .lock-frame-corner.tl { top: clamp(8px, 1vw, 11px); left: clamp(8px, 1vw, 11px); }
-      .lock-frame-corner.tr { top: clamp(8px, 1vw, 11px); right: clamp(8px, 1vw, 11px); }
-      .lock-frame-corner.bl { bottom: clamp(9px, 1.1vh, 12px); left: clamp(8px, 1vw, 11px); }
-      .lock-frame-corner.br { bottom: clamp(9px, 1.1vh, 12px); right: clamp(8px, 1vw, 11px); }
-      .lock-arch-card:hover .lock-frame-corner {
-        transform: scale(1.15) rotate(10deg);
-      }
-      /* Picture Display Window: Always 1:1 Aspect Ratio so 600x600 Artworks are 100% Uncropped */
+      /* Mobile Picture Display Window: Enlarged, 1:1 Aspect Ratio with Zero-Cutting */
       .lock-arch-window {
         position: relative;
-        width: 100%;
+        width: clamp(140px, 22vh, 180px);
         aspect-ratio: 1 / 1;
         height: auto;
-        border-radius: clamp(14px, 2vw, 20px);
+        border-radius: clamp(18px, 3.2vw, 24px);
         overflow: hidden;
-        border: 1.5px solid rgba(255, 255, 255, 0.35);
-        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.25);
+        border: 1.8px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.38), inset 0 1px 3px rgba(255, 255, 255, 0.35);
         background: rgba(0, 0, 0, 0.25);
         display: flex;
         align-items: center;
         justify-content: center;
+        margin: 4px auto clamp(4px, 1vh, 8px) auto;
       }
       .lock-media-img {
         width: 100%;
@@ -578,100 +656,73 @@
         object-fit: contain;
         display: block;
       }
+      /* Hide redundant ribbon subtitle on mobile */
       .lock-arch-subtitle {
-        margin-top: clamp(8px, 1.2vh, 12px);
-        font-size: clamp(0.7rem, 0.95vw, 0.82rem);
-        font-weight: 700;
-        letter-spacing: 1.8px;
-        text-transform: uppercase;
-        color: #ffffff;
-        opacity: 0.92;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-      }
-      .lock-ribbon-sparkle {
-        opacity: 0.85;
-        font-size: 0.75em;
-        animation: sparklePulse 2s ease-in-out infinite alternate;
-      }
-      @keyframes sparklePulse {
-        0% { opacity: 0.5; transform: scale(0.9); }
-        100% { opacity: 1; transform: scale(1.2); }
+        display: none !important;
       }
 
-            /* Interactive Lock Card (Right Stage) */
+      /* Mobile Interactive Keypad Section (Seamlessly inside the Unified Card) */
       .lock-card {
         position: relative;
-        width: 100%;
-        max-width: 460px;
-        border-radius: 26px;
-        padding: clamp(16px, 2.4vh, 26px) clamp(16px, 2.2vw, 24px);
+        width: 100% !important;
+        max-width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
         display: flex;
         flex-direction: column;
         align-items: center;
         box-sizing: border-box;
         transition: all 0.3s ease;
-        margin: 0 auto;
+        margin: 0 auto !important;
       }
+      /* Hide redundant eyebrow tag on mobile */
       .lock-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: clamp(0.7rem, 1vw, 0.82rem);
-        font-weight: 700;
-        letter-spacing: 2.2px;
-        text-transform: uppercase;
-        opacity: 0.88;
-        margin-bottom: clamp(4px, 0.8vh, 8px);
+        display: none !important;
       }
       .lock-title {
-        font-size: clamp(1.45rem, 2.6vw, 2.1rem);
+        font-size: clamp(1.25rem, 4.4vw, 1.55rem);
         font-weight: 800;
         font-family: 'Outfit', 'Inter', sans-serif;
-        letter-spacing: -0.4px;
-        margin: 0 0 clamp(4px, 0.8vh, 8px) 0;
+        letter-spacing: -0.3px;
+        margin: 0 0 2px 0;
         line-height: 1.15;
       }
       .lock-subtitle {
-        font-size: clamp(0.85rem, 1.15vw, 1.02rem);
-        margin: 0 0 clamp(10px, 1.6vh, 16px) 0;
-        opacity: 0.86;
+        font-size: clamp(0.8rem, 2.8vw, 0.92rem);
+        margin: 0 0 clamp(8px, 1.3vh, 12px) 0;
+        opacity: 0.88;
       }
       .lock-hint-pill {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 5px 12px;
+        gap: 5px;
+        padding: 4px 10px;
         border-radius: 20px;
         background: rgba(255, 255, 255, 0.12);
         border: 1px solid rgba(255, 255, 255, 0.22);
-        font-size: 12px;
-        margin-bottom: 12px;
+        font-size: 11px;
+        margin-bottom: 8px;
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
       }
       .lock-status-msg {
-        min-height: 16px;
-        font-size: 12px;
+        min-height: 14px;
+        font-size: 11px;
         font-weight: 600;
-        margin-top: 6px;
+        margin-top: 4px;
         transition: color 0.3s;
       }
       .lock-status-msg.error {
         color: #ef4444;
       }
+      /* Hide redundant footer note on mobile */
       .lock-footer-note {
-        font-size: clamp(0.7rem, 0.95vw, 0.82rem);
-        opacity: 0.68;
-        margin-top: clamp(8px, 1.2vh, 12px);
-        letter-spacing: 0.5px;
+        display: none !important;
       }
 
-      /* === TABLET, LAPTOP & PC RESPONSIVE TWO-SIDE LAYOUT (Generous & Screen-Filling) === */
+      /* === TABLET, LAPTOP & PC RESPONSIVE TWO-SECTION LAYOUT (Large, Majestic & Perfectly Balanced) === */
       @media (min-width: 650px) and (min-height: 380px) {
         #lock-overlay {
           padding: clamp(14px, 2.5vh, 40px) clamp(16px, 2.5vw, 48px) !important;
@@ -681,10 +732,15 @@
           flex-direction: row !important;
           justify-content: center !important;
           align-items: center !important;
-          max-width: clamp(980px, 86vw, 1260px) !important;
-          gap: clamp(24px, 4.5vw, 68px) !important;
+          max-width: clamp(980px, 88vw, 1280px) !important;
+          gap: clamp(28px, 4.8vw, 72px) !important;
           padding: clamp(8px, 1.4vh, 20px) !important;
           margin: auto !important;
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
         }
         .lock-stage-left {
           flex: 0 0 auto !important;
@@ -693,25 +749,44 @@
           width: auto !important;
         }
         .lock-stage-left .lock-arch-card {
-          width: clamp(240px, 25vw, 360px) !important;
-          padding: clamp(12px, 1.5vw, 18px) clamp(12px, 1.5vw, 18px) clamp(16px, 1.8vh, 20px) clamp(12px, 1.5vw, 18px) !important;
+          width: clamp(320px, 30vw, 440px) !important;
+          padding: clamp(14px, 1.6vw, 20px) clamp(14px, 1.6vw, 20px) clamp(16px, 1.8vh, 22px) clamp(14px, 1.6vw, 20px) !important;
           border-radius: clamp(26px, 2.8vw, 36px) !important;
+          background: var(--theme-card-bg) !important;
+          border: var(--theme-frame-border) !important;
+          box-shadow: var(--theme-frame-glow) !important;
+          outline: 1.5px solid var(--theme-frame-inlay) !important;
+          outline-offset: -5px !important;
+          animation: floatLockCard 4.6s ease-in-out infinite !important;
+          backdrop-filter: blur(20px) !important;
+          -webkit-backdrop-filter: blur(20px) !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        .lock-stage-left .lock-card-halo {
+          display: block !important;
         }
         .lock-stage-left .lock-arch-window {
           width: 100% !important;
           height: auto !important;
           aspect-ratio: 1 / 1 !important;
-          border-radius: clamp(16px, 2vw, 22px) !important;
+          border-radius: clamp(18px, 2vw, 24px) !important;
+          margin: 0 auto !important;
+          border: var(--theme-window-border) !important;
+          box-shadow: var(--theme-window-glow) !important;
         }
-        .lock-stage-left .lock-thematic-svg {
-          transform: scale(1.02);
-        }
-        .lock-stage-left .lock-custom-img-wrap {
-          border-radius: 999px 999px 22px 22px;
+        .lock-stage-left .lock-arch-badge {
+          top: -14px !important;
+          width: 34px !important;
+          height: 34px !important;
+          font-size: 16px !important;
         }
         .lock-stage-left .lock-arch-subtitle {
-          margin-top: clamp(8px, 1.2vh, 14px) !important;
-          font-size: clamp(0.76rem, 1.05vw, 0.92rem) !important;
+          display: flex !important;
+          margin-top: clamp(10px, 1.4vh, 14px) !important;
+          font-size: clamp(0.72rem, 1vw, 0.86rem) !important;
           letter-spacing: 2px !important;
         }
         .lock-stage-right {
@@ -726,8 +801,14 @@
           max-width: 100% !important;
           padding: clamp(18px, 2.6vh, 32px) clamp(20px, 2.6vw, 36px) !important;
           border-radius: 28px !important;
+          background: var(--theme-card-bg) !important;
+          border: 1.5px solid var(--theme-card-border) !important;
+          box-shadow: var(--theme-card-shadow) !important;
+          backdrop-filter: blur(20px) !important;
+          -webkit-backdrop-filter: blur(20px) !important;
         }
         .lock-stage-right .lock-eyebrow {
+          display: inline-flex !important;
           font-size: clamp(0.72rem, 1vw, 0.88rem) !important;
           letter-spacing: 2.4px !important;
           margin-bottom: clamp(4px, 0.8vh, 8px) !important;
@@ -740,6 +821,13 @@
         .lock-stage-right .lock-subtitle {
           font-size: clamp(0.88rem, 1.2vw, 1.08rem) !important;
           margin-bottom: clamp(10px, 1.6vh, 16px) !important;
+        }
+        .lock-stage-right .lock-footer-note {
+          display: block !important;
+          font-size: clamp(0.7rem, 0.95vw, 0.82rem) !important;
+          opacity: 0.68;
+          margin-top: clamp(8px, 1.2vh, 12px) !important;
+          letter-spacing: 0.5px !important;
         }
       }
 
@@ -1277,7 +1365,7 @@
     // Parse config
     const parsed = parseLockConfig(lockConfig);
     const theme = LOCK_THEMES[parsed.themeId] || LOCK_THEMES['romantic-pink'];
-    const soundEngine = createSoundEngine(true); // Sounds always ON by default
+    const soundEngine = createSoundEngine(true, win); // Sounds always ON by default
 
     // Ensure Font Awesome
     if (!doc.getElementById('greeter-font-awesome')) {
@@ -1367,15 +1455,7 @@
     halo.style.background = 'radial-gradient(circle, ' + (theme.accentGlow || theme.accent) + ' 0%, transparent 70%)';
     archCard.appendChild(halo);
 
-    // Ornate Corner Accent Studs
-    const cornerIcon = theme.cornerChar || '✦';
-    ['tl', 'tr', 'bl', 'br'].forEach(pos => {
-      const cornerEl = doc.createElement('span');
-      cornerEl.className = 'lock-frame-corner ' + pos;
-      cornerEl.style.color = theme.accent;
-      cornerEl.textContent = cornerIcon;
-      archCard.appendChild(cornerEl);
-    });
+    // Corner studs removed to prevent flexbox in-flow stacking
 
     // Top Apex Badge Pin with theme emoji
     const archBadge = doc.createElement('div');
@@ -1545,6 +1625,14 @@
 
     stageRight.appendChild(card);
     contentWrap.appendChild(stageRight);
+    // Auto-resume Web AudioContext on first touch/click anywhere on screen
+    const unlockAudioContext = () => {
+      if (typeof soundEngine.resumeAudio === 'function') soundEngine.resumeAudio();
+    };
+    overlay.addEventListener('pointerdown', unlockAudioContext, { passive: true });
+    overlay.addEventListener('touchstart', unlockAudioContext, { passive: true });
+    overlay.addEventListener('click', unlockAudioContext, { passive: true });
+
     overlay.appendChild(contentWrap);
     doc.body.appendChild(overlay);
 
@@ -1682,7 +1770,8 @@
 
       let currentStep = 0;
 
-      function rotateTo(step, animate = true) {
+      function rotateTo(step, animate = true, playSound = true) {
+        const prevStep = currentStep;
         currentStep = step;
         const v = ((currentStep % 10) + 10) % 10;
         currentDigits[colIdx] = v;
@@ -1706,33 +1795,43 @@
             el.style.textShadow = '0 2px 4px rgba(0,0,0,0.6)';
           }
         });
+
+        // Trigger mechanical ratchet click whenever step changes
+        if (playSound && prevStep !== currentStep) {
+          soundEngine.playTumbler();
+        }
+
         return v;
       }
 
-      rotateTo(0, false);
+      rotateTo(0, false, false);
 
       // Click ▲ (UP): rolls drum UP to advance to next number (0 -> 1 -> 2...)
       btnUp.onclick = (e) => {
         if (e) e.preventDefault();
-        soundEngine.playTumbler();
-        rotateTo(currentStep + 1, true);
+        rotateTo(currentStep + 1, true, true);
       };
 
       // Click ▼ (DOWN): rolls drum DOWN to return to previous number (0 -> 9 -> 8...)
       btnDown.onclick = (e) => {
         if (e) e.preventDefault();
-        soundEngine.playTumbler();
-        rotateTo(currentStep - 1, true);
+        rotateTo(currentStep - 1, true, true);
       };
 
-      // Mouse wheel support: scroll down advances step, scroll up decrements step
+      // Mouse wheel support: responsive detent threshold triggers mechanical ratchet click per number rolled
+      let wheelAcc = 0;
       cylinder.addEventListener('wheel', (e) => {
         e.preventDefault();
-        soundEngine.playTumbler();
-        rotateTo(currentStep + (e.deltaY > 0 ? 1 : -1), true);
+        wheelAcc += e.deltaY;
+        const threshold = 26;
+        if (Math.abs(wheelAcc) >= threshold) {
+          const stepChange = wheelAcc > 0 ? 1 : -1;
+          wheelAcc = 0;
+          rotateTo(currentStep + stepChange, true, true);
+        }
       }, { passive: false });
 
-      // Touch / pointer drag vertical with continuous live physics
+      // Touch / pointer drag vertical with continuous live mechanical ratchet feedback
       let isDragging = false;
       let startY = 0;
       let startStep = 0;
@@ -1750,7 +1849,10 @@
         const deltaY = e.clientY - startY;
         // Dragging finger UP (negative deltaY) pulls drum UP (advances step)
         const stepDelta = Math.round(-deltaY / 24);
-        rotateTo(startStep + stepDelta, false);
+        const targetStep = startStep + stepDelta;
+        if (targetStep !== currentStep) {
+          rotateTo(targetStep, false, true);
+        }
       });
 
       const endDrag = (e) => {
@@ -1758,8 +1860,7 @@
         isDragging = false;
         try { cylinder.releasePointerCapture(e.pointerId); } catch(err){}
         cylinder.style.cursor = 'grab';
-        soundEngine.playTumbler();
-        rotateTo(currentStep, true);
+        rotateTo(currentStep, true, false); // Snap cleanly into final tooth position
       };
 
       cylinder.addEventListener('pointerup', endDrag);
