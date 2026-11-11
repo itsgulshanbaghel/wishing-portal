@@ -981,6 +981,35 @@
                     style.id = 'magic-welcome-styles';
                     style.textContent = `
                     body.magic-noscroll { overflow: hidden !important; position: fixed !important; width: 100% !important; height: 100% !important; } 
+                    #magic-welcome-typing-root { position: fixed !important; inset: 0 !important; z-index: 2147483646 !important; }
+                    #magic-welcome-typing-root h1,
+                    .magic-welcome-title {
+                        font-family: 'Great Vibes', cursive !important;
+                        font-size: clamp(2.4rem, 8vw, 4.8rem) !important;
+                        color: #ffffff !important;
+                        -webkit-text-fill-color: #ffffff !important;
+                        background: none !important;
+                        -webkit-background-clip: initial !important;
+                        background-clip: initial !important;
+                        text-shadow: 0 0 20px rgba(255,255,255,0.5) !important;
+                        margin-bottom: 15px !important;
+                        margin-top: 0 !important;
+                        animation: none !important;
+                        line-height: 1.2 !important;
+                        letter-spacing: normal !important;
+                        transform: none !important;
+                    }
+                    #magic-welcome-typing-root p,
+                    #magic-typing-welcome-msg {
+                        font-family: 'Poppins', sans-serif !important;
+                        color: #ffd700 !important;
+                        -webkit-text-fill-color: #ffd700 !important;
+                        background: none !important;
+                        -webkit-background-clip: initial !important;
+                        background-clip: initial !important;
+                        text-shadow: 0 0 10px rgba(255,215,0,0.3) !important;
+                        animation: none !important;
+                    }
                     .magic-emoji { display: inline-block; -webkit-text-fill-color: initial !important; background: none !important; color: initial !important; animation: magicHeartBeat 2s infinite; } 
                     @keyframes magicHeartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
@@ -1060,7 +1089,7 @@
                             mediaHtml = `<div class="magic-welcome-media-wrap" style="margin-bottom: clamp(12px, 2.5vh, 20px); display: flex; justify-content: center; align-items: center; width: 100%;"><img class="magic-welcome-media" src="${escapeHtml(mediaSource)}" alt="Welcome animation" style="width: min(94vw, 520px); height: auto; max-height: clamp(190px, 33vh, 360px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(255,122,47,0.55)); pointer-events: none; animation: magicHeartBeat 3s infinite ease-in-out;" /></div>`;
                         }
                     }
-                    container.innerHTML = mediaHtml + `<h1 style="font-family: 'Great Vibes', cursive; font-size: clamp(2.4rem, 8vw, 4.8rem); color: #fff !important; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 15px;">Welcome ${escapeHtml(userName)} <span class="magic-emoji">\uD83D\uDC96</span></h1><p id="magic-typing-welcome-msg" style="margin-top: 15px; font-size: clamp(1.3rem, 4.5vw, 2rem); color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-family: 'Poppins', sans-serif;"></p>`;
+                    container.innerHTML = mediaHtml + `<h1 class="magic-welcome-title" style="font-family: 'Great Vibes', cursive !important; font-size: clamp(2.4rem, 8vw, 4.8rem) !important; color: #fff !important; -webkit-text-fill-color: #ffffff !important; background: none !important; -webkit-background-clip: initial !important; background-clip: initial !important; animation: none !important; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 15px; line-height: 1.2;">Welcome ${escapeHtml(userName)} <span class="magic-emoji">\uD83D\uDC96</span></h1><p id="magic-typing-welcome-msg" style="margin-top: 15px; font-size: clamp(1.3rem, 4.5vw, 2rem); color: #ffd700 !important; -webkit-text-fill-color: #ffd700 !important; background: none !important; -webkit-background-clip: initial !important; background-clip: initial !important; animation: none !important; text-shadow: 0 0 10px rgba(255,215,0,0.3); font-family: 'Poppins', sans-serif;"></p>`;
                     overlay.appendChild(container);
                     overlay.style.cursor = "pointer";
                     overlay.title = (window.currentLang === 'hi') ? "आगे बढ़ने के लिए टैप करें" : "Tap anywhere to continue";
