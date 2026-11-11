@@ -6061,12 +6061,14 @@
                 // Web Audio tick sound for last 10 seconds
                 const playTickSound = () => {
                     try {
-                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                        const winObj = (w && (w.AudioContext || w.webkitAudioContext)) ? w : (typeof window !== 'undefined' ? window : null);
+                        if (!winObj) return;
+                        const AudioCtx = winObj.AudioContext || winObj.webkitAudioContext;
                         if (!AudioCtx) return;
-                        if (!window._countdownAudioCtx) {
-                            window._countdownAudioCtx = new AudioCtx();
+                        if (!winObj._countdownAudioCtx) {
+                            winObj._countdownAudioCtx = new AudioCtx();
                         }
-                        const ctx = window._countdownAudioCtx;
+                        const ctx = winObj._countdownAudioCtx;
                         if (ctx.state === 'suspended') ctx.resume();
                         const osc = ctx.createOscillator();
                         const gain = ctx.createGain();
@@ -6268,6 +6270,7 @@
                 };
 
                 let isUnlocking = false;
+                let lastTickSecond = null;
 
                 const updateTimer = () => {
                     if (isUnlocking) return;
@@ -6320,8 +6323,10 @@
                         return;
                     }
 
-                    // Sound on last 10 seconds
-                    if (diff <= 10000 && diff > 0) {
+                    // Sound on last 10 seconds (only sounds with every reducing second)
+                    const currentSec = Math.ceil(diff / 1000);
+                    if (diff <= 10000 && diff > 0 && currentSec !== lastTickSecond) {
+                        lastTickSecond = currentSec;
                         playTickSound();
                         pillContainer.style.transform = "scale(1.025)";
                         setTimeout(() => { pillContainer.style.transform = "scale(1)"; }, 220);
