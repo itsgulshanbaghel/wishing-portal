@@ -9473,6 +9473,742 @@
         }
     };
 
+    
+    // ══════════════════════════════════════════════════════════════════
+    // 🎈 BALLOON MESSAGE REVEAL – Interactive Pop & Secret Words
+    // ══════════════════════════════════════════════════════════════════
+    featureMap.balloonReveal = {
+        enable: function (d, w, userName, rawConfig, images, emoji) {
+            if (!d || !w) return;
+            injectFontsIfNeeded(d);
+
+            let section = d.getElementById('magic-balloon-reveal-section');
+            if (section) section.remove();
+
+            // Parse configuration
+            let cfg = {};
+            if (typeof rawConfig === 'object' && rawConfig !== null) {
+                cfg = rawConfig;
+            } else if (typeof rawConfig === 'string' && rawConfig.trim()) {
+                try {
+                    cfg = JSON.parse(rawConfig);
+                } catch (e) {
+                    cfg = { text: rawConfig };
+                }
+            }
+
+            const style = cfg.style || (emoji === 'glossy' ? 'glossy' : 'kawaii');
+            const count = Math.max(3, Math.min(6, parseInt(cfg.count, 10) || 4));
+            
+            // Proper grammatically complete default sentences by balloon count
+            const DEFAULT_SENTENCES_BY_COUNT = {
+                3: { words: ['You', 'Are', 'Special'], banner: 'You Are Special 💖' },
+                4: { words: ['You', 'Are', 'So', 'Special'], banner: 'You Are So Special 💖' },
+                5: { words: ['You', 'Mean', 'Everything', 'To', 'Me'], banner: 'You Mean Everything To Me 💖' },
+                6: { words: ['You', 'Mean', 'The', 'World', 'To', 'Me'], banner: 'You Mean The World To Me 💖' }
+            };
+
+            const defObj = DEFAULT_SENTENCES_BY_COUNT[count] || DEFAULT_SENTENCES_BY_COUNT[4];
+            const defaultIcons = ['💖', '✨', '🌸', '⭐', '💫', '🎀'];
+            
+            let words;
+            if (Array.isArray(cfg.words) && cfg.words.length === count &&
+                cfg.words.join(' ').toLowerCase() !== 'you are so' &&
+                !cfg.words.join(' ').toLowerCase().includes('special love')) {
+                words = cfg.words.slice(0, count);
+            } else if (Array.isArray(cfg.words) && cfg.words.length > 0 &&
+                       cfg.words.join(' ').toLowerCase() !== 'you are so' &&
+                       !cfg.words.join(' ').toLowerCase().includes('special love')) {
+                words = cfg.words.slice(0, count);
+                while (words.length < count) {
+                    words.push(defObj.words[words.length] || 'Special');
+                }
+            } else {
+                words = [...defObj.words];
+            }
+
+            let icons = Array.isArray(cfg.icons) && cfg.icons.length >= count
+                ? cfg.icons.slice(0, count)
+                : defaultIcons.slice(0, count);
+            while (icons.length < count) {
+                icons.push(defaultIcons[icons.length % defaultIcons.length] || '✨');
+            }
+
+            const headerTitle = cfg.title || 'Pop Every Balloon!';
+            const headerSubtitle = cfg.subtitle || 'A secret word hides inside each one ✨';
+            
+            let bannerText = cfg.banner;
+            if (!bannerText || bannerText.includes('You Are So 💖') || bannerText.includes('special love')) {
+                bannerText = defObj.banner;
+            } else if (!bannerText.trim()) {
+                bannerText = words.join(' ') + ' 💖';
+            }
+
+            // Inject CSS Styles
+            let s = d.getElementById('magic-mbr-styles');
+            if (!s) {
+                s = d.createElement('style');
+                s.id = 'magic-mbr-styles';
+                (d.head || d.body).appendChild(s);
+            }
+
+            s.textContent = `
+                @keyframes mbrSlideIn {
+                    0% { opacity: 0; transform: translateY(50px) scale(0.96); }
+                    100% { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                @keyframes mbrFloat {
+                    0%, 100% { transform: translateY(0) rotate(0deg); }
+                    50% { transform: translateY(-10px) rotate(1.5deg); }
+                }
+                @keyframes mbrFloatAlt {
+                    0%, 100% { transform: translateY(0) rotate(0deg); }
+                    50% { transform: translateY(-12px) rotate(-1.5deg); }
+                }
+                @keyframes mbrPulseGlow {
+                    0%, 100% { box-shadow: 0 10px 30px rgba(255, 105, 180, 0.15), 0 0 20px rgba(255, 192, 203, 0.2); }
+                    50% { box-shadow: 0 16px 40px rgba(255, 105, 180, 0.3), 0 0 30px rgba(255, 192, 203, 0.4); }
+                }
+                @keyframes mbrPopBurst {
+                    0% { transform: scale(1); opacity: 1; }
+                    40% { transform: scale(1.35); opacity: 0.9; }
+                    100% { transform: scale(0); opacity: 0; }
+                }
+                @keyframes mbrCardReveal {
+                    0% { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+                    60% { opacity: 1; transform: scale(1.06) rotate(2deg); }
+                    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+                }
+                @keyframes mbrParticle {
+                    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+                    100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+                }
+                @keyframes mbrBannerBounce {
+                    0% { opacity: 0; transform: translateY(30px) scale(0.85); }
+                    60% { opacity: 1; transform: translateY(-6px) scale(1.04); }
+                    100% { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                @keyframes mbrRibbonWiggle {
+                    0%, 100% { transform: rotate(0deg); }
+                    50% { transform: rotate(4deg); }
+                }
+
+                #magic-balloon-reveal-section {
+                    width: 92% !important;
+                    max-width: 580px !important;
+                    margin: 36px auto 50px auto !important;
+                    padding: 36px 20px 34px 20px !important;
+                    text-align: center !important;
+                    border-radius: 32px !important;
+                    background: linear-gradient(155deg, #FFF9F5 0%, #FFF2F6 50%, #FDF6FF 100%) !important;
+                    border: 1.5px solid rgba(255, 182, 193, 0.5) !important;
+                    box-sizing: border-box !important;
+                    animation: mbrSlideIn 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) both, mbrPulseGlow 4s ease-in-out infinite !important;
+                    position: relative !important;
+                    overflow: visible !important;
+                    font-family: 'Outfit', 'Inter', sans-serif !important;
+                }
+
+                .mbr-header-wrap {
+                    text-align: center;
+                    margin-bottom: 22px;
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .mbr-title {
+                    font-family: 'Playfair Display', Georgia, serif;
+                    font-size: clamp(1.75rem, 5.2vw, 2.35rem);
+                    font-weight: 700;
+                    color: #4a2c2a;
+                    margin: 0 0 8px 0;
+                    line-height: 1.25;
+                    letter-spacing: -0.3px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                }
+
+                .mbr-title-lead {
+                    display: block;
+                    font-weight: 700;
+                    color: #4a2c2a;
+                }
+
+                .mbr-title-name {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 6px;
+                    color: #4a2c2a;
+                    white-space: nowrap;
+                }
+
+                .mbr-title-balloon {
+                    display: inline-block;
+                    font-size: 0.95em;
+                    animation: mbrMiniFloat 2.6s ease-in-out infinite;
+                    transform-origin: bottom center;
+                }
+
+                @keyframes mbrMiniFloat {
+                    0%, 100% { transform: translateY(0) rotate(0deg); }
+                    50% { transform: translateY(-4px) rotate(4deg); }
+                }
+
+                .mbr-subtitle {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    font-size: clamp(0.86rem, 2.6vw, 0.98rem);
+                    color: #8c6d62;
+                    margin: 0 0 14px 0;
+                    font-weight: 500;
+                    letter-spacing: 0.2px;
+                }
+
+                .mbr-progress-wrap {
+                    width: clamp(160px, 46%, 220px);
+                    height: 7px;
+                    background: rgba(140, 109, 98, 0.18);
+                    border-radius: 12px;
+                    margin: 0 auto 7px auto;
+                    overflow: hidden;
+                    position: relative;
+                }
+
+                .mbr-progress-bar {
+                    height: 100%;
+                    width: 0%;
+                    background: linear-gradient(90deg, #ff6b8b 0%, #ff8e53 100%);
+                    border-radius: 12px;
+                    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                .mbr-count-label {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: #9c786c;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                }
+
+                .mbr-balloon-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 20px 16px;
+                    max-width: 440px;
+                    margin: 0 auto;
+                    perspective: 1000px;
+                }
+                .mbr-balloon-grid.grid-3 {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 16px 12px;
+                }
+
+                .mbr-slot {
+                    min-height: 175px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                }
+
+                /* Balloon Body */
+                .mbr-balloon-wrap {
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-tap-highlight-color: transparent;
+                    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    animation: mbrFloat 3.2s ease-in-out infinite;
+                }
+                .mbr-balloon-wrap:nth-child(even) {
+                    animation: mbrFloatAlt 3.6s ease-in-out infinite 0.4s;
+                }
+                .mbr-balloon-wrap:hover {
+                    transform: translateY(-8px) scale(1.05);
+                }
+                .mbr-balloon-wrap:active {
+                    transform: scale(0.94);
+                }
+
+                .mbr-balloon-wrap.popping {
+                    animation: mbrPopBurst 0.45s ease-out forwards !important;
+                    pointer-events: none;
+                }
+
+                /* Kawaii Balloons */
+                .mbr-kawaii-balloon {
+                    width: 105px;
+                    height: 125px;
+                    position: relative;
+                    filter: drop-shadow(0 10px 18px rgba(0,0,0,0.12));
+                }
+                .mbr-kawaii-svg {
+                    width: 100%;
+                    height: 100%;
+                    overflow: visible;
+                }
+
+                /* Glossy 3D Balloons */
+                .mbr-glossy-balloon {
+                    width: 95px;
+                    height: 115px;
+                    border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+                    position: relative;
+                    box-shadow: inset 10px 10px 20px rgba(255,255,255,0.7), inset -10px -10px 25px rgba(0,0,0,0.18), 0 12px 25px rgba(0,0,0,0.12);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .mbr-glossy-balloon::after {
+                    content: '';
+                    position: absolute;
+                    top: 14%;
+                    left: 20%;
+                    width: 22px;
+                    height: 38px;
+                    background: radial-gradient(ellipse at center, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 80%);
+                    border-radius: 50%;
+                    transform: rotate(-30deg);
+                }
+                .mbr-glossy-knot {
+                    position: absolute;
+                    bottom: -6px;
+                    width: 12px;
+                    height: 8px;
+                    background: inherit;
+                    border-radius: 3px;
+                    filter: brightness(0.85);
+                }
+                .mbr-glossy-string {
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    width: 1.5px;
+                    height: 52px;
+                    background: linear-gradient(180deg, rgba(160,140,130,0.7) 0%, rgba(160,140,130,0.2) 100%);
+                    transform: translateX(-50%);
+                }
+
+                /* Revealed Cards */
+                .mbr-revealed-card {
+                    width: 92%;
+                    height: 155px;
+                    border-radius: 22px;
+                    background: rgba(255, 255, 255, 0.85);
+                    backdrop-filter: blur(8px);
+                    border: 1.5px solid rgba(255, 255, 255, 0.9);
+                    box-shadow: 0 10px 24px rgba(220, 100, 140, 0.12);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 12px;
+                    box-sizing: border-box;
+                    animation: mbrCardReveal 0.65s cubic-bezier(0.25, 1, 0.5, 1) both;
+                    position: relative;
+                }
+                .mbr-card-icon {
+                    font-size: 2.1rem;
+                    margin-bottom: 8px;
+                    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+                    animation: mbrFloat 2.8s ease-in-out infinite;
+                }
+                .mbr-card-word {
+                    font-family: 'Dancing Script', cursive;
+                    font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                }
+
+                /* Particle blast */
+                .mbr-particle {
+                    position: absolute;
+                    width: 7px;
+                    height: 7px;
+                    border-radius: 50%;
+                    pointer-events: none;
+                    animation: mbrParticle 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+                }
+
+                /* Final Celebration Wrap */
+                .mbr-celebration-wrap {
+                    display: none;
+                    margin-top: 26px;
+                    padding-top: 10px;
+                    animation: mbrBannerBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+                }
+                .mbr-final-banner {
+                    font-family: 'Dancing Script', cursive;
+                    font-size: clamp(1.75rem, 5vw, 2.35rem);
+                    font-weight: 700;
+                    color: #d81b60;
+                    text-shadow: 0 2px 10px rgba(216, 27, 96, 0.2);
+                    margin-bottom: 16px;
+                    line-height: 1.3;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                }
+                `;
+
+            section = d.createElement('section');
+            section.id = 'magic-balloon-reveal-section';
+
+            // Distinct Kawaii faces and colors matching Image 4
+            const kawaiiPresets = [
+                {
+                    grad: ['#ff85a2', '#ff5277'],
+                    bow: '#ff4071',
+                    ribbon: '#ff7597',
+                    cardBg: 'linear-gradient(145deg, #FFF0F5 0%, #FFE4E9 100%)',
+                    cardColor: '#d81b60',
+                    faceSvg: `
+                        <!-- Happy Open Mouth Smile + Blushing -->
+                        <ellipse cx="28" cy="45" rx="5" ry="7" fill="#2b1517"/>
+                        <circle cx="26.5" cy="43" r="2" fill="#fff"/>
+                        <ellipse cx="56" cy="45" rx="5" ry="7" fill="#2b1517"/>
+                        <circle cx="54.5" cy="43" r="2" fill="#fff"/>
+                        <ellipse cx="21" cy="51" rx="5" ry="3" fill="#ff769c" opacity="0.8"/>
+                        <ellipse cx="63" cy="51" rx="5" ry="3" fill="#ff769c" opacity="0.8"/>
+                        <path d="M 37 49 Q 42 58 47 49 Z" fill="#2b1517"/>
+                        <path d="M 39 52 Q 42 56 45 52 Z" fill="#ff769c"/>
+                    `
+                },
+                {
+                    grad: ['#ffd166', '#fca311'],
+                    bow: '#e8890c',
+                    ribbon: '#ffb703',
+                    cardBg: 'linear-gradient(145deg, #FFFDF0 0%, #FFF5D6 100%)',
+                    cardColor: '#b5651d',
+                    faceSvg: `
+                        <!-- Curved closed happy eyes + big smile -->
+                        <path d="M 24 46 Q 30 40 36 46" stroke="#2b1517" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <path d="M 48 46 Q 54 40 60 46" stroke="#2b1517" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <ellipse cx="22" cy="50" rx="5" ry="3" fill="#ff9f1c" opacity="0.8"/>
+                        <ellipse cx="62" cy="50" rx="5" ry="3" fill="#ff9f1c" opacity="0.8"/>
+                        <path d="M 36 48 Q 42 60 48 48 Z" fill="#2b1517"/>
+                        <path d="M 38 52 Q 42 57 46 52 Z" fill="#ff6b6b"/>
+                    `
+                },
+                {
+                    grad: ['#c77dff', '#9d4edd'],
+                    bow: '#7b2cbf',
+                    ribbon: '#9d4edd',
+                    cardBg: 'linear-gradient(145deg, #FAF4FF 0%, #EEDBFF 100%)',
+                    cardColor: '#6a0dad',
+                    faceSvg: `
+                        <!-- Gentle sparkling eyes + sweet blush smile -->
+                        <circle cx="28" cy="45" r="5" fill="#22102e"/>
+                        <circle cx="26.5" cy="43.5" r="1.8" fill="#fff"/>
+                        <circle cx="56" cy="45" r="5" fill="#22102e"/>
+                        <circle cx="54.5" cy="43.5" r="1.8" fill="#fff"/>
+                        <ellipse cx="22" cy="51" rx="5" ry="3" fill="#e0aaff" opacity="0.9"/>
+                        <ellipse cx="62" cy="51" rx="5" ry="3" fill="#e0aaff" opacity="0.9"/>
+                        <path d="M 38 48 Q 42 54 46 48" stroke="#22102e" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    `
+                },
+                {
+                    grad: ['#64dfdf', '#48cae4'],
+                    bow: '#0096c7',
+                    ribbon: '#48cae4',
+                    cardBg: 'linear-gradient(145deg, #F0FBFC 0%, #D8F3F8 100%)',
+                    cardColor: '#0077b6',
+                    faceSvg: `
+                        <!-- Playful Winking eye + cheerful smile -->
+                        <ellipse cx="28" cy="45" rx="5" ry="7" fill="#132a38"/>
+                        <circle cx="26.5" cy="43" r="2" fill="#fff"/>
+                        <path d="M 50 45 Q 55 40 60 45" stroke="#132a38" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <ellipse cx="22" cy="51" rx="5" ry="3" fill="#ff769c" opacity="0.75"/>
+                        <ellipse cx="62" cy="51" rx="5" ry="3" fill="#ff769c" opacity="0.75"/>
+                        <path d="M 37 49 Q 42 58 47 49 Z" fill="#132a38"/>
+                        <path d="M 39 52 Q 42 56 45 52 Z" fill="#ff8da1"/>
+                    `
+                },
+                {
+                    grad: ['#ff99c8', '#f38ba8'],
+                    bow: '#e64980',
+                    ribbon: '#ff99c8',
+                    cardBg: 'linear-gradient(145deg, #FFF0F6 0%, #FDE2EC 100%)',
+                    cardColor: '#c2255c',
+                    faceSvg: `
+                        <!-- Heart Eyes of Love -->
+                        <path d="M 24 43 C 24 40 21 38 18 41 C 15 38 12 40 12 43 C 12 47 18 51 18 51 C 18 51 24 47 24 43 Z" transform="translate(10, 0)" fill="#e63946"/>
+                        <path d="M 24 43 C 24 40 21 38 18 41 C 15 38 12 40 12 43 C 12 47 18 51 18 51 C 18 51 24 47 24 43 Z" transform="translate(38, 0)" fill="#e63946"/>
+                        <ellipse cx="22" cy="52" rx="5" ry="3" fill="#ff758f" opacity="0.8"/>
+                        <ellipse cx="62" cy="52" rx="5" ry="3" fill="#ff758f" opacity="0.8"/>
+                        <path d="M 37 49 Q 42 57 47 49 Z" fill="#2b1517"/>
+                    `
+                },
+                {
+                    grad: ['#a0c4ff', '#bdb2ff'],
+                    bow: '#7251b5',
+                    ribbon: '#a0c4ff',
+                    cardBg: 'linear-gradient(145deg, #F4F6FF 0%, #E3E7FF 100%)',
+                    cardColor: '#4361ee',
+                    faceSvg: `
+                        <!-- Winking + Cute Kissy Mouth 3 -->
+                        <ellipse cx="28" cy="45" rx="5" ry="6" fill="#1b1c3a"/>
+                        <circle cx="26.5" cy="43" r="1.8" fill="#fff"/>
+                        <path d="M 48 44 Q 54 39 59 44" stroke="#1b1c3a" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <ellipse cx="22" cy="51" rx="5" ry="3" fill="#ff85a2" opacity="0.8"/>
+                        <ellipse cx="62" cy="51" rx="5" ry="3" fill="#ff85a2" opacity="0.8"/>
+                        <path d="M 40 48 Q 38 52 40 54 Q 43 53 45 51 Q 43 49 40 48" fill="#1b1c3a"/>
+                        <path d="M 64 42 C 64 40 62 39 60 41 C 58 39 56 40 56 42 C 56 45 60 47 60 47 C 60 47 64 45 64 42 Z" fill="#ff4d6d"/>
+                    `
+                }
+            ];
+
+            // Glossy presets matching Images 1-3
+            const glossyPresets = [
+                { bg: 'radial-gradient(circle at 35% 30%, #ff8da1 0%, #e63946 70%, #9e1b26 100%)', cardBg: 'linear-gradient(145deg, #FFF0F5, #FFE4E9)', cardColor: '#d81b60' },
+                { bg: 'radial-gradient(circle at 35% 30%, #ffc2d1 0%, #ff85a2 70%, #c93b5a 100%)', cardBg: 'linear-gradient(145deg, #FAF4FF, #EEDBFF)', cardColor: '#7b2cbf' },
+                { bg: 'radial-gradient(circle at 35% 30%, #ff4d6d 0%, #c9184a 70%, #800f2f 100%)', cardBg: 'linear-gradient(145deg, #FFF5F2, #FFE4DC)', cardColor: '#c46845' },
+                { bg: 'radial-gradient(circle at 35% 30%, #ff9770 0%, #f77f00 70%, #b25800 100%)', cardBg: 'linear-gradient(145deg, #FFFDF0, #FFF5D6)', cardColor: '#b5651d' },
+                { bg: 'radial-gradient(circle at 35% 30%, #b5e2fa 0%, #00b4d8 70%, #0077b6 100%)', cardBg: 'linear-gradient(145deg, #F0FBFC, #D8F3F8)', cardColor: '#0077b6' },
+                { bg: 'radial-gradient(circle at 35% 30%, #e0aaff 0%, #9d4edd 70%, #5a189a 100%)', cardBg: 'linear-gradient(145deg, #F8F4FF, #E6DCFF)', cardColor: '#5a189a' }
+            ];
+
+            // Render Header
+            let html = `
+                <div class="mbr-header-wrap">
+                    <h2 class="mbr-title">
+                        <span>${escapeHtml(headerTitle)}</span>
+                        <span class="mbr-title-balloon">🎈</span>
+                    </h2>
+                    <div class="mbr-subtitle">${escapeHtml(headerSubtitle)}</div>
+                    <div class="mbr-progress-wrap">
+                        <div class="mbr-progress-bar" id="mbr-progress-bar"></div>
+                    </div>
+                    <div class="mbr-count-label" id="mbr-count-label">0 / ${count} popped</div>
+                </div>
+                <div class="mbr-balloon-grid ${count === 3 || count === 6 ? 'grid-3' : ''}" id="mbr-grid">
+            `;
+
+            // Render Balloon Slots
+            for (let i = 0; i < count; i++) {
+                const kPreset = kawaiiPresets[i % kawaiiPresets.length];
+                const gPreset = glossyPresets[i % glossyPresets.length];
+                const word = escapeHtml(words[i]);
+                const icon = icons[i] || '💖';
+
+                if (style === 'glossy') {
+                    html += `
+                        <div class="mbr-slot" data-index="${i}">
+                            <div class="mbr-balloon-wrap" data-index="${i}">
+                                <div class="mbr-glossy-balloon" style="background: ${gPreset.bg};">
+                                    <div class="mbr-glossy-knot"></div>
+                                    <div class="mbr-glossy-string"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="mbr-slot" data-index="${i}">
+                            <div class="mbr-balloon-wrap" data-index="${i}">
+                                <div class="mbr-kawaii-balloon">
+                                    <svg class="mbr-kawaii-svg" viewBox="0 0 84 140">
+                                        <defs>
+                                            <linearGradient id="mbr-grad-${i}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stop-color="${kPreset.grad[0]}"/>
+                                                <stop offset="100%" stop-color="${kPreset.grad[1]}"/>
+                                            </linearGradient>
+                                        </defs>
+                                        <!-- Balloon Oval Body -->
+                                        <path d="M 42 6 C 65 6 80 26 80 52 C 80 78 58 92 45 95 C 44 95 43 96 42 96 C 41 96 40 95 39 95 C 26 92 4 78 4 52 C 4 26 19 6 42 6 Z" fill="url(#mbr-grad-${i})"/>
+                                        <!-- Specular Highlight -->
+                                        <path d="M 22 14 C 32 9 42 9 48 11 C 45 14 36 14 26 18 C 23 20 20 23 18 27 C 17 24 19 18 22 14 Z" fill="#ffffff" opacity="0.65"/>
+                                        <circle cx="21" cy="30" r="2.5" fill="#ffffff" opacity="0.5"/>
+                                        <!-- Expressive Kawaii Face -->
+                                        ${kPreset.faceSvg}
+                                        <!-- Base Bow Knot -->
+                                        <g transform="translate(42, 98)">
+                                            <path d="M 0 0 C -10 -8 -16 2 -4 4 Z" fill="${kPreset.bow}"/>
+                                            <path d="M 0 0 C 10 -8 16 2 4 4 Z" fill="${kPreset.bow}"/>
+                                            <circle cx="0" cy="1" r="3.5" fill="${kPreset.bow}"/>
+                                            <path d="M -2 3 Q -6 12 -4 18" stroke="${kPreset.ribbon}" stroke-width="2" stroke-linecap="round" fill="none"/>
+                                            <path d="M 2 3 Q 6 12 4 18" stroke="${kPreset.ribbon}" stroke-width="2" stroke-linecap="round" fill="none"/>
+                                        </g>
+                                        <!-- Wavy Ribbon Streamer -->
+                                        <path d="M 42 108 Q 36 116 42 122 Q 48 128 42 135" stroke="${kPreset.ribbon}" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            html += `
+                </div>
+                <div class="mbr-celebration-wrap" id="mbr-celebration-wrap">
+                    <div class="mbr-final-banner">${escapeHtml(bannerText)}</div>
+                </div>
+            `;
+
+            section.innerHTML = html;
+
+            // Insertion
+            if (w.insertSectionBeforeFinal) {
+                w.insertSectionBeforeFinal(d, section);
+            } else {
+                const container = d.getElementById('sections-container') || d.body;
+                const finalMessage = d.getElementById('magic-final-surprise-section');
+                const cta = d.getElementById('magic-cta-section');
+                const anchor = finalMessage || cta;
+                if (anchor && anchor.parentNode === container) {
+                    container.insertBefore(section, anchor);
+                } else {
+                    container.appendChild(section);
+                }
+            }
+
+            // State & Sound handling
+            let poppedCount = 0;
+            const popSound = (typeof Audio !== 'undefined') ? new Audio('/assets/sounds/balloon-pop.mp3') : null;
+            const finalSound = (typeof Audio !== 'undefined') ? new Audio('/assets/sounds/final-revel.mp3') : null;
+
+            const progressBar = section.querySelector('#mbr-progress-bar');
+            const countLabel = section.querySelector('#mbr-count-label');
+            const celebrationWrap = section.querySelector('#mbr-celebration-wrap');
+            // Burst particles helper
+            function spawnParticles(slotEl, x, y, color) {
+                const particleCount = 16;
+                const colors = [color, '#ff758c', '#ffd166', '#70d6ff', '#ff99c8', '#ffffff'];
+                for (let k = 0; k < particleCount; k++) {
+                    const p = d.createElement('span');
+                    p.className = 'mbr-particle';
+                    const angle = (k / particleCount) * 2 * Math.PI + (Math.random() - 0.5) * 0.4;
+                    const distance = Math.floor(Math.random() * 55 + 40);
+                    const dx = Math.cos(angle) * distance + 'px';
+                    const dy = Math.sin(angle) * distance + 'px';
+                    p.style.setProperty('--dx', dx);
+                    p.style.setProperty('--dy', dy);
+                    p.style.left = '50%';
+                    p.style.top = '40%';
+                    p.style.backgroundColor = colors[k % colors.length];
+                    slotEl.appendChild(p);
+                    setTimeout(() => p.remove(), 750);
+                }
+            }
+
+            // Confetti shower on all popped
+            function triggerCelebrationConfetti() {
+                const confettiContainer = d.createElement('div');
+                confettiContainer.style.cssText = 'position: absolute; inset: -20px; pointer-events: none; overflow: hidden; z-index: 10;';
+                const confettiColors = ['#ff4081', '#7b1fa2', '#ffeb3b', '#00e676', '#00b0ff', '#ff9100'];
+                for (let i = 0; i < 40; i++) {
+                    const c = d.createElement('div');
+                    const size = Math.random() * 8 + 6;
+                    c.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size * (Math.random() > 0.5 ? 1 : 1.6)}px;
+                        background: ${confettiColors[Math.floor(Math.random() * confettiColors.length)]};
+                        top: -10px;
+                        left: ${Math.random() * 100}%;
+                        border-radius: 2px;
+                        opacity: ${Math.random() * 0.7 + 0.3};
+                        transform: rotate(${Math.random() * 360}deg);
+                        transition: transform 2.2s cubic-bezier(0.2, 0.8, 0.4, 1), top 2.2s cubic-bezier(0.2, 0.8, 0.4, 1), opacity 2.2s ease;
+                    `;
+                    confettiContainer.appendChild(c);
+                    setTimeout(() => {
+                        c.style.top = (Math.random() * 80 + 20) + '%';
+                        c.style.transform = `rotate(${Math.random() * 720}deg) scale(0.6)`;
+                        c.style.opacity = '0';
+                    }, 50);
+                }
+                section.appendChild(confettiContainer);
+                setTimeout(() => confettiContainer.remove(), 2600);
+            }
+
+            // Balloon click handler
+            const balloonWraps = section.querySelectorAll('.mbr-balloon-wrap');
+            balloonWraps.forEach((wrap) => {
+                wrap.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const slot = wrap.closest('.mbr-slot');
+                    const idx = parseInt(wrap.getAttribute('data-index'), 10);
+                    if (wrap.classList.contains('popping')) return;
+
+                    wrap.classList.add('popping');
+
+                    // Audio play
+                    try {
+                        if (popSound) {
+                            popSound.currentTime = 0;
+                            popSound.play().catch(() => {});
+                        }
+                    } catch (err) {}
+
+                    // Spawn particles
+                    const themeObj = style === 'glossy' 
+                        ? glossyPresets[idx % glossyPresets.length] 
+                        : kawaiiPresets[idx % kawaiiPresets.length];
+                    spawnParticles(slot, e.clientX, e.clientY, themeObj.cardColor);
+
+                    // Replace with revealed card
+                    setTimeout(() => {
+                        wrap.remove();
+                        const card = d.createElement('div');
+                        card.className = 'mbr-revealed-card';
+                        card.style.background = themeObj.cardBg;
+                        card.innerHTML = `
+                            <span class="mbr-card-icon">${icons[idx] || '✨'}</span>
+                            <span class="mbr-card-word" style="color: ${themeObj.cardColor};">${escapeHtml(words[idx])}</span>
+                        `;
+                        slot.appendChild(card);
+
+                        poppedCount++;
+                        if (progressBar) {
+                            progressBar.style.width = Math.round((poppedCount / count) * 100) + '%';
+                        }
+                        if (countLabel) {
+                            countLabel.innerText = `${poppedCount} / ${count} popped`;
+                        }
+
+                        // Check completion
+                        if (poppedCount === count) {
+                            setTimeout(() => {
+                                try {
+                                    if (finalSound) {
+                                        finalSound.currentTime = 0;
+                                        finalSound.play().catch(() => {});
+                                    }
+                                } catch (e) {}
+
+                                triggerCelebrationConfetti();
+                                if (celebrationWrap) {
+                                    celebrationWrap.style.display = 'block';
+                                }
+                            }, 350);
+                        }
+                    }, 350);
+                });
+            });
+
+            const scrollFn = w.scrollToElement || (w.parent && w.parent.scrollToElement);
+            if (scrollFn) scrollFn(d, section);
+        },
+        disable: function (d) {
+            d && d.getElementById('magic-balloon-reveal-section') && d.getElementById('magic-balloon-reveal-section').remove();
+            const s = d && d.getElementById('magic-mbr-styles');
+            if (s) s.remove();
+        }
+    };
+
+
     // Global Event Delegation: Guarantees 100% button interactivity on generated & shared websites
     if (typeof document !== 'undefined') {
         const handleGlobalInteraction = function (e) {

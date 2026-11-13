@@ -55,6 +55,7 @@
   </script>
   <script src="/assets/config.js"></script>
   <script src="/assets/js/greeter-lock-screens.js"></script>
+  <script src="/features.js"></script>
 
   <style>
     /* ---------- MEDIA / ANIMATION THEME PRESET SELECTOR ---------- */
@@ -5086,7 +5087,7 @@
           featBombExplosion: "\uD83D\uDCA3 Bomb", featGiftBoxOpen: "\uD83C\uDF81 Gift Box", featTextFormation: "\u270D\uFE0F Typing Card",
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
           featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featInstantCamera: "📸 Instant Camera Snapshot", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
-          featImageExplosion: "\uD83D\uDCA5 Magic Photo", featFinalSurprise: "\uD83C\uDF89 Final Message",
+          featImageExplosion: "\uD83D\uDCA5 Magic Photo", featFinalSurprise: "\uD83C\uDF89 Final Message", featBalloonReveal: "🎈 Balloon Word Reveal",
           featVirtualCake: "🎂 Cake Celebration", featVirtualHug: "🤗 Virtual Hug", featNamedBirthdayCard: "🐼 Cute Birthday Poster",
           featAddMusicSection: "\uD83C\uDFB5 Add Music", featMagicMusic: "🎵 Background Music", featVoiceNote: "🎙️ Voice Note", featCountdown: "⏳ Surprise Countdown", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
           uploadImages: "\uD83D\uDCF7 Upload Images", alertCopy: "Link copied!", alertGenerateFirst: "Generate the link first!",
@@ -5158,7 +5159,7 @@
           featBombExplosion: "💣 बम धमाका", featGiftBoxOpen: "🎁 गिफ्ट बॉक्स", featTextFormation: "✍️ टाइपिंग कार्ड",
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
           featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featInstantCamera: "📸 इंस्टेंट कैमरा (Instant Camera)", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
-          featImageExplosion: "💥 मैजिक फोटो", featFinalSurprise: "🎉 आखिरी सरप्राइज़",
+          featImageExplosion: "💥 मैजिक फोटो", featFinalSurprise: "🎉 आखिरी सरप्राइज़", featBalloonReveal: "🎈 बैलून मैसेज रिवील",
           featVirtualCake: "🎂 वर्चुअल केक सेलिब्रेशन", featVirtualHug: "🤗 वर्चुअल हग (Virtual Hug)", featNamedBirthdayCard: "🐼 नाम वाला बर्थडे पोस्टर",
           featAddMusicSection: "🎧 गाना लगाए", featMagicMusic: "🎵 बैकग्राउंड म्यूजिक", featVoiceNote: "🎙️ वॉइस नोट", featCountdown: "⏳ सरप्राइज़ काउंटडाउन", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
           uploadImages: "📷 तस्वीरें अपलोड करें", alertCopy: "लिंक कॉपी हो गया!", alertGenerateFirst: "पहले लिंक जेनरेट करें!",
@@ -6854,6 +6855,9 @@
           } else if (id === 'lock') {
             const effLock = (typeof text === 'object' && text !== null) ? text : curData;
             applyFeature(id, true, userName, effLock);
+          } else if (id === 'balloonReveal') {
+            const effCfg = (typeof text === 'object' && text !== null) ? text : curData;
+            applyFeature(id, true, userName, effCfg, images, emoji);
           } else if (id === 'countdown') {
             const effText = (typeof text === 'object' && text !== null) ? text : { text: (typeof text === 'string' ? text : (curData.text || "")), title: (curData.title || "") };
             const effEmoji = (typeof emoji === 'string' && emoji) ? emoji : (curData.title || "");
@@ -6922,6 +6926,7 @@
           (featureId === 'virtualcake' && elementId === 'magic-virtual-cake-section') ||
           (featureId === 'virtualhug' && elementId === 'magic-virtual-hug-section') ||
           (featureId === 'namedbirthdaycard' && elementId === 'magic-named-birthday-card-section') ||
+          (featureId === 'balloonreveal' && elementId === 'magic-balloon-reveal-section') ||
           (featureId === 'instantcamera' && elementId === 'magic-instant-camera-section') ||
           (featureId === 'giftboxopen' && elementId === 'magic-gift-section')
         );
@@ -6940,8 +6945,9 @@
       window.insertSectionBeforeFinal = insertSectionBeforeFinal;
       window.scrollToElement = scrollToElement;
       window.injectFontsIfNeeded = injectFontsIfNeeded;
-      let FEATURE_MAP = {};
-      let magicLoaded = false;
+      let FEATURE_MAP = (typeof window !== 'undefined' && window.FEATURE_MAP && Object.keys(window.FEATURE_MAP).length > 0) ? window.FEATURE_MAP : {};
+      let magicLoaded = !!(FEATURE_MAP && Object.keys(FEATURE_MAP).length > 0);
+      if (magicLoaded) window._magicReady = true;
 
       const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) ? window.APP_CONFIG.API_BASE_URL : '';
       fetch((API_BASE || '') + '/api/magic?v=' + Date.now()).then(r => r.json()).then(data => {
@@ -7570,7 +7576,15 @@
           const cleanTp = selectedTp.replace(/^\/?templates\//, '').replace(/\.html$/, '');
           frame.src = `/templates/${cleanTp}.html?v=${Date.now()}&mode=edit&lang=${localStorage.getItem('greeter_lang') || 'en'}`;
         }
-      }).catch(e => console.error("Magic API error", e));
+      }).catch(e => {
+        console.warn("Magic API error, falling back to window.FEATURE_MAP", e);
+        if (typeof window !== 'undefined' && window.FEATURE_MAP) {
+          FEATURE_MAP = window.FEATURE_MAP;
+          magicLoaded = true;
+          window._magicReady = true;
+          if (typeof debouncedRefreshAll === 'function') debouncedRefreshAll();
+        }
+      });
 
 
       const COUNTDOWN_THEMES = [
@@ -7715,7 +7729,7 @@
       }
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "flowerBouquet", nameKey: "featFlowerBouquet" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "instantCamera", nameKey: "featInstantCamera" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "flowerBouquet", nameKey: "featFlowerBouquet" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "instantCamera", nameKey: "featInstantCamera" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }, { id: "balloonReveal", nameKey: "featBalloonReveal" }
       ];
       const noCustomizeIds = new Set(["curtainReveal", "fireworksClick", "bombExplosion", "addMusicSection"]);
 
@@ -7738,6 +7752,11 @@
           try {
             if (["flowerRain", "heartsOnScroll", "flyingSwans", "balloonParty"].includes(id)) feature.enable(doc, win, customEmoji);
             else if (id === "flowerBouquet" || id === "virtualCake") feature.enable(doc, win, userName, customText, images, customEmoji);
+            else if (id === "balloonReveal") {
+              const curData = (typeof customData !== 'undefined' && customData.get) ? (customData.get('balloonReveal') || {}) : {};
+              const cfg = (typeof customText === 'object' && customText !== null) ? customText : curData;
+              feature.enable(doc, win, userName, cfg);
+            }
             else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "instantCamera") feature.enable(doc, win, userName, customText, images);
             else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
             else if (id === "lock") {
@@ -7784,6 +7803,10 @@
             if (cameraSection && (window.shouldScrollToFeatureId === 'instantCamera' || window.shouldScrollToFeatureId === 'instantcamera')) {
               window.scrollToElement(doc, cameraSection);
             }
+            const balloonSection = doc.getElementById('magic-balloon-reveal-section');
+            if (balloonSection && (window.shouldScrollToFeatureId === 'balloonReveal' || window.shouldScrollToFeatureId === 'balloonreveal')) {
+              window.scrollToElement(doc, balloonSection);
+            }
           }
         }
         adjustIframePadding(activeFeatureStates);
@@ -7805,7 +7828,7 @@
         const actualCategories = {
           [t.catOpening]: ["countdown", "lock", "curtainReveal", "welcomeTyping", "fireworksText"],
           [t.catFloral]: ["flowerRain", "flyingSwans", "flowerBouquet"],
-          [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "imageExplosion", "virtualCake", "fireworksClick", "bombExplosion", "giftBoxOpen", "scratchReveal", "namedBirthdayCard", "virtualHug"],
+          [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "balloonReveal", "imageExplosion", "virtualCake", "fireworksClick", "bombExplosion", "giftBoxOpen", "scratchReveal", "namedBirthdayCard", "virtualHug"],
           [t.catMemories]: ["instantCamera", "floatingPolaroids", "memoryTimeline", "oldPaperLetter"],
           [t.catHeart]: ["textFormation", "heartsOnScroll", "hugSkyLetter"],
           [t.catFinale]: ["magicMusic", "voiceNote", "addMusicSection", "finalSurprise"]
@@ -7857,6 +7880,293 @@
             const customPanel = hasCustom ? document.createElement("div") : null;
             if (customPanel) customPanel.className = "custom-panel";
             let textarea = null, emojiInput = null, previewDiv = null;
+
+
+            // ── BALLOON MESSAGE REVEAL custom panel (Ultra-Compact & Smartly Organised) ──
+            if (id === "balloonReveal" && hasCustom) {
+              const DEFAULT_SENTENCES_BY_COUNT = {
+                3: { words: ['You', 'Are', 'Special'], banner: 'You Are Special 💖' },
+                4: { words: ['You', 'Are', 'So', 'Special'], banner: 'You Are So Special 💖' },
+                5: { words: ['You', 'Mean', 'Everything', 'To', 'Me'], banner: 'You Mean Everything To Me 💖' },
+                6: { words: ['You', 'Mean', 'The', 'World', 'To', 'Me'], banner: 'You Mean The World To Me 💖' }
+              };
+
+              const existing = customData.get('balloonReveal') || {};
+              let curStyle = existing.style || 'kawaii';
+              let curCount = existing.count || 4;
+
+              const defSentence = DEFAULT_SENTENCES_BY_COUNT[curCount] || DEFAULT_SENTENCES_BY_COUNT[4];
+              let curWords = existing.words;
+              if (!Array.isArray(curWords) || curWords.length !== curCount || 
+                  curWords.join(' ').toLowerCase() === 'you are so' ||
+                  curWords.join(' ').toLowerCase().includes('special love')) {
+                curWords = [...defSentence.words];
+              }
+              let curBanner = existing.banner;
+              if (!curBanner || curBanner.includes('You Are So 💖') || curBanner.includes('special love')) {
+                curBanner = defSentence.banner;
+              }
+
+              const brWrap = document.createElement('div');
+              brWrap.className = 'balloon-reveal-compact-card';
+              brWrap.style.cssText = 'background: #ffffff; border: 1.5px solid rgba(123, 93, 246, 0.18); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 3px 12px rgba(123, 93, 246, 0.05); margin-top: 4px;';
+
+              // ── ROW 1: Integrated Controls Bar (Style Segmented Tabs + Count Pills) ──
+              const controlsRow = document.createElement('div');
+              controlsRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; background: #f8f7fc; padding: 4px 6px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.04);';
+
+              // Left: Style Segmented Toggle
+              const styleToggleWrap = document.createElement('div');
+              styleToggleWrap.style.cssText = 'display: flex; align-items: center; background: rgba(0,0,0,0.06); padding: 2px; border-radius: 8px; gap: 2px;';
+
+              const styleOptions = [
+                { id: 'kawaii', label: currentLang === 'hi' ? '🎀 क्यूट' : '🎀 Kawaii', title: 'Kawaii faces with cute bows' },
+                { id: 'glossy', label: currentLang === 'hi' ? '🎈 ग्लॉसी' : '🎈 Glossy', title: '3D Glossy rubber balloons' }
+              ];
+
+              styleOptions.forEach(s => {
+                const tab = document.createElement('button');
+                tab.type = 'button';
+                tab.className = 'br-style-tab' + (curStyle === s.id ? ' active' : '');
+                tab.title = s.title;
+                const isActive = curStyle === s.id;
+                tab.style.cssText = 'padding: 4px 9px; font-size: 0.74rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; transition: all 0.18s ease; ' +
+                  (isActive 
+                    ? 'background: #ffffff; color: var(--accent-solid); box-shadow: 0 1px 4px rgba(0,0,0,0.12);' 
+                    : 'background: transparent; color: #666;');
+                tab.innerText = s.label;
+                tab.onclick = (e) => {
+                  e.stopPropagation();
+                  curStyle = s.id;
+                  styleToggleWrap.querySelectorAll('.br-style-tab').forEach(t => {
+                    t.style.background = 'transparent';
+                    t.style.color = '#666';
+                    t.style.boxShadow = 'none';
+                  });
+                  tab.style.background = '#ffffff';
+                  tab.style.color = 'var(--accent-solid)';
+                  tab.style.boxShadow = '0 1px 4px rgba(0,0,0,0.12)';
+                  saveAndRefresh();
+                };
+                styleToggleWrap.appendChild(tab);
+              });
+              controlsRow.appendChild(styleToggleWrap);
+
+              // Right: Count Selector Pills
+              const countWrap = document.createElement('div');
+              countWrap.style.cssText = 'display: flex; align-items: center; gap: 4px;';
+              
+              const countLabel = document.createElement('span');
+              countLabel.style.cssText = 'font-size: 0.7rem; font-weight: 700; color: #777; margin-right: 2px;';
+              countLabel.innerText = currentLang === 'hi' ? 'संख्या:' : 'Count:';
+              countWrap.appendChild(countLabel);
+
+              const countPills = document.createElement('div');
+              countPills.style.cssText = 'display: flex; gap: 3px;';
+
+              [3, 4, 5, 6].forEach(cnt => {
+                const cBtn = document.createElement('button');
+                cBtn.type = 'button';
+                cBtn.className = 'br-count-btn' + (curCount === cnt ? ' active' : '');
+                const isAct = curCount === cnt;
+                cBtn.style.cssText = 'min-width: 26px; height: 24px; padding: 0 5px; border-radius: 6px; font-weight: 800; font-size: 0.74rem; cursor: pointer; transition: all 0.18s ease; ' +
+                  (isAct 
+                    ? 'background: var(--accent-solid); color: #fff; border: none; box-shadow: 0 1px 4px rgba(123, 93, 246, 0.3);' 
+                    : 'background: #ffffff; color: #555; border: 1px solid rgba(0,0,0,0.1);');
+                cBtn.innerText = cnt;
+                cBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  const prevCount = curCount;
+                  curCount = cnt;
+                  countPills.querySelectorAll('.br-count-btn').forEach(b => {
+                    b.style.background = '#ffffff';
+                    b.style.color = '#555';
+                    b.style.border = '1px solid rgba(0,0,0,0.1)';
+                    b.style.boxShadow = 'none';
+                  });
+                  cBtn.style.background = 'var(--accent-solid)';
+                  cBtn.style.color = '#fff';
+                  cBtn.style.border = 'none';
+                  cBtn.style.boxShadow = '0 1px 4px rgba(123, 93, 246, 0.3)';
+                  syncWordsToCount(prevCount);
+                  renderWordGrid();
+                  saveAndRefresh();
+                };
+                countPills.appendChild(cBtn);
+              });
+              countWrap.appendChild(countPills);
+              controlsRow.appendChild(countWrap);
+              brWrap.appendChild(controlsRow);
+
+              // ── ROW 2: Compact Presets Scroller ──
+              const presetsRow = document.createElement('div');
+              presetsRow.style.cssText = 'display: flex; align-items: center; gap: 5px; overflow-x: auto; padding: 2px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch;';
+
+              const presetTag = document.createElement('span');
+              presetTag.style.cssText = 'font-size: 0.68rem; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; display: flex; align-items: center; gap: 3px;';
+              presetTag.innerHTML = '⚡ ' + (currentLang === 'hi' ? 'आइडियाज़:' : 'Presets:');
+              presetsRow.appendChild(presetTag);
+
+              const samplePhrases = [
+                { banner: 'You Are Special 💖', words: ['You', 'Are', 'Special'], count: 3 },
+                { banner: 'I Love You 💝', words: ['I', 'Love', 'You'], count: 3 },
+                { banner: 'You Are So Special 💖', words: ['You', 'Are', 'So', 'Special'], count: 4 },
+                { banner: 'Happy Birthday To You 🎂', words: ['Happy', 'Birthday', 'To', 'You'], count: 4 },
+                { banner: 'Always In My Heart ✨', words: ['Always', 'In', 'My', 'Heart'], count: 4 },
+                { banner: 'You Mean Everything To Me 💖', words: ['You', 'Mean', 'Everything', 'To', 'Me'], count: 5 },
+                { banner: 'You Mean The World To Me 💖', words: ['You', 'Mean', 'The', 'World', 'To', 'Me'], count: 6 },
+                { banner: 'Wishing You A Very Happy Birthday 🎂', words: ['Wishing', 'You', 'A', 'Very', 'Happy', 'Birthday'], count: 6 }
+              ];
+
+              samplePhrases.forEach(p => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.style.cssText = 'flex: 0 0 auto; white-space: nowrap; padding: 3px 8px; font-size: 0.69rem; font-weight: 700; border-radius: 12px; background: rgba(123, 93, 246, 0.08); border: 1px solid rgba(123, 93, 246, 0.16); color: #4a3b66; cursor: pointer; transition: all 0.15s ease;';
+                chip.innerText = p.banner;
+                chip.onmouseover = () => { chip.style.background = 'rgba(123, 93, 246, 0.18)'; };
+                chip.onmouseout = () => { chip.style.background = 'rgba(123, 93, 246, 0.08)'; };
+                chip.onclick = (e) => {
+                  e.stopPropagation();
+                  curWords = [...p.words];
+                  curBanner = p.banner;
+                  curCount = p.count || p.words.length;
+
+                  // Sync active count pill
+                  countPills.querySelectorAll('.br-count-btn').forEach((b, idx) => {
+                    const val = [3, 4, 5, 6][idx];
+                    if (val === curCount) {
+                      b.style.background = 'var(--accent-solid)';
+                      b.style.color = '#fff';
+                      b.style.border = 'none';
+                      b.style.boxShadow = '0 1px 4px rgba(123, 93, 246, 0.3)';
+                    } else {
+                      b.style.background = '#ffffff';
+                      b.style.color = '#555';
+                      b.style.border = '1px solid rgba(0,0,0,0.1)';
+                      b.style.boxShadow = 'none';
+                    }
+                  });
+
+                  renderWordGrid();
+                  saveAndRefresh();
+                };
+                presetsRow.appendChild(chip);
+              });
+              brWrap.appendChild(presetsRow);
+
+              // ── ROW 3: Compact 2-Column Word Slots Grid ──
+              const wordGridContainer = document.createElement('div');
+              wordGridContainer.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 6px;';
+              brWrap.appendChild(wordGridContainer);
+
+              const slotColors = [
+                { name: 'Pink', bg: '#fff0f3', border: '#ffccd5', badge: '#ff4071', text: '#d81b60' },
+                { name: 'Yellow', bg: '#fffbeb', border: '#fde68a', badge: '#d97706', text: '#b45309' },
+                { name: 'Purple', bg: '#f5f3ff', border: '#ddd6fe', badge: '#9333ea', text: '#7c3aed' },
+                { name: 'Sky', bg: '#f0f9ff', border: '#bae6fd', badge: '#0284c7', text: '#0284c7' },
+                { name: 'Rose', bg: '#fff1f2', border: '#fecdd3', badge: '#e11d48', text: '#e11d48' },
+                { name: 'Mint', bg: '#ecfdf5', border: '#a7f3d0', badge: '#059669', text: '#059669' }
+              ];
+
+              function syncWordsToCount(prevCount) {
+                const targetDef = DEFAULT_SENTENCES_BY_COUNT[curCount] || DEFAULT_SENTENCES_BY_COUNT[4];
+                const prevDef = DEFAULT_SENTENCES_BY_COUNT[prevCount];
+                
+                const isDefaultSentence = !curWords || !curWords.length ||
+                  curWords.join(' ').toLowerCase() === 'you are so' ||
+                  curWords.join(' ').toLowerCase().includes('special love') ||
+                  (prevDef && curWords.join(' ').toLowerCase() === prevDef.words.join(' ').toLowerCase()) ||
+                  Object.values(DEFAULT_SENTENCES_BY_COUNT).some(d => d.words.join(' ').toLowerCase() === curWords.join(' ').toLowerCase());
+
+                if (isDefaultSentence) {
+                  curWords = [...targetDef.words];
+                  curBanner = targetDef.banner;
+                } else {
+                  // User has customized words
+                  if (curWords.length > curCount) {
+                    curWords = curWords.slice(0, curCount);
+                  } else {
+                    while (curWords.length < curCount) {
+                      curWords.push(targetDef.words[curWords.length] || 'Special');
+                    }
+                  }
+                  curBanner = curWords.slice(0, curCount).filter(Boolean).join(' ') + ' 💖';
+                }
+              }
+
+              function renderWordGrid() {
+                wordGridContainer.innerHTML = '';
+                for (let i = 0; i < curCount; i++) {
+                  const colorScheme = slotColors[i % slotColors.length];
+                  const slotItem = document.createElement('div');
+                  const isLastOdd = (curCount % 2 !== 0) && (i === curCount - 1);
+                  slotItem.style.cssText = 'display: flex; align-items: center; gap: 6px; background: ' + colorScheme.bg + '; border: 1.2px solid ' + colorScheme.border + '; border-radius: 8px; padding: 3px 6px; transition: all 0.15s ease;' + (isLastOdd ? ' grid-column: span 2;' : '');
+
+                  const slotBadge = document.createElement('span');
+                  slotBadge.style.cssText = 'font-size: 0.72rem; font-weight: 800; color: ' + colorScheme.text + '; display: flex; align-items: center; gap: 2px; flex-shrink: 0;';
+                  slotBadge.innerHTML = '🎈' + (i + 1);
+                  slotItem.appendChild(slotBadge);
+
+                  const slotInp = document.createElement('input');
+                  slotInp.type = 'text';
+                  slotInp.className = 'br-slot-inp br-slot-' + i;
+                  slotInp.value = curWords[i] || '';
+                  slotInp.placeholder = 'Word ' + (i + 1);
+                  slotInp.style.cssText = 'flex: 1; min-width: 0; padding: 4px 6px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); background: #ffffff; font-size: 0.8rem; font-weight: 700; color: #222; outline: none; transition: all 0.15s ease;';
+                  slotInp.onfocus = () => { slotInp.style.borderColor = colorScheme.badge; slotInp.style.boxShadow = '0 0 0 2px ' + colorScheme.border; };
+                  slotInp.onblur = () => { slotInp.style.borderColor = 'rgba(0,0,0,0.08)'; slotInp.style.boxShadow = 'none'; };
+
+                  slotInp.oninput = () => {
+                    curWords[i] = slotInp.value;
+                    curBanner = curWords.slice(0, curCount).filter(Boolean).join(' ') + ' 💖';
+                    updateRevealBanner();
+                    saveAndRefresh();
+                  };
+
+                  slotItem.appendChild(slotInp);
+                  wordGridContainer.appendChild(slotItem);
+                }
+                updateRevealBanner();
+              }
+
+              // ── ROW 4: Live Reveal Sentence Banner ──
+              const bannerBar = document.createElement('div');
+              bannerBar.style.cssText = 'background: linear-gradient(135deg, rgba(232, 58, 89, 0.06) 0%, rgba(123, 93, 246, 0.06) 100%); border: 1px dashed rgba(232, 58, 89, 0.25); border-radius: 8px; padding: 5px 8px; display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 0.72rem;';
+              
+              const bannerTextSpan = document.createElement('div');
+              bannerTextSpan.style.cssText = 'font-weight: 700; color: #d81b60; display: flex; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+              
+              function updateRevealBanner() {
+                const text = curWords.slice(0, curCount).filter(Boolean).join(' ') || (DEFAULT_SENTENCES_BY_COUNT[curCount] || DEFAULT_SENTENCES_BY_COUNT[4]).words.join(' ');
+                bannerTextSpan.innerHTML = '✨ <i>"' + text + ' 💖"</i>';
+              }
+              
+              const bannerHint = document.createElement('span');
+              bannerHint.style.cssText = 'font-size: 0.64rem; color: #888; font-weight: 600; flex-shrink: 0;';
+              bannerHint.innerText = currentLang === 'hi' ? 'फाइनल रिवील' : 'Reveal preview';
+
+              bannerBar.appendChild(bannerTextSpan);
+              bannerBar.appendChild(bannerHint);
+              brWrap.appendChild(bannerBar);
+
+              renderWordGrid();
+
+              function saveAndRefresh() {
+                const nameVal = getUserName();
+                const configObj = {
+                  style: curStyle,
+                  count: curCount,
+                  words: curWords.slice(0, curCount),
+                  banner: curBanner || (curWords.slice(0, curCount).join(' ') + ' 💖'),
+                  name: nameVal
+                };
+                customData.set('balloonReveal', configObj);
+                autoSaveState();
+                refreshFeatureIfActive('balloonReveal', nameVal, configObj);
+              }
+
+              customPanel.appendChild(brWrap);
+            }
 
             // ── FLOWER BOUQUET custom panel (bouquet picker + message textarea) ──
             if (id === "flowerBouquet" && hasCustom) {
@@ -10332,6 +10642,26 @@
                   }, existingLock);
                   if (customText && customText.trim()) lockObj.text = customText.trim();
                   customData.set('lock', lockObj);
+                } else if (id === 'balloonReveal') {
+                  const existingBR = customData.get('balloonReveal') || {};
+                  const cnt = existingBR.count || 4;
+                  const DEFAULT_BY_COUNT = {
+                    3: { words: ['You', 'Are', 'Special'], banner: 'You Are Special 💖' },
+                    4: { words: ['You', 'Are', 'So', 'Special'], banner: 'You Are So Special 💖' },
+                    5: { words: ['You', 'Mean', 'Everything', 'To', 'Me'], banner: 'You Mean Everything To Me 💖' },
+                    6: { words: ['You', 'Mean', 'The', 'World', 'To', 'Me'], banner: 'You Mean The World To Me 💖' }
+                  };
+                  const def = DEFAULT_BY_COUNT[cnt] || DEFAULT_BY_COUNT[4];
+                  if (!existingBR.words || !existingBR.words.length || existingBR.words.length !== cnt || 
+                      existingBR.words.join(' ').toLowerCase() === 'you are so' ||
+                      existingBR.words.join(' ').toLowerCase().includes('special love')) {
+                    existingBR.style = existingBR.style || 'kawaii';
+                    existingBR.count = cnt;
+                    existingBR.words = [...def.words];
+                    existingBR.banner = def.banner;
+                  }
+                  existingBR.name = nameVal;
+                  customData.set('balloonReveal', existingBR);
                 } else {
                   const storeData = { text: customText, images, emoji: emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl, mediaUrl };
                   customData.set(id, storeData);
@@ -10342,6 +10672,8 @@
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
                 } else if (id === 'finalSurprise') {
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio, "", "", "", mediaUrl);
+                } else if (id === 'balloonReveal') {
+                  applyFeature(id, true, nameVal, customData.get('balloonReveal'));
                 } else {
                   applyFeature(id, true, nameVal, customText, images, emojiVal, audio);
                 }
@@ -11743,6 +12075,10 @@
             feature.enable(document, window, emoji);
           } else if (id === "flowerBouquet" || id === "virtualCake") {
             feature.enable(document, window, name, text, images, emoji);
+          } else if (id === "balloonReveal") {
+            const curData = (typeof customData !== 'undefined' && customData.get) ? (customData.get('balloonReveal') || {}) : {};
+            const cfg = (typeof text === 'object' && text !== null) ? text : curData;
+            feature.enable(document, window, name, cfg);
           } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
             feature.enable(document, window, name, text, images);
           } else if (id === "magicMusic" || id === "voiceNote") {
@@ -12999,6 +13335,8 @@
                   window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
                 } else if (id === "flowerBouquet" || id === "virtualCake") {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || [], data.emoji || "");
+                } else if (id === "balloonReveal") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data);
                 } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
                 } else if (id === "magicMusic" || id === "voiceNote") {
@@ -14582,6 +14920,8 @@
                   window.FEATURE_MAP[id].enable(document, window, data.emoji || "");
                 } else if (id === "flowerBouquet" || id === "virtualCake") {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || [], data.emoji || "");
+                } else if (id === "balloonReveal") {
+                  window.FEATURE_MAP[id].enable(document, window, userName, data);
                 } else if (["scratchReveal", "giftBoxOpen", "memoryTimeline", "hugSkyLetter", "floatingPolaroids", "imageExplosion", "instantCamera", "addImages"].includes(id)) {
                   window.FEATURE_MAP[id].enable(document, window, userName, data.text || "", data.images || []);
                 } else if (id === "magicMusic" || id === "voiceNote") {
