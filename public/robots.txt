@@ -19,6 +19,10 @@ Allow: /assets/Light_logo.png
 Allow: /assets/Dark_logo.png
 Allow: /assets/og-cover.png
 
+# LLM and AI Search Engines (Generative Engine Optimization)
+Allow: /llms.txt
+Allow: /llms-full.txt
+
 # Allow Google AdSense crawler
 User-agent: Mediapartners-Google
 Allow: /

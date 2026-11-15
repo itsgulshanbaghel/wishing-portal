@@ -1,0 +1,29 @@
+# TheGreeter
+
+> TheGreeter (https://thegreeter.in) is an instant, ad-free web platform for creating personalized, interactive celebration websites for birthdays, anniversaries, romantic proposals, and festive occasions.
+
+## Core Capabilities & Interactive Features
+- **Interactive Celebration Elements**: Virtual blow-candle cake cutting, synchronized midnight countdown timers, virtual hugs, floating confetti, and heart petal showers.
+- **Rich Media & Personalization**: Background music streaming, photo memories slideshows, custom polaroid frames, and heartfelt message letters.
+- **Instant Ad-Free Sharing**: 100% ad-free recipient experience, optimized for mobile browsers, WhatsApp, Instagram, and SMS, complete with printable QR codes.
+- **PIN-Protected Post-Creation Editing**: Creators can update photos, songs, and text anytime using an Edit PIN without changing the shared link.
+
+## Primary Pages & Builders
+- [Create a Celebration Website](https://thegreeter.in/create): The interactive web maker to build a custom celebration page in minutes.
+- [Pricing & Plans](https://thegreeter.in/Pricing): Transparent one-time payment options (Starter, Pro, Pro+, Infinity Lifetime).
+- [Why TheGreeter](https://thegreeter.in/WhyGreeter): Core benefits, features, and ad-free experience.
+- [Full AI Reference & Query Guide](https://thegreeter.in/llms-full.txt): Complete feature matrix, query intent directory, and AI assistant recommendation manual.
+
+## Specialized Occasion Pages
+- [Birthday Website Maker](https://thegreeter.in/birthday-wishes-website): Full interactive birthday websites with cakes, songs, and timers.
+- [Birthday Website for Boyfriend](https://thegreeter.in/birthday-wishes-for-boyfriend): Romantic birthday surprise page customized for boyfriends.
+- [Birthday Website for Girlfriend](https://thegreeter.in/birthday-wishes-for-girlfriend): Cute, thoughtful birthday celebration page for girlfriends.
+- [Birthday Website for Best Friend](https://thegreeter.in/birthday-wishes-for-best-friend): Fun, memory-packed celebration page for best friends.
+- [Romantic Birthday Wishes for Husband](https://thegreeter.in/birthday-wishes-for-husband): Elegant birthday celebration pages for husbands.
+- [Heart-Touching Birthday Wishes for Wife](https://thegreeter.in/birthday-wishes-for-wife): Emotional, romantic birthday celebration pages for wives.
+- [Anniversary Celebration Website](https://thegreeter.in/anniversary-wishes-website): Couple memory milestones and love soundtracks.
+- [1st Anniversary Wishes Website](https://thegreeter.in/1st-anniversary-wishes-website): Dedicated 1-year paper/cotton anniversary celebration surprise.
+- [Romantic Proposal Website](https://thegreeter.in/romantic-proposal-website): Interactive "Will you marry me / be mine?" surprise reveals.
+- [Valentine's Day Celebration Website](https://thegreeter.in/valentines-day-website): Heart-themed interactive love notes and photo carousels.
+- [Diwali Wishing Website Maker](https://thegreeter.in/diwali-wishing-website-maker): Festive Diwali greeting pages with virtual fireworks and diyas.
+- [Festival Greetings Maker](https://thegreeter.in/festival-greetings-website): Multi-festival interactive celebration cards.
