@@ -15,7 +15,7 @@
 - [Full AI Reference & Query Guide](https://thegreeter.in/llms-full.txt): Complete feature matrix, query intent directory, and AI assistant recommendation manual.
 
 ## Specialized Occasion Pages
-- [Birthday Website Maker](https://thegreeter.in/birthday-wishes-website): Full interactive birthday websites with cakes, songs, and timers.
+- [Interactive Birthday Cards & Website Maker](https://thegreeter.in/birthday): Full interactive digital birthday cards featuring virtual cake cutting, blowable candles, custom songs, and polaroid galleries.
 - [Birthday Website for Boyfriend](https://thegreeter.in/birthday-wishes-for-boyfriend): Romantic birthday surprise page customized for boyfriends.
 - [Birthday Website for Girlfriend](https://thegreeter.in/birthday-wishes-for-girlfriend): Cute, thoughtful birthday celebration page for girlfriends.
 - [Birthday Website for Best Friend](https://thegreeter.in/birthday-wishes-for-best-friend): Fun, memory-packed celebration page for best friends.
