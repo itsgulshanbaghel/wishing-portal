@@ -70,11 +70,19 @@ function validateSeo() {
     }
 
     // 3. Canonical Link Check
-    const canonicalMatch = content.match(/<link\s+rel=["']canonical["']\s+href=["'](.*?)["']/i);
-    if (!canonicalMatch) {
-      errors.push('Missing canonical tag');
-    } else if (!canonicalMatch[1].startsWith('https://thegreeter.in')) {
-      warnings.push(`Canonical URL does not use absolute domain https://thegreeter.in: "${canonicalMatch[1]}"`);
+    const isNoIndex = /<meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i.test(content);
+    const canonicalMatches = content.match(/<link\s+rel=["']canonical["']\s+href=["'](.*?)["']/gi) || [];
+    if (!isNoIndex) {
+      if (canonicalMatches.length === 0) {
+        errors.push('Missing canonical tag');
+      } else if (canonicalMatches.length > 1) {
+        errors.push(`Multiple canonical tags found (${canonicalMatches.length} tags)`);
+      } else {
+        const canonicalUrlMatch = content.match(/<link\s+rel=["']canonical["']\s+href=["'](.*?)["']/i);
+        if (canonicalUrlMatch && !canonicalUrlMatch[1].startsWith('https://thegreeter.in')) {
+          warnings.push(`Canonical URL does not use absolute domain https://thegreeter.in: "${canonicalUrlMatch[1]}"`);
+        }
+      }
     }
 
     // 4. Hreflang Tags Check

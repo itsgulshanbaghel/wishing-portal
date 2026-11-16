@@ -10,8 +10,8 @@
     "trailingSlash": false,
     "redirects": [
       {
-        "source": "/birthday-wishes-website",
-        "destination": "/birthday",
+        "source": "/birthday",
+        "destination": "/birthday-wishes-website",
         "type": 301
       },
       {

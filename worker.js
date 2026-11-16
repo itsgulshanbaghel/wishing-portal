@@ -1,5 +1,40 @@
 const EUROZONE = ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'];
 
+const STATIC_PREFIXES = [
+  'api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 
+  'create', 'clear', 'privacy', 'pricing', 'about', 'contact', 'why', 'whygreeter', 
+  'edit', 'terms', 'birthday', 'romantic', 'anniversary', '1st', 'diwali', 
+  'festival', 'valentines', 'wedding'
+];
+
+const CLEAN_STATIC_ROUTES = {
+  '/edit': '/edit.html',
+  '/create': '/create.html',
+  '/templates': '/templates/index.html',
+  '/Pricing': '/Pricing.html',
+  '/AboutUs': '/AboutUs.html',
+  '/WhyGreeter': '/WhyGreeter.html',
+  '/ContactUs': '/ContactUs.html',
+  '/privacy': '/privacy.html',
+  '/clear': '/clear.html',
+  '/terms': '/terms.html',
+  '/terms&cond': '/terms&cond.html',
+  '/birthday-wishes-website': '/birthday-wishes-website.html',
+  '/birthday-wishes-for-girlfriend': '/birthday-wishes-for-girlfriend.html',
+  '/birthday-wishes-for-boyfriend': '/birthday-wishes-for-boyfriend.html',
+  '/birthday-wishes-for-wife': '/birthday-wishes-for-wife.html',
+  '/birthday-wishes-for-husband': '/birthday-wishes-for-husband.html',
+  '/birthday-wishes-for-best-friend': '/birthday-wishes-for-best-friend.html',
+  '/romantic-proposal-website': '/romantic-proposal-website.html',
+  '/anniversary-wishes-website': '/anniversary-wishes-website.html',
+  '/1st-anniversary-wishes-website': '/1st-anniversary-wishes-website.html',
+  '/diwali-wishing-website-maker': '/diwali-wishing-website-maker.html',
+  '/festival-greetings-website': '/festival-greetings-website.html',
+  '/valentines-day-website': '/valentines-day-website.html',
+  '/blog': '/blog/index.html',
+  '/blog/': '/blog/index.html'
+};
+
 const EDGE_PRICING = {
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India', country: 'IN',
@@ -69,12 +104,19 @@ export default {
 
     const isApiRequest = path.startsWith('/api/');
     const pathSegments = path.split('/').filter(Boolean);
+    const isStaticPath = Boolean(
+      CLEAN_STATIC_ROUTES[path] || 
+      CLEAN_STATIC_ROUTES[`/${pathSegments[0]}`] ||
+      STATIC_PREFIXES.some(s => (pathSegments[0] || '').toLowerCase().startsWith(s)) ||
+      pathSegments[0] === 'favicon.ico' ||
+      pathSegments[0] === 'robots.txt' ||
+      pathSegments[0] === 'sitemap.xml' ||
+      pathSegments[0] === 'llms.txt' ||
+      pathSegments[0] === 'llms-full.txt'
+    );
     const isSlugRequest = pathSegments.length === 1 && 
                           !pathSegments[0].includes('.') &&
-                          !['api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 'create', 'clear', 'privacy', 'pricing', 'about', 'contact', 'why', 'whygreeter', 'edit', 'terms', 'birthday', 'romantic', 'anniversary'].some(s => pathSegments[0].toLowerCase().startsWith(s)) &&
-                          pathSegments[0] !== 'favicon.ico' &&
-                          pathSegments[0] !== 'robots.txt' &&
-                          pathSegments[0] !== 'sitemap.xml';
+                          !isStaticPath;
 
     // ⚡ 1. Cloudflare Edge Caching for Read/Slug/Template Requests (<10ms global delivery)
     const hasNoCache = request.headers.get('cache-control')?.includes('no-cache') || 
@@ -186,7 +228,8 @@ export default {
                 'Cache-Control': isSlugRequest
                   ? 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400'
                   : 'no-cache, no-store, must-revalidate, max-age=0',
-                'X-Backend-Origin': winningBackend
+                'X-Backend-Origin': winningBackend,
+                ...(isSlugRequest ? { 'X-Robots-Tag': 'noindex, nofollow' } : {})
               }
             });
 
@@ -267,6 +310,14 @@ export default {
       }
     }
 
+    // 301 Permanent Redirect: Consolidate /birthday to authoritative pillar /birthday-wishes-website
+    if (path === '/birthday' || path === '/birthday/') {
+      return Response.redirect(`${url.origin}/birthday-wishes-website${url.search}`, 301);
+    }
+    if (path === '/birthday-wishes-website/') {
+      return Response.redirect(`${url.origin}/birthday-wishes-website${url.search}`, 301);
+    }
+
     // Canonical case redirects for SEO & asset consistency
     const canonicalRedirects = {
       '/pricing': '/Pricing',
@@ -283,29 +334,18 @@ export default {
     }
 
     // Clean static routes resolution (serves HTML directly without redirect loops)
-    const cleanRoutes = {
-      '/edit': '/edit.html',
-      '/Pricing': '/Pricing.html',
-      '/AboutUs': '/AboutUs.html',
-      '/WhyGreeter': '/WhyGreeter.html',
-      '/ContactUs': '/ContactUs.html',
-      '/privacy': '/privacy.html',
-      '/clear': '/clear.html',
-      '/terms': '/terms.html',
-      '/terms&cond': '/terms&cond.html',
-      '/birthday-wishes-website': '/birthday-wishes-website.html',
-      '/birthday-wishes-for-girlfriend': '/birthday-wishes-for-girlfriend.html',
-      '/birthday-wishes-for-boyfriend': '/birthday-wishes-for-boyfriend.html',
-      '/birthday-wishes-for-wife': '/birthday-wishes-for-wife.html',
-      '/birthday-wishes-for-husband': '/birthday-wishes-for-husband.html',
-      '/birthday-wishes-for-best-friend': '/birthday-wishes-for-best-friend.html',
-      '/romantic-proposal-website': '/romantic-proposal-website.html',
-      '/anniversary-wishes-website': '/anniversary-wishes-website.html'
-    };
-
-    if (cleanRoutes[path] && env.ASSETS) {
-      const assetUrl = new URL(cleanRoutes[path], request.url);
+    if (CLEAN_STATIC_ROUTES[path] && env.ASSETS) {
+      const assetUrl = new URL(CLEAN_STATIC_ROUTES[path], request.url);
       return env.ASSETS.fetch(new Request(assetUrl, request));
+    }
+
+    // Dynamic resolution for blog articles without .html extension
+    if (path.startsWith('/blog/') && !path.includes('.') && !path.endsWith('/') && env.ASSETS) {
+      const blogAssetUrl = new URL(`${path}.html`, request.url);
+      const blogRes = await env.ASSETS.fetch(new Request(blogAssetUrl, request));
+      if (blogRes.status === 200) {
+        return blogRes;
+      }
     }
 
     // Serve static assets from public folder via Cloudflare Workers Assets binding (0 CPU, 100% free unlimited global CDN)
@@ -324,6 +364,21 @@ export default {
         });
       }
       return assetRes;
+    }
+
+    // Branded 404 Error Page for unmatched routes
+    if (env.ASSETS) {
+      try {
+        const notFoundReq = new Request(new URL('/404.html', request.url));
+        const notFoundRes = await env.ASSETS.fetch(notFoundReq);
+        if (notFoundRes.status === 200) {
+          return new Response(notFoundRes.body, {
+            status: 404,
+            statusText: 'Not Found',
+            headers: notFoundRes.headers
+          });
+        }
+      } catch (e) {}
     }
 
     return new Response('Not found', { status: 404 });
