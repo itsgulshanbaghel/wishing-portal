@@ -11,12 +11,15 @@
   <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
 
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 
   <!-- PRIMARY SEO METADATA -->
   <title>Interactive Birthday Card Maker with Cake Cutting & Music | TheGreeter</title>
-  <meta name="description" content="Create an interactive birthday website in 60s with virtual cake cutting, songs, polaroids & secret notes. Live preview free, publish from ₹49.">
-  <meta name="keywords" content="interactive birthday card, digital birthday card, virtual birthday card, virtual cake cutting, birthday website maker, birthday card with music, cut cake online, birthday surprise website, thegreeter">
+  <meta name="description"
+    content="Create an interactive birthday website in 60s with virtual cake cutting, songs, polaroids & secret notes. Live preview free, publish from ₹49.">
+  <meta name="keywords"
+    content="interactive birthday card, digital birthday card, virtual birthday card, virtual cake cutting, birthday website maker, birthday card with music, cut cake online, birthday surprise website, thegreeter">
   <meta name="author" content="TheGreeter">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <meta name="theme-color" content="#7b5df6">
@@ -37,7 +40,8 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="TheGreeter">
   <meta property="og:title" content="Interactive Birthday Card Maker with Cake Cutting & Music | TheGreeter">
-  <meta property="og:description" content="Create an interactive digital birthday surprise in 60s. Virtual cake cutting, custom music, polaroid memories, and secret letters. From ₹49.">
+  <meta property="og:description"
+    content="Create an interactive digital birthday surprise in 60s. Virtual cake cutting, custom music, polaroid memories, and secret letters. From ₹49.">
   <meta property="og:url" content="https://thegreeter.in/birthday">
   <meta property="og:image" content="https://thegreeter.in/assets/og-cover.webp">
   <meta property="og:locale" content="en_US">
@@ -46,7 +50,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@thegreeter">
   <meta name="twitter:title" content="Interactive Birthday Card Maker with Cake Cutting & Music">
-  <meta name="twitter:description" content="Personalized interactive birthday cards with virtual cake cutting, songs, polaroid photos & secret letters. From ₹49.">
+  <meta name="twitter:description"
+    content="Personalized interactive birthday cards with virtual cake cutting, songs, polaroid photos & secret letters. From ₹49.">
   <meta name="twitter:image" content="https://thegreeter.in/assets/og-cover.webp">
 
   <!-- JSON-LD STRUCTURED DATA -->
@@ -79,13 +84,6 @@
           "@type": "Offer",
           "price": "49.00",
           "priceCurrency": "INR"
-        },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "ratingCount": "1280",
-          "bestRating": "5",
-          "worstRating": "1"
         }
       },
       {
@@ -132,13 +130,29 @@
   <!-- FONTS & STYLES -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  
+
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; max-width: 100vw; overflow-x: hidden; }
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
     :root {
       --bg-primary: #f9f7ff;
       --bg-secondary: #ffffff;
@@ -154,6 +168,7 @@
       --shadow-lg: 0 25px 40px -12px rgba(0, 0, 0, 0.12);
       --glow: rgba(123, 93, 246, 0.2);
     }
+
     body.dark {
       --bg-primary: #0c0719;
       --bg-secondary: #1a1230;
@@ -167,151 +182,828 @@
       --shadow-lg: 0 30px 50px -15px #00000055;
       --glow: rgba(123, 93, 246, 0.3);
     }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; transition: background 0.3s ease, color 0.3s ease; overflow-x: hidden; }
-    .bg-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%); pointer-events: none; z-index: -2; }
-    .container { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
-    
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: background 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(123, 93, 246, 0.08), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 122, 47, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
     /* NAV */
-    .navbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 28px; margin: 16px 0 24px; backdrop-filter: blur(16px); background: var(--navbar-bg); border: 1px solid var(--card-border); border-radius: 100px; box-shadow: var(--shadow-sm); position: sticky; top: 12px; z-index: 100; }
-    .logo { display: flex; align-items: center; text-decoration: none; }
-    .logo img { height: 42px; width: auto; }
-    .logo .logo-dark { display: none; }
-    body.dark .logo .logo-light { display: none; }
-    body.dark .logo .logo-dark { display: block; }
-    .nav-links { display: flex; gap: 28px; font-weight: 600; }
-    .nav-links a { text-decoration: none; color: var(--text-secondary); font-size: 0.95rem; transition: 0.2s; }
-    .nav-links a:hover { color: var(--accent-solid); }
-    .nav-actions { display: flex; align-items: center; gap: 12px; }
-    .mode-toggle, .lang-toggle { background: var(--card-bg); border: 1px solid var(--card-border); width: 44px; height: 44px; border-radius: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-    .mode-toggle .fa-sun { color: #fbbf24; }
-    body.dark .mode-toggle .fa-moon { color: #cbd5e1; }
-    .btn-primary { background: var(--accent-gradient); color: white; border: none; padding: 12px 28px; border-radius: 40px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px var(--glow); transition: 0.3s ease; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 25px var(--glow); }
-    .btn-demo { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border: none; padding: 14px 28px; border-radius: 40px; font-weight: 700; font-size: 1.05rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3); transition: 0.3s ease; box-sizing: border-box; line-height: 1.35; }
-    .btn-demo:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(59, 130, 246, 0.45); color: white; }
-    .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; width: 100%; margin-top: 8px; }
-    .hero-cta-btn { font-size: 1.08rem; padding: 14px 30px; display: inline-flex; align-items: center; justify-content: center; text-align: center; max-width: 100%; white-space: normal; line-height: 1.35; box-sizing: border-box; }
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 28px;
+      margin: 16px 0 24px;
+      backdrop-filter: blur(16px);
+      background: var(--navbar-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .logo img {
+      height: 42px;
+      width: auto;
+    }
+
+    .logo .logo-dark {
+      display: none;
+    }
+
+    body.dark .logo .logo-light {
+      display: none;
+    }
+
+    body.dark .logo .logo-dark {
+      display: block;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      font-weight: 600;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      transition: 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent-solid);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mode-toggle,
+    .lang-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      width: 44px;
+      height: 44px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mode-toggle .fa-sun {
+      color: #fbbf24;
+    }
+
+    body.dark .mode-toggle .fa-moon {
+      color: #cbd5e1;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 40px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px var(--glow);
+      transition: 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px var(--glow);
+    }
+
+    .btn-demo {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+      transition: 0.3s ease;
+      box-sizing: border-box;
+      line-height: 1.35;
+    }
+
+    .btn-demo:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(59, 130, 246, 0.45);
+      color: white;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .hero-cta-btn {
+      font-size: 1.08rem;
+      padding: 14px 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      max-width: 100%;
+      white-space: normal;
+      line-height: 1.35;
+      box-sizing: border-box;
+    }
 
     /* BREADCRUMB */
-    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px; flex-wrap: wrap; }
-    .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
-    .breadcrumb a:hover { color: var(--accent-solid); }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      color: var(--accent-solid);
+    }
 
     /* HERO */
-    .hero { text-align: center; padding: 40px 0 60px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(123, 93, 246, 0.1); border: 1px solid rgba(123, 93, 246, 0.2); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; color: var(--accent-solid); margin-bottom: 20px; }
-    .hero h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.3rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.15; margin-bottom: 20px; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .hero p { font-size: 1.15rem; color: var(--text-secondary); margin-bottom: 24px; max-width: 780px; margin-left: auto; margin-right: auto; }
-    
-    .pricing-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); padding: 6px 18px; border-radius: 40px; font-weight: 700; font-size: 0.9rem; margin-bottom: 24px; }
-    body.dark .pricing-pill { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .hero {
+      text-align: center;
+      padding: 40px 0 60px;
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(123, 93, 246, 0.1);
+      border: 1px solid rgba(123, 93, 246, 0.2);
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-solid);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.3rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      max-width: 780px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .pricing-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 6px 18px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    body.dark .pricing-pill {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
 
     /* CONTENT GRID */
-    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 40px 0; }
-    .feature-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 32px; backdrop-filter: blur(12px); box-shadow: var(--shadow-sm); transition: transform 0.3s ease; }
-    .feature-card:hover { transform: translateY(-4px); border-color: var(--accent-solid); }
-    .feature-icon { font-size: 2.2rem; margin-bottom: 16px; display: inline-block; }
-    .feature-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; }
-    .feature-card p { font-size: 0.95rem; color: var(--text-secondary); }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin: 40px 0;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 32px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-solid);
+    }
+
+    .feature-icon {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    .feature-card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
 
 
     /* CONTENT SECTION */
-    .seo-article { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 32px; padding: 48px; margin: 40px 0; backdrop-filter: blur(12px); }
-    .seo-article h2 { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 28px 0 16px; color: var(--text-primary); }
-    .seo-article h2:first-child { margin-top: 0; }
-    .seo-article p { font-size: 1rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.7; }
-    .seo-article ul { padding-left: 20px; margin-bottom: 20px; color: var(--text-secondary); }
-    .seo-article li { margin-bottom: 8px; }
+    .seo-article {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 32px;
+      padding: 48px;
+      margin: 40px 0;
+      backdrop-filter: blur(12px);
+    }
+
+    .seo-article h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 28px 0 16px;
+      color: var(--text-primary);
+    }
+
+    .seo-article h2:first-child {
+      margin-top: 0;
+    }
+
+    .seo-article p {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+
+    .seo-article ul {
+      padding-left: 20px;
+      margin-bottom: 20px;
+      color: var(--text-secondary);
+    }
+
+    .seo-article li {
+      margin-bottom: 8px;
+    }
 
     /* TOPIC CLUSTER / RELATIONSHIP SECTION (MOBILE-FIRST) */
-    .relation-section { margin: 48px 0 24px; text-align: center; }
-    .relation-section h2 { font-family: 'Outfit', sans-serif; font-size: clamp(1.6rem, 4.5vw, 2.2rem); font-weight: 800; margin-bottom: 10px; }
-    .relation-section .relation-sub { color: var(--text-secondary); font-size: 1.05rem; max-width: 650px; margin: 0 auto 32px; }
-    .relation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 24px; }
-    .relation-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; text-align: left; text-decoration: none; color: inherit; display: flex; flex-direction: column; justify-content: space-between; backdrop-filter: blur(12px); box-shadow: var(--shadow-sm); transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
-    .relation-card:hover { transform: translateY(-4px); border-color: var(--accent-solid); box-shadow: var(--shadow-md); }
-    .relation-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .relation-icon { font-size: 2rem; }
-    .relation-badge { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: rgba(123, 93, 246, 0.12); color: var(--accent-solid); }
-    .relation-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
-    .relation-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px; }
-    .relation-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 0.86rem; font-weight: 700; color: var(--accent-solid); margin-top: auto; }
+    .relation-section {
+      margin: 48px 0 24px;
+      text-align: center;
+    }
+
+    .relation-section h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.6rem, 4.5vw, 2.2rem);
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .relation-section .relation-sub {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      max-width: 650px;
+      margin: 0 auto 32px;
+    }
+
+    .relation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .relation-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      text-align: left;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .relation-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-solid);
+      box-shadow: var(--shadow-md);
+    }
+
+    .relation-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .relation-icon {
+      font-size: 2rem;
+    }
+
+    .relation-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(123, 93, 246, 0.12);
+      color: var(--accent-solid);
+    }
+
+    .relation-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .relation-card p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .relation-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--accent-solid);
+      margin-top: auto;
+    }
 
     /* FAQ SECTION */
-    .faq-section { margin: 60px 0; }
-    .faq-title { text-align: center; font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 700; margin-bottom: 32px; }
-    .faq-grid { display: grid; gap: 16px; max-width: 850px; margin: 0 auto; }
-    .faq-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; backdrop-filter: blur(12px); }
-    .faq-question { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
-    .faq-answer { font-size: 0.95rem; color: var(--text-secondary); }
+    .faq-section {
+      margin: 60px 0;
+    }
+
+    .faq-title {
+      text-align: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 32px;
+    }
+
+    .faq-grid {
+      display: grid;
+      gap: 16px;
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+    }
+
+    .faq-question {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .faq-answer {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
 
     /* CTA BANNER */
-    .cta-banner { text-align: center; background: var(--accent-gradient); color: white; border-radius: 32px; padding: 56px 24px; margin: 60px 0; position: relative; overflow: hidden; box-shadow: var(--shadow-lg); }
-    .cta-banner h2 { font-family: 'Outfit', sans-serif; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; margin-bottom: 16px; color: #fff; }
-    .cta-banner p { font-size: 1.1rem; margin-bottom: 28px; opacity: 0.95; max-width: 650px; margin-left: auto; margin-right: auto; }
-    .btn-light { background: white; color: var(--accent-solid); border: none; padding: 14px 36px; border-radius: 40px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; font-size: 1.05rem; transition: 0.3s ease; }
-    .btn-light:hover { transform: scale(1.04); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .cta-banner {
+      text-align: center;
+      background: var(--accent-gradient);
+      color: white;
+      border-radius: 32px;
+      padding: 56px 24px;
+      margin: 60px 0;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .cta-banner h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .cta-banner p {
+      font-size: 1.1rem;
+      margin-bottom: 28px;
+      opacity: 0.95;
+      max-width: 650px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .btn-light {
+      background: white;
+      color: var(--accent-solid);
+      border: none;
+      padding: 14px 36px;
+      border-radius: 40px;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      transition: 0.3s ease;
+    }
+
+    .btn-light:hover {
+      transform: scale(1.04);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
 
     /* FOOTER */
-    .footer { background: var(--card-bg); border-top: 1px solid var(--card-border); border-radius: 40px 40px 0 0; padding: 48px 32px 32px; margin-top: 60px; }
-    .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px; max-width: 1200px; margin: 0 auto; }
-    .footer-brand p { color: var(--text-secondary); font-size: 0.85rem; max-width: 260px; }
-    .footer-links { display: flex; gap: 60px; }
-    .footer-col a { text-decoration: none; color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 8px; }
-    .footer-col a:hover { color: var(--accent-solid); }
-    .copyright { text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--card-border); font-size: 0.8rem; color: var(--text-secondary); }
+    .footer {
+      background: var(--card-bg);
+      border-top: 1px solid var(--card-border);
+      border-radius: 40px 40px 0 0;
+      padding: 48px 32px 32px;
+      margin-top: 60px;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-brand p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      max-width: 260px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 60px;
+    }
+
+    .footer-col a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent-solid);
+    }
+
+    .copyright {
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
 
     /* RESPONSIVE DESIGN */
-    .nav-drawer-cta { display: none; }
-    .mobile-menu-btn { display: none; }
-    .mobile-nav-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 990; opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s ease; }
-    .mobile-nav-backdrop.show { opacity: 1; visibility: visible; }
+    .nav-drawer-cta {
+      display: none;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+    }
+
+    .mobile-nav-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 990;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .mobile-nav-backdrop.show {
+      opacity: 1;
+      visibility: visible;
+    }
 
     @media (max-width: 880px) {
-      .navbar { z-index: 1000; padding: 8px 14px 8px 18px; margin: 10px 0 18px; border-radius: 100px; top: 8px; }
-      .logo img { height: 34px; width: auto; }
-      .nav-links { display: none; position: fixed; top: 76px; left: 16px; right: 16px; background: var(--bg-secondary); border-radius: 28px; padding: 24px 20px; flex-direction: column; gap: 14px; text-align: center; box-shadow: var(--shadow-lg); }
-      .nav-links.show { display: flex; }
-      .nav-drawer-cta { display: block; margin-top: 8px; }
-      .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 40px; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); cursor: pointer; }
-      .nav-actions { gap: 8px; }
-      .nav-actions .btn-primary { display: none !important; }
+      .navbar {
+        z-index: 1000;
+        padding: 8px 14px 8px 18px;
+        margin: 10px 0 18px;
+        border-radius: 100px;
+        top: 8px;
+      }
+
+      .logo img {
+        height: 34px;
+        width: auto;
+      }
+
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 76px;
+        left: 16px;
+        right: 16px;
+        background: var(--bg-secondary);
+        border-radius: 28px;
+        padding: 24px 20px;
+        flex-direction: column;
+        gap: 14px;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .nav-links.show {
+        display: flex;
+      }
+
+      .nav-drawer-cta {
+        display: block;
+        margin-top: 8px;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 40px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        color: var(--text-primary);
+        cursor: pointer;
+      }
+
+      .nav-actions {
+        gap: 8px;
+      }
+
+      .nav-actions .btn-primary {
+        display: none !important;
+      }
     }
 
     @media (max-width: 768px) {
-      .container { padding: 0 16px; }
-      .breadcrumb { font-size: 0.8rem; margin-bottom: 16px; }
-      .hero { padding: 24px 0 36px; }
-      .hero-badge { font-size: 0.78rem; padding: 6px 14px; margin-bottom: 16px; white-space: normal; line-height: 1.4; }
-      .hero h1 { font-size: clamp(1.85rem, 6vw, 2.6rem); margin-bottom: 14px; word-break: break-word; }
-      .hero p { font-size: 1rem; margin-bottom: 20px; padding: 0 4px; }
-      .hero-actions { flex-direction: column; gap: 12px; width: 100%; }
-      .hero-cta-btn, .hero-demo-btn { width: 100% !important; max-width: 320px !important; padding: 14px 20px !important; font-size: 1rem !important; justify-content: center !important; margin: 0 auto !important; }
-      .features-grid { grid-template-columns: 1fr; gap: 14px; margin: 28px 0; }
-      .feature-card { padding: 20px 18px; border-radius: 18px; }
-      .seo-article { padding: 24px 18px; border-radius: 20px; margin: 28px 0; }
-      .seo-article h2 { font-size: 1.35rem; margin: 20px 0 10px; }
-      .seo-article p { font-size: 0.94rem; margin-bottom: 12px; }
-      .cta-banner { padding: 36px 18px; margin: 32px 0; border-radius: 24px; }
-      .cta-banner h2 { font-size: clamp(1.45rem, 5.5vw, 2.2rem); margin-bottom: 12px; }
-      .cta-banner p { font-size: 0.98rem; margin-bottom: 20px; }
-      .btn-light { width: 100%; max-width: 300px; padding: 13px 20px; font-size: 0.98rem; justify-content: center; }
-      .footer { padding: 36px 18px 24px; border-radius: 28px 28px 0 0; margin-top: 40px; }
-      .footer-inner { flex-direction: column; gap: 28px; }
-      .footer-brand p { max-width: 100%; }
-      .footer-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; }
-      .copyright { margin-top: 24px; padding-top: 18px; }
+      .container {
+        padding: 0 16px;
+      }
+
+      .breadcrumb {
+        font-size: 0.8rem;
+        margin-bottom: 16px;
+      }
+
+      .hero {
+        padding: 24px 0 36px;
+      }
+
+      .hero-badge {
+        font-size: 0.78rem;
+        padding: 6px 14px;
+        margin-bottom: 16px;
+        white-space: normal;
+        line-height: 1.4;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.85rem, 6vw, 2.6rem);
+        margin-bottom: 14px;
+        word-break: break-word;
+      }
+
+      .hero p {
+        font-size: 1rem;
+        margin-bottom: 20px;
+        padding: 0 4px;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .hero-cta-btn,
+      .hero-demo-btn {
+        width: 100% !important;
+        max-width: 320px !important;
+        padding: 14px 20px !important;
+        font-size: 1rem !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin: 28px 0;
+      }
+
+      .feature-card {
+        padding: 20px 18px;
+        border-radius: 18px;
+      }
+
+      .seo-article {
+        padding: 24px 18px;
+        border-radius: 20px;
+        margin: 28px 0;
+      }
+
+      .seo-article h2 {
+        font-size: 1.35rem;
+        margin: 20px 0 10px;
+      }
+
+      .seo-article p {
+        font-size: 0.94rem;
+        margin-bottom: 12px;
+      }
+
+      .cta-banner {
+        padding: 36px 18px;
+        margin: 32px 0;
+        border-radius: 24px;
+      }
+
+      .cta-banner h2 {
+        font-size: clamp(1.45rem, 5.5vw, 2.2rem);
+        margin-bottom: 12px;
+      }
+
+      .cta-banner p {
+        font-size: 0.98rem;
+        margin-bottom: 20px;
+      }
+
+      .btn-light {
+        width: 100%;
+        max-width: 300px;
+        padding: 13px 20px;
+        font-size: 0.98rem;
+        justify-content: center;
+      }
+
+      .footer {
+        padding: 36px 18px 24px;
+        border-radius: 28px 28px 0 0;
+        margin-top: 40px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        gap: 28px;
+      }
+
+      .footer-brand p {
+        max-width: 100%;
+      }
+
+      .footer-links {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        width: 100%;
+      }
+
+      .copyright {
+        margin-top: 24px;
+        padding-top: 18px;
+      }
     }
 
     @media (max-width: 480px) {
-      .logo img { height: 30px; }
-      .navbar { padding: 6px 12px 6px 14px; margin: 8px 0 16px; }
-      .nav-actions { gap: 6px; }
-      .mode-toggle, .mobile-menu-btn { width: 36px; height: 36px; font-size: 14px; }
-      .container { padding: 0 12px; }
+      .logo img {
+        height: 30px;
+      }
+
+      .navbar {
+        padding: 6px 12px 6px 14px;
+        margin: 8px 0 16px;
+      }
+
+      .nav-actions {
+        gap: 6px;
+      }
+
+      .mode-toggle,
+      .mobile-menu-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+      }
+
+      .container {
+        padding: 0 12px;
+      }
     }
   </style>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8043014881280685" crossorigin="anonymous"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8043014881280685"
+    crossorigin="anonymous"></script>
   <script src="/assets/config.js"></script>
   <script src="/assets/tracker.js" defer></script>
 </head>
@@ -336,13 +1028,16 @@
         <a href="/blog/">Blog</a>
         <a href="/ContactUs">Contact</a>
         <div class="nav-drawer-cta">
-          <a href="/create?event=birthday" class="btn-primary drawer-cta-btn"><i class="fas fa-wand-magic-sparkles"></i> Build Birthday Card (From ₹49)</a>
+          <a href="/create?event=birthday" class="btn-primary drawer-cta-btn"><i class="fas fa-wand-magic-sparkles"></i>
+            Build Birthday Card (From ₹49)</a>
         </div>
       </div>
       <div class="nav-actions">
-        <div class="mode-toggle" id="modeToggle" aria-label="Toggle theme"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <div class="mode-toggle" id="modeToggle" aria-label="Toggle theme"><i class="fas fa-sun" id="themeIcon"></i>
+        </div>
         <a href="/create?event=birthday" class="btn-primary"><i class="fas fa-plus-circle"></i> Create Birthday Card</a>
-        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu" type="button"><i class="fas fa-bars"></i></button>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu" type="button"><i
+            class="fas fa-bars"></i></button>
       </div>
     </nav>
 
@@ -356,15 +1051,19 @@
     <section class="hero">
       <div class="hero-badge">🎂 ✨ Interactive Digital Birthday Cards · From ₹49</div>
       <h1>Create an Interactive Birthday Website with Virtual Cake Cutting & Music</h1>
-      <p>Surprise your best friend, partner, or family with a private, interactive digital birthday card. Features virtual cake cutting with blowable candles, background songs, polaroid photo memories, and heartfelt love letters.</p>
-      
+      <p>Surprise your best friend, partner, or family with a private, interactive digital birthday card. Features
+        virtual cake cutting with blowable candles, background songs, polaroid photo memories, and heartfelt love
+        letters.</p>
+
       <div class="pricing-pill">
         <i class="fas fa-sparkles"></i> Try Live Preview Free · One-Time ₹49 to Publish · 100% Ad-Free
       </div>
 
       <div class="hero-actions">
-        <a href="/create?event=birthday" class="btn-primary hero-cta-btn"><i class="fas fa-wand-magic-sparkles"></i> Build Birthday Card Now</a>
-        <a href="/demo-raman" target="_blank" rel="noopener" class="btn-demo hero-demo-btn"><i class="fas fa-circle-play"></i> See Live Demo</a>
+        <a href="/create?event=birthday" class="btn-primary hero-cta-btn"><i class="fas fa-wand-magic-sparkles"></i>
+          Build Birthday Card Now</a>
+        <a href="/demo-raman" target="_blank" rel="noopener" class="btn-demo hero-demo-btn"><i
+            class="fas fa-circle-play"></i> See Live Demo</a>
       </div>
     </section>
 
@@ -373,32 +1072,38 @@
       <div class="feature-card">
         <span class="feature-icon">🎂</span>
         <h3>A Virtual Cake to Cut</h3>
-        <p>Interactive 3D birthday cake where your recipient drags to cut the cake, blows out flickering candles, and triggers joyous sound effects & confetti showers.</p>
+        <p>Interactive 3D birthday cake where your recipient drags to cut the cake, blows out flickering candles, and
+          triggers joyous sound effects & confetti showers.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🎵</span>
         <h3>Your Song / Background Music</h3>
-        <p>Embed their favorite track or a special song that automatically plays the moment they unlock and open their birthday surprise website.</p>
+        <p>Embed their favorite track or a special song that automatically plays the moment they unlock and open their
+          birthday surprise website.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">📸</span>
         <h3>Polaroid Memories & Slideshow</h3>
-        <p>Upload your favorite photos styled like aesthetic polaroid snapshots that animate onto the screen as they scroll through your shared memories.</p>
+        <p>Upload your favorite photos styled like aesthetic polaroid snapshots that animate onto the screen as they
+          scroll through your shared memories.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">💌</span>
         <h3>Heartfelt Letter & Secret Notes</h3>
-        <p>Pour your heart out with multi-paragraph digital letters, handwritten aesthetic fonts, and tap-to-reveal secret inside jokes.</p>
+        <p>Pour your heart out with multi-paragraph digital letters, handwritten aesthetic fonts, and tap-to-reveal
+          secret inside jokes.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🎈</span>
         <h3>Interactive Balloon Pops</h3>
-        <p>Fun, playful balloon popping games on mobile where tapping floating balloons reveals personal wishes and bursts into confetti.</p>
+        <p>Fun, playful balloon popping games on mobile where tapping floating balloons reveals personal wishes and
+          bursts into confetti.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">⚡</span>
         <h3>Midnight WhatsApp Share</h3>
-        <p>Generate a private, shareable web link in under 60 seconds. Send it via WhatsApp, Instagram DM, or SMS right at midnight.</p>
+        <p>Generate a private, shareable web link in under 60 seconds. Send it via WhatsApp, Instagram DM, or SMS right
+          at midnight.</p>
       </div>
     </section>
 
@@ -406,7 +1111,8 @@
     <!-- TOPIC CLUSTER / RELATIONSHIP EDITIONS -->
     <section class="relation-section">
       <h2>Tailored for Every Special Person</h2>
-      <p class="relation-sub">Choose a specialized birthday template tailored to your favorite person with custom moods and animations.</p>
+      <p class="relation-sub">Choose a specialized birthday template tailored to your favorite person with custom moods
+        and animations.</p>
       <div class="relation-grid">
         <a href="/birthday-wishes-for-girlfriend" class="relation-card">
           <div>
@@ -473,19 +1179,29 @@
     <!-- LONG-FORM SEO CONTENT -->
     <article class="seo-article">
       <h2>Why Interactive Birthday Cards Are Replacing Standard Paper Greetings</h2>
-      <p>In today's digital world, a paper greeting card often gets tossed aside after a few days, while plain text messages are forgotten inside WhatsApp chat threads. A personalized, interactive digital birthday card from <strong>TheGreeter</strong> transforms birthdays into an unforgettable multi-sensory experience that your loved one can revisit anytime.</p>
+      <p>In today's digital world, a paper greeting card often gets tossed aside after a few days, while plain text
+        messages are forgotten inside WhatsApp chat threads. A personalized, interactive digital birthday card from
+        <strong>TheGreeter</strong> transforms birthdays into an unforgettable multi-sensory experience that your loved
+        one can revisit anytime.
+      </p>
 
       <h2>How TheGreeter Makes Birthdays Unforgettable</h2>
       <ul>
-        <li><strong>Interactive Touch Experience:</strong> Instead of passively reading text, recipients actively interact—blowing out digital candles and cutting an interactive cake right on their screen.</li>
-        <li><strong>Affordable & Transparent Pricing:</strong> Start customizing and previewing for free. Publish your personalized page with full live hosting starting at just ₹49—with no subscriptions, recurring fees, or ads.</li>
-        <li><strong>Midnight Delivery Made Simple:</strong> Generate your private link in under 60 seconds and paste it into WhatsApp or Instagram right as midnight strikes.</li>
-        <li><strong>Works on All Devices:</strong> Clean, responsive design that works smoothly across iPhones, Android devices, iPads, and computers without any app download.</li>
+        <li><strong>Interactive Touch Experience:</strong> Instead of passively reading text, recipients actively
+          interact—blowing out digital candles and cutting an interactive cake right on their screen.</li>
+        <li><strong>Affordable & Transparent Pricing:</strong> Start customizing and previewing for free. Publish your
+          personalized page with full live hosting starting at just ₹49—with no subscriptions, recurring fees, or ads.
+        </li>
+        <li><strong>Midnight Delivery Made Simple:</strong> Generate your private link in under 60 seconds and paste it
+          into WhatsApp or Instagram right as midnight strikes.</li>
+        <li><strong>Works on All Devices:</strong> Clean, responsive design that works smoothly across iPhones, Android
+          devices, iPads, and computers without any app download.</li>
       </ul>
 
       <h2>Step-by-Step: How to Make an Interactive Birthday Card in 60 Seconds</h2>
       <ol style="padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
-        <li>Open the <strong><a href="/create?event=birthday" style="color:var(--accent-solid);font-weight:600;">TheGreeter Birthday Studio</a></strong>.</li>
+        <li>Open the <strong><a href="/create?event=birthday"
+              style="color:var(--accent-solid);font-weight:600;">TheGreeter Birthday Studio</a></strong>.</li>
         <li>Enter your loved one's name and choose your relationship theme.</li>
         <li>Add photos, select your background soundtrack, and write your personal letter.</li>
         <li>Preview your interactive cake, candles, and animations live on screen.</li>
@@ -499,19 +1215,25 @@
       <div class="faq-grid">
         <div class="faq-item">
           <div class="faq-question">How do I create an interactive birthday card website?</div>
-          <div class="faq-answer">Choose a birthday template on TheGreeter, add the recipient's name, upload your favorite photos, pick background music, and customize your personal letter. Preview it live for free, then publish and share your private link instantly.</div>
+          <div class="faq-answer">Choose a birthday template on TheGreeter, add the recipient's name, upload your
+            favorite photos, pick background music, and customize your personal letter. Preview it live for free, then
+            publish and share your private link instantly.</div>
         </div>
         <div class="faq-item">
           <div class="faq-question">Can the recipient cut a virtual cake on screen?</div>
-          <div class="faq-answer">Yes! TheGreeter cards include an interactive virtual cake with blowable candles and knife-drag cake cutting animations complete with sound effects and confetti.</div>
+          <div class="faq-answer">Yes! TheGreeter cards include an interactive virtual cake with blowable candles and
+            knife-drag cake cutting animations complete with sound effects and confetti.</div>
         </div>
         <div class="faq-item">
           <div class="faq-question">How much does it cost compared to other platforms?</div>
-          <div class="faq-answer">You can design and preview your custom interactive card for free. One-time publishing starts at just ₹49 for 14 days of guaranteed ad-free live hosting—over 75% more affordable than alternatives charging ₹199.</div>
+          <div class="faq-answer">You can design and preview your custom interactive card for free. One-time publishing
+            starts at just ₹49 for 14 days of guaranteed ad-free live hosting—over 75% more affordable than alternatives
+            charging ₹199.</div>
         </div>
         <div class="faq-item">
           <div class="faq-question">Does the recipient need to download an app or sign in?</div>
-          <div class="faq-answer">No app or account is required. The recipient simply clicks your unique link to open the interactive surprise on any mobile, tablet, or desktop browser.</div>
+          <div class="faq-answer">No app or account is required. The recipient simply clicks your unique link to open
+            the interactive surprise on any mobile, tablet, or desktop browser.</div>
         </div>
       </div>
     </section>
@@ -528,10 +1250,13 @@
       <div class="footer-inner">
         <div class="footer-brand">
           <a href="/" class="logo">
-            <img src="/assets/Light_logo.webp" alt="TheGreeter Logo" class="logo-light" style="height:36px; margin-bottom:12px;">
-            <img src="/assets/Dark_logo.webp" alt="TheGreeter Logo" class="logo-dark" style="height:36px; margin-bottom:12px;">
+            <img src="/assets/Light_logo.webp" alt="TheGreeter Logo" class="logo-light"
+              style="height:36px; margin-bottom:12px;">
+            <img src="/assets/Dark_logo.webp" alt="TheGreeter Logo" class="logo-dark"
+              style="height:36px; margin-bottom:12px;">
           </a>
-          <p>Create unforgettable interactive surprise websites for birthdays, anniversaries, proposals, and festivals.</p>
+          <p>Create unforgettable interactive surprise websites for birthdays, anniversaries, proposals, and festivals.
+          </p>
         </div>
         <div class="footer-links">
           <div class="footer-col">

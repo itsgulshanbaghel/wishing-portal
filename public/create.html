@@ -20,7 +20,7 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 
   <!-- PRIMARY SEO -->
-  <title>Create Wish Page — Instant & Ad-Free | Birthday, Anniversary & Festival | TheGreeter</title>
+  <title>Create Birthday & Celebration Wish Pages | TheGreeter</title>
   <meta name="description"
     content="Design a personalized wish website for birthdays, anniversaries, proposals, or festivals. Pick a template and share an ad-free custom link!">
   <meta name="keywords"
@@ -3867,15 +3867,22 @@
         pollPaymentStatus(orderIdParam);
       }
 
-      if (urlEvent === 'festival') {
-        eventSelect.value = 'festival';
-        festivalContainer.style.display = 'block';
-        document.getElementById('relationContainer').style.display = 'none';
-        document.getElementById('ageContainer').style.display = 'none';
-        if (urlFestivalName) {
-          festivalInput.value = urlFestivalName;
+      if (urlEvent) {
+        const matchingOpt = Array.from(eventSelect.options).find(opt => opt.value.toLowerCase() === urlEvent.toLowerCase());
+        if (matchingOpt) {
+          eventSelect.value = matchingOpt.value;
+          if (typeof toggleFestivalField === 'function') toggleFestivalField();
+          if (typeof validateEventWithElement === 'function') validateEventWithElement();
         }
-        nameInput.placeholder = t.nameFestivalPlaceholder;
+        if (urlEvent === 'festival') {
+          festivalContainer.style.display = 'block';
+          document.getElementById('relationContainer').style.display = 'none';
+          document.getElementById('ageContainer').style.display = 'none';
+          if (urlFestivalName) {
+            festivalInput.value = urlFestivalName;
+          }
+          nameInput.placeholder = t.nameFestivalPlaceholder;
+        }
       }
 
       if (urlParams.get('upgrade') === 'true') {
