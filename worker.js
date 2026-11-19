@@ -188,8 +188,9 @@ export default {
             });
             clearTimeout(timeoutId);
 
-            // If backend returned 502/503/504 (cold start crash/sleeping), try next backend in pool
-            if (res.status >= 502 && res.status <= 504 && orderedBackends.length > 1) {
+            // If backend returned 502/503/504 or 429 (cold start crash/sleeping/Render hibernate rate-limit), try next backend in pool
+            const isBackendUnavailable = (res.status >= 502 && res.status <= 504) || res.status === 429;
+            if (isBackendUnavailable && orderedBackends.length > 1) {
               console.warn(`[Worker] Backend ${currentOrigin} returned ${res.status}. Auto-failing over to next backend...`);
               continue;
             }
@@ -240,8 +241,8 @@ export default {
           }
         }
 
-        // 2. Handle maintenance fallback on backend error
-        if (response.status >= 502 && response.status <= 504) {
+        // 2. Handle maintenance fallback on backend error or rate limit
+        if (((response.status >= 502 && response.status <= 504) || response.status === 429)) {
           if (!isApiRequest && env.ASSETS) {
             const maintenanceReq = new Request(new URL('/maintenance.html', request.url));
             return env.ASSETS.fetch(maintenanceReq);

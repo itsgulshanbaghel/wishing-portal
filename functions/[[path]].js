@@ -60,8 +60,8 @@ export async function onRequest(context) {
         }
       }
 
-      // If backend server returns server error (502, 503, 504)
-      if (response.status >= 502 && response.status <= 504) {
+      // If backend server returns server error (502, 503, 504) or rate limit (429)
+      if ((response.status >= 502 && response.status <= 504) || response.status === 429) {
         if (!isApiRequest && env.ASSETS) {
           const maintenanceReq = new Request(new URL('/maintenance.html', request.url));
           return env.ASSETS.fetch(maintenanceReq);
