@@ -4147,14 +4147,14 @@
 
             <!-- 4-tier pill switcher -->
             <div class="plan-switcher" id="planSwitcher">
-              <button class="plan-pill" data-price="49" data-days="14" data-label="14 Days" data-plan="starter">
+              <button class="plan-pill" data-price="79" data-days="14" data-label="14 Days" data-plan="starter">
                 <span class="pill-title"
                   style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Starter</span>
                 <span class="pill-period">14 Days</span>
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill sel" data-price="99" data-days="30" data-label="30 Days" data-plan="pro">
+              <button class="plan-pill sel" data-price="149" data-days="30" data-label="30 Days" data-plan="pro">
                 <span class="pill-hot"
                   style="top: -11px; background: linear-gradient(135deg, #7b5df6, #e83a59); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">POPULAR</span>
                 <span class="pill-title"
@@ -4163,7 +4163,7 @@
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill" data-price="149" data-days="100" data-label="100 Days" data-plan="pro_plus">
+              <button class="plan-pill" data-price="249" data-days="100" data-label="100 Days" data-plan="pro_plus">
                 <span class="pill-hot"
                   style="top: -11px; background: linear-gradient(135deg, #10b981, #059669); font-size: 0.58rem; font-weight: 900; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.4px;">BEST
                   VALUE</span>
@@ -4173,7 +4173,7 @@
                 <span class="pill-price"></span>
               </button>
 
-              <button class="plan-pill" data-price="299" data-days="99999" data-label="Lifetime" data-plan="forever">
+              <button class="plan-pill" data-price="399" data-days="99999" data-label="Lifetime" data-plan="forever">
                 <span class="pill-title"
                   style="font-weight: 800; font-size: 0.82rem; color: var(--text-primary);">Infinity</span>
                 <span class="pill-period">Lifetime</span>
@@ -4187,8 +4187,8 @@
                 <span class="cmp-price-badge" id="priceLimitedBadge">⚡ Limited Offer</span>
               </div>
               <div class="cmp-price-row">
-                <span class="cmp-price-orig" id="priceOrig">₹199</span>
-                <span class="cmp-price-big" id="priceBig">₹99</span>
+                <span class="cmp-price-orig" id="priceOrig">₹399</span>
+                <span class="cmp-price-big" id="priceBig">₹149</span>
                 <span class="cmp-price-period" id="pricePeriod">for 30 Days</span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
@@ -4344,7 +4344,7 @@
             <div style="display: flex; justify-content: center; width: 100%;">
               <button class="btn-stage3-pay" id="finalPayBtn" onclick="handleFinalPay()"
                 style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 520px; padding: 16px 28px; border-radius: 50px; font-size: 1.15rem; font-weight: 800; font-family: inherit; border: none; cursor: pointer; color: #ffffff; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 10px 28px rgba(16, 185, 129, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-                <i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ₹99
+                <i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i> <span id="finalPayBtnText">Pay ₹149
                   Securely</span>
               </button>
             </div>
@@ -4820,7 +4820,7 @@
               <ul style="margin-left: 20px; margin-bottom: 15px; list-style-type: disc;">
                 ${listItems}
               </ul>
-              <p style="margin-top: 10px;">इस जादुई बधाई वेबसाइट को बनाने और शेयर करने के लिए कृपया प्रीमियम में अपग्रेड करें (मात्र ₹49 / $0.99 से शुरू)।</p>
+              <p style="margin-top: 10px;">इस जादुई बधाई वेबसाइट को बनाने और शेयर करने के लिए कृपया प्रीमियम में अपग्रेड करें (मात्र ₹79 / $0.99 से शुरू)।</p>
             `;
             payBtnEl.textContent = 'अभी अपग्रेड करें';
             if (cancelBtnEl) cancelBtnEl.textContent = '✏️ वापस जाएं और फीचर्स बदलें';
@@ -13994,10 +13994,10 @@
           let p = 6.99;
           let orig = '$11.99';
           if (selectedCurrency === 'INR') {
-            if (planKey === 'starter') { p = 49; orig = '₹99'; }
-            else if (planKey === 'pro') { p = 99; orig = '₹199'; }
-            else if (planKey === 'pro_plus') { p = 149; orig = '₹299'; }
-            else if (planKey === 'forever') { p = 299; orig = '₹599'; }
+            if (planKey === 'starter') { p = 79; orig = '₹199'; }
+            else if (planKey === 'pro') { p = 149; orig = '₹399'; }
+            else if (planKey === 'pro_plus') { p = 249; orig = '₹599'; }
+            else if (planKey === 'forever') { p = 399; orig = '₹999'; }
           } else if (selectedCurrency === 'GBP') {
             if (planKey === 'starter') { p = 2.49; orig = '£3.99'; }
             else if (planKey === 'pro') { p = 5.99; orig = '£9.99'; }
@@ -14064,7 +14064,7 @@
 
         if (selectedPill) {
           const planKey = selectedPill.dataset.plan;
-          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 99 : 6.99);
+          const p = selectedPill.dataset.computedPrice || (selectedCurrency === 'INR' ? 149 : 6.99);
           const orig = selectedPill.dataset.computedOrigPrice || '';
           activePlan = { plan: planKey, price: p, days: +selectedPill.dataset.days, label: selectedPill.dataset.label };
 
