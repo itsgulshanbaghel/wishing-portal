@@ -535,6 +535,7 @@
             }
 
             function fullUIRefresh() {
+                if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
                 t = TRANSLATIONS[currentLang];
                 const currentName = getCurrentName();
                 const currentStory = getCurrentStory();
@@ -678,7 +679,9 @@
             });
 
             // Initial render
-            fullUIRefresh();
+            if (typeof window === 'undefined' || !window.__IS_GENERATED_PAGE__) {
+                fullUIRefresh();
+            }
 
             // Fix for default polaroid images (if no custom memories)
             if (!userData.memories || userData.memories.length === 0) {

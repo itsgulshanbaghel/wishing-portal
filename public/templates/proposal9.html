@@ -477,6 +477,7 @@
             const story = ud.story || t.story; const wishes = ud.wishes || t.wishes;
 
             function apply() {
+                if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
                 t = T[lang];
                 document.getElementById('tagTxt').textContent = t.tag;
                 const pFor = (new URLSearchParams(location.search).get('proposalFor') || ud.proposalFor || '').toLowerCase();
@@ -515,7 +516,9 @@
                 document.getElementById('celP').textContent = t.celP;
                 buildGal();
             }
-            apply();
+            if (typeof window === 'undefined' || !window.__IS_GENERATED_PAGE__) {
+                apply();
+            }
             window.addEventListener('storage', e => { if (e.key === 'greeter_lang') { lang = getLang(); apply() } });
             window.addEventListener('focus', () => { const nl = getLang(); if (nl !== lang) { lang = nl; apply() } });
 

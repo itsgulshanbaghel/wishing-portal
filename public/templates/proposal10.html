@@ -582,51 +582,57 @@
                 }
             };
             const t = T[lang];
+            const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
 
-            // set static translations
-            document.getElementById('mainTitle').innerText = t.mainTitle;
-            document.getElementById('mainSub').innerText = t.mainSub;
-            document.getElementById('timelineHeading').innerText = t.timelineHeading;
-            document.getElementById('letterHeading').innerText = t.letterHeading;
-            document.getElementById('letterSign').innerText = t.letterSign;
-            document.getElementById('memoriesHeading').innerText = t.memoriesHeading;
-            document.getElementById('reasonsHeading').innerText = t.reasonsHeading;
-            document.getElementById('promisesHeading').innerText = t.promisesHeading;
-            document.getElementById('proposalLine1').innerText = t.proposalLine1;
-            const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
-            const customQ = params.get('question') || userData.proposalQuestion;
-            if (customQ) {
-                document.getElementById('proposalQuestion').innerText = customQ;
-            } else if (pFor === 'girlfriend') {
-                document.getElementById('proposalQuestion').innerText = 'Will you be my girlfriend?';
-            } else if (pFor === 'boyfriend') {
-                document.getElementById('proposalQuestion').innerText = 'Will you be my boyfriend?';
-            } else if (pFor === 'bestfriend') {
-                document.getElementById('proposalQuestion').innerText = 'Will you be my best friend?';
-            } else if (pFor === 'friend') {
-                document.getElementById('proposalQuestion').innerText = 'Will you be my friend?';
-            } else if (pFor === 'partner') {
-                document.getElementById('proposalQuestion').innerText = 'Will you be my partner?';
-            } else {
-                document.getElementById('proposalQuestion').innerText = t.proposalQuestion;
+            // set static translations only if not an already generated / published page
+            if (!isGenerated) {
+                document.getElementById('mainTitle').innerText = t.mainTitle;
+                document.getElementById('mainSub').innerText = t.mainSub;
+                document.getElementById('timelineHeading').innerText = t.timelineHeading;
+                document.getElementById('letterHeading').innerText = t.letterHeading;
+                document.getElementById('letterSign').innerText = t.letterSign;
+                document.getElementById('memoriesHeading').innerText = t.memoriesHeading;
+                document.getElementById('reasonsHeading').innerText = t.reasonsHeading;
+                document.getElementById('promisesHeading').innerText = t.promisesHeading;
+                document.getElementById('proposalLine1').innerText = t.proposalLine1;
+                const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+                const customQ = params.get('question') || userData.proposalQuestion;
+                if (customQ) {
+                    document.getElementById('proposalQuestion').innerText = customQ;
+                } else if (pFor === 'girlfriend') {
+                    document.getElementById('proposalQuestion').innerText = 'Will you be my girlfriend?';
+                } else if (pFor === 'boyfriend') {
+                    document.getElementById('proposalQuestion').innerText = 'Will you be my boyfriend?';
+                } else if (pFor === 'bestfriend') {
+                    document.getElementById('proposalQuestion').innerText = 'Will you be my best friend?';
+                } else if (pFor === 'friend') {
+                    document.getElementById('proposalQuestion').innerText = 'Will you be my friend?';
+                } else if (pFor === 'partner') {
+                    document.getElementById('proposalQuestion').innerText = 'Will you be my partner?';
+                } else {
+                    document.getElementById('proposalQuestion').innerText = t.proposalQuestion;
+                }
+                document.getElementById('yesBtn').innerText = t.yesText;
+                if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celebTitle').innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'He Said Yes! 💖');
+                else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celebTitle').innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'She Said Yes! 💖');
+                else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celebTitle').innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
+                else if (pFor === 'partner' || pFor === 'other') document.getElementById('celebTitle').innerText = (lang === 'hi' ? 'उन्होंने हाँ कह दिया! 💖' : 'They Said Yes! 💖');
+                else document.getElementById('celebTitle').innerText = t.celebTitle;
+                document.getElementById('celebMsg').innerText = userWish || t.celebMsgDefault;
             }
-            document.getElementById('yesBtn').innerText = t.yesText;
-            if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celebTitle').innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'He Said Yes! 💖');
-            else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celebTitle').innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'She Said Yes! 💖');
-            else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celebTitle').innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
-            else if (pFor === 'partner' || pFor === 'other') document.getElementById('celebTitle').innerText = (lang === 'hi' ? 'उन्होंने हाँ कह दिया! 💖' : 'They Said Yes! 💖');
-            else document.getElementById('celebTitle').innerText = t.celebTitle;
-            document.getElementById('celebMsg').innerText = userWish || t.celebMsgDefault;
 
             // timeline
             const timelineDiv = document.getElementById('blossomTimeline');
-            t.timelineNodes.forEach((node, idx) => {
-                const el = document.createElement('div');
-                el.className = 'blossom-node' + (idx === 0 ? ' active' : '');
-                el.setAttribute('data-idx', idx);
-                el.innerHTML = `<div class="blossom-icon">${node.icon}</div><div class="blossom-title">${node.title}</div>`;
-                timelineDiv.appendChild(el);
-            });
+            if (timelineDiv && (!isGenerated || timelineDiv.children.length === 0)) {
+                timelineDiv.innerHTML = '';
+                t.timelineNodes.forEach((node, idx) => {
+                    const el = document.createElement('div');
+                    el.className = 'blossom-node' + (idx === 0 ? ' active' : '');
+                    el.setAttribute('data-idx', idx);
+                    el.innerHTML = `<div class="blossom-icon">${node.icon}</div><div class="blossom-title">${node.title}</div>`;
+                    timelineDiv.appendChild(el);
+                });
+            }
             const tlNodes = document.querySelectorAll('.blossom-node');
             const tlCardIcon = document.getElementById('tlIcon');
             const tlCardText = document.getElementById('tlText');
@@ -635,11 +641,15 @@
                     if (i == idx) n.classList.add('active');
                     else n.classList.remove('active');
                 });
-                tlCardIcon.innerText = t.timelineNodes[idx].icon;
-                tlCardText.innerText = t.timelineNodes[idx].desc;
+                if (t.timelineNodes && t.timelineNodes[idx]) {
+                    tlCardIcon.innerText = t.timelineNodes[idx].icon;
+                    tlCardText.innerText = t.timelineNodes[idx].desc;
+                }
             }
             tlNodes.forEach((node, i) => node.addEventListener('click', () => updateTimeline(i)));
-            updateTimeline(0);
+            if (!isGenerated || (tlCardText && !(tlCardText.innerText || tlCardText.textContent || "").trim())) {
+                updateTimeline(0);
+            }
             setInterval(() => {
                 let curr = -1;
                 tlNodes.forEach((n, i) => { if (n.classList.contains('active')) curr = i; });
@@ -654,6 +664,9 @@
             function typewrite(el, text) {
                 if (typed) return;
                 typed = true;
+                if (isGenerated && el && el.innerHTML.trim().length > 0) {
+                    return; // Preserve customized/saved letter on generated page
+                }
                 el.innerHTML = '';
                 let i = 0;
                 const cursorSpan = document.createElement('span');
@@ -671,32 +684,41 @@
 
             // gallery
             const galleryDiv = document.getElementById('memoryGrid');
-            let memArray = userMems.length ? userMems.map(m => m.text || '💖') : t.defaultMems;
-            memArray.slice(0, 6).forEach((mem, idx) => {
-                const card = document.createElement('div');
-                card.className = 'flower-card';
-                card.innerHTML = `<div class="flower-emoji">${mem.includes('☕') ? '☕' : (mem.includes('🌸') ? '🌸' : '🌼')}</div><div style="margin-top: 12px;">${mem}</div>`;
-                galleryDiv.appendChild(card);
-            });
+            if (galleryDiv && (!isGenerated || galleryDiv.children.length === 0)) {
+                galleryDiv.innerHTML = '';
+                let memArray = userMems.length ? userMems.map(m => m.text || '💖') : t.defaultMems;
+                memArray.slice(0, 6).forEach((mem, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'flower-card';
+                    card.innerHTML = `<div class="flower-emoji">${mem.includes('☕') ? '☕' : (mem.includes('🌸') ? '🌸' : '🌼')}</div><div style="margin-top: 12px;">${mem}</div>`;
+                    galleryDiv.appendChild(card);
+                });
+            }
 
             // reasons
             const reasonsGrid = document.getElementById('reasonsGrid');
-            t.reasonsList.forEach((r, i) => {
-                const reasonDiv = document.createElement('div');
-                reasonDiv.className = 'reason-item';
-                reasonDiv.innerHTML = `<div style="font-size:2rem;">${r.icon}</div><h3>${r.title}</h3><p>${r.text}</p>`;
-                reasonsGrid.appendChild(reasonDiv);
-            });
+            if (reasonsGrid && (!isGenerated || reasonsGrid.children.length === 0)) {
+                reasonsGrid.innerHTML = '';
+                t.reasonsList.forEach((r, i) => {
+                    const reasonDiv = document.createElement('div');
+                    reasonDiv.className = 'reason-item';
+                    reasonDiv.innerHTML = `<div style="font-size:2rem;">${r.icon}</div><h3>${r.title}</h3><p>${r.text}</p>`;
+                    reasonsGrid.appendChild(reasonDiv);
+                });
+            }
             const reasonItems = document.querySelectorAll('.reason-item');
 
             // promises
             const promisesContainer = document.getElementById('promisesContainer');
-            t.promises.forEach((p, idx) => {
-                const promDiv = document.createElement('div');
-                promDiv.className = 'promise-petal';
-                promDiv.innerHTML = `<span style="font-size:1.6rem;">🌼</span><span>${p}</span>`;
-                promisesContainer.appendChild(promDiv);
-            });
+            if (promisesContainer && (!isGenerated || promisesContainer.children.length === 0)) {
+                promisesContainer.innerHTML = '';
+                t.promises.forEach((p, idx) => {
+                    const promDiv = document.createElement('div');
+                    promDiv.className = 'promise-petal';
+                    promDiv.innerHTML = `<span style="font-size:1.6rem;">🌼</span><span>${p}</span>`;
+                    promisesContainer.appendChild(promDiv);
+                });
+            }
             const promiseRows = document.querySelectorAll('.promise-petal');
 
             // scroll observer

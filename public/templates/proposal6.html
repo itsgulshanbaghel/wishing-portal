@@ -443,6 +443,7 @@
             let userData = {};
             try { userData = JSON.parse(localStorage.getItem('userData') || '{}'); } catch (e) { }
             function refreshUI() {
+                if (typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__) return;
                 applyLang();
                 const params = new URLSearchParams(location.search);
                 const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
@@ -480,7 +481,9 @@
                     });
                 }
             }
-            refreshUI();
+            if (typeof window === 'undefined' || !window.__IS_GENERATED_PAGE__) {
+                refreshUI();
+            }
             window.addEventListener('storage', (e) => {
                 if (e.key === 'greeter_lang') { lang = e.newValue || 'en'; refreshUI(); }
                 if (e.key === 'userData') { try { userData = JSON.parse(e.newValue || '{}'); } catch (e) { } refreshUI(); }

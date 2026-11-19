@@ -171,7 +171,8 @@
             border-top: 2px solid var(--nebula-pink);
         }
 
-        .cosmic-card.revealed {
+        .cosmic-card.revealed,
+        .chapter.visible .cosmic-card {
             opacity: 1;
             transform: translateY(0);
         }
@@ -188,7 +189,8 @@
             transition: 0.4s;
         }
 
-        .orbit-promise.revealed {
+        .orbit-promise.revealed,
+        .chapter.visible .orbit-promise {
             opacity: 1;
             transform: scale(1);
         }
@@ -475,50 +477,56 @@
                 }
             };
             const t = T[lang];
+            const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
 
-            document.getElementById('mainTitleCosmic').innerText = t.mainTitle;
-            document.getElementById('mainSubCosmic').innerText = t.mainSub;
-            document.getElementById('constellationHeading').innerText = t.constellationHeading;
-            document.getElementById('letterCosmicHeading').innerText = t.letterHeading;
-            document.getElementById('cosmicSign').innerText = t.letterSign;
-            document.getElementById('memoriesCosmicHeading').innerText = t.memoriesHeading;
-            document.getElementById('reasonsCosmicHeading').innerText = t.reasonsHeading;
-            document.getElementById('promisesCosmicHeading').innerText = t.promisesHeading;
-            document.getElementById('proposalPre').innerText = t.proposalPre;
-            const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
-            const customQ = params.get('question') || userData.proposalQuestion;
-            if (customQ) {
-                document.getElementById('proposalBigQuestion').innerText = customQ;
-            } else if (pFor === 'girlfriend') {
-                document.getElementById('proposalBigQuestion').innerText = 'Will you be my girlfriend?';
-            } else if (pFor === 'boyfriend') {
-                document.getElementById('proposalBigQuestion').innerText = 'Will you be my boyfriend?';
-            } else if (pFor === 'bestfriend') {
-                document.getElementById('proposalBigQuestion').innerText = 'Will you be my best friend?';
-            } else if (pFor === 'friend') {
-                document.getElementById('proposalBigQuestion').innerText = 'Will you be my friend?';
-            } else if (pFor === 'partner') {
-                document.getElementById('proposalBigQuestion').innerText = 'Will you be my partner?';
-            } else {
-                document.getElementById('proposalBigQuestion').innerText = t.proposalQuestion;
+            if (!isGenerated) {
+                document.getElementById('mainTitleCosmic').innerText = t.mainTitle;
+                document.getElementById('mainSubCosmic').innerText = t.mainSub;
+                document.getElementById('constellationHeading').innerText = t.constellationHeading;
+                document.getElementById('letterCosmicHeading').innerText = t.letterHeading;
+                document.getElementById('cosmicSign').innerText = t.letterSign;
+                document.getElementById('memoriesCosmicHeading').innerText = t.memoriesHeading;
+                document.getElementById('reasonsCosmicHeading').innerText = t.reasonsHeading;
+                document.getElementById('promisesCosmicHeading').innerText = t.promisesHeading;
+                document.getElementById('proposalPre').innerText = t.proposalPre;
+                const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+                const customQ = params.get('question') || userData.proposalQuestion;
+                if (customQ) {
+                    document.getElementById('proposalBigQuestion').innerText = customQ;
+                } else if (pFor === 'girlfriend') {
+                    document.getElementById('proposalBigQuestion').innerText = 'Will you be my girlfriend?';
+                } else if (pFor === 'boyfriend') {
+                    document.getElementById('proposalBigQuestion').innerText = 'Will you be my boyfriend?';
+                } else if (pFor === 'bestfriend') {
+                    document.getElementById('proposalBigQuestion').innerText = 'Will you be my best friend?';
+                } else if (pFor === 'friend') {
+                    document.getElementById('proposalBigQuestion').innerText = 'Will you be my friend?';
+                } else if (pFor === 'partner') {
+                    document.getElementById('proposalBigQuestion').innerText = 'Will you be my partner?';
+                } else {
+                    document.getElementById('proposalBigQuestion').innerText = t.proposalQuestion;
+                }
+                document.getElementById('yesCosmic').innerText = t.yesText;
+                if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उसने हमेशा के लिए हाँ कहा! 💖' : 'He Said Yes to Forever! 💖');
+                else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उसने हमेशा के लिए हाँ कहा! 💖' : 'She Said Yes to Forever! 💖');
+                else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
+                else if (pFor === 'partner' || pFor === 'other') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उन्होंने हमेशा के लिए हाँ कहा! 💖' : 'They Said Yes to Forever! 💖');
+                else document.getElementById('cosmicCelebTitle').innerHTML = t.celebTitle;
+                document.getElementById('cosmicCelebMsg').innerText = userWish || t.celebMsgDefault;
             }
-            document.getElementById('yesCosmic').innerText = t.yesText;
-            if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उसने हमेशा के लिए हाँ कहा! 💖' : 'He Said Yes to Forever! 💖');
-            else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उसने हमेशा के लिए हाँ कहा! 💖' : 'She Said Yes to Forever! 💖');
-            else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
-            else if (pFor === 'partner' || pFor === 'other') document.getElementById('cosmicCelebTitle').innerHTML = (lang === 'hi' ? 'उन्होंने हमेशा के लिए हाँ कहा! 💖' : 'They Said Yes to Forever! 💖');
-            else document.getElementById('cosmicCelebTitle').innerHTML = t.celebTitle;
-            document.getElementById('cosmicCelebMsg').innerText = userWish || t.celebMsgDefault;
 
             // constellation
             const constContainer = document.getElementById('constellationContainer');
-            t.nodes.forEach((node, idx) => {
-                const starDiv = document.createElement('div');
-                starDiv.className = 'star-node' + (idx === 0 ? ' active' : '');
-                starDiv.innerText = node.name;
-                starDiv.dataset.idx = idx;
-                constContainer.appendChild(starDiv);
-            });
+            if (constContainer && (!isGenerated || constContainer.children.length === 0)) {
+                constContainer.innerHTML = '';
+                t.nodes.forEach((node, idx) => {
+                    const starDiv = document.createElement('div');
+                    starDiv.className = 'star-node' + (idx === 0 ? ' active' : '');
+                    starDiv.innerText = node.name;
+                    starDiv.dataset.idx = idx;
+                    constContainer.appendChild(starDiv);
+                });
+            }
             const descEl = document.getElementById('constellationDesc');
             const starNodes = document.querySelectorAll('.star-node');
             function activateConstellation(i) {
@@ -526,10 +534,14 @@
                     if (idx == i) n.classList.add('active');
                     else n.classList.remove('active');
                 });
-                descEl.innerText = t.nodes[i].desc;
+                if (t.nodes && t.nodes[i]) {
+                    descEl.innerText = t.nodes[i].desc;
+                }
             }
             starNodes.forEach((n, i) => n.addEventListener('click', () => activateConstellation(i)));
-            activateConstellation(0);
+            if (!isGenerated || (descEl && !(descEl.innerText || descEl.textContent || "").trim())) {
+                activateConstellation(0);
+            }
             setInterval(() => {
                 let cur = -1;
                 starNodes.forEach((n, i) => { if (n.classList.contains('active')) cur = i; });
@@ -543,6 +555,9 @@
             function typeCosmicLetter() {
                 if (letterTyped) return;
                 letterTyped = true;
+                if (isGenerated && cosmicLetterDiv && cosmicLetterDiv.innerHTML.trim().length > 0) {
+                    return; // Preserve customized/saved letter on generated page
+                }
                 cosmicLetterDiv.innerHTML = '';
                 let i = 0;
                 const spanCursor = document.createElement('span');
@@ -559,37 +574,44 @@
 
             // memories
             const galleryCosmic = document.getElementById('cosmicGallery');
-            const mems = userMems.length ? userMems.map(m => m.text || '✨') : t.defaultMems;
-            mems.slice(0, 4).forEach(mem => {
-                const card = document.createElement('div');
-                card.className = 'cosmic-card';
-                card.style.opacity = '1';
-                card.style.transform = 'none';
-                card.innerHTML = `<div style="font-size:2rem;">⭐</div><div>${mem}</div>`;
-                galleryCosmic.appendChild(card);
-            });
+            if (galleryCosmic && (!isGenerated || galleryCosmic.children.length === 0)) {
+                galleryCosmic.innerHTML = '';
+                const mems = userMems.length ? userMems.map(m => m.text || '✨') : t.defaultMems;
+                mems.slice(0, 4).forEach(mem => {
+                    const card = document.createElement('div');
+                    card.className = 'cosmic-card';
+                    card.style.opacity = '1';
+                    card.style.transform = 'none';
+                    card.innerHTML = `<div style="font-size:2rem;">⭐</div><div>${mem}</div>`;
+                    galleryCosmic.appendChild(card);
+                });
+            }
 
             // reasons
             const reasonsContainer = document.getElementById('cosmicReasons');
-            const reasonItems = [];
-            t.reasonsList.forEach(r => {
-                const card = document.createElement('div');
-                card.className = 'cosmic-card';
-                card.innerHTML = `<div style="font-size:2rem;">${r.icon}</div><h3>${r.title}</h3><p>${r.text}</p>`;
-                reasonsContainer.appendChild(card);
-                reasonItems.push(card);
-            });
+            if (reasonsContainer && (!isGenerated || reasonsContainer.children.length === 0)) {
+                reasonsContainer.innerHTML = '';
+                t.reasonsList.forEach(r => {
+                    const card = document.createElement('div');
+                    card.className = 'cosmic-card';
+                    card.innerHTML = `<div style="font-size:2rem;">${r.icon}</div><h3>${r.title}</h3><p>${r.text}</p>`;
+                    reasonsContainer.appendChild(card);
+                });
+            }
+            const reasonItems = reasonsContainer ? Array.from(reasonsContainer.querySelectorAll('.cosmic-card')) : [];
 
             // promises
             const promisesContainerCosmic = document.getElementById('cosmicPromises');
-            const promiseItems = [];
-            t.promises.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'orbit-promise';
-                div.innerHTML = `<span>${p}</span>`;
-                promisesContainerCosmic.appendChild(div);
-                promiseItems.push(div);
-            });
+            if (promisesContainerCosmic && (!isGenerated || promisesContainerCosmic.children.length === 0)) {
+                promisesContainerCosmic.innerHTML = '';
+                t.promises.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'orbit-promise';
+                    div.innerHTML = `<span>${p}</span>`;
+                    promisesContainerCosmic.appendChild(div);
+                });
+            }
+            const promiseItems = promisesContainerCosmic ? Array.from(promisesContainerCosmic.querySelectorAll('.orbit-promise')) : [];
 
             // intersection observer
             const sections = document.querySelectorAll('.chapter');
@@ -601,15 +623,23 @@
                     if (entry.target.id === 'ch3' && !ch3Flag) { ch3Flag = true; typeCosmicLetter(); }
                     if (entry.target.id === 'ch5' && !ch5Flag) {
                         ch5Flag = true;
-                        reasonItems.forEach((c, idx) => setTimeout(() => c.classList.add('revealed'), idx * 120));
+                        const cards = reasonsContainer ? reasonsContainer.querySelectorAll('.cosmic-card') : reasonItems;
+                        cards.forEach((c, idx) => setTimeout(() => c.classList.add('revealed'), idx * 120));
                     }
                     if (entry.target.id === 'ch6' && !ch6Flag) {
                         ch6Flag = true;
-                        promiseItems.forEach((p, idx) => setTimeout(() => p.classList.add('revealed'), idx * 130));
+                        const promises = promisesContainerCosmic ? promisesContainerCosmic.querySelectorAll('.orbit-promise') : promiseItems;
+                        promises.forEach((p, idx) => setTimeout(() => p.classList.add('revealed'), idx * 130));
                     }
                 });
-            }, { threshold: 0.25 });
+            }, { threshold: 0.15 });
             sections.forEach(s => obs.observe(s));
+
+            // Safety fallback: Ensure cards are visible if chapters are already in view
+            setTimeout(() => {
+                document.querySelectorAll('.chapter.visible .cosmic-card').forEach(c => c.classList.add('revealed'));
+                document.querySelectorAll('.chapter.visible .orbit-promise').forEach(p => p.classList.add('revealed'));
+            }, 800);
 
             // progress bar
             window.addEventListener('scroll', () => {

@@ -1649,63 +1649,66 @@
                 },
             };
             const t = T[lang];
+            const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
 
             /* ─── POPULATE ───────────────────────────────────────────────── */
-            document.getElementById('ch1Big').innerText = t.ch1Big;
-            document.getElementById('ch1Sub').innerText = t.ch1Sub;
-            document.getElementById('ch1Names').innerText = t.ch1Names.replace('{name}', userName);
-            t.msCards.forEach((m, i) => {
-                document.getElementById('msd' + i).innerText = m.d;
-                document.getElementById('mst' + i).innerText = m.t;
-                document.getElementById('msb' + i).innerText = m.b;
-            });
-            t.flipCaps.forEach((c, i) => { const el = document.getElementById('fc' + i); if (el) el.innerText = c; });
-            document.getElementById('envHead').innerText = t.envHead.replace('{name}', userName);
-            document.getElementById('envSign').innerText = t.envSign;
-            document.getElementById('envBody').innerText = userStory || t.envBody;
-            document.getElementById('puzzleMsg').innerText = t.puzzleMsg;
-            // Accordion
-            const accItems = document.querySelectorAll('.acc-item');
-            t.promises.forEach((p, i) => {
-                const item = accItems[i];
-                if (!item) return;
-                item.querySelector('.acc-icon').innerText = p.icon;
-                item.querySelector('.acc-title').innerText = p.t;
-                item.querySelector('.acc-preview').innerText = p.p;
-                item.querySelector('.acc-body-inner').innerText = p.b;
-            });
-            document.getElementById('ringTapHint').innerText = t.ringHint;
-            document.getElementById('fqPrelude').innerText = t.fqPrelude;
-            const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
-            const customQ = params.get('question') || userData.proposalQuestion;
-            if (customQ) {
-                document.getElementById('fqMain').innerText = customQ;
-            } else if (pFor === 'girlfriend') {
-                document.getElementById('fqMain').innerText = 'Will you be my girlfriend?';
-            } else if (pFor === 'boyfriend') {
-                document.getElementById('fqMain').innerText = 'Will you be my boyfriend?';
-            } else if (pFor === 'bestfriend') {
-                document.getElementById('fqMain').innerText = 'Will you be my best friend?';
-            } else if (pFor === 'friend') {
-                document.getElementById('fqMain').innerText = 'Will you be my friend?';
-            } else if (pFor === 'partner') {
-                document.getElementById('fqMain').innerText = 'Will you be my partner?';
-            } else {
-                document.getElementById('fqMain').innerText = t.fqMain;
+            if (!isGenerated) {
+                document.getElementById('ch1Big').innerText = t.ch1Big;
+                document.getElementById('ch1Sub').innerText = t.ch1Sub;
+                document.getElementById('ch1Names').innerText = t.ch1Names.replace('{name}', userName);
+                t.msCards.forEach((m, i) => {
+                    document.getElementById('msd' + i).innerText = m.d;
+                    document.getElementById('mst' + i).innerText = m.t;
+                    document.getElementById('msb' + i).innerText = m.b;
+                });
+                t.flipCaps.forEach((c, i) => { const el = document.getElementById('fc' + i); if (el) el.innerText = c; });
+                document.getElementById('envHead').innerText = t.envHead.replace('{name}', userName);
+                document.getElementById('envSign').innerText = t.envSign;
+                document.getElementById('envBody').innerText = userStory || t.envBody;
+                document.getElementById('puzzleMsg').innerText = t.puzzleMsg;
+                // Accordion
+                const accItems = document.querySelectorAll('.acc-item');
+                t.promises.forEach((p, i) => {
+                    const item = accItems[i];
+                    if (!item) return;
+                    item.querySelector('.acc-icon').innerText = p.icon;
+                    item.querySelector('.acc-title').innerText = p.t;
+                    item.querySelector('.acc-preview').innerText = p.p;
+                    item.querySelector('.acc-body-inner').innerText = p.b;
+                });
+                document.getElementById('ringTapHint').innerText = t.ringHint;
+                document.getElementById('fqPrelude').innerText = t.fqPrelude;
+                const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+                const customQ = params.get('question') || userData.proposalQuestion;
+                if (customQ) {
+                    document.getElementById('fqMain').innerText = customQ;
+                } else if (pFor === 'girlfriend') {
+                    document.getElementById('fqMain').innerText = 'Will you be my girlfriend?';
+                } else if (pFor === 'boyfriend') {
+                    document.getElementById('fqMain').innerText = 'Will you be my boyfriend?';
+                } else if (pFor === 'bestfriend') {
+                    document.getElementById('fqMain').innerText = 'Will you be my best friend?';
+                } else if (pFor === 'friend') {
+                    document.getElementById('fqMain').innerText = 'Will you be my friend?';
+                } else if (pFor === 'partner') {
+                    document.getElementById('fqMain').innerText = 'Will you be my partner?';
+                } else {
+                    document.getElementById('fqMain').innerText = t.fqMain;
+                }
+                document.getElementById('fqName').innerText = t.fqName.replace('{name}', userName);
+                document.getElementById('yesBtn').innerText = t.yesBtn;
+                document.getElementById('noBtn').innerText = t.noBtn;
+                if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celTitle').innerText = 'He Said YES! 💖';
+                else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celTitle').innerText = 'She Said YES! 💖';
+                else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celTitle').innerText = 'Proposal Accepted! 💖';
+                else if (pFor === 'partner' || pFor === 'other') document.getElementById('celTitle').innerText = 'They Said YES! 💖';
+                else document.getElementById('celTitle').innerText = t.celTitle;
+                document.getElementById('celMsg').innerText = userWish || t.celMsg;
+                document.getElementById('celClose').innerText = t.celClose;
             }
-            document.getElementById('fqName').innerText = t.fqName.replace('{name}', userName);
-            document.getElementById('yesBtn').innerText = t.yesBtn;
-            document.getElementById('noBtn').innerText = t.noBtn;
-            if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celTitle').innerText = 'He Said YES! 💖';
-            else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celTitle').innerText = 'She Said YES! 💖';
-            else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celTitle').innerText = 'Proposal Accepted! 💖';
-            else if (pFor === 'partner' || pFor === 'other') document.getElementById('celTitle').innerText = 'They Said YES! 💖';
-            else document.getElementById('celTitle').innerText = t.celTitle;
-            document.getElementById('celMsg').innerText = userWish || t.celMsg;
-            document.getElementById('celClose').innerText = t.celClose;
 
             /* ─── USER GALLERY ───────────────────────────────────────────── */
-            if (userMems.length > 0) {
+            if (!isGenerated && userMems.length > 0) {
                 const cards = document.querySelectorAll('.flip-card');
                 userMems.slice(0, 6).forEach((m, i) => {
                     if (!cards[i]) return;

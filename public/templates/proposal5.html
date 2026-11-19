@@ -403,49 +403,52 @@
       ? ['सच में?','ज़रा सोचो...','आओ बात करें','मैं इंतजार करूँगा','बस एक बार...','हाँ कह दो! 💍']
       : ['Are you sure?','Think again...','Pleeeease?','I\'ll wait forever','Just say yes...','Yes it is! 💍'];
     let sillyIdx = 0;
+    const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
 
-    if (lang === 'hi') {
-      pageTitleEl.innerText    = 'मेरी प्रिय ' + userName;
-      nameHeroEl.innerText     = 'जो मेरे दिल की मालकिन है';
-      letterTitleEl.innerText  = userName + ' के नाम';
-      letterSignEl.innerText   = 'हमेशा तुम्हारा ♡';
-      qTextEl.innerText        = 'क्या तुम मुझसे शादी करोगी?';
-      qNameEl.innerText        = 'मेरी जान, मेरी ज़िंदगी';
-      yesBtnEl.innerText       = 'हाँ! ♡';
-      noBtnEl.innerText        = 'बाद में...';
-      celTitleEl.innerText     = 'उसने हाँ कह दिया!';
-      celCloseEl.innerText     = 'हमेशा साथ ♡';
-    } else {
-      pageTitleEl.innerText   = 'My Dearest ' + userName;
-      letterTitleEl.innerText = 'To My Greatest Love, ' + userName;
+    if (!isGenerated) {
+      if (lang === 'hi') {
+        pageTitleEl.innerText    = 'मेरी प्रिय ' + userName;
+        nameHeroEl.innerText     = 'जो मेरे दिल की मालकिन है';
+        letterTitleEl.innerText  = userName + ' के नाम';
+        letterSignEl.innerText   = 'हमेशा तुम्हारा ♡';
+        qTextEl.innerText        = 'क्या तुम मुझसे शादी करोगी?';
+        qNameEl.innerText        = 'मेरी जान, मेरी ज़िंदगी';
+        yesBtnEl.innerText       = 'हाँ! ♡';
+        noBtnEl.innerText        = 'बाद में...';
+        celTitleEl.innerText     = 'उसने हाँ कह दिया!';
+        celCloseEl.innerText     = 'हमेशा साथ ♡';
+      } else {
+        pageTitleEl.innerText   = 'My Dearest ' + userName;
+        letterTitleEl.innerText = 'To My Greatest Love, ' + userName;
+      }
+
+      if (userStory)  letterTextEl.innerText = userStory;
+      if (userWishes) celMsgEl.innerText     = userWishes;
+
+      const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+      const customQ = params.get('question') || userData.proposalQuestion;
+      if (customQ) {
+        qTextEl.innerText = customQ;
+      } else if (pFor === 'girlfriend') {
+        qTextEl.innerText = 'Will You Be My Girlfriend?';
+      } else if (pFor === 'boyfriend') {
+        qTextEl.innerText = 'Will You Be My Boyfriend?';
+      } else if (pFor === 'bestfriend') {
+        qTextEl.innerText = 'Will You Be My Best Friend?';
+      } else if (pFor === 'friend') {
+        qTextEl.innerText = 'Will You Be My Friend?';
+      } else if (pFor === 'partner') {
+        qTextEl.innerText = 'Will You Be My Partner?';
+      }
+
+      if (pFor === 'boyfriend' || pFor === 'husband') celTitleEl.innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'He Said Yes! 💖');
+      else if (pFor === 'girlfriend' || pFor === 'wife') celTitleEl.innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'She Said Yes! 💖');
+      else if (pFor === 'bestfriend' || pFor === 'friend') celTitleEl.innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
+      else if (pFor === 'partner' || pFor === 'other') celTitleEl.innerText = (lang === 'hi' ? 'उन्होंने हाँ कह दिया! 💖' : 'They Said Yes! 💖');
     }
-
-    if (userStory)  letterTextEl.innerText = userStory;
-    if (userWishes) celMsgEl.innerText     = userWishes;
-
-    const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
-    const customQ = params.get('question') || userData.proposalQuestion;
-    if (customQ) {
-      qTextEl.innerText = customQ;
-    } else if (pFor === 'girlfriend') {
-      qTextEl.innerText = 'Will You Be My Girlfriend?';
-    } else if (pFor === 'boyfriend') {
-      qTextEl.innerText = 'Will You Be My Boyfriend?';
-    } else if (pFor === 'bestfriend') {
-      qTextEl.innerText = 'Will You Be My Best Friend?';
-    } else if (pFor === 'friend') {
-      qTextEl.innerText = 'Will You Be My Friend?';
-    } else if (pFor === 'partner') {
-      qTextEl.innerText = 'Will You Be My Partner?';
-    }
-
-    if (pFor === 'boyfriend' || pFor === 'husband') celTitleEl.innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'He Said Yes! 💖');
-    else if (pFor === 'girlfriend' || pFor === 'wife') celTitleEl.innerText = (lang === 'hi' ? 'उसने हाँ कह दिया! 💖' : 'She Said Yes! 💖');
-    else if (pFor === 'bestfriend' || pFor === 'friend') celTitleEl.innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार! 💖' : 'Proposal Accepted! 💖');
-    else if (pFor === 'partner' || pFor === 'other') celTitleEl.innerText = (lang === 'hi' ? 'उन्होंने हाँ कह दिया! 💖' : 'They Said Yes! 💖');
 
     // Gallery
-    if (userMems.length > 0) {
+    if (!isGenerated && userMems.length > 0) {
       const gal = document.getElementById('gallery');
       gal.innerHTML = '';
       userMems.slice(0, 4).forEach((m, i) => {

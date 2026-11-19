@@ -1118,42 +1118,45 @@
   };
 
   const t = T[lang];
+  const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
 
   /* ─── POPULATE STATIC TEXT ──────────────────────────────────────────── */
-  document.getElementById('ch1Title').innerText  = t.ch1Title;
-  document.getElementById('ch1Names').innerText  = t.ch1Names.replace('{name}', userName);
-  document.getElementById('letterSalutation').innerText = t.letterSal.replace('{name}', userName);
-  document.getElementById('letterSign').innerText       = t.letterSign;
-  document.getElementById('letterPS').innerText         = t.letterPS;
-  document.getElementById('bqText').innerText           = userStory || t.bq;
-  document.getElementById('qLine1').innerText           = t.qLine;
-  const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
-  const customQ = params.get('question') || userData.proposalQuestion;
-  if (customQ) {
-    document.getElementById('qBig').innerText = customQ;
-  } else if (pFor === 'girlfriend') {
-    document.getElementById('qBig').innerText = 'Will you be my girlfriend?';
-  } else if (pFor === 'boyfriend') {
-    document.getElementById('qBig').innerText = 'Will you be my boyfriend?';
-  } else if (pFor === 'bestfriend') {
-    document.getElementById('qBig').innerText = 'Will you be my best friend?';
-  } else if (pFor === 'friend') {
-    document.getElementById('qBig').innerText = 'Will you be my friend?';
-  } else if (pFor === 'partner') {
-    document.getElementById('qBig').innerText = 'Will you be my partner?';
-  } else {
-    document.getElementById('qBig').innerText = t.qBig;
+  if (!isGenerated) {
+    document.getElementById('ch1Title').innerText  = t.ch1Title;
+    document.getElementById('ch1Names').innerText  = t.ch1Names.replace('{name}', userName);
+    document.getElementById('letterSalutation').innerText = t.letterSal.replace('{name}', userName);
+    document.getElementById('letterSign').innerText       = t.letterSign;
+    document.getElementById('letterPS').innerText         = t.letterPS;
+    document.getElementById('bqText').innerText           = userStory || t.bq;
+    document.getElementById('qLine1').innerText           = t.qLine;
+    const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+    const customQ = params.get('question') || userData.proposalQuestion;
+    if (customQ) {
+      document.getElementById('qBig').innerText = customQ;
+    } else if (pFor === 'girlfriend') {
+      document.getElementById('qBig').innerText = 'Will you be my girlfriend?';
+    } else if (pFor === 'boyfriend') {
+      document.getElementById('qBig').innerText = 'Will you be my boyfriend?';
+    } else if (pFor === 'bestfriend') {
+      document.getElementById('qBig').innerText = 'Will you be my best friend?';
+    } else if (pFor === 'friend') {
+      document.getElementById('qBig').innerText = 'Will you be my friend?';
+    } else if (pFor === 'partner') {
+      document.getElementById('qBig').innerText = 'Will you be my partner?';
+    } else {
+      document.getElementById('qBig').innerText = t.qBig;
+    }
+    document.getElementById('qName').innerText            = t.qName.replace('{name}', userName);
+    document.getElementById('yesBtn').innerText           = t.yesBtn;
+    document.getElementById('noBtn').innerText            = t.noBtn;
+    if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celTitle').innerText = 'He Said YES! 💖';
+    else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celTitle').innerText = 'She Said YES! 💖';
+    else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celTitle').innerText = 'Proposal Accepted! 💖';
+    else if (pFor === 'partner' || pFor === 'other') document.getElementById('celTitle').innerText = 'They Said YES! 💖';
+    else document.getElementById('celTitle').innerText = t.celTitle;
+    document.getElementById('celMsg').innerText           = userWish || t.celMsg;
+    document.getElementById('celClose').innerText         = t.celClose;
   }
-  document.getElementById('qName').innerText            = t.qName.replace('{name}', userName);
-  document.getElementById('yesBtn').innerText           = t.yesBtn;
-  document.getElementById('noBtn').innerText            = t.noBtn;
-  if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celTitle').innerText = 'He Said YES! 💖';
-  else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celTitle').innerText = 'She Said YES! 💖';
-  else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celTitle').innerText = 'Proposal Accepted! 💖';
-  else if (pFor === 'partner' || pFor === 'other') document.getElementById('celTitle').innerText = 'They Said YES! 💖';
-  else document.getElementById('celTitle').innerText = t.celTitle;
-  document.getElementById('celMsg').innerText           = userWish || t.celMsg;
-  document.getElementById('celClose').innerText         = t.celClose;
 
   /* ─── TIMELINE ──────────────────────────────────────────────────────── */
   const nodes   = document.querySelectorAll('.tl-node');
@@ -1165,19 +1168,25 @@
     nodes.forEach(n => n.classList.remove('active'));
     nodes[idx].classList.add('active');
     const nd = t.tlNodes[idx];
-    tlEmoji.innerText = nd.icon;
-    tlTitle.innerText = nd.t;
-    tlBody.innerText  = nd.b;
+    if (nd) {
+      tlEmoji.innerText = nd.icon;
+      tlTitle.innerText = nd.t;
+      tlBody.innerText  = nd.b;
+    }
   }
   // Update node labels from translations
   nodes.forEach((n, i) => {
     const nd = t.tlNodes[i];
-    n.querySelector('.tl-year').innerText  = nd.y;
-    n.querySelector('.tl-event').innerText = nd.e;
-    n.querySelector('.tl-dot').innerText   = nd.icon;
+    if (!isGenerated && nd) {
+      n.querySelector('.tl-year').innerText  = nd.y;
+      n.querySelector('.tl-event').innerText = nd.e;
+      n.querySelector('.tl-dot').innerText   = nd.icon;
+    }
     n.addEventListener('click', () => activateNode(i));
   });
-  activateNode(0);
+  if (!isGenerated) {
+    activateNode(0);
+  }
   // Auto-cycle on hover away
   let autoIdx = 0;
   const autoCycle = setInterval(() => {
@@ -1194,6 +1203,9 @@
   function typewrite(el, text, speed = 28) {
     if (twDone) return;
     twDone = true;
+    if (isGenerated && el && el.innerHTML.trim().length > 0) {
+      return; // Preserve customized letter on generated page
+    }
     el.innerHTML = '';
     const cursor = document.createElement('span');
     cursor.className = 'cursor-blink';
@@ -1211,25 +1223,27 @@
 
   /* ─── POLAROID GALLERY ──────────────────────────────────────────────── */
   const galEl = document.getElementById('gallery');
-  if (userMems.length > 0) {
-    galEl.innerHTML = '';
-    const rots = [-7,4,-3,6,-5,3];
-    userMems.slice(0,6).forEach((m, i) => {
-      const p = document.createElement('div');
-      p.className = 'polaroid';
-      p.style.setProperty('--rot', (rots[i]||0)+'deg');
-      p.innerHTML = `
-        <div class="pol-tape"></div>
-        <div class="pol-heart">💕</div>
-        <div class="pol-img">${m.img ? `<img src="${m.img}" alt="memory">` : (m.text||'💖')}</div>
-        <div class="pol-cap">${m.text || t.polCaps[i] || '♡'}</div>
-      `;
-      galEl.appendChild(p);
-    });
-  } else {
-    // Update default captions from translations
-    const caps = galEl.querySelectorAll('.pol-cap');
-    caps.forEach((c, i) => { if (t.polCaps[i]) c.innerText = t.polCaps[i]; });
+  if (galEl && (!isGenerated || galEl.children.length === 0)) {
+    if (userMems.length > 0) {
+      galEl.innerHTML = '';
+      const rots = [-7,4,-3,6,-5,3];
+      userMems.slice(0,6).forEach((m, i) => {
+        const p = document.createElement('div');
+        p.className = 'polaroid';
+        p.style.setProperty('--rot', (rots[i]||0)+'deg');
+        p.innerHTML = `
+          <div class="pol-tape"></div>
+          <div class="pol-heart">💕</div>
+          <div class="pol-img">${m.img ? `<img src="${m.img}" alt="memory">` : (m.text||'💖')}</div>
+          <div class="pol-cap">${m.text || t.polCaps[i] || '♡'}</div>
+        `;
+        galEl.appendChild(p);
+      });
+    } else {
+      // Update default captions from translations
+      const caps = galEl.querySelectorAll('.pol-cap');
+      caps.forEach((c, i) => { if (t.polCaps[i]) c.innerText = t.polCaps[i]; });
+    }
   }
 
   /* ─── REASONS GRID ──────────────────────────────────────────────────── */
@@ -1237,13 +1251,15 @@
 
   /* ─── PROMISES LIST ─────────────────────────────────────────────────── */
   const promEl = document.getElementById('promisesList');
-  promEl.innerHTML = '';
-  t.promises.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'promise-row';
-    row.innerHTML = `<div class="promise-check">${p.icon}</div><p class="promise-text">${p.t}</p>`;
-    promEl.appendChild(row);
-  });
+  if (promEl && (!isGenerated || promEl.children.length === 0)) {
+    promEl.innerHTML = '';
+    t.promises.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'promise-row';
+      row.innerHTML = `<div class="promise-check">${p.icon}</div><p class="promise-text">${p.t}</p>`;
+      promEl.appendChild(row);
+    });
+  }
   const promiseRows = promEl.querySelectorAll('.promise-row');
 
   /* ─── CHAPTER 8 QUESTION REVEAL ─────────────────────────────────────── */

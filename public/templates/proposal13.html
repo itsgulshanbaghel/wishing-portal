@@ -184,7 +184,8 @@
             border-left: 6px solid #c08552;
         }
 
-        .reason-simple.revealed {
+        .reason-simple.revealed,
+        .chapter.visible .reason-simple {
             opacity: 1;
             transform: translateY(0);
         }
@@ -203,7 +204,8 @@
             transition: 0.3s;
         }
 
-        .promise-simple.revealed {
+        .promise-simple.revealed,
+        .chapter.visible .promise-simple {
             opacity: 1;
             transform: translateX(0);
         }
@@ -412,49 +414,55 @@
                 }
             };
             const t = T[lang];
+            const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
 
-            document.getElementById('introTitle').innerText = t.introTitle;
-            document.getElementById('introSub').innerText = t.introSub;
-            document.getElementById('howHeading').innerText = t.howHeading;
-            document.getElementById('letterTitle').innerText = t.letterTitle;
-            document.getElementById('diarySign').innerHTML = t.diarySign;
-            document.getElementById('reasonsTitle').innerText = t.reasonsTitle;
-            document.getElementById('promisesTitle').innerText = t.promisesTitle;
-            document.getElementById('preQuestion').innerText = t.preQuestion;
-            const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
-            const customQ = params.get('question') || userData.proposalQuestion;
-            if (customQ) {
-                document.getElementById('bigQuestion').innerText = customQ;
-            } else if (pFor === 'girlfriend') {
-                document.getElementById('bigQuestion').innerText = 'Will you be my girlfriend?';
-            } else if (pFor === 'boyfriend') {
-                document.getElementById('bigQuestion').innerText = 'Will you be my boyfriend?';
-            } else if (pFor === 'bestfriend') {
-                document.getElementById('bigQuestion').innerText = 'Will you be my best friend?';
-            } else if (pFor === 'friend') {
-                document.getElementById('bigQuestion').innerText = 'Will you be my friend?';
-            } else if (pFor === 'partner') {
-                document.getElementById('bigQuestion').innerText = 'Will you be my partner?';
-            } else {
-                document.getElementById('bigQuestion').innerText = t.bigQuestion;
+            if (!isGenerated) {
+                document.getElementById('introTitle').innerText = t.introTitle;
+                document.getElementById('introSub').innerText = t.introSub;
+                document.getElementById('howHeading').innerText = t.howHeading;
+                document.getElementById('letterTitle').innerText = t.letterTitle;
+                document.getElementById('diarySign').innerHTML = t.diarySign;
+                document.getElementById('reasonsTitle').innerText = t.reasonsTitle;
+                document.getElementById('promisesTitle').innerText = t.promisesTitle;
+                document.getElementById('preQuestion').innerText = t.preQuestion;
+                const pFor = (params.get('proposalFor') || userData.proposalFor || '').toLowerCase();
+                const customQ = params.get('question') || userData.proposalQuestion;
+                if (customQ) {
+                    document.getElementById('bigQuestion').innerText = customQ;
+                } else if (pFor === 'girlfriend') {
+                    document.getElementById('bigQuestion').innerText = 'Will you be my girlfriend?';
+                } else if (pFor === 'boyfriend') {
+                    document.getElementById('bigQuestion').innerText = 'Will you be my boyfriend?';
+                } else if (pFor === 'bestfriend') {
+                    document.getElementById('bigQuestion').innerText = 'Will you be my best friend?';
+                } else if (pFor === 'friend') {
+                    document.getElementById('bigQuestion').innerText = 'Will you be my friend?';
+                } else if (pFor === 'partner') {
+                    document.getElementById('bigQuestion').innerText = 'Will you be my partner?';
+                } else {
+                    document.getElementById('bigQuestion').innerText = t.bigQuestion;
+                }
+                document.getElementById('yesSimple').innerText = t.yesText;
+                if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उसने हाँ कहा!' : 'He said yes! 💖');
+                else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उसने हाँ कहा!' : 'She said yes! 💖');
+                else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार!' : 'Proposal accepted! 💖');
+                else if (pFor === 'partner' || pFor === 'other') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उन्होंने हाँ कहा!' : 'They said yes! 💖');
+                else document.getElementById('celebTitleSimple').innerText = t.celebTitleSimple;
+                document.getElementById('celebMsgSimple').innerText = userWish || t.celebMsgSimple;
             }
-            document.getElementById('yesSimple').innerText = t.yesText;
-            if (pFor === 'boyfriend' || pFor === 'husband') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उसने हाँ कहा!' : 'He said yes! 💖');
-            else if (pFor === 'girlfriend' || pFor === 'wife') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उसने हाँ कहा!' : 'She said yes! 💖');
-            else if (pFor === 'bestfriend' || pFor === 'friend') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'प्रपोज़ल स्वीकार!' : 'Proposal accepted! 💖');
-            else if (pFor === 'partner' || pFor === 'other') document.getElementById('celebTitleSimple').innerText = (lang === 'hi' ? 'उन्होंने हाँ कहा!' : 'They said yes! 💖');
-            else document.getElementById('celebTitleSimple').innerText = t.celebTitleSimple;
-            document.getElementById('celebMsgSimple').innerText = userWish || t.celebMsgSimple;
 
             // simple timeline
             const timelineDiv = document.getElementById('simpleTimeline');
-            t.timelineNodes.forEach((node, idx) => {
-                const btn = document.createElement('div');
-                btn.className = 'timeline-dot' + (idx === 0 ? ' active' : '');
-                btn.innerText = node.name;
-                btn.dataset.idx = idx;
-                timelineDiv.appendChild(btn);
-            });
+            if (timelineDiv && (!isGenerated || timelineDiv.children.length === 0)) {
+                timelineDiv.innerHTML = '';
+                t.timelineNodes.forEach((node, idx) => {
+                    const btn = document.createElement('div');
+                    btn.className = 'timeline-dot' + (idx === 0 ? ' active' : '');
+                    btn.innerText = node.name;
+                    btn.dataset.idx = idx;
+                    timelineDiv.appendChild(btn);
+                });
+            }
             const quoteText = document.getElementById('quoteText');
             const dots = document.querySelectorAll('.timeline-dot');
             function setDot(idx) {
@@ -462,10 +470,14 @@
                     if (i == idx) d.classList.add('active');
                     else d.classList.remove('active');
                 });
-                quoteText.innerText = t.timelineNodes[idx].desc;
+                if (t.timelineNodes && t.timelineNodes[idx]) {
+                    quoteText.innerText = t.timelineNodes[idx].desc;
+                }
             }
             dots.forEach((d, i) => d.addEventListener('click', () => setDot(i)));
-            setDot(0);
+            if (!isGenerated || (quoteText && !(quoteText.innerText || quoteText.textContent || "").trim())) {
+                setDot(0);
+            }
             let autoTimeline = setInterval(() => {
                 let curr = -1;
                 dots.forEach((d, i) => { if (d.classList.contains('active')) curr = i; });
@@ -480,6 +492,9 @@
             function typeDiary() {
                 if (typedDiary) return;
                 typedDiary = true;
+                if (isGenerated && diaryDiv && diaryDiv.innerHTML.trim().length > 0) {
+                    return; // Preserve customized/saved letter on generated page
+                }
                 diaryDiv.innerHTML = '';
                 let i = 0;
                 const cursor = document.createElement('span');
@@ -494,25 +509,29 @@
 
             // reasons (simple list)
             const reasonContainer = document.getElementById('reasonList');
-            const reasonItems = [];
-            t.reasons.forEach(text => {
-                const div = document.createElement('div');
-                div.className = 'reason-simple';
-                div.innerHTML = `<span style="font-size:1.5rem;">❤️</span> <span style="margin-left:10px;">${text}</span>`;
-                reasonContainer.appendChild(div);
-                reasonItems.push(div);
-            });
+            if (reasonContainer && (!isGenerated || reasonContainer.children.length === 0)) {
+                reasonContainer.innerHTML = '';
+                t.reasons.forEach(text => {
+                    const div = document.createElement('div');
+                    div.className = 'reason-simple';
+                    div.innerHTML = `<span style="font-size:1.5rem;">❤️</span> <span style="margin-left:10px;">${text}</span>`;
+                    reasonContainer.appendChild(div);
+                });
+            }
+            const reasonItems = reasonContainer ? Array.from(reasonContainer.querySelectorAll('.reason-simple')) : [];
 
             // promises
             const promiseContainer = document.getElementById('promiseSimpleList');
-            const promiseSimpleItems = [];
-            t.promises.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'promise-simple';
-                div.innerHTML = `<span style="font-size:1.3rem;">🤍</span><span>${p}</span>`;
-                promiseContainer.appendChild(div);
-                promiseSimpleItems.push(div);
-            });
+            if (promiseContainer && (!isGenerated || promiseContainer.children.length === 0)) {
+                promiseContainer.innerHTML = '';
+                t.promises.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'promise-simple';
+                    div.innerHTML = `<span style="font-size:1.3rem;">🤍</span><span>${p}</span>`;
+                    promiseContainer.appendChild(div);
+                });
+            }
+            const promiseSimpleItems = promiseContainer ? Array.from(promiseContainer.querySelectorAll('.promise-simple')) : [];
 
             // scroll observer
             const sections = document.querySelectorAll('.chapter');
@@ -524,15 +543,23 @@
                     if (entry.target.id === 'letter' && !letterDone) { letterDone = true; typeDiary(); }
                     if (entry.target.id === 'reasons' && !reasonsDone) {
                         reasonsDone = true;
-                        reasonItems.forEach((r, i) => setTimeout(() => r.classList.add('revealed'), i * 100));
+                        const items = reasonContainer ? reasonContainer.querySelectorAll('.reason-simple') : reasonItems;
+                        items.forEach((r, i) => setTimeout(() => r.classList.add('revealed'), i * 100));
                     }
                     if (entry.target.id === 'promises' && !promisesDone) {
                         promisesDone = true;
-                        promiseSimpleItems.forEach((p, i) => setTimeout(() => p.classList.add('revealed'), i * 120));
+                        const items = promiseContainer ? promiseContainer.querySelectorAll('.promise-simple') : promiseSimpleItems;
+                        items.forEach((p, i) => setTimeout(() => p.classList.add('revealed'), i * 120));
                     }
                 });
-            }, { threshold: 0.25 });
+            }, { threshold: 0.15 });
             sections.forEach(s => obs.observe(s));
+
+            // Safety fallback: Ensure cards are visible if chapters are already in view
+            setTimeout(() => {
+                document.querySelectorAll('.chapter.visible .reason-simple').forEach(r => r.classList.add('revealed'));
+                document.querySelectorAll('.chapter.visible .promise-simple').forEach(p => p.classList.add('revealed'));
+            }, 800);
 
             // progress bar
             window.addEventListener('scroll', () => {
