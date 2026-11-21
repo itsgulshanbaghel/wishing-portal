@@ -6261,12 +6261,20 @@
               const trackIds = [
                 'heroTitle', 'nameSub', 'bookTitle', 'insideMsg', 'insideSign',
                 'storyTop', 'storyBody', 'wishHead', 'wishText', 'celBtn',
-                'floatingText', 'letterText', 'scratchMessage', 'musicCustomMessage', 'mainTitle', 'mainSub', 'timelineHeading', 'timelineText', 'timelineQuote', 'quoteText', 'letterHeading', 'letterSign', 'letterBody', 'letterBodyText', 'letterTitle', 'letterSalutation', 'letterPS', 'letterDate', 'diaryBody', 'diarySign', 'cosmicLetterBody', 'cosmicSign', 'letterCosmicHeading', 'reasonsHeading', 'reasonsTitle', 'reasons', 'promisesHeading', 'promisesTitle', 'promises', 'proposalPre', 'proposalQuestion', 'proposalLine1', 'proposalBigQuestion', 'preQuestion', 'bigQuestion', 'yesBtn', 'noBtn', 'yesCosmic', 'noCosmic', 'yesSimple', 'noSimple', 'startForeverBtn', 'celebTitle', 'celebMsg', 'celebTitleSimple', 'celebMsgSimple', 'celTitle', 'celMsg', 'celSubMsg', 'celH', 'celP', 'celClose', 'cosmicCelebTitle', 'cosmicCelebMsg', 'ch1Title', 'ch1Names', 'ch1Big', 'ch1Sub', 'badge', 'bdgTxt', 'tagTxt', 'h1', 'subTxt', 'dearName', 'nameHero', 'heroName', 'nameG', 'nameBl', 'pageTitle', 'subtitle', 'bqText', 'qLine1', 'qBig', 'qName', 'qText', 'questionName', 'questionStatic', 'envHead', 'envSign', 'envBody', 'puzzleMsg', 'ringTapHint', 'fqPrelude', 'fqMain', 'fqName', 'secretMsg', 'secretSign', 'w1', 'w2', 'w3', 'w4', 'storyP', 'msgP', 'wishH', 'wishP', 'wTag', 'secT', 'secS', 'secH', 'memoriesHeading', 'memoriesCosmicHeading', 'mainTitleCosmic', 'mainSubCosmic', 'constellationHeading', 'constellationDesc', 'howHeading', 'introTitle', 'introSub', 'messageText', 'promiseText'
+                'floatingText', 'letterText', 'scratchMessage', 'musicCustomMessage', 'mainTitle', 'mainSub', 'timelineHeading', 'timelineText', 'timelineQuote', 'quoteText', 'letterHeading', 'letterSign', 'letterBody', 'letterBodyText', 'letterTitle', 'letterSalutation', 'letterPS', 'letterDate', 'diaryBody', 'diarySign', 'cosmicLetterBody', 'cosmicSign', 'letterCosmicHeading', 'reasonsHeading', 'reasonsTitle', 'reasons', 'promisesHeading', 'promisesTitle', 'promises', 'proposalPre', 'proposalQuestion', 'proposalLine1', 'proposalBigQuestion', 'preQuestion', 'bigQuestion', 'yesBtn', 'noBtn', 'yesCosmic', 'noCosmic', 'yesSimple', 'noSimple', 'startForeverBtn', 'celebTitle', 'celebMsg', 'celebTitleSimple', 'celebMsgSimple', 'celTitle', 'celMsg', 'celSubMsg', 'celH', 'celP', 'celClose', 'cosmicCelebTitle', 'cosmicCelebMsg', 'ch1Title', 'ch1Names', 'ch1Big', 'ch1Sub', 'badge', 'bdgTxt', 'tagTxt', 'h1', 'subTxt', 'dearName', 'nameHero', 'heroName', 'nameG', 'nameBl', 'pageTitle', 'subtitle', 'bqText', 'qLine1', 'qBig', 'qName', 'qText', 'questionName', 'questionStatic', 'envHead', 'envSign', 'envBody', 'puzzleMsg', 'ringTapHint', 'fqPrelude', 'fqMain', 'fqName', 'secretMsg', 'secretSign', 'w1', 'w2', 'w3', 'w4', 'storyP', 'msgP', 'wishH', 'wishP', 'wTag', 'secT', 'secS', 'secH', 'memoriesHeading', 'memoriesCosmicHeading', 'mainTitleCosmic', 'mainSubCosmic', 'constellationHeading', 'constellationDesc', 'howHeading', 'introTitle', 'introSub', 'messageText', 'promiseText',
+                'timelineText_0', 'timelineText_1', 'timelineText_2', 'timelineText_3', 'timelinePill_0', 'timelinePill_1', 'timelinePill_2', 'timelinePill_3',
+                'reasonTitle_0', 'reasonTitle_1', 'reasonTitle_2', 'reasonTitle_3', 'reasonText_0', 'reasonText_1', 'reasonText_2', 'reasonText_3',
+                'promiseText_0', 'promiseText_1', 'promiseText_2', 'promiseText_3', 'tlIcon', 'tlText'
               ];
               trackIds.forEach(id => {
                 const el = parsedDoc.getElementById(id);
                 if (el && el.innerHTML && el.innerHTML.trim()) {
                   extractedDomTexts[id] = el.innerHTML;
+                }
+              });
+              parsedDoc.querySelectorAll('[id^="timelineText_"], [id^="timelinePill_"], [id^="reasonTitle_"], [id^="reasonText_"], [id^="promiseText_"]').forEach(el => {
+                if (el && el.id && el.innerHTML && el.innerHTML.trim()) {
+                  extractedDomTexts[el.id] = el.innerHTML;
                 }
               });
               ['.story-top', '.inside-sign', '.inside-message', '.hero-subtitle', '.story-body', '.wish-text'].forEach(sel => {
@@ -11193,12 +11201,20 @@
           const trackIds = [
             'heroTitle', 'nameSub', 'bookTitle', 'insideMsg', 'insideSign',
             'storyTop', 'storyBody', 'wishHead', 'wishText', 'celBtn',
-            'floatingText', 'letterText', 'scratchMessage', 'musicCustomMessage', 'mainTitle', 'mainSub', 'timelineHeading', 'timelineText', 'timelineQuote', 'quoteText', 'letterHeading', 'letterSign', 'letterBody', 'letterBodyText', 'letterTitle', 'letterSalutation', 'letterPS', 'letterDate', 'diaryBody', 'diarySign', 'cosmicLetterBody', 'cosmicSign', 'letterCosmicHeading', 'reasonsHeading', 'reasonsTitle', 'reasons', 'promisesHeading', 'promisesTitle', 'promises', 'proposalPre', 'proposalQuestion', 'proposalLine1', 'proposalBigQuestion', 'preQuestion', 'bigQuestion', 'yesBtn', 'noBtn', 'yesCosmic', 'noCosmic', 'yesSimple', 'noSimple', 'startForeverBtn', 'celebTitle', 'celebMsg', 'celebTitleSimple', 'celebMsgSimple', 'celTitle', 'celMsg', 'celSubMsg', 'celH', 'celP', 'celClose', 'cosmicCelebTitle', 'cosmicCelebMsg', 'ch1Title', 'ch1Names', 'ch1Big', 'ch1Sub', 'badge', 'bdgTxt', 'tagTxt', 'h1', 'subTxt', 'dearName', 'nameHero', 'heroName', 'nameG', 'nameBl', 'pageTitle', 'subtitle', 'bqText', 'qLine1', 'qBig', 'qName', 'qText', 'questionName', 'questionStatic', 'envHead', 'envSign', 'envBody', 'puzzleMsg', 'ringTapHint', 'fqPrelude', 'fqMain', 'fqName', 'secretMsg', 'secretSign', 'w1', 'w2', 'w3', 'w4', 'storyP', 'msgP', 'wishH', 'wishP', 'wTag', 'secT', 'secS', 'secH', 'memoriesHeading', 'memoriesCosmicHeading', 'mainTitleCosmic', 'mainSubCosmic', 'constellationHeading', 'constellationDesc', 'howHeading', 'introTitle', 'introSub', 'messageText', 'promiseText'
+            'floatingText', 'letterText', 'scratchMessage', 'musicCustomMessage', 'mainTitle', 'mainSub', 'timelineHeading', 'timelineText', 'timelineQuote', 'quoteText', 'letterHeading', 'letterSign', 'letterBody', 'letterBodyText', 'letterTitle', 'letterSalutation', 'letterPS', 'letterDate', 'diaryBody', 'diarySign', 'cosmicLetterBody', 'cosmicSign', 'letterCosmicHeading', 'reasonsHeading', 'reasonsTitle', 'reasons', 'promisesHeading', 'promisesTitle', 'promises', 'proposalPre', 'proposalQuestion', 'proposalLine1', 'proposalBigQuestion', 'preQuestion', 'bigQuestion', 'yesBtn', 'noBtn', 'yesCosmic', 'noCosmic', 'yesSimple', 'noSimple', 'startForeverBtn', 'celebTitle', 'celebMsg', 'celebTitleSimple', 'celebMsgSimple', 'celTitle', 'celMsg', 'celSubMsg', 'celH', 'celP', 'celClose', 'cosmicCelebTitle', 'cosmicCelebMsg', 'ch1Title', 'ch1Names', 'ch1Big', 'ch1Sub', 'badge', 'bdgTxt', 'tagTxt', 'h1', 'subTxt', 'dearName', 'nameHero', 'heroName', 'nameG', 'nameBl', 'pageTitle', 'subtitle', 'bqText', 'qLine1', 'qBig', 'qName', 'qText', 'questionName', 'questionStatic', 'envHead', 'envSign', 'envBody', 'puzzleMsg', 'ringTapHint', 'fqPrelude', 'fqMain', 'fqName', 'secretMsg', 'secretSign', 'w1', 'w2', 'w3', 'w4', 'storyP', 'msgP', 'wishH', 'wishP', 'wTag', 'secT', 'secS', 'secH', 'memoriesHeading', 'memoriesCosmicHeading', 'mainTitleCosmic', 'mainSubCosmic', 'constellationHeading', 'constellationDesc', 'howHeading', 'introTitle', 'introSub', 'messageText', 'promiseText',
+            'timelineText_0', 'timelineText_1', 'timelineText_2', 'timelineText_3', 'timelinePill_0', 'timelinePill_1', 'timelinePill_2', 'timelinePill_3',
+            'reasonTitle_0', 'reasonTitle_1', 'reasonTitle_2', 'reasonTitle_3', 'reasonText_0', 'reasonText_1', 'reasonText_2', 'reasonText_3',
+            'promiseText_0', 'promiseText_1', 'promiseText_2', 'promiseText_3', 'tlIcon', 'tlText'
           ];
           trackIds.forEach(id => {
             const el = doc.getElementById(id);
             if (el && el.innerHTML) {
               customDomTexts[id] = el.innerHTML;
+            }
+          });
+          doc.querySelectorAll('[id^="timelineText_"], [id^="timelinePill_"], [id^="reasonTitle_"], [id^="reasonText_"], [id^="promiseText_"]').forEach(el => {
+            if (el && el.id && el.innerHTML) {
+              customDomTexts[el.id] = el.innerHTML;
             }
           });
           ['.story-top', '.inside-sign', '.inside-message', '.hero-subtitle', '.story-body', '.wish-text'].forEach(sel => {
@@ -11488,6 +11504,9 @@
                 liveEditDebounceTimer = setTimeout(() => {
                   syncDomEditsToState(doc, false);
                 }, 300);
+              }, { passive: true });
+              doc.addEventListener('focusout', () => {
+                syncDomEditsToState(doc, false);
               }, { passive: true });
             }
           } else {

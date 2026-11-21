@@ -415,6 +415,11 @@
             };
             const t = T[lang];
             const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
+            const isEditMode = !isGenerated && (
+                location.search.includes('mode=edit') ||
+                (typeof window.parent !== 'undefined' && window.parent !== window) ||
+                document.body.classList.contains('edit-mode')
+            );
 
             if (!isGenerated) {
                 document.getElementById('introTitle').innerText = t.introTitle;
@@ -478,12 +483,19 @@
             if (!isGenerated || (quoteText && !(quoteText.innerText || quoteText.textContent || "").trim())) {
                 setDot(0);
             }
-            let autoTimeline = setInterval(() => {
-                let curr = -1;
-                dots.forEach((d, i) => { if (d.classList.contains('active')) curr = i; });
-                setDot((curr + 1) % t.timelineNodes.length);
-            }, 4500);
-            timelineDiv.addEventListener('mouseenter', () => clearInterval(autoTimeline));
+            let autoTimeline = null;
+            if (!isEditMode && !isGenerated) {
+                autoTimeline = setInterval(() => {
+                    let curr = -1;
+                    dots.forEach((d, i) => { if (d.classList.contains('active')) curr = i; });
+                    setDot((curr + 1) % t.timelineNodes.length);
+                }, 4500);
+                if (timelineDiv) {
+                    timelineDiv.addEventListener('mouseenter', () => {
+                        if (autoTimeline) clearInterval(autoTimeline);
+                    });
+                }
+            }
 
             // diary typewriter
             const diaryDiv = document.getElementById('diaryBody');
@@ -492,8 +504,12 @@
             function typeDiary() {
                 if (typedDiary) return;
                 typedDiary = true;
-                if (isGenerated && diaryDiv && diaryDiv.innerHTML.trim().length > 0) {
-                    return; // Preserve customized/saved letter on generated page
+                if ((isGenerated || isEditMode) && diaryDiv && diaryDiv.innerHTML.trim().length > 0) {
+                    return; // Preserve customized/saved letter on generated or edit page
+                }
+                if (isEditMode) {
+                    diaryDiv.innerText = diaryText;
+                    return;
                 }
                 diaryDiv.innerHTML = '';
                 let i = 0;

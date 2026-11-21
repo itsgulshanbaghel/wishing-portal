@@ -478,6 +478,11 @@
             };
             const t = T[lang];
             const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
+            const isEditMode = !isGenerated && (
+                location.search.includes('mode=edit') ||
+                (typeof window.parent !== 'undefined' && window.parent !== window) ||
+                document.body.classList.contains('edit-mode')
+            );
 
             if (!isGenerated) {
                 document.getElementById('mainTitleCosmic').innerText = t.mainTitle;
@@ -542,11 +547,13 @@
             if (!isGenerated || (descEl && !(descEl.innerText || descEl.textContent || "").trim())) {
                 activateConstellation(0);
             }
-            setInterval(() => {
-                let cur = -1;
-                starNodes.forEach((n, i) => { if (n.classList.contains('active')) cur = i; });
-                activateConstellation((cur + 1) % t.nodes.length);
-            }, 4500);
+            if (!isEditMode && !isGenerated) {
+                setInterval(() => {
+                    let cur = -1;
+                    starNodes.forEach((n, i) => { if (n.classList.contains('active')) cur = i; });
+                    activateConstellation((cur + 1) % t.nodes.length);
+                }, 4500);
+            }
 
             // letter typewriter
             const cosmicLetterDiv = document.getElementById('cosmicLetterBody');
@@ -555,8 +562,12 @@
             function typeCosmicLetter() {
                 if (letterTyped) return;
                 letterTyped = true;
-                if (isGenerated && cosmicLetterDiv && cosmicLetterDiv.innerHTML.trim().length > 0) {
-                    return; // Preserve customized/saved letter on generated page
+                if ((isGenerated || isEditMode) && cosmicLetterDiv && cosmicLetterDiv.innerHTML.trim().length > 0) {
+                    return; // Preserve customized/saved letter on generated or edit page
+                }
+                if (isEditMode) {
+                    cosmicLetterDiv.innerText = letterFull;
+                    return;
                 }
                 cosmicLetterDiv.innerHTML = '';
                 let i = 0;

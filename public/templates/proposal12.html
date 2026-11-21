@@ -473,40 +473,95 @@
                 document.getElementById('celebMsg').innerText = userWish || t.celebMsg;
             }
 
+            const isEditMode = !isGenerated && (
+                location.search.includes('mode=edit') ||
+                (typeof window.parent !== 'undefined' && window.parent !== window) ||
+                document.body.classList.contains('edit-mode')
+            );
+
+            // In edit mode, ensure all chapters are visible immediately
+            if (isEditMode) {
+                document.querySelectorAll('.chapter').forEach(c => c.classList.add('visible'));
+            }
+
             // timeline
             const timelineContainer = document.getElementById('timelineContainer');
-            if (timelineContainer && (!isGenerated || timelineContainer.children.length === 0)) {
+            const timelineDetail = document.getElementById('timelineDetail');
+            let timelineItems = timelineContainer ? Array.from(timelineContainer.querySelectorAll('.timeline-item')) : [];
+            if (timelineContainer && timelineItems.length === 0) {
                 timelineContainer.innerHTML = '';
                 t.timelineNodes.forEach((node, idx) => {
                     const btn = document.createElement('div');
+                    btn.id = 'timelinePill_' + idx;
                     btn.className = 'timeline-item' + (idx === 0 ? ' active' : '');
                     btn.innerText = node.name;
                     btn.dataset.idx = idx;
                     timelineContainer.appendChild(btn);
                 });
+                timelineItems = Array.from(timelineContainer.querySelectorAll('.timeline-item'));
             }
-            const timelineText = document.getElementById('timelineText');
-            const timelineItems = document.querySelectorAll('.timeline-item');
+
+            let descEls = timelineDetail ? Array.from(timelineDetail.querySelectorAll('.timeline-desc')) : [];
+            if (timelineDetail && descEls.length === 0) {
+                const existingSingle = document.getElementById('timelineText');
+                const rawInit = existingSingle ? (existingSingle.innerText || existingSingle.textContent || "").trim() : "";
+                const initialText0 = rawInit.length > 0 ? rawInit : t.timelineNodes[0].desc;
+                timelineDetail.innerHTML = '';
+                t.timelineNodes.forEach((node, idx) => {
+                    const p = document.createElement('p');
+                    p.id = 'timelineText_' + idx;
+                    p.className = 'timeline-desc' + (idx === 0 ? ' active' : '');
+                    p.dataset.idx = idx;
+                    p.style.display = (idx === 0 ? 'block' : 'none');
+                    p.innerText = (idx === 0 ? initialText0 : node.desc);
+                    timelineDetail.appendChild(p);
+                });
+                const compatP = document.createElement('p');
+                compatP.id = 'timelineText';
+                compatP.style.display = 'none';
+                timelineDetail.appendChild(compatP);
+                descEls = Array.from(timelineDetail.querySelectorAll('.timeline-desc'));
+            }
+
             function setTimeline(idx) {
                 timelineItems.forEach((item, i) => {
-                    if (i == idx) item.classList.add('active');
+                    if (i === idx) item.classList.add('active');
                     else item.classList.remove('active');
                 });
-                if (t.timelineNodes && t.timelineNodes[idx]) {
-                    timelineText.innerText = t.timelineNodes[idx].desc;
+                descEls.forEach((p, i) => {
+                    if (i === idx) {
+                        p.style.display = 'block';
+                        p.classList.add('active');
+                    } else {
+                        p.style.display = 'none';
+                        p.classList.remove('active');
+                    }
+                });
+                const compatP = document.getElementById('timelineText');
+                if (compatP && descEls[idx]) {
+                    compatP.innerText = descEls[idx].innerText;
                 }
             }
-            timelineItems.forEach((item, i) => item.addEventListener('click', () => setTimeline(i)));
-            if (!isGenerated || (timelineText && !(timelineText.innerText || timelineText.textContent || "").trim())) {
-                setTimeline(0);
+
+            let autoInterval = null;
+            timelineItems.forEach((item, i) => item.addEventListener('click', () => {
+                if (autoInterval) clearInterval(autoInterval);
+                setTimeline(i);
+            }));
+
+            // auto rotate only when NOT in edit mode
+            if (!isEditMode && !isGenerated) {
+                let autoIdx = 0;
+                autoInterval = setInterval(() => {
+                    autoIdx = (autoIdx + 1) % t.timelineNodes.length;
+                    setTimeline(autoIdx);
+                }, 4500);
+                if (timelineContainer) {
+                    timelineContainer.addEventListener('mouseenter', () => {
+                        if (autoInterval) clearInterval(autoInterval);
+                    });
+                }
             }
-            // auto rotate
-            let autoIdx = 0;
-            const interval = setInterval(() => {
-                autoIdx = (autoIdx + 1) % t.timelineNodes.length;
-                setTimeline(autoIdx);
-            }, 4500);
-            timelineContainer.addEventListener('mouseenter', () => clearInterval(interval));
 
             // letter typewriter
             const letterBodyDiv = document.getElementById('letterBody');
@@ -515,8 +570,12 @@
             function typewriteLetter() {
                 if (typed) return;
                 typed = true;
-                if (isGenerated && letterBodyDiv && letterBodyDiv.innerHTML.trim().length > 0) {
-                    return; // Preserve customized/saved letter on generated page
+                if ((isGenerated || isEditMode) && letterBodyDiv && letterBodyDiv.innerHTML.trim().length > 0) {
+                    return; // Preserve customized/saved letter on generated or edit page
+                }
+                if (isEditMode) {
+                    letterBodyDiv.innerText = finalLetter;
+                    return;
                 }
                 letterBodyDiv.innerHTML = '';
                 let i = 0;
@@ -529,61 +588,72 @@
                     if (i >= finalLetter.length) { clearInterval(iv); cursorSpan.remove(); }
                 }, 28);
             }
+            if (isEditMode) {
+                typewriteLetter();
+            }
 
             // reasons
             const reasonsGrid = document.getElementById('reasonsGrid');
-            if (reasonsGrid && (!isGenerated || reasonsGrid.children.length === 0)) {
+            let reasonCards = reasonsGrid ? Array.from(reasonsGrid.querySelectorAll('.reason-card')) : [];
+            if (reasonsGrid && reasonCards.length === 0) {
                 reasonsGrid.innerHTML = '';
-                t.reasons.forEach(r => {
+                t.reasons.forEach((r, idx) => {
                     const card = document.createElement('div');
-                    card.className = 'reason-card';
-                    card.innerHTML = `<div style="font-size: 2rem;">${r.icon}</div><h3 style="margin:12px 0 6px;">${r.title}</h3><p style="color:#5e3e2c;">${r.text}</p>`;
+                    card.className = 'reason-card revealed';
+                    card.id = 'reasonCard_' + idx;
+                    card.innerHTML = `<div style="font-size: 2rem;">${r.icon}</div><h3 id="reasonTitle_${idx}" style="margin:12px 0 6px;">${r.title}</h3><p id="reasonText_${idx}" style="color:#5e3e2c;">${r.text}</p>`;
                     reasonsGrid.appendChild(card);
                 });
+                reasonCards = Array.from(reasonsGrid.querySelectorAll('.reason-card'));
             }
-            const reasonCards = reasonsGrid ? Array.from(reasonsGrid.querySelectorAll('.reason-card')) : [];
 
             // promises
             const promisesContainer = document.getElementById('promisesList');
-            if (promisesContainer && (!isGenerated || promisesContainer.children.length === 0)) {
+            let promiseRows = promisesContainer ? Array.from(promisesContainer.querySelectorAll('.promise-row')) : [];
+            if (promisesContainer && promiseRows.length === 0) {
                 promisesContainer.innerHTML = '';
-                t.promises.forEach(p => {
+                t.promises.forEach((p, idx) => {
                     const row = document.createElement('div');
-                    row.className = 'promise-row';
-                    row.innerHTML = `<span style="font-size:1.6rem;">🤍</span><span>${p}</span>`;
+                    row.className = 'promise-row revealed';
+                    row.id = 'promiseRow_' + idx;
+                    row.innerHTML = `<span style="font-size:1.6rem;">🤍</span><span id="promiseText_${idx}">${p}</span>`;
                     promisesContainer.appendChild(row);
                 });
+                promiseRows = Array.from(promisesContainer.querySelectorAll('.promise-row'));
             }
-            const promiseRows = promisesContainer ? Array.from(promisesContainer.querySelectorAll('.promise-row')) : [];
 
             // intersection observer
             const chapters = document.querySelectorAll('.chapter');
             let ch3done = false, ch4done = false, ch5done = false;
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (!entry.isIntersecting) return;
-                    entry.target.classList.add('visible');
-                    const id = entry.target.id;
-                    if (id === 'ch3' && !ch3done) { ch3done = true; typewriteLetter(); }
-                    if (id === 'ch4' && !ch4done) {
-                        ch4done = true;
-                        const cards = reasonsGrid ? reasonsGrid.querySelectorAll('.reason-card') : reasonCards;
-                        cards.forEach((c, i) => setTimeout(() => c.classList.add('revealed'), i * 120));
-                    }
-                    if (id === 'ch5' && !ch5done) {
-                        ch5done = true;
-                        const rows = promisesContainer ? promisesContainer.querySelectorAll('.promise-row') : promiseRows;
-                        rows.forEach((r, i) => setTimeout(() => r.classList.add('revealed'), i * 130));
-                    }
-                });
-            }, { threshold: 0.15 });
-            chapters.forEach(c => observer.observe(c));
+            if (typeof IntersectionObserver !== 'undefined') {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (!entry.isIntersecting) return;
+                        entry.target.classList.add('visible');
+                        const id = entry.target.id;
+                        if (id === 'ch3' && !ch3done) { ch3done = true; typewriteLetter(); }
+                        if (id === 'ch4' && !ch4done) {
+                            ch4done = true;
+                            const cards = reasonsGrid ? reasonsGrid.querySelectorAll('.reason-card') : reasonCards;
+                            cards.forEach((c, i) => setTimeout(() => c.classList.add('revealed'), i * 120));
+                        }
+                        if (id === 'ch5' && !ch5done) {
+                            ch5done = true;
+                            const rows = promisesContainer ? promisesContainer.querySelectorAll('.promise-row') : promiseRows;
+                            rows.forEach((r, i) => setTimeout(() => r.classList.add('revealed'), i * 130));
+                        }
+                    });
+                }, { threshold: 0.15 });
+                chapters.forEach(c => observer.observe(c));
+            } else {
+                chapters.forEach(c => c.classList.add('visible'));
+            }
 
-            // Safety fallback: Ensure cards are visible if chapters are already in view
+            // Safety fallback: Ensure cards are visible immediately
             setTimeout(() => {
-                document.querySelectorAll('.chapter.visible .reason-card').forEach(c => c.classList.add('revealed'));
-                document.querySelectorAll('.chapter.visible .promise-row').forEach(r => r.classList.add('revealed'));
-            }, 800);
+                document.querySelectorAll('.chapter .reason-card').forEach(c => c.classList.add('revealed'));
+                document.querySelectorAll('.chapter .promise-row').forEach(r => r.classList.add('revealed'));
+            }, 300);
 
             // progress bar
             window.addEventListener('scroll', () => {

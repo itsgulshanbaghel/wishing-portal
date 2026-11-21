@@ -583,6 +583,11 @@
             };
             const t = T[lang];
             const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
+            const isEditMode = !isGenerated && (
+                location.search.includes('mode=edit') ||
+                (typeof window.parent !== 'undefined' && window.parent !== window) ||
+                document.body.classList.contains('edit-mode')
+            );
 
             // set static translations only if not an already generated / published page
             if (!isGenerated) {
@@ -650,12 +655,14 @@
             if (!isGenerated || (tlCardText && !(tlCardText.innerText || tlCardText.textContent || "").trim())) {
                 updateTimeline(0);
             }
-            setInterval(() => {
-                let curr = -1;
-                tlNodes.forEach((n, i) => { if (n.classList.contains('active')) curr = i; });
-                let next = (curr + 1) % t.timelineNodes.length;
-                updateTimeline(next);
-            }, 4500);
+            if (!isEditMode && !isGenerated) {
+                setInterval(() => {
+                    let curr = -1;
+                    tlNodes.forEach((n, i) => { if (n.classList.contains('active')) curr = i; });
+                    let next = (curr + 1) % t.timelineNodes.length;
+                    updateTimeline(next);
+                }, 4500);
+            }
 
             // letter typewriter
             const letterContainer = document.getElementById('letterBody');
@@ -664,8 +671,12 @@
             function typewrite(el, text) {
                 if (typed) return;
                 typed = true;
-                if (isGenerated && el && el.innerHTML.trim().length > 0) {
-                    return; // Preserve customized/saved letter on generated page
+                if ((isGenerated || isEditMode) && el && el.innerHTML.trim().length > 0) {
+                    return; // Preserve customized/saved letter on generated or edit page
+                }
+                if (isEditMode) {
+                    el.innerText = finalText;
+                    return;
                 }
                 el.innerHTML = '';
                 let i = 0;
