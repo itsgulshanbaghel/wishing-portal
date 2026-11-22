@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="google-adsense-account" content="ca-pub-8043014881280685">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon_io/android-chrome-512x512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
+    <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🌧️ From The Bottom Of My Heart · I'm Truly Sorry · TheGreeter.in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Sacramento&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sky-melancholy: #171b26;
+            --sky-transition: #232238;
+            --dawn-glow: #3b2c45;
+            --hope-warmth: #fff3ec;
+            --accent-rain: #7ba2c7;
+            --accent-rose: #e58c97;
+            --accent-warm: #f6c09a;
+            --text-light: #f1f3f9;
+            --text-muted: #a6b0c3;
+            --card-glass: rgba(26, 32, 48, 0.65);
+            --card-border: rgba(123, 162, 199, 0.22);
+            --glow-heart: rgba(229, 140, 151, 0.45);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(180deg, var(--sky-melancholy) 0%, var(--sky-transition) 45%, var(--dawn-glow) 80%, #2f2038 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 1.5s ease;
+        }
+
+        /* Rain & ripple canvas */
+        #rainCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Interactive ripple container */
+        .ripple-layer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .click-ripple {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid rgba(123, 162, 199, 0.7);
+            transform: translate(-50%, -50%) scale(1);
+            animation: rippleExpand 1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+
+        @keyframes rippleExpand {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scale(18); opacity: 0; }
+        }
+
+        /* Dot navigation */
+        #dotNav {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 60;
+        }
+
+        .dot-item {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(123, 162, 199, 0.25);
+            border: 1.5px solid rgba(123, 162, 199, 0.5);
+            cursor: pointer;
+            transition: all 0.35s ease;
+        }
+
+        .dot-item.active {
+            background: var(--accent-rose);
+            border-color: var(--accent-rose);
+            transform: scale(1.4);
+            box-shadow: 0 0 12px var(--glow-heart);
+        }
+
+        @media (max-width: 600px) {
+            #dotNav { display: none; }
+        }
+
+        /* Section layout */
+        .chapter {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 90px 24px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .chapter.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Ambient glowing pulses on emotional words */
+        .pulse-word {
+            display: inline-block;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 600;
+            color: #f7a8b8;
+            -webkit-text-fill-color: #f7a8b8;
+            text-shadow: 0 0 12px rgba(247, 168, 184, 0.6), 0 0 24px rgba(229, 140, 151, 0.35);
+            animation: softPulse 2.8s ease-in-out infinite;
+        }
+
+        @keyframes softPulse {
+            0%, 100% {
+                transform: scale(1);
+                text-shadow: 0 0 10px rgba(247, 168, 184, 0.5), 0 0 20px rgba(229, 140, 151, 0.3);
+            }
+            50% {
+                transform: scale(1.04);
+                text-shadow: 0 0 18px rgba(247, 168, 184, 0.9), 0 0 32px rgba(229, 140, 151, 0.6);
+            }
+        }
+
+        /* ==================== CHAPTER 1: INTRO ==================== */
+        .eyebrow {
+            font-size: 0.76rem;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--accent-rain);
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .eyebrow::before, .eyebrow::after {
+            content: '';
+            height: 1px;
+            width: 32px;
+            background: linear-gradient(90deg, transparent, var(--accent-rain));
+        }
+
+        .eyebrow::after {
+            background: linear-gradient(90deg, var(--accent-rain), transparent);
+        }
+
+        .ch-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.4rem, 7vw, 4.8rem);
+            font-weight: 400;
+            line-height: 1.18;
+            margin-bottom: 16px;
+            color: #ffffff;
+            text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        .recipient-script {
+            font-family: 'Sacramento', cursive;
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            color: var(--accent-warm);
+            margin: 8px 0 20px;
+            text-shadow: 0 4px 20px rgba(246, 192, 154, 0.3);
+            line-height: 1.1;
+        }
+
+        .intro-lead {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: clamp(1.15rem, 3.2vw, 1.5rem);
+            color: var(--text-muted);
+            max-width: 620px;
+            line-height: 1.7;
+            margin: 0 auto 36px;
+        }
+
+        .rain-drop-icon {
+            font-size: 2.2rem;
+            display: inline-block;
+            margin-bottom: 12px;
+            animation: gentleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            opacity: 0.75;
+            transition: opacity 0.3s;
+        }
+
+        .scroll-indicator:hover { opacity: 1; }
+        .scroll-indicator span {
+            font-size: 0.68rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .mouse-icon {
+            width: 20px;
+            height: 32px;
+            border: 2px solid var(--accent-rain);
+            border-radius: 16px;
+            position: relative;
+        }
+
+        .mouse-wheel {
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 6px;
+            border-radius: 2px;
+            background: var(--accent-rose);
+            animation: mouseScroll 1.6s ease-in-out infinite;
+        }
+
+        @keyframes mouseScroll {
+            0% { transform: translate(-50%, 0); opacity: 0; }
+            40% { opacity: 1; }
+            100% { transform: translate(-50%, 12px); opacity: 0; }
+        }
+
+        /* ==================== CHAPTER 2: THE UNFOLDING LETTER ==================== */
+        .letter-wrap {
+            width: min(720px, 94vw);
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .crumpled-letter {
+            background: #fbf9f4;
+            color: #26212b;
+            border-radius: 14px;
+            padding: 44px 36px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+            transition: transform 0.6s ease, box-shadow 0.6s ease;
+        }
+
+        .letter-stamp {
+            position: absolute;
+            top: 24px;
+            right: 28px;
+            width: 60px;
+            height: 60px;
+            border: 2px dashed #bba193;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.62rem;
+            color: #8c766b;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transform: rotate(5deg);
+        }
+
+        .letter-stamp i { font-size: 1.2rem; margin-bottom: 2px; color: var(--accent-rose); }
+
+        .letter-header {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.55rem;
+            font-weight: 600;
+            color: #3b283c;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1.5px solid rgba(140, 118, 107, 0.25);
+        }
+
+        .typewriter-content {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.22rem;
+            line-height: 1.95;
+            color: #342d3a;
+            min-height: 140px;
+            white-space: pre-line;
+        }
+
+        .typewriter-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.15em;
+            background: var(--accent-rose);
+            vertical-align: text-bottom;
+            margin-left: 2px;
+            animation: blink 0.85s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .letter-signature {
+            margin-top: 32px;
+            text-align: right;
+            font-family: 'Sacramento', cursive;
+            font-size: 2.4rem;
+            color: #81344e;
+        }
+
+        /* ==================== CHAPTER 3: REFLECTIONS & REGRETS ==================== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            width: min(900px, 94vw);
+            margin: 36px auto 0;
+        }
+
+        .reflection-card {
+            background: var(--card-glass);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 32px 24px;
+            backdrop-filter: blur(14px);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .reflection-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-rose);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 24px rgba(229, 140, 151, 0.15);
+        }
+
+        .card-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: rgba(123, 162, 199, 0.14);
+            border: 1px solid rgba(123, 162, 199, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--accent-warm);
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            line-height: 1.65;
+            color: var(--text-muted);
+        }
+
+        /* ==================== CHAPTER 4: CAN WE BEGIN AGAIN? ==================== */
+        .dawn-wrap {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .butterfly-canvas-holder {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .butterfly-anim {
+            font-size: 3.5rem;
+            display: inline-block;
+            animation: butterflyHover 3s ease-in-out infinite;
+        }
+
+        @keyframes butterflyHover {
+            0%, 100% { transform: translateY(0) rotate(-3deg) scale(1); }
+            50% { transform: translateY(-12px) rotate(4deg) scale(1.08); }
+        }
+
+        .final-decision-box {
+            background: rgba(43, 33, 56, 0.7);
+            border: 1px solid rgba(229, 140, 151, 0.3);
+            border-radius: 28px;
+            padding: 40px 32px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+            margin-top: 30px;
+        }
+
+        .decision-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+
+        .decision-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .actions-group {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-forgive {
+            background: linear-gradient(135deg, var(--accent-rose) 0%, #bb4f68 100%);
+            color: #ffffff;
+            border: none;
+            padding: 16px 42px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 28px var(--glow-heart);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-forgive:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 16px 36px rgba(229, 140, 151, 0.6);
+        }
+
+        .btn-hug {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hug:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+        }
+
+        /* Modal Overlay */
+        .forgive-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(14, 11, 22, 0.88);
+            backdrop-filter: blur(16px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .forgive-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: linear-gradient(145deg, #2c203b, #1b1627);
+            border: 1px solid rgba(229, 140, 151, 0.4);
+            border-radius: 28px;
+            padding: 44px 32px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+            transform: scale(0.9);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .forgive-modal.active .modal-box {
+            transform: scale(1);
+        }
+
+        .modal-heart-icon {
+            font-size: 3.5rem;
+            color: var(--accent-rose);
+            margin-bottom: 16px;
+            animation: heartThump 1.2s infinite;
+        }
+
+        @keyframes heartThump {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 14px;
+            color: #ffffff;
+        }
+
+        .modal-body {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+        }
+
+        .modal-close-btn {
+            background: var(--accent-rose);
+            color: white;
+            border: none;
+            padding: 12px 34px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Canvas for subtle falling raindrops -->
+    <canvas id="rainCanvas"></canvas>
+    <div class="ripple-layer" id="rippleLayer"></div>
+
+    <!-- Dot Nav -->
+    <nav id="dotNav">
+        <div class="dot-item active" data-target="ch1" title="Intro"></div>
+        <div class="dot-item" data-target="ch2" title="Letter"></div>
+        <div class="dot-item" data-target="ch3" title="Reflections"></div>
+        <div class="dot-item" data-target="ch4" title="Forgiveness"></div>
+    </nav>
+
+    <!-- CHAPTER 1: INTRO -->
+    <section class="chapter visible" id="ch1">
+        <div class="rain-drop-icon">🌧️</div>
+        <div class="eyebrow">A Sincere Confession</div>
+        <h1 class="ch-title">I Am Truly <span class="pulse-word">Sorry</span></h1>
+        <div class="recipient-script" id="recipientName">Dearest One</div>
+        <p class="intro-lead" id="introLead">
+            Sometimes words falter and mistakes happen, but my regret is genuine. I hope you can feel the honesty in these words written just for you.
+        </p>
+        <div class="scroll-indicator" onclick="scrollToChapter('ch2')">
+            <div class="mouse-icon"><div class="mouse-wheel"></div></div>
+            <span>Read My Letter</span>
+        </div>
+    </section>
+
+    <!-- CHAPTER 2: THE UNFOLDED LETTER -->
+    <section class="chapter" id="ch2">
+        <div class="eyebrow">From My Heart To Yours</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 30px;">The Words I Owe You</h2>
+        <div class="letter-wrap">
+            <div class="crumpled-letter">
+                <div class="letter-stamp">
+                    <i class="fas fa-heart"></i>
+                    <span>Sincere</span>
+                </div>
+                <div class="letter-header" id="letterHeader">My Sincere Apology</div>
+                <div class="typewriter-content" id="letterBody"></div>
+                <div class="letter-signature" id="letterSender">With deep regret & love, Always</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 3: REFLECTIONS -->
+    <section class="chapter" id="ch3">
+        <div class="eyebrow">What I Have Realized</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3.2rem);">Things I Want You To Know</h2>
+        <div class="cards-grid">
+            <div class="reflection-card">
+                <div class="card-icon">💔</div>
+                <h3 class="card-title">I Never Meant To Hurt You</h3>
+                <p class="card-desc">Seeing you upset because of my actions hurts me more than anything. Your happiness has always meant the world to me.</p>
+            </div>
+            <div class="reflection-card">
+                <div class="card-icon">🌱</div>
+                <h3 class="card-title">I Want To Do Better</h3>
+                <p class="card-desc">An apology is meaningless without change. I am truly committed to listening deeper, caring gentler, and earning back your smile.</p>
+            </div>
+            <div class="reflection-card">
+                <div class="card-icon">✨</div>
+                <h3 class="card-title">You Are Irreplaceable</h3>
+                <p class="card-desc">Whatever happened cannot overshadow how deeply I value our bond. Life is simply incomplete without your warmth and laughter.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 4: FORGIVENESS & DAWN -->
+    <section class="chapter" id="ch4">
+        <div class="dawn-wrap">
+            <div class="butterfly-canvas-holder">
+                <div class="butterfly-anim">🦋</div>
+            </div>
+            <div class="eyebrow">A Hopeful Tomorrow</div>
+            <h2 class="ch-title" style="font-size: clamp(2.2rem, 6vw, 3.8rem);">Can We Begin Again?</h2>
+            <div class="final-decision-box">
+                <h3 class="decision-title">Will you forgive me?</h3>
+                <p class="decision-sub" id="finalSubText">
+                    No pressure, no haste. Take all the time your heart needs. Just know that I am waiting here with an open heart.
+                </p>
+                <div class="actions-group">
+                    <button class="btn-forgive" id="btnForgive" onclick="onForgiveClick()">
+                        <span>I Forgive You</span>
+                        <span>🤍</span>
+                    </button>
+                    <button class="btn-hug" id="btnHug" onclick="onSendHugClick()">
+                        <span>Send Virtual Hug</span>
+                        <span>🤗</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL -->
+    <div class="forgive-modal" id="forgiveModal">
+        <div class="modal-box">
+            <div class="modal-heart-icon">💖</div>
+            <h3 class="modal-title" id="modalTitle">Thank You</h3>
+            <p class="modal-body" id="modalMessage">
+                Your forgiveness means more than words could ever convey. Thank you for giving us another chance to shine together.
+            </p>
+            <button class="modal-close-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // Load user data
+            let userData = {};
+            try {
+                userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            } catch (e) { }
+
+            const recipient = userData.recipientName || userData.name || 'Dearest One';
+            const story = userData.story || userData.message || 
+                "I am writing this from a place of deep sincerity. I know my words or actions caused you pain, and for that, I am truly sorry.\n\nYou deserve only respect, tenderness, and honesty. Please know that losing the warmth between us has been the heaviest weight on my chest. I value our connection too much to ever let misunderstanding tear us apart.\n\nI hope you can find it in your heart to forgive me.";
+            const wishes = userData.wishes || "Wishing for your smile to return soon. 🕊️";
+            const sender = userData.senderName || userData.creatingForInput || "With deep regret & hope";
+
+            // Update DOM with user data
+            const nameEl = document.getElementById('recipientName');
+            if (nameEl) nameEl.innerText = recipient;
+
+            const letterHeader = document.getElementById('letterHeader');
+            if (letterHeader) letterHeader.innerText = `To ${recipient}, From My Heart`;
+
+            const senderEl = document.getElementById('letterSender');
+            if (senderEl) senderEl.innerText = sender;
+
+            // Scroll helper
+            window.scrollToChapter = function (id) {
+                const el = document.getElementById(id);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            // Intersection Observer for scroll animation
+            const chapters = document.querySelectorAll('.chapter');
+            const dotItems = document.querySelectorAll('.dot-item');
+            let letterTyped = false;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        const currentId = entry.target.id;
+                        dotItems.forEach(d => {
+                            d.classList.toggle('active', d.dataset.target === currentId);
+                        });
+
+                        // Shift background tone towards warmth as user reaches the end
+                        if (currentId === 'ch3') {
+                            document.body.style.background = 'linear-gradient(180deg, #232238 0%, #362846 50%, #462c4c 100%)';
+                        } else if (currentId === 'ch4') {
+                            document.body.style.background = 'linear-gradient(180deg, #281e35 0%, #472d49 50%, #5d3550 100%)';
+                        } else if (currentId === 'ch1') {
+                            document.body.style.background = 'linear-gradient(180deg, #171b26 0%, #232238 45%, #3b2c45 80%, #2f2038 100%)';
+                        }
+
+                        // Trigger typewriter on Chapter 2
+                        if (currentId === 'ch2' && !letterTyped) {
+                            letterTyped = true;
+                            typewriterEffect('letterBody', story);
+                        }
+                    }
+                });
+            }, { threshold: 0.25 });
+
+            chapters.forEach(c => observer.observe(c));
+
+            dotItems.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const target = document.getElementById(dot.dataset.target);
+                    if (target) target.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            // Typewriter effect function
+            function typewriterEffect(elementId, text) {
+                const container = document.getElementById(elementId);
+                if (!container) return;
+                container.innerHTML = '<span class="typewriter-cursor"></span>';
+                let idx = 0;
+                const speed = 22; // ms per char
+
+                function typeNext() {
+                    if (idx < text.length) {
+                        const char = text.charAt(idx);
+                        const cursor = container.querySelector('.typewriter-cursor');
+                        const textNode = document.createTextNode(char);
+                        container.insertBefore(textNode, cursor);
+                        idx++;
+                        setTimeout(typeNext, speed);
+                    }
+                }
+                typeNext();
+            }
+
+            // Click ripple effect
+            window.addEventListener('click', (e) => {
+                const ripple = document.createElement('div');
+                ripple.className = 'click-ripple';
+                ripple.style.left = e.clientX + 'px';
+                ripple.style.top = e.clientY + 'px';
+                document.getElementById('rippleLayer').appendChild(ripple);
+                setTimeout(() => ripple.remove(), 1000);
+            });
+
+            // Forgive & Hug actions
+            const modal = document.getElementById('forgiveModal');
+            window.closeModal = function () {
+                modal.classList.remove('active');
+            };
+
+            window.onForgiveClick = function () {
+                modal.classList.add('active');
+                document.getElementById('modalTitle').innerText = "Thank You For Forgiving Me 🤍";
+                document.getElementById('modalMessage').innerText = `Dear ${recipient}, your compassion touches my heart. I promise to cherish and protect the bond we share.`;
+
+                // Confetti burst
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 90,
+                        spread: 80,
+                        origin: { y: 0.6 },
+                        colors: ['#e58c97', '#f6c09a', '#ffffff', '#7ba2c7']
+                    });
+                }
+            };
+
+            window.onSendHugClick = function () {
+                modal.classList.add('active');
+                document.getElementById('modalTitle').innerText = "Warm Hug Sent 🤗";
+                document.getElementById('modalMessage').innerText = `Sending the biggest, softest hug to ${recipient}. Whenever you are ready, I am right here.`;
+
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 60,
+                        spread: 60,
+                        origin: { y: 0.65 },
+                        colors: ['#f6c09a', '#e58c97']
+                    });
+                }
+            };
+
+            // Raindrop canvas animation
+            (function () {
+                const canvas = document.getElementById('rainCanvas');
+                const ctx = canvas.getContext('2d');
+                let drops = [];
+
+                function resize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+                resize();
+                window.addEventListener('resize', resize);
+
+                function createDrop() {
+                    return {
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * -100,
+                        speed: 2 + Math.random() * 4,
+                        length: 12 + Math.random() * 18,
+                        opacity: 0.15 + Math.random() * 0.35,
+                        width: 0.8 + Math.random() * 1.2
+                    };
+                }
+
+                for (let i = 0; i < 65; i++) {
+                    const d = createDrop();
+                    d.y = Math.random() * canvas.height;
+                    drops.push(d);
+                }
+
+                function loop() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.strokeStyle = 'rgba(123, 162, 199, 0.4)';
+
+                    for (let i = 0; i < drops.length; i++) {
+                        const d = drops[i];
+                        ctx.beginPath();
+                        ctx.lineWidth = d.width;
+                        ctx.globalAlpha = d.opacity;
+                        ctx.moveTo(d.x, d.y);
+                        ctx.lineTo(d.x - 1, d.y + d.length);
+                        ctx.stroke();
+
+                        d.y += d.speed;
+                        d.x -= 0.5;
+
+                        if (d.y > canvas.height + 20) {
+                            drops[i] = createDrop();
+                        }
+                    }
+
+                    requestAnimationFrame(loop);
+                }
+                loop();
+            })();
+
+            // Storage sync for live customization preview
+            window.addEventListener('storage', e => {
+                if (e.key !== 'userData') return;
+                try {
+                    const d = JSON.parse(e.newValue);
+                    if (d.recipientName || d.name) {
+                        const n = d.recipientName || d.name;
+                        if (nameEl) nameEl.innerText = n;
+                        if (letterHeader) letterHeader.innerText = `To ${n}, From My Heart`;
+                    }
+                    if (d.story || d.message) {
+                        const newMsg = d.story || d.message;
+                        typewriterEffect('letterBody', newMsg);
+                    }
+                    if (d.senderName) {
+                        if (senderEl) senderEl.innerText = d.senderName;
+                    }
+                } catch { }
+            });
+        })();
+    </script>
+    <script src="/assets/content-protection.js"></script>
+</body>
+
+</html>
+

@@ -80,6 +80,18 @@
     <priority>0.95</priority>
   </url>
   <url>
+    <loc>https://thegreeter.in/sorry-message-website</loc>
+    <lastmod>2026-11-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://thegreeter.in/thank-you-message-website</loc>
+    <lastmod>2026-11-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
     <loc>https://thegreeter.in/templates</loc>
     <lastmod>2026-08-25</lastmod>
     <changefreq>weekly</changefreq>

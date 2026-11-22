@@ -1226,7 +1226,8 @@ const RESERVED_SLUGS = new Set([
   'api', 'assets', 'generated', 'blog', 'admin', 'create', 'edit', 'index', 'share', 'privacy',
   'clear', 'terms', 'contactus', 'aboutus', 'whygreeter', 'templates', 'uploads', 'ping', 'testme',
   'preview', 'customize', 'custom-url', 'login', 'logout', 'dashboard', 'support', 'help',
-  'pricing', 'price', 'plans', 'null', 'undefined', 'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml'
+  'pricing', 'price', 'plans', 'null', 'undefined', 'favicon.ico', 'sitemap.xml', 'robots.txt', 'crossdomain.xml',
+  'sorry-message-website', 'thank-you-message-website'
 ]);
 
 app.post('/api/custom-url', async (req, res) => {

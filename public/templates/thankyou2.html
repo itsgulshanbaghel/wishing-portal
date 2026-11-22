@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="google-adsense-account" content="ca-pub-8043014881280685">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon_io/android-chrome-512x512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon_io/apple-touch-icon.png">
+    <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>✒️ The Calligraphy Journal · A Token Of Gratitude · TheGreeter.in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Sacramento&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-royal: #0d1a16;
+            --emerald-deep: #142823;
+            --emerald-glow: rgba(79, 168, 143, 0.35);
+            --gold-leaf: #d4af37;
+            --gold-light: #f5e2a0;
+            --parchment: #fcf9f2;
+            --text-gold: #f5eedb;
+            --text-dim: #98ada6;
+            --card-glass: rgba(20, 40, 35, 0.75);
+            --card-border: rgba(212, 175, 55, 0.28);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at 50% 15%, #18332c 0%, var(--bg-royal) 75%);
+            color: var(--text-gold);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Gold sparkle canvas */
+        #sparkleCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #dotNav {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 60;
+        }
+
+        .dot-item {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(212, 175, 55, 0.25);
+            border: 1.5px solid rgba(212, 175, 55, 0.45);
+            cursor: pointer;
+            transition: all 0.35s ease;
+        }
+
+        .dot-item.active {
+            background: var(--gold-leaf);
+            border-color: var(--gold-leaf);
+            transform: scale(1.4);
+            box-shadow: 0 0 14px var(--gold-leaf);
+        }
+
+        @media (max-width: 600px) {
+            #dotNav { display: none; }
+        }
+
+        .chapter {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 85px 24px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(35px);
+            transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1), transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .chapter.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .eyebrow {
+            font-size: 0.72rem;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--gold-leaf);
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .eyebrow::before, .eyebrow::after {
+            content: '';
+            height: 1px;
+            width: 28px;
+            background: linear-gradient(90deg, transparent, var(--gold-leaf));
+        }
+
+        .eyebrow::after {
+            background: linear-gradient(90deg, var(--gold-leaf), transparent);
+        }
+
+        .ch-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.4rem, 7vw, 4.6rem);
+            font-weight: 300;
+            line-height: 1.18;
+            background: linear-gradient(135deg, #ffffff 10%, var(--gold-light) 50%, var(--gold-leaf) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .recipient-script {
+            font-family: 'Sacramento', cursive;
+            font-size: clamp(3.2rem, 9.5vw, 6rem);
+            color: var(--gold-light);
+            text-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+            margin: 4px 0 20px;
+            line-height: 1.1;
+        }
+
+        .lead-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: clamp(1.15rem, 3.2vw, 1.45rem);
+            color: var(--text-dim);
+            max-width: 620px;
+            line-height: 1.7;
+            margin: 0 auto 36px;
+        }
+
+        .quill-icon {
+            font-size: 2.8rem;
+            margin-bottom: 14px;
+            animation: quillFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes quillFloat {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
+        }
+
+        /* ==================== CHAPTER 2: THE JOURNAL SPREAD ==================== */
+        .journal-wrap {
+            width: min(740px, 94vw);
+            margin: 0 auto;
+        }
+
+        .journal-page {
+            background: var(--parchment);
+            color: #1a2a24;
+            border-radius: 16px;
+            padding: 48px 38px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 0 50px rgba(212, 175, 55, 0.15);
+            border: 2px solid rgba(212, 175, 55, 0.45);
+            text-align: left;
+            position: relative;
+        }
+
+        .journal-ribbon {
+            position: absolute;
+            top: -12px;
+            right: 40px;
+            width: 32px;
+            height: 60px;
+            background: #8e2b2b;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border-radius: 0 0 4px 4px;
+        }
+
+        .journal-header {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            color: #142823;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1.5px solid rgba(212, 175, 55, 0.35);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .journal-body {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            line-height: 1.95;
+            color: #1f352d;
+            white-space: pre-line;
+            min-height: 120px;
+        }
+
+        .quill-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: var(--gold-leaf);
+            vertical-align: text-bottom;
+            animation: quillBlink 0.85s infinite;
+        }
+
+        @keyframes quillBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .journal-sign {
+            margin-top: 32px;
+            text-align: right;
+            font-family: 'Sacramento', cursive;
+            font-size: 2.6rem;
+            color: #142823;
+        }
+
+        /* ==================== CHAPTER 3: KEEPSAKE CARDS ==================== */
+        .keepsakes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            width: min(880px, 94vw);
+            margin-top: 36px;
+        }
+
+        .keepsake-card {
+            background: var(--card-glass);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 34px 24px;
+            backdrop-filter: blur(14px);
+            text-align: left;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .keepsake-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--gold-leaf);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 25px rgba(212, 175, 55, 0.25);
+        }
+
+        .card-num {
+            font-size: 0.72rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold-leaf);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .keepsake-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.45rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .keepsake-desc {
+            font-size: 0.94rem;
+            line-height: 1.7;
+            color: var(--text-dim);
+        }
+
+        /* ==================== CHAPTER 4: GILDED TOAST ==================== */
+        .gilded-box {
+            background: linear-gradient(145deg, #18332c, #0e1e1a);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 44px 34px;
+            max-width: 650px;
+            width: 100%;
+            margin: 28px auto 0;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-gold-toast {
+            background: linear-gradient(135deg, var(--gold-leaf) 0%, #aa8524 100%);
+            color: #0d1a16;
+            border: none;
+            padding: 16px 44px;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.35);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px;
+        }
+
+        .btn-gold-toast:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 16px 40px rgba(212, 175, 55, 0.55);
+        }
+
+        .btn-emerald-hug {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid var(--gold-leaf);
+            color: var(--gold-light);
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-emerald-hug:hover {
+            background: rgba(212, 175, 55, 0.15);
+            transform: translateY(-3px);
+        }
+
+        /* Modal */
+        .gilded-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(13, 26, 22, 0.9);
+            backdrop-filter: blur(16px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .gilded-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .gilded-modal-box {
+            background: linear-gradient(145deg, #1b352e, #0e1d19);
+            border: 1px solid var(--gold-leaf);
+            border-radius: 26px;
+            padding: 42px 32px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+            transform: scale(0.92);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .gilded-modal.active .gilded-modal-box {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 3.2rem;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.1rem;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .modal-desc {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: var(--text-dim);
+            margin-bottom: 26px;
+        }
+
+        .modal-btn {
+            background: var(--gold-leaf);
+            color: #0d1a16;
+            border: none;
+            padding: 12px 34px;
+            border-radius: 40px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="sparkleCanvas"></canvas>
+
+    <nav id="dotNav">
+        <div class="dot-item active" data-target="ch1" title="The Journal"></div>
+        <div class="dot-item" data-target="ch2" title="The Inscription"></div>
+        <div class="dot-item" data-target="ch3" title="Keepsakes"></div>
+        <div class="dot-item" data-target="ch4" title="Toast"></div>
+    </nav>
+
+    <!-- CHAPTER 1: INTRO -->
+    <section class="chapter visible" id="ch1">
+        <div class="quill-icon">✒️</div>
+        <div class="eyebrow">A Formal Token Of Thanks</div>
+        <h1 class="ch-title">A Page From My Heart</h1>
+        <div class="recipient-script" id="recipientName">Honored Friend</div>
+        <p class="lead-text">
+            Written with sincere respect and enduring appreciation. Words alone are modest, yet they carry the fullest measure of my gratitude.
+        </p>
+    </section>
+
+    <!-- CHAPTER 2: THE JOURNAL -->
+    <section class="chapter" id="ch2">
+        <div class="eyebrow">Penned With Sincerity</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 28px;">The Inscribed Letter</h2>
+        <div class="journal-wrap">
+            <div class="journal-page">
+                <div class="journal-ribbon"></div>
+                <div class="journal-header">
+                    <span id="letterTo">To My Valued Companion</span>
+                    <span style="font-size: 0.85rem; color: #627a71; font-weight: 500;">In Appreciation</span>
+                </div>
+                <div class="journal-body" id="letterBody"></div>
+                <div class="journal-sign" id="letterSender">With Sincere Respect</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 3: KEEPSAKES -->
+    <section class="chapter" id="ch3">
+        <div class="eyebrow">Treasured Virtues</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem);">Three Gifts You Gave Me</h2>
+        <div class="keepsakes-grid">
+            <div class="keepsake-card">
+                <div class="card-num">Keepsake I</div>
+                <h3 class="keepsake-title">Generosity Of Spirit</h3>
+                <p class="keepsake-desc">You give without expecting in return, welcoming others with open arms and an uplifting grace.</p>
+            </div>
+            <div class="keepsake-card">
+                <div class="card-num">Keepsake II</div>
+                <h3 class="keepsake-title">Quiet Reliability</h3>
+                <p class="keepsake-desc">When promises matter most, your word remains as solid as gold. Having someone to rely on is a priceless blessing.</p>
+            </div>
+            <div class="keepsake-card">
+                <div class="card-num">Keepsake III</div>
+                <h3 class="keepsake-title">Invaluable Wisdom</h3>
+                <p class="keepsake-desc">Your thoughtful perspectives bring clarity during confusing times. Thank you for always offering genuine guidance.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 4: GILDED TOAST -->
+    <section class="chapter" id="ch4">
+        <div class="gilded-box">
+            <div style="font-size: 3rem; margin-bottom: 14px;">🥂</div>
+            <h2 class="ch-title" style="font-size: clamp(2.2rem, 5.5vw, 3.4rem); margin-bottom: 12px;">A Golden Toast</h2>
+            <p style="font-size: 1.05rem; line-height: 1.7; color: var(--text-dim); margin-bottom: 28px;">
+                May fortune, good health, and peace accompany your steps always. Here is to honoring the bond we share.
+            </p>
+            <div>
+                <button class="btn-gold-toast" onclick="openGildedModal('toast')">
+                    <span>Raise A Toast</span>
+                    <span>✨</span>
+                </button>
+                <button class="btn-emerald-hug" onclick="openGildedModal('hug')">
+                    <span>Send Warm Hug</span>
+                    <span>🤗</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL -->
+    <div class="gilded-modal" id="modal">
+        <div class="gilded-modal-box">
+            <div class="modal-icon" id="mIcon">🥂</div>
+            <h3 class="modal-title" id="mTitle">To Your Honor</h3>
+            <p class="modal-desc" id="mDesc">
+                May your kindness return to you multiplied a thousandfold.
+            </p>
+            <button class="modal-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            let userData = {};
+            try {
+                userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            } catch (e) { }
+
+            const recipient = userData.recipientName || userData.name || 'Honored Friend';
+            const story = userData.story || userData.message ||
+                "It is with deep respect and boundless gratitude that I write these lines to you.\n\nIn a bustling world, having someone of your virtue, integrity, and warmth is an extraordinary privilege. Your support has been a pillar of strength, and your good nature brings joy to everyone around you.\n\nPlease accept this token of my highest esteem and deepest thankfulness.";
+            const sender = userData.senderName || userData.creatingForInput || "With Sincerest Regards";
+
+            const nameEl = document.getElementById('recipientName');
+            if (nameEl) nameEl.innerText = recipient;
+
+            const letterToEl = document.getElementById('letterTo');
+            if (letterToEl) letterToEl.innerText = `To ${recipient}`;
+
+            const senderEl = document.getElementById('letterSender');
+            if (senderEl) senderEl.innerText = sender;
+
+            const chapters = document.querySelectorAll('.chapter');
+            const dotItems = document.querySelectorAll('.dot-item');
+            let isTyped = false;
+
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        dotItems.forEach(d => d.classList.toggle('active', d.dataset.target === entry.target.id));
+
+                        if (entry.target.id === 'ch2' && !isTyped) {
+                            isTyped = true;
+                            renderTypewriter('letterBody', story);
+                        }
+                    }
+                });
+            }, { threshold: 0.25 });
+
+            chapters.forEach(c => obs.observe(c));
+
+            dotItems.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    document.getElementById(dot.dataset.target)?.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            function renderTypewriter(id, text) {
+                const target = document.getElementById(id);
+                if (!target) return;
+                target.innerHTML = '<span class="quill-cursor"></span>';
+                let i = 0;
+                function step() {
+                    if (i < text.length) {
+                        const cur = target.querySelector('.quill-cursor');
+                        const node = document.createTextNode(text.charAt(i));
+                        target.insertBefore(node, cur);
+                        i++;
+                        setTimeout(step, 20);
+                    }
+                }
+                step();
+            }
+
+            const modal = document.getElementById('modal');
+            window.closeModal = function () {
+                modal.classList.remove('active');
+            };
+
+            window.openGildedModal = function (type) {
+                modal.classList.add('active');
+                if (type === 'toast') {
+                    document.getElementById('mIcon').innerText = "🥂";
+                    document.getElementById('mTitle').innerText = "A Toast To You";
+                    document.getElementById('mDesc').innerText = `To ${recipient}—thank you for your continuous generosity and kindness. Cheers!`;
+                    if (typeof confetti === 'function') {
+                        confetti({
+                            particleCount: 110,
+                            spread: 85,
+                            origin: { y: 0.6 },
+                            colors: ['#d4af37', '#f5e2a0', '#ffffff', '#4fa88f']
+                        });
+                    }
+                } else {
+                    document.getElementById('mIcon').innerText = "🤗";
+                    document.getElementById('mTitle').innerText = "Respectful Embrace";
+                    document.getElementById('mDesc').innerText = `A deeply grateful and warm embrace sent directly to you, ${recipient}.`;
+                }
+            };
+
+            // Gold sparkle canvas
+            (function () {
+                const canvas = document.getElementById('sparkleCanvas');
+                const ctx = canvas.getContext('2d');
+                let sparks = [];
+
+                function resize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+                resize();
+                window.addEventListener('resize', resize);
+
+                function createSpark() {
+                    return {
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: 1 + Math.random() * 2.5,
+                        vy: -(0.3 + Math.random() * 0.7),
+                        vx: (Math.random() - 0.5) * 0.3,
+                        alpha: 0.2 + Math.random() * 0.7,
+                        phase: Math.random() * Math.PI * 2
+                    };
+                }
+
+                for (let i = 0; i < 45; i++) sparks.push(createSpark());
+
+                function loop(time) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    sparks.forEach(s => {
+                        const tw = 0.5 + 0.5 * Math.sin(time * 0.003 + s.phase);
+                        ctx.beginPath();
+                        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                        ctx.fillStyle = '#d4af37';
+                        ctx.globalAlpha = s.alpha * tw;
+                        ctx.fill();
+
+                        s.y += s.vy;
+                        s.x += s.vx;
+                        if (s.y < -10) s.y = canvas.height + 10;
+                    });
+                    requestAnimationFrame(loop);
+                }
+                requestAnimationFrame(loop);
+            })();
+
+            // Storage sync
+            window.addEventListener('storage', e => {
+                if (e.key !== 'userData') return;
+                try {
+                    const d = JSON.parse(e.newValue);
+                    const n = d.recipientName || d.name;
+                    if (n) {
+                        if (nameEl) nameEl.innerText = n;
+                        if (letterToEl) letterToEl.innerText = `To ${n}`;
+                    }
+                    if (d.story || d.message) {
+                        renderTypewriter('letterBody', d.story || d.message);
+                    }
+                    if (d.senderName) {
+                        if (senderEl) senderEl.innerText = d.senderName;
+                    }
+                } catch { }
+            });
+        })();
+    </script>
+    <script src="/assets/content-protection.js"></script>
+</body>
+
+</html>
+

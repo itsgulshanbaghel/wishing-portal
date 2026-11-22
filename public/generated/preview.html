@@ -1760,6 +1760,8 @@
             <option value="proposal">💍 Proposal</option>
             <option value="anniversary">❤️ Anniversary</option>
             <option value="festival">🎉 Festival</option>
+            <option value="sorry">🥺 Sorry</option>
+            <option value="thankyou">💐 Thank You</option>
           </select>
         </div>
         <div class="event-bar" id="eventCategoryBar">
@@ -1767,6 +1769,8 @@
           <div class="event-chip" data-event="proposal" id="eventChipProposal">💍 Proposal</div>
           <div class="event-chip" data-event="anniversary" id="eventChipAnniversary">❤️ Anniversary</div>
           <div class="event-chip" data-event="festival" id="eventChipFestival">🎉 Festival</div>
+          <div class="event-chip" data-event="sorry" id="eventChipSorry">🥺 Sorry</div>
+          <div class="event-chip" data-event="thankyou" id="eventChipThankyou">💐 Thank You</div>
         </div>
         <div class="template-list-container" id="templateListContainer">
           <div id="templateList"></div>
@@ -1935,7 +1939,7 @@
           signin: "Sign in", sidebarTitle: "Template gallery", customizeBtn: "Customize", uploadBtn: "Upload custom template (.html)",
           copyright: "© 2026 Greeter · Make every moment magical",
           footer: ["Templates", "Features", "Showcase", "Help", "Privacy"],
-          eventChips: ["Birthday", "Proposal", "Anniversary", "Festival"],
+          eventChips: ["Birthday", "Proposal", "Anniversary", "Festival", "Sorry", "Thank You"],
           alertNoTemplate: "🎯 Please select a template first",
           alertCustomizeFirst: "✨ Select a template first before customizing!",
           alertUploadInvalid: "Please upload a valid .html template file",
@@ -1956,7 +1960,7 @@
           signin: "लॉगिन करें", sidebarTitle: "टेम्पलेट गैलरी", customizeBtn: "अपनी मर्जी से सजाएं", uploadBtn: "कस्टम टेम्पलेट अपलोड करें (.html)",
           copyright: "© 2026 Greeter · हर पल जादुई बनाएं",
           footer: ["टेम्पलेट", "फीचर्स", "शोकेस", "मदद", "प्राइवेसी"],
-          eventChips: ["जन्मदिन", "प्रपोज़ल", "सालगिरह", "त्योहार"],
+          eventChips: ["जन्मदिन", "प्रपोज़ल", "सालगिरह", "त्योहार", "माफ़ी", "धन्यवाद"],
           alertNoTemplate: "🎯 कृपया पहले कोई टेम्पलेट चुनें",
           alertCustomizeFirst: "✨ कस्टमाइज़ करने से पहले टेम्पलेट चुनें!",
           alertUploadInvalid: "कृपया मान्य .html टेम्पलेट फ़ाइल अपलोड करें",
@@ -1992,14 +1996,14 @@
         document.getElementById('copyrightText').innerText = t.copyright;
         const footerLinkIds = ['footerTemplates', 'footerFeatures', 'footerShowcase', 'footerHelp', 'footerPrivacy'];
         footerLinkIds.forEach((id, idx) => { if (document.getElementById(id)) document.getElementById(id).innerText = t.footer[idx]; });
-        const chips = ['eventChipBirthday', 'eventChipProposal', 'eventChipAnniversary', 'eventChipFestival'];
-        chips.forEach((id, idx) => { const el = document.getElementById(id); if (el) el.innerHTML = (idx === 0 ? '🎂 ' : idx === 1 ? '💍 ' : idx === 2 ? '❤️ ' : '🎉 ') + t.eventChips[idx]; });
+        const chips = ['eventChipBirthday', 'eventChipProposal', 'eventChipAnniversary', 'eventChipFestival', 'eventChipSorry', 'eventChipThankyou'];
+        const chipIcons = ['🎂 ', '💍 ', '❤️ ', '🎉 ', '🥺 ', '💐 '];
+        chips.forEach((id, idx) => { const el = document.getElementById(id); if (el) el.innerHTML = chipIcons[idx] + t.eventChips[idx]; });
         const inlineSelect = document.getElementById('inlineEventSelect');
         if (inlineSelect) {
-          inlineSelect.options[0].text = '🎂 ' + t.eventChips[0];
-          inlineSelect.options[1].text = '💍 ' + t.eventChips[1];
-          inlineSelect.options[2].text = '❤️ ' + t.eventChips[2];
-          inlineSelect.options[3].text = '🎉 ' + t.eventChips[3];
+          for (let i = 0; i < inlineSelect.options.length; i++) {
+            if (t.eventChips[i]) inlineSelect.options[i].text = chipIcons[i] + t.eventChips[i];
+          }
         }
         if (document.getElementById('deviceTipBadge')) document.getElementById('deviceTipBadge').innerText = t.deviceTipBadge;
         if (document.getElementById('deviceModalTitle')) document.getElementById('deviceModalTitle').innerText = t.deviceTipTitle;
