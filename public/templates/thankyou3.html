@@ -136,10 +136,23 @@
             font-size: clamp(2.6rem, 8vw, 5.2rem);
             font-weight: 800;
             line-height: 1.12;
-            background: linear-gradient(135deg, #ffffff 10%, var(--amber-gold) 50%, var(--coral-pop) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #ffffff;
+            text-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
             margin-bottom: 12px;
+        }
+
+        .sparkle-pulse {
+            color: var(--amber-gold);
+            -webkit-text-fill-color: var(--amber-gold);
+            font-style: italic;
+            display: inline-block;
+            text-shadow: 0 0 16px rgba(255, 215, 64, 0.6), 0 0 32px rgba(255, 82, 82, 0.4);
+            animation: popPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes popPulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 12px rgba(255, 215, 64, 0.5); }
+            50% { transform: scale(1.05); text-shadow: 0 0 24px rgba(255, 215, 64, 0.9), 0 0 40px rgba(255, 82, 82, 0.6); }
         }
 
         .recipient-script {
@@ -430,55 +443,55 @@
         <div class="dot-item active" data-target="ch1" title="You Rock"></div>
         <div class="dot-item" data-target="ch2" title="The Shoutout"></div>
         <div class="dot-item" data-target="ch3" title="Superpowers"></div>
-        <div class="dot-item" data-target="ch4" title="Cannon Burst"></div>
+        <div class="dot-item" data-target="ch4" title="Ovation"></div>
     </nav>
 
     <!-- CHAPTER 1: INTRO -->
     <section class="chapter visible" id="ch1">
         <div class="party-popper-badge">🎉</div>
-        <div class="eyebrow">You Deserve A Standing Ovation</div>
-        <h1 class="ch-title">A Million Thank Yous!</h1>
+        <div class="eyebrow">A Standing Ovation In Your Honor</div>
+        <h1 class="ch-title">You Deserve The World, <span class="sparkle-pulse">Thank You!</span></h1>
         <div class="recipient-script" id="recipientName">Absolute Legend</div>
         <p class="lead-text">
-            Not all heroes wear capes—some just show up with kindness, generosity, and epic energy. You are truly one of a kind!
+            Life is infinitely more joyful, vibrant, and fun because you are in it. You went above and beyond, and today is all about celebrating the superstar you are!
         </p>
     </section>
 
     <!-- CHAPTER 2: THE CARD -->
     <section class="chapter" id="ch2">
-        <div class="eyebrow">From A Grateful Heart</div>
-        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 28px;">My Heartfelt Shoutout</h2>
+        <div class="eyebrow">A Mega Love Shoutout</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 28px;">Why You Are Truly Irreplaceable</h2>
         <div class="card-wrap">
             <div class="celebrate-card">
                 <div class="celebrate-badge-row">
                     <span class="celebrate-headline" id="cardHead">To My Favorite Person</span>
-                    <span class="tag-pill">Superstar</span>
+                    <span class="tag-pill">One In A Billion</span>
                 </div>
                 <div class="celebrate-body" id="letterBody"></div>
-                <div class="celebrate-sign" id="letterSender">Your Biggest Fan Always</div>
+                <div class="celebrate-sign" id="letterSender">Your biggest fan & cheerleader, Always</div>
             </div>
         </div>
     </section>
 
     <!-- CHAPTER 3: SUPERPOWERS -->
     <section class="chapter" id="ch3">
-        <div class="eyebrow">Certified Superpowers</div>
-        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3.2rem);">Why You Are Awesome</h2>
+        <div class="eyebrow">Certified Rare Qualities</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3.2rem);">Three Superpowers You Share Daily</h2>
         <div class="badges-grid">
             <div class="badge-card">
                 <div class="badge-icon">⚡</div>
-                <h3 class="badge-title">Instant Joy Catalyst</h3>
-                <p class="badge-desc">You walk into the room or into someone's messages and instantly elevate the whole vibe. Your positivity is unbeatable.</p>
+                <h3 class="badge-title">Unstoppable Good Vibes</h3>
+                <p class="badge-desc">Your positive energy is contagious. No matter how tough the day is, one conversation with you turns everything around.</p>
             </div>
             <div class="badge-card">
                 <div class="badge-icon">🛡️</div>
-                <h3 class="badge-title">Rock Solid Support</h3>
-                <p class="badge-desc">When times get messy or hectic, you're the one people can count on with zero hesitation. That kind of loyalty is rare.</p>
+                <h3 class="badge-title">Always Having My Back</h3>
+                <p class="badge-desc">Zero hesitation, 100% loyalty. You show up when it matters most, and knowing I have you in my corner is pure gold.</p>
             </div>
             <div class="badge-card">
                 <div class="badge-icon">💖</div>
-                <h3 class="badge-title">Pure Heart Of Gold</h3>
-                <p class="badge-desc">Generous with your time, your kindness, and your patience. Thank you for making life so much brighter and easier.</p>
+                <h3 class="badge-title">A Heart Of Pure Gold</h3>
+                <p class="badge-desc">Your generosity, big smiles, and boundless warmth make every single moment brighter. You truly are one of one.</p>
             </div>
         </div>
     </section>
@@ -487,18 +500,18 @@
     <section class="chapter" id="ch4">
         <div class="celebrate-grand-box">
             <div style="font-size: 3.2rem; margin-bottom: 12px;">🚀</div>
-            <h2 class="ch-title" style="font-size: clamp(2.2rem, 5.5vw, 3.4rem); margin-bottom: 12px;">Let's Celebrate You!</h2>
+            <h2 class="ch-title" style="font-size: clamp(2.2rem, 5.5vw, 3.4rem); margin-bottom: 12px;">Time For Your Standing Ovation!</h2>
             <p style="font-size: 1.05rem; line-height: 1.7; color: var(--text-dim); margin-bottom: 28px;">
-                Hit the confetti cannon below for a grand celebration in your honor!
+                Fire the celebratory confetti cannons below to give this superstar the epic celebration they truly deserve!
             </p>
             <div>
                 <button class="btn-cannon" onclick="triggerMegaCannon()">
-                    <span>Fire Confetti Cannon!</span>
+                    <span>Fire Grand Confetti!</span>
                     <span>🎊</span>
                 </button>
                 <button class="btn-sweet-hug" onclick="openModal('hug')">
-                    <span>Send Big Hug</span>
-                    <span>🤗</span>
+                    <span>Send Bear Hug & High-Five</span>
+                    <span>🙌</span>
                 </button>
             </div>
         </div>
@@ -508,7 +521,7 @@
     <div class="celebrate-modal" id="modal">
         <div class="celebrate-modal-box">
             <div class="modal-icon" id="mIcon">🎊</div>
-            <h3 class="modal-title" id="mTitle">Epic Gratitude</h3>
+            <h3 class="modal-title" id="mTitle">Standing Ovation!</h3>
             <p class="modal-desc" id="mDesc">
                 Thank you for being completely extraordinary!
             </p>
@@ -525,14 +538,14 @@
 
             const recipient = userData.recipientName || userData.name || 'Absolute Legend';
             const story = userData.story || userData.message ||
-                "I just wanted to drop everything and shout a massive THANK YOU!\n\nYou went above and beyond, and your kindness didn't just help me—it made my whole day ten times brighter.\n\nPeople like you make this world such a fun, loving, and beautiful place. Never forget how awesome you are!";
-            const sender = userData.senderName || userData.creatingForInput || "With Endless Thanks";
+                "I just had to stop everything and send you the biggest, brightest THANK YOU imaginable!\n\nYou didn't just help me—you brought unmatched energy, pure kindness, and made my entire world light up. Whenever things feel heavy, you bring laughter, hype, and that incredible heart of gold that makes everyone feel loved and invincible.\n\nThank you for being my hype person, my confidant, and the most genuine friend anyone could dream of. Never forget how completely extraordinary you are!";
+            const sender = userData.senderName || userData.creatingForInput || "Your biggest fan & cheerleader, Always";
 
             const nameEl = document.getElementById('recipientName');
             if (nameEl) nameEl.innerText = recipient;
 
             const cardHeadEl = document.getElementById('cardHead');
-            if (cardHeadEl) cardHeadEl.innerText = `To ${recipient}, My Hero`;
+            if (cardHeadEl) cardHeadEl.innerText = `To ${recipient}, A Rare Legend`;
 
             const senderEl = document.getElementById('letterSender');
             if (senderEl) senderEl.innerText = sender;
@@ -588,8 +601,8 @@
             window.triggerMegaCannon = function () {
                 modal.classList.add('active');
                 document.getElementById('mIcon').innerText = "🎊";
-                document.getElementById('mTitle').innerText = "Boom! Massive Thanks!";
-                document.getElementById('mDesc').innerText = `To ${recipient}—you are genuinely unmatched. Thank you for being so wonderful!`;
+                document.getElementById('mTitle').innerText = "Standing Ovation!";
+                document.getElementById('mDesc').innerText = `BOOM! Confetti raining down for ${recipient}—the most incredible human being on earth!`;
 
                 if (typeof confetti === 'function') {
                     for (let i = 0; i < 5; i++) {
@@ -608,9 +621,9 @@
 
             window.openModal = function (type) {
                 modal.classList.add('active');
-                document.getElementById('mIcon').innerText = "🤗";
-                document.getElementById('mTitle').innerText = "Big Hug Sent!";
-                document.getElementById('mDesc').innerText = `Sending you the warmest, most energetic bear hug, ${recipient}!`;
+                document.getElementById('mIcon').innerText = "🙌";
+                document.getElementById('mTitle').innerText = "Mega Bear Hug!";
+                document.getElementById('mDesc').innerText = `Sending you the biggest, warmest, highest-energy hug in the universe, ${recipient}!`;
             };
 
             // Floating sparks and particles

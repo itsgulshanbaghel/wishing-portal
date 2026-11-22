@@ -138,10 +138,24 @@
             font-size: clamp(2.4rem, 7vw, 4.6rem);
             font-weight: 300;
             line-height: 1.18;
-            background: linear-gradient(135deg, #ffffff 10%, var(--gold-light) 50%, var(--gold-leaf) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #ffffff;
+            text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
             margin-bottom: 12px;
+        }
+
+        .gold-pulse {
+            color: var(--gold-light);
+            -webkit-text-fill-color: var(--gold-light);
+            font-style: italic;
+            font-weight: 600;
+            display: inline-block;
+            text-shadow: 0 0 14px rgba(245, 226, 160, 0.6), 0 0 28px rgba(212, 175, 55, 0.4);
+            animation: goldGlowPulse 2.8s ease-in-out infinite;
+        }
+
+        @keyframes goldGlowPulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 10px rgba(245, 226, 160, 0.5); }
+            50% { transform: scale(1.04); text-shadow: 0 0 22px rgba(245, 226, 160, 0.9), 0 0 35px rgba(212, 175, 55, 0.6); }
         }
 
         .recipient-script {
@@ -421,59 +435,59 @@
     <canvas id="sparkleCanvas"></canvas>
 
     <nav id="dotNav">
-        <div class="dot-item active" data-target="ch1" title="The Journal"></div>
+        <div class="dot-item active" data-target="ch1" title="Honored Tribute"></div>
         <div class="dot-item" data-target="ch2" title="The Inscription"></div>
-        <div class="dot-item" data-target="ch3" title="Keepsakes"></div>
-        <div class="dot-item" data-target="ch4" title="Toast"></div>
+        <div class="dot-item" data-target="ch3" title="Noble Virtues"></div>
+        <div class="dot-item" data-target="ch4" title="Golden Toast"></div>
     </nav>
 
     <!-- CHAPTER 1: INTRO -->
     <section class="chapter visible" id="ch1">
         <div class="quill-icon">✒️</div>
-        <div class="eyebrow">A Formal Token Of Thanks</div>
-        <h1 class="ch-title">A Page From My Heart</h1>
+        <div class="eyebrow">An Expression Of Deepest Esteem</div>
+        <h1 class="ch-title">Forever Grateful For <span class="gold-pulse">Your Presence</span></h1>
         <div class="recipient-script" id="recipientName">Honored Friend</div>
         <p class="lead-text">
-            Written with sincere respect and enduring appreciation. Words alone are modest, yet they carry the fullest measure of my gratitude.
+            Certain people leave an indelible mark upon our lives through their unwavering integrity, wisdom, and quiet generosity. You are that rare blessing to me.
         </p>
     </section>
 
     <!-- CHAPTER 2: THE JOURNAL -->
     <section class="chapter" id="ch2">
-        <div class="eyebrow">Penned With Sincerity</div>
-        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 28px;">The Inscribed Letter</h2>
+        <div class="eyebrow">Penned In Deep Honor</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 28px;">An Inscription Of Sincere Respect</h2>
         <div class="journal-wrap">
             <div class="journal-page">
                 <div class="journal-ribbon"></div>
                 <div class="journal-header">
                     <span id="letterTo">To My Valued Companion</span>
-                    <span style="font-size: 0.85rem; color: #627a71; font-weight: 500;">In Appreciation</span>
+                    <span style="font-size: 0.85rem; color: #627a71; font-weight: 500;">Enduring Esteem</span>
                 </div>
                 <div class="journal-body" id="letterBody"></div>
-                <div class="journal-sign" id="letterSender">With Sincere Respect</div>
+                <div class="journal-sign" id="letterSender">With deep honor & gratitude</div>
             </div>
         </div>
     </section>
 
     <!-- CHAPTER 3: KEEPSAKES -->
     <section class="chapter" id="ch3">
-        <div class="eyebrow">Treasured Virtues</div>
-        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem);">Three Gifts You Gave Me</h2>
+        <div class="eyebrow">Virtues I Treasure</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem);">Three Timeless Gifts You Bestowed</h2>
         <div class="keepsakes-grid">
             <div class="keepsake-card">
                 <div class="card-num">Keepsake I</div>
-                <h3 class="keepsake-title">Generosity Of Spirit</h3>
-                <p class="keepsake-desc">You give without expecting in return, welcoming others with open arms and an uplifting grace.</p>
+                <h3 class="keepsake-title">Unshakeable Loyalty</h3>
+                <p class="keepsake-desc">When times grew demanding, your steadfast presence remained unbroken. Knowing you were in my corner gave me immense strength.</p>
             </div>
             <div class="keepsake-card">
                 <div class="card-num">Keepsake II</div>
-                <h3 class="keepsake-title">Quiet Reliability</h3>
-                <p class="keepsake-desc">When promises matter most, your word remains as solid as gold. Having someone to rely on is a priceless blessing.</p>
+                <h3 class="keepsake-title">Quiet Wisdom & Grace</h3>
+                <p class="keepsake-desc">You listen with profound understanding and speak words that steady the heart. Your counsel has guided me through pivotal crossroads.</p>
             </div>
             <div class="keepsake-card">
                 <div class="card-num">Keepsake III</div>
-                <h3 class="keepsake-title">Invaluable Wisdom</h3>
-                <p class="keepsake-desc">Your thoughtful perspectives bring clarity during confusing times. Thank you for always offering genuine guidance.</p>
+                <h3 class="keepsake-title">Generosity Without Bounds</h3>
+                <p class="keepsake-desc">You give your time, your belief, and your goodwill without ever expecting praise. Such noble humility is rare and inspiring.</p>
             </div>
         </div>
     </section>
@@ -482,18 +496,18 @@
     <section class="chapter" id="ch4">
         <div class="gilded-box">
             <div style="font-size: 3rem; margin-bottom: 14px;">🥂</div>
-            <h2 class="ch-title" style="font-size: clamp(2.2rem, 5.5vw, 3.4rem); margin-bottom: 12px;">A Golden Toast</h2>
+            <h2 class="ch-title" style="font-size: clamp(2.2rem, 5.5vw, 3.4rem); margin-bottom: 12px;">A Golden Tribute To You</h2>
             <p style="font-size: 1.05rem; line-height: 1.7; color: var(--text-dim); margin-bottom: 28px;">
-                May fortune, good health, and peace accompany your steps always. Here is to honoring the bond we share.
+                May good health, peace of mind, and prosperity follow you on every road you walk. Here is to honoring a truly remarkable human being.
             </p>
             <div>
                 <button class="btn-gold-toast" onclick="openGildedModal('toast')">
-                    <span>Raise A Toast</span>
-                    <span>✨</span>
+                    <span>Raise A Golden Toast</span>
+                    <span>🥂</span>
                 </button>
                 <button class="btn-emerald-hug" onclick="openGildedModal('hug')">
-                    <span>Send Warm Hug</span>
-                    <span>🤗</span>
+                    <span>Offer Highest Honor</span>
+                    <span>📜</span>
                 </button>
             </div>
         </div>
@@ -520,8 +534,8 @@
 
             const recipient = userData.recipientName || userData.name || 'Honored Friend';
             const story = userData.story || userData.message ||
-                "It is with deep respect and boundless gratitude that I write these lines to you.\n\nIn a bustling world, having someone of your virtue, integrity, and warmth is an extraordinary privilege. Your support has been a pillar of strength, and your good nature brings joy to everyone around you.\n\nPlease accept this token of my highest esteem and deepest thankfulness.";
-            const sender = userData.senderName || userData.creatingForInput || "With Sincerest Regards";
+                "It is with profound respect and heartfelt gratitude that I write these words to you.\n\nThroughout life, we meet very few souls whose guidance is truly selfless and whose loyalty never wavers. You have stood by me as an anchor of strength and an example of genuine character. Whenever uncertainty clouded my path, your wisdom gave me clarity and your patience gave me courage.\n\nPlease know that your generosity of spirit has shaped my world in ways I will never forget. I hold you in the highest regard, and I thank you from the core of my heart for everything you have given me.";
+            const sender = userData.senderName || userData.creatingForInput || "With deep honor & enduring gratitude";
 
             const nameEl = document.getElementById('recipientName');
             if (nameEl) nameEl.innerText = recipient;
@@ -584,8 +598,8 @@
                 modal.classList.add('active');
                 if (type === 'toast') {
                     document.getElementById('mIcon').innerText = "🥂";
-                    document.getElementById('mTitle').innerText = "A Toast To You";
-                    document.getElementById('mDesc').innerText = `To ${recipient}—thank you for your continuous generosity and kindness. Cheers!`;
+                    document.getElementById('mTitle').innerText = "To Your Nobility";
+                    document.getElementById('mDesc').innerText = `To ${recipient}—may your legacy of kindness and strength shine brilliantly always. Cheers!`;
                     if (typeof confetti === 'function') {
                         confetti({
                             particleCount: 110,
@@ -595,9 +609,9 @@
                         });
                     }
                 } else {
-                    document.getElementById('mIcon').innerText = "🤗";
-                    document.getElementById('mTitle').innerText = "Respectful Embrace";
-                    document.getElementById('mDesc').innerText = `A deeply grateful and warm embrace sent directly to you, ${recipient}.`;
+                    document.getElementById('mIcon').innerText = "📜";
+                    document.getElementById('mTitle').innerText = "With Deepest Reverence";
+                    document.getElementById('mDesc').innerText = `Holding you in the highest esteem, ${recipient}. Thank you for being a beacon of honor and goodness in my life.`;
                 }
             };
 

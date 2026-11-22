@@ -142,6 +142,20 @@
             margin-bottom: 14px;
         }
 
+        .warm-pulse {
+            color: #d86851;
+            font-style: italic;
+            font-weight: 700;
+            display: inline-block;
+            text-shadow: 0 2px 14px rgba(216, 104, 81, 0.35);
+            animation: warmHeartPulse 2.8s ease-in-out infinite;
+        }
+
+        @keyframes warmHeartPulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 2px 12px rgba(216, 104, 81, 0.3); }
+            50% { transform: scale(1.04); text-shadow: 0 2px 22px rgba(216, 104, 81, 0.6); }
+        }
+
         .recipient-script {
             font-family: 'Sacramento', cursive;
             font-size: clamp(3.2rem, 9.5vw, 6rem);
@@ -424,57 +438,57 @@
     <canvas id="petalCanvas"></canvas>
 
     <nav id="dotNav">
-        <div class="dot-item active" data-target="ch1" title="Welcome"></div>
-        <div class="dot-item" data-target="ch2" title="Letter"></div>
-        <div class="dot-item" data-target="ch3" title="Grateful For"></div>
-        <div class="dot-item" data-target="ch4" title="Celebration"></div>
+        <div class="dot-item active" data-target="ch1" title="From The Heart"></div>
+        <div class="dot-item" data-target="ch2" title="Grateful Letter"></div>
+        <div class="dot-item" data-target="ch3" title="Gifts You Gave"></div>
+        <div class="dot-item" data-target="ch4" title="Blessing"></div>
     </nav>
 
     <!-- CHAPTER 1: INTRO -->
     <section class="chapter visible" id="ch1">
         <div class="sun-badge">🌻</div>
-        <div class="eyebrow">A Sincere Note Of Thanks</div>
-        <h1 class="ch-title">Thank You For Being Wonderful</h1>
+        <div class="eyebrow">A Note Of Pure Love & Gratitude</div>
+        <h1 class="ch-title">Thank You From The Depths Of <span class="warm-pulse">My Heart</span></h1>
         <div class="recipient-script" id="recipientName">Dearest Friend</div>
         <p class="intro-lead">
-            Some people make the world a little brighter, warmer, and kinder just by being in it. You are one of those rare souls.
+            In a noisy world, your kindness has been my quiet haven. You showed up for me when it truly mattered, and I will cherish your beautiful soul forever.
         </p>
     </section>
 
     <!-- CHAPTER 2: THE LETTER -->
     <section class="chapter" id="ch2">
-        <div class="eyebrow">From My Grateful Heart</div>
-        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 28px;">A Letter Of Appreciation</h2>
+        <div class="eyebrow">Words From The Soul</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 28px;">What Your Kindness Means To Me</h2>
         <div class="envelope-card">
             <div class="envelope-top-accent"></div>
             <div class="env-title">
                 <span id="letterTo">To My Wonderful Friend</span>
-                <span class="env-badge">Pure Gratitude</span>
+                <span class="env-badge">Forever Grateful</span>
             </div>
             <div class="env-body" id="letterBody"></div>
-            <div class="env-sign" id="letterSender">With All My Gratitude</div>
+            <div class="env-sign" id="letterSender">With all my love & gratitude, Always</div>
         </div>
     </section>
 
     <!-- CHAPTER 3: REASONS -->
     <section class="chapter" id="ch3">
-        <div class="eyebrow">Counting My Blessings</div>
-        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem);">Three Reasons I Am Grateful</h2>
+        <div class="eyebrow">Gifts I Hold Dear</div>
+        <h2 class="ch-title" style="font-size: clamp(2rem, 5vw, 3rem);">Three Ways You Touched My Life</h2>
         <div class="reasons-grid">
             <div class="reason-card">
                 <div class="reason-icon">💛</div>
-                <h3 class="reason-title">Your Constant Support</h3>
-                <p class="reason-desc">Whenever I needed a listening ear or a guiding hand, your encouragement gave me the courage to keep going.</p>
+                <h3 class="reason-title">You Made Me Feel Truly Seen</h3>
+                <p class="reason-desc">You noticed when I was quiet, asked how I was doing, and listened without judgment. That level of empathy is a priceless treasure.</p>
             </div>
             <div class="reason-card">
                 <div class="reason-icon">🌸</div>
-                <h3 class="reason-title">Your Thoughtful Heart</h3>
-                <p class="reason-desc">The little things you do never go unnoticed. Your kindness is a gentle reminder of the goodness in this world.</p>
+                <h3 class="reason-title">Your Effortless Gentleness</h3>
+                <p class="reason-desc">Even in moments of chaos, your tone, your patience, and your thoughtful actions brought calm and reassurance to my soul.</p>
             </div>
             <div class="reason-card">
                 <div class="reason-icon">✨</div>
-                <h3 class="reason-title">The Joy You Bring</h3>
-                <p class="reason-desc">Your laughter is contagious and your presence is a comfort. Thank you for filling my days with warmth and cheer.</p>
+                <h3 class="reason-title">A Light In Difficult Days</h3>
+                <p class="reason-desc">Your encouragement gave me hope and made me smile when I needed it most. You made this world feel warmer and kinder.</p>
             </div>
         </div>
     </section>
@@ -483,18 +497,18 @@
     <section class="chapter" id="ch4">
         <div class="gratitude-celebrate-box">
             <div style="font-size: 2.8rem; margin-bottom: 12px;">💐</div>
-            <h2 class="ch-title" style="font-size: clamp(2rem, 5.5vw, 3.2rem); margin-bottom: 12px;">Here's To You!</h2>
+            <h2 class="ch-title" style="font-size: clamp(2rem, 5.5vw, 3.2rem); margin-bottom: 12px;">May Life Be Gentle With You</h2>
             <p style="font-size: 1.05rem; line-height: 1.7; color: var(--text-muted); margin-bottom: 28px;">
-                May life shower you with the same joy, love, and sunshine you so generously give to others.
+                You give so much love to everyone around you. I pray all the sunshine and goodness you share comes back to you a thousand times over.
             </p>
             <div>
-                <button class="btn-celebrate-thanks" onclick="openThankModal('cheers')">
-                    <span>Send Big Cheers!</span>
-                    <span>🎉</span>
+                <button class="btn-celebrate-thanks" onclick="openThankModal('flowers')">
+                    <span>Send Love & Flowers</span>
+                    <span>🌸</span>
                 </button>
                 <button class="btn-hug-back" onclick="openThankModal('hug')">
-                    <span>Send Warm Hug</span>
-                    <span>🤗</span>
+                    <span>A Warm Embracing Hug</span>
+                    <span>💛</span>
                 </button>
             </div>
         </div>
@@ -521,8 +535,8 @@
 
             const recipient = userData.recipientName || userData.name || 'Dearest Friend';
             const story = userData.story || userData.message ||
-                "I wanted to take a moment to express how deeply thankful I am to have you in my life.\n\nWhether through your warm words, your quiet loyalty, or simply sharing laughs when I needed it most, you have touched my life in ways you might not even realize.\n\nThank you for being you, for your beautiful heart, and for bringing so much light into my journey.";
-            const sender = userData.senderName || userData.creatingForInput || "With Endless Gratitude";
+                "I don't know if I tell you this often enough, but having you in my life is one of my greatest blessings.\n\nWhen things felt overwhelming, your gentle reassurance, your quiet listening, and your pure warmth lifted weights off my shoulders that I couldn't carry alone. You give without asking for anything in return, and your presence brings a peace that words can hardly describe.\n\nThank you for being my safe space, for believing in me when I struggled to believe in myself, and for loving me with so much patience and honesty. I am so deeply, endlessly thankful for you.";
+            const sender = userData.senderName || userData.creatingForInput || "With all my love & gratitude, Always";
 
             const nameEl = document.getElementById('recipientName');
             if (nameEl) nameEl.innerText = recipient;
@@ -583,10 +597,10 @@
 
             window.openThankModal = function (type) {
                 modal.classList.add('active');
-                if (type === 'cheers') {
-                    document.getElementById('mIcon').innerText = "🎉";
-                    document.getElementById('mTitle').innerText = "Cheers To You!";
-                    document.getElementById('mDesc').innerText = `Dear ${recipient}, here's celebrating your kindness and generosity! Thank you from the bottom of my heart.`;
+                if (type === 'flowers') {
+                    document.getElementById('mIcon').innerText = "🌸";
+                    document.getElementById('mTitle').innerText = "Petals Of Gratitude";
+                    document.getElementById('mDesc').innerText = `To ${recipient}—thank you for showering my life with warmth and grace!`;
                     if (typeof confetti === 'function') {
                         confetti({
                             particleCount: 100,
@@ -596,9 +610,9 @@
                         });
                     }
                 } else {
-                    document.getElementById('mIcon').innerText = "🤗";
-                    document.getElementById('mTitle').innerText = "A Heartfelt Hug";
-                    document.getElementById('mDesc').innerText = `Sending you a warm, grateful embrace, ${recipient}. Thank you for everything!`;
+                    document.getElementById('mIcon').innerText = "💛";
+                    document.getElementById('mTitle').innerText = "Wrapped In Warmth";
+                    document.getElementById('mDesc').innerText = `Sending you the deepest, most loving embrace, ${recipient}. Thank you for being my person.`;
                 }
             };
 
