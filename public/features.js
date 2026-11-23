@@ -10208,6 +10208,764 @@
         }
     };
 
+// ══════════════════════════════════════════════════════════════════
+    // 💖 ASSEMBLE THE HEART – Ultra-Smooth Butter UI Edition
+    // ══════════════════════════════════════════════════════════════════
+    featureMap.assembleHeart = {
+        enable: function (d, w, userName, customConfig, images) {
+            if (!d) return;
+            const existing = d.getElementById('magic-assemble-heart-section');
+            if (existing) existing.remove();
+
+            const cfg = (typeof customConfig === 'object' && customConfig !== null) ? customConfig : {};
+            const style = cfg.style || 'photo'; // 'photo' or 'gem'
+            const pieceCount = parseInt(cfg.pieceCount, 10) === 6 ? 6 : 4;
+            const targetImg = (images && Array.isArray(images) && images[0]) ? images[0] : (cfg.image || '');
+            const lang = (w && w.currentLang) || (typeof window !== 'undefined' && window.currentLang) || 'en';
+            const isHi = lang === 'hi';
+            const defaultMsg = isHi ? 'मेरे दिल का हर टुकड़ा सिर्फ तुम्हारा है 💖' : 'Every piece of my heart belongs to you, always and forever 💖';
+            const loveMsg = cfg.message || defaultMsg;
+            const titleText = cfg.title || (isHi ? '💖 दिल के टुकड़े जोड़ें' : '💖 Assemble My Heart');
+            const subtitleText = isHi ? 'एक टुकड़ा गायब है... छूकर पूरा करें ✨' : 'A piece of my heart is missing... Tap to assemble ✨';
+
+            // Inject Butter Styles
+            if (!d.getElementById('magic-puzzle-butter-styles')) {
+                const st = d.createElement('style');
+                st.id = 'magic-puzzle-butter-styles';
+                st.textContent = `
+                    @keyframes butterFloatA {
+                        0%, 100% { transform: translateY(0px) rotate(0deg); }
+                        50% { transform: translateY(-8px) rotate(2.5deg); }
+                    }
+                    @keyframes butterFloatB {
+                        0%, 100% { transform: translateY(0px) rotate(0deg); }
+                        50% { transform: translateY(-9px) rotate(-2.5deg); }
+                    }
+                    @keyframes butterPulse {
+                        0%, 100% { transform: scale(1); filter: drop-shadow(0 4px 16px rgba(255, 64, 129, 0.35)); }
+                        50% { transform: scale(1.04); filter: drop-shadow(0 8px 28px rgba(255, 64, 129, 0.7)); }
+                    }
+                    @keyframes butterHeartBeat {
+                        0% { transform: scale(1); }
+                        14% { transform: scale(1.14); filter: drop-shadow(0 0 28px rgba(255, 64, 129, 0.9)); }
+                        28% { transform: scale(1); }
+                        42% { transform: scale(1.08); filter: drop-shadow(0 0 20px rgba(255, 64, 129, 0.7)); }
+                        70% { transform: scale(1); }
+                    }
+                    @keyframes kintsugiFlow {
+                        0% { stroke-dashoffset: 400; opacity: 0; filter: drop-shadow(0 0 2px #ffd700); }
+                        25% { opacity: 1; }
+                        100% { stroke-dashoffset: 0; opacity: 1; filter: drop-shadow(0 0 10px #ffd700) drop-shadow(0 0 22px #fff59d); }
+                    }
+                    @keyframes butterSlideUp {
+                        0% { opacity: 0; transform: translate(-50%, 30px); }
+                        100% { opacity: 1; transform: translate(-50%, 0); }
+                    }
+                    @keyframes kintsugiFade {
+                        0% { opacity: 1; }
+                        100% { opacity: 0.35; filter: drop-shadow(0 0 4px #ffd700); }
+                    }
+                    .magic-butter-card {
+                        width: 90%;
+                        max-width: 460px;
+                        margin: 28px auto;
+                        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 240, 246, 0.98) 100%);
+                        border: 2px dashed rgba(255, 64, 129, 0.45);
+                        border-radius: 26px;
+                        padding: 24px 20px;
+                        box-shadow: 0 14px 40px rgba(255, 64, 129, 0.15), 0 2px 10px rgba(0,0,0,0.03);
+                        cursor: pointer;
+                        text-align: center;
+                        position: relative;
+                        overflow: hidden;
+                        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+                        box-sizing: border-box;
+                    }
+                    .magic-butter-card:hover {
+                        transform: translateY(-4px) scale(1.015);
+                        box-shadow: 0 20px 48px rgba(255, 64, 129, 0.25);
+                        border-color: #ff4081;
+                    }
+                    .magic-butter-overlay {
+                        position: fixed;
+                        inset: 0;
+                        z-index: 2147483640;
+                        background: radial-gradient(circle at 50% 35%, #231238 0%, #0d0618 100%);
+                        backdrop-filter: blur(16px);
+                        -webkit-backdrop-filter: blur(16px);
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 16px 14px 22px;
+                        box-sizing: border-box;
+                        overflow: hidden;
+                        user-select: none;
+                        -webkit-user-select: none;
+                    }
+                    .magic-butter-piece {
+                        cursor: grab;
+                        touch-action: none;
+                        transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.22s;
+                        filter: drop-shadow(0 8px 18px rgba(0,0,0,0.55));
+                    }
+                    .magic-butter-piece:active {
+                        cursor: grabbing;
+                        filter: drop-shadow(0 16px 32px rgba(255, 64, 129, 0.65)) drop-shadow(0 0 14px rgba(255, 215, 0, 0.6));
+                    }
+                    .magic-butter-piece.snapped {
+                        cursor: default;
+                        pointer-events: none;
+                        filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+                    }
+                `;
+                d.head.appendChild(st);
+            }
+
+            // Inline Checkpoint Section
+            const section = d.createElement('section');
+            section.id = 'magic-assemble-heart-section';
+            section.style.cssText = 'width: 100%; display: flex; justify-content: center; margin: 26px 0;';
+
+            const card = d.createElement('div');
+            card.className = 'magic-butter-card';
+            card.style.cssText = 'width: 92%; max-width: 440px; margin: 30px auto; background: linear-gradient(150deg, #ffffff 0%, #fff7fb 55%, #fffbf2 100%); border: 1.5px solid rgba(255, 64, 129, 0.35); border-radius: 32px; padding: 30px 24px; box-shadow: 0 18px 45px rgba(216, 27, 96, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 20px rgba(255, 215, 0, 0.15); cursor: pointer; text-align: center; position: relative; overflow: hidden; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;';
+            card.innerHTML = `
+                <div style="position: absolute; top: 14px; left: 18px; font-size: 0.95rem; opacity: 0.55;">✨</div>
+                <div style="position: absolute; top: 14px; right: 18px; font-size: 0.95rem; opacity: 0.55;">✨</div>
+                <div style="width: 86px; height: 86px; margin: 0 auto 14px; position: relative; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 320 320" style="width: 100%; height: 100%; animation: butterPulse 2.4s infinite ease-in-out; filter: drop-shadow(0 8px 20px rgba(255, 64, 129, 0.38));">
+                        <defs>
+                            <linearGradient id="butterTeaserGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ff4081" />
+                                <stop offset="100%" stop-color="#d81b60" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M160,68 C125,28 36,48 36,122 C36,185 105,232 160,276 C215,232 284,185 284,122 C284,48 195,28 160,68 Z" fill="rgba(255, 64, 129, 0.08)" stroke="url(#butterTeaserGrad)" stroke-width="2.8" stroke-dasharray="6 6" />
+                        <text x="160" y="172" font-size="64" text-anchor="middle" dominant-baseline="middle">💖</text>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', Georgia, serif; font-size: 1.42rem; color: #2e1525; font-weight: 700; letter-spacing: 0.2px;">${escapeHtml(titleText)}</h3>
+                <p style="margin: 0 0 18px; font-size: 0.88rem; color: #666; font-weight: 500;">${escapeHtml(subtitleText)}</p>
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #ff4081 0%, #d81b60 100%); color: #fff; font-size: 0.86rem; font-weight: 700; padding: 10px 24px; border-radius: 25px; box-shadow: 0 6px 20px rgba(216, 27, 96, 0.38); transition: transform 0.2s;">
+                    <span>${isHi ? 'टुकड़े जोड़ें ✨' : 'Assemble Pieces ✨'}</span>
+                </div>
+            `;
+
+            section.appendChild(card);
+            insertSectionBeforeFinal(d, section);
+
+            // Web Audio API Chimes (Harmonic Bells)
+            const playChime = (step) => {
+                try {
+                    const targetWin = w || window;
+                    const AC = targetWin.AudioContext || targetWin.webkitAudioContext;
+                    if (!AC) return;
+                    if (!targetWin.__puzzleAC) targetWin.__puzzleAC = new AC();
+                    const ac = targetWin.__puzzleAC;
+                    if (ac.state === 'suspended') ac.resume().catch(() => {});
+                    const freqs = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+                    const f = freqs[Math.min(step, freqs.length - 1)];
+                    const now = ac.currentTime;
+
+                    const osc1 = ac.createOscillator();
+                    const osc2 = ac.createOscillator();
+                    const gain = ac.createGain();
+
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(f, now);
+                    osc2.type = 'triangle';
+                    osc2.frequency.setValueAtTime(f * 2, now);
+
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+
+                    osc1.connect(gain);
+                    osc2.connect(gain);
+                    gain.connect(ac.destination);
+
+                    osc1.start(now);
+                    osc2.start(now);
+                    osc1.stop(now + 0.9);
+                    osc2.stop(now + 0.8);
+                } catch (e) {}
+            };
+
+            let heartbeatInterval = null;
+            const stopHeartbeat = () => {
+                if (heartbeatInterval) {
+                    clearInterval(heartbeatInterval);
+                    heartbeatInterval = null;
+                }
+            };
+            if (typeof window !== 'undefined') {
+                window.__assembleHeartStopSound = stopHeartbeat;
+            }
+
+            const playHeartbeat = () => {
+                try {
+                    const targetWin = w || window;
+                    const AC = targetWin.AudioContext || targetWin.webkitAudioContext;
+                    if (!AC) return;
+                    if (!targetWin.__puzzleAC) targetWin.__puzzleAC = new AC();
+                    const ac = targetWin.__puzzleAC;
+                    if (ac.state === 'suspended') ac.resume().catch(() => {});
+                    const now = ac.currentTime;
+
+                    // Lub (first thump @ 0.12s) and Dub (second thump @ 0.65s) synced with 2s butterHeartBeat
+                    const thumps = [
+                        { del: 0.12, freq: 80, endFreq: 28, gain: 0.6, dur: 0.24 },
+                        { del: 0.65, freq: 70, endFreq: 24, gain: 0.42, dur: 0.20 }
+                    ];
+
+                    thumps.forEach(t => {
+                        const osc = ac.createOscillator();
+                        const gain = ac.createGain();
+                        const filter = ac.createBiquadFilter();
+
+                        filter.type = 'lowpass';
+                        filter.frequency.setValueAtTime(140, now + t.del);
+
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(t.freq, now + t.del);
+                        osc.frequency.exponentialRampToValueAtTime(t.endFreq, now + t.del + t.dur);
+
+                        gain.gain.setValueAtTime(0.001, now + t.del);
+                        gain.gain.linearRampToValueAtTime(t.gain, now + t.del + 0.04);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + t.del + t.dur);
+
+                        osc.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(ac.destination);
+
+                        osc.start(now + t.del);
+                        osc.stop(now + t.del + t.dur + 0.02);
+                    });
+
+                    // Subtle romantic haptic heartbeat pulse on supported mobile devices
+                    if (navigator.vibrate) {
+                        try { navigator.vibrate([35, 120, 25]); } catch(e) {}
+                    }
+                } catch (e) {}
+            };
+
+            card.onclick = () => {
+                openGate();
+            };
+
+            function openGate() {
+                const existingGate = d.getElementById('magic-assemble-heart-gate');
+                if (existingGate) existingGate.remove();
+
+                const gate = d.createElement('div');
+                gate.id = 'magic-assemble-heart-gate';
+                gate.className = 'magic-butter-overlay';
+
+                // Precision Heart Path (320x320 viewBox)
+                const heartSvgPath = "M160,68 C125,28 36,48 36,122 C36,185 105,232 160,276 C215,232 284,185 284,122 C284,48 195,28 160,68 Z";
+
+                // 4 Pieces: Precision Wavy Quadrants
+                const paths4 = [
+                    "M160,68 C125,28 36,48 36,122 C75,138 120,154 160,165 C154,132 166,98 160,68 Z",
+                    "M160,68 C166,98 154,132 160,165 C200,154 245,138 284,122 C284,48 195,28 160,68 Z",
+                    "M36,122 C36,185 105,232 160,276 C154,238 166,200 160,165 C120,154 75,138 36,122 Z",
+                    "M160,165 C166,200 154,238 160,276 C215,232 284,185 284,122 C245,138 200,154 160,165 Z"
+                ];
+
+                // 6 Pieces: Mathematically Exact de Casteljau Spline Quadrants (100% Outer Perimeter Match)
+                const paths6 = [
+                    "M160,68 C125,28 36,48 36,122 C75,138 120,154 160,165 C166,132 154,98 160,68 Z",
+                    "M160,68 C154,98 166,132 160,165 C200,154 245,138 284,122 C284,48 195,28 160,68 Z",
+                    "M36,122 C36,153.5 53.3,181 77.4,206.1 C105,192 132,178 160,165 C120,154 75,138 36,122 Z",
+                    "M284,122 C245,138 200,154 160,165 C188,178 215,192 242.6,206.1 C266.8,181 284,153.5 284,122 Z",
+                    "M77.4,206.1 C101.5,231.3 132.5,254 160,276 C154,238 166,200 160,165 C132,178 105,192 77.4,206.1 Z",
+                    "M160,276 C187.5,254 218.5,231.3 242.6,206.1 C215,192 188,178 160,165 C166,200 154,238 160,276 Z"
+                ];
+
+                const paths = pieceCount === 6 ? paths6 : paths4;
+                const totalPieces = paths.length;
+                let snappedCount = 0;
+                const hasPhoto = (style === 'photo' && targetImg && targetImg.trim() !== '');
+
+                gate.innerHTML = `
+                    <!-- Header Bar -->
+                    <div style="width: 100%; max-width: 480px; display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.06); border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.3rem;">💖</span>
+                            <div>
+                                <div style="font-size: 0.92rem; font-weight: 700; color: #fff; letter-spacing: 0.2px;">${escapeHtml(titleText)}</div>
+                                <div style="font-size: 0.72rem; color: rgba(255,255,255,0.7);">${isHi ? 'टुकड़ों को खींचकर या छूकर जोड़ें' : 'Drag or tap pieces into the heart'}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" id="magic-heart-auto-solve" style="background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,160,0,0.15)); border: 1px solid rgba(255,215,0,0.5); color: #ffe082; font-size: 0.74rem; font-weight: 700; padding: 5px 12px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 10px rgba(255,215,0,0.15);">
+                                <span>${isHi ? 'जादुई जोड़ ✨' : 'Auto-Assemble ✨'}</span>
+                            </button>
+                            <button type="button" id="magic-heart-close-gate" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">✕</button>
+                        </div>
+                    </div>
+
+                    <!-- Top Floating Tray -->
+                    <div id="magic-heart-tray-top" style="width: 100%; max-width: 440px; height: 90px; display: flex; align-items: center; justify-content: space-around; position: relative; padding: 0 4px;"></div>
+
+                    <!-- Center Target Frame (The Heart Sanctuary) -->
+                    <div id="magic-heart-stage" style="width: 260px; height: 260px; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 36px; background: radial-gradient(circle, rgba(255, 64, 129, 0.08) 0%, transparent 72%); filter: drop-shadow(0 20px 50px rgba(0,0,0,0.7));">
+                        <svg viewBox="0 0 320 320" style="width: 100%; height: 100%; position: absolute; inset: 0; pointer-events: none; overflow: visible;">
+                            <defs>
+                                <clipPath id="butter-full-heart">
+                                    <path d="${heartSvgPath}" />
+                                </clipPath>
+                                <filter id="goldGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur stdDeviation="4" result="blur" />
+                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                </filter>
+                            </defs>
+
+                            <!-- Empty Silhouette Slots with Delicate Golden Guidelines -->
+                            ${paths.map(p => `<path d="${p}" fill="rgba(255, 255, 255, 0.025)" stroke="rgba(255, 215, 0, 0.28)" stroke-width="1.2" stroke-dasharray="4 4" />`).join('')}
+
+                            <!-- Precision Outer Silhouette Perimeter (100% Flush Alignment) -->
+                            <path d="${heartSvgPath}" fill="none" stroke="rgba(255, 215, 0, 0.6)" stroke-width="2" filter="url(#goldGlowFilter)" />
+                        </svg>
+
+                        <!-- Snapped Pieces Container -->
+                        <div id="magic-heart-snapped-container" style="width: 100%; height: 100%; position: absolute; inset: 0;"></div>
+
+                        <!-- Animated Liquid-Gold Kintsugi Seams SVG -->
+                        <svg id="magic-heart-kintsugi-svg" viewBox="0 0 320 320" style="width: 100%; height: 100%; position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none;">
+                            ${paths.map(p => `<path d="${p}" fill="none" stroke="#ffd700" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray: 400; animation: kintsugiFlow 1.3s forwards ease-in-out;" />`).join('')}
+                        </svg>
+                    </div>
+
+                    <!-- Bottom Floating Tray -->
+                    <div id="magic-heart-tray-bottom" style="width: 100%; max-width: 440px; height: 90px; display: flex; align-items: center; justify-content: space-around; position: relative; padding: 0 4px;"></div>
+
+                    <!-- Frosted Celebration Reveal Modal -->
+                    <div id="magic-heart-reveal-modal" style="display: none; position: absolute; inset: 0; background: rgba(12, 6, 22, 0.88); z-index: 25; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(12px);">
+                        <div style="background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,242,248,0.98) 100%); width: 92%; max-width: 380px; border-radius: 28px; padding: 28px 22px; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1.5px rgba(255,215,0,0.5); position: relative; animation: butterPulse 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                            <div style="font-size: 3rem; margin-bottom: 8px; animation: butterHeartBeat 1.8s infinite ease-in-out;">💖</div>
+                            <h3 style="margin: 0 0 10px; font-family: 'Playfair Display', serif; font-size: 1.55rem; color: #d81b60; font-weight: 700;">${isHi ? 'दिल मुकम्मल हुआ!' : 'Heart Restored!'}</h3>
+                            <div style="font-size: 1.1rem; line-height: 1.5; color: #2c2c2c; margin-bottom: 18px; font-weight: 600; font-family: 'Caveat', cursive, sans-serif;">
+                                "${escapeHtml(loveMsg)}"
+                            </div>
+                            <div style="font-size: 0.86rem; color: #777; margin-bottom: 20px; font-weight: 600;">
+                                — ${escapeHtml(userName || '')} ♡
+                            </div>
+                            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                                <button type="button" id="magic-heart-modal-back-btn" style="background: rgba(0,0,0,0.06); color: #444; font-size: 0.88rem; font-weight: 700; border: 1px solid rgba(0,0,0,0.12); padding: 10px 18px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    <span>💖</span>
+                                    <span>${isHi ? 'तस्वीर देखें' : 'View Heart'}</span>
+                                </button>
+                                <button type="button" id="magic-heart-reveal-close" style="background: linear-gradient(135deg, #ff4081, #d81b60); color: #fff; font-size: 0.9rem; font-weight: 700; border: none; padding: 10px 22px; border-radius: 20px; cursor: pointer; box-shadow: 0 4px 18px rgba(216,27,96,0.38);">
+                                    ${isHi ? 'कहानी जारी रखें ✕' : 'Keep Memory ✕'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                d.body.appendChild(gate);
+
+                const trayTop = gate.querySelector('#magic-heart-tray-top');
+                const trayBottom = gate.querySelector('#magic-heart-tray-bottom');
+                const stage = gate.querySelector('#magic-heart-stage');
+                const snappedCont = gate.querySelector('#magic-heart-snapped-container');
+                const kintsugiSvg = gate.querySelector('#magic-heart-kintsugi-svg');
+                const revealModal = gate.querySelector('#magic-heart-reveal-modal');
+
+                const closeGate = () => {
+                    stopHeartbeat();
+                    gate.remove();
+                };
+                gate.querySelector('#magic-heart-close-gate').onclick = closeGate;
+                gate.querySelector('#magic-heart-reveal-close').onclick = closeGate;
+                    const backToHeartBtn = gate.querySelector('#magic-heart-modal-back-btn');
+                    if (backToHeartBtn) {
+                        backToHeartBtn.onclick = () => {
+                            revealModal.style.display = 'none';
+                        };
+                    }
+
+                // Build Butter Puzzle Pieces
+                paths.forEach((pathD, idx) => {
+                    const isTop = idx < Math.ceil(totalPieces / 2);
+                    const tray = isTop ? trayTop : trayBottom;
+
+                    const pieceEl = d.createElement('div');
+                    pieceEl.className = 'magic-butter-piece';
+                    pieceEl.style.cssText = `
+                        width: 78px;
+                        height: 78px;
+                        position: relative;
+                        display: inline-block;
+                        animation: ${idx % 2 === 0 ? 'butterFloatA' : 'butterFloatB'} ${3 + (idx % 3) * 0.4}s infinite ease-in-out;
+                        animation-delay: ${idx * 0.18}s;
+                        filter: drop-shadow(0 6px 14px rgba(0,0,0,0.5));
+                    `;
+
+                    const svg = d.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('viewBox', '0 0 320 320');
+                    svg.style.cssText = 'width: 100%; height: 100%; overflow: visible; display: block;';
+
+                    const clipId = `butter-hclip-${Date.now()}-${idx}`;
+                    svg.innerHTML = `
+                        <defs>
+                            <clipPath id="${clipId}">
+                                <path d="${pathD}" />
+                            </clipPath>
+                            <linearGradient id="butterGemGrad-${idx}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ff1744" />
+                                <stop offset="50%" stop-color="#d500f9" />
+                                <stop offset="100%" stop-color="#ff5252" />
+                            </linearGradient>
+                        </defs>
+                        <g clip-path="url(#${clipId})">
+                            ${hasPhoto 
+                                ? `<image href="${targetImg}" x="0" y="0" width="320" height="320" preserveAspectRatio="xMidYMid slice" />`
+                                : `<rect x="0" y="0" width="320" height="320" fill="url(#butterGemGrad-${idx})" />`
+                            }
+                        </g>
+                        <!-- Delicate Golden Shard Edge -->
+                        <path d="${pathD}" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.6" />
+                    `;
+
+                    pieceEl.appendChild(svg);
+                    tray.appendChild(pieceEl);
+
+                    const snapPiece = () => {
+                        if (pieceEl.classList.contains('snapped')) return;
+                        pieceEl.classList.add('snapped');
+                        pieceEl.style.animation = 'none';
+
+                        // Clone to stage snapped container with unique clipId (guarantees top pieces never lose clipPath)
+                        const placedSvg = svg.cloneNode(true);
+                        placedSvg.style.cssText = 'width: 100%; height: 100%; position: absolute; inset: 0;';
+                        const placedClipId = 'butter-placed-' + idx + '-' + Date.now();
+                        const cp = placedSvg.querySelector('clipPath');
+                        if (cp) cp.id = placedClipId;
+                        const g = placedSvg.querySelector('g[clip-path]');
+                        if (g) g.setAttribute('clip-path', 'url(#' + placedClipId + ')');
+
+                        const edgePath = placedSvg.querySelector('path[stroke]');
+                        if (edgePath) {
+                            edgePath.setAttribute('stroke', 'rgba(255, 215, 0, 0.45)');
+                            edgePath.setAttribute('stroke-width', '1.2');
+                        }
+                        snappedCont.appendChild(placedSvg);
+                        pieceEl.style.visibility = 'hidden';
+
+                        snappedCount++;
+                        playChime(snappedCount - 1);
+                        if (navigator.vibrate) navigator.vibrate(35);
+
+                        if (snappedCount === totalPieces) {
+                            triggerClimax();
+                        }
+                    };
+
+                    // Butter-Smooth Touch & Drag Handler
+                    let startX = 0, startY = 0, isDragging = false, moved = false;
+
+                    const onPointerDown = (e) => {
+                        if (pieceEl.classList.contains('snapped')) return;
+                        isDragging = true;
+                        moved = false;
+                        startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                        startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+                        pieceEl.style.transition = 'none';
+                        pieceEl.style.zIndex = '60';
+
+                        const onPointerMove = (ev) => {
+                            if (!isDragging) return;
+                            const curX = ev.clientX || (ev.touches && ev.touches[0].clientX) || 0;
+                            const curY = ev.clientY || (ev.touches && ev.touches[0].clientY) || 0;
+                            const dx = curX - startX;
+                            const dy = curY - startY;
+                            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
+                            pieceEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(1.15) rotate(-2deg)`;
+                        };
+
+                        const onPointerUp = () => {
+                            if (!isDragging) return;
+                            isDragging = false;
+                            d.removeEventListener('pointermove', onPointerMove);
+                            d.removeEventListener('pointerup', onPointerUp);
+                            d.removeEventListener('touchmove', onPointerMove);
+                            d.removeEventListener('touchend', onPointerUp);
+
+                            // Tap-to-Glide
+                            if (!moved) {
+                                pieceEl.style.transition = 'transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                                snapPiece();
+                                return;
+                            }
+
+                            // Magnetic Distance Check
+                            const stageRect = stage.getBoundingClientRect();
+                            const pieceRect = pieceEl.getBoundingClientRect();
+                            const pCenterX = pieceRect.left + pieceRect.width / 2;
+                            const pCenterY = pieceRect.top + pieceRect.height / 2;
+                            const sCenterX = stageRect.left + stageRect.width / 2;
+                            const sCenterY = stageRect.top + stageRect.height / 2;
+                            const dist = Math.hypot(pCenterX - sCenterX, pCenterY - sCenterY);
+
+                            if (dist < 125) {
+                                snapPiece();
+                            } else {
+                                // Butter Spring Back
+                                pieceEl.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                                pieceEl.style.transform = 'translate3d(0, 0, 0)';
+                                pieceEl.style.zIndex = '1';
+                            }
+                        };
+
+                        d.addEventListener('pointermove', onPointerMove);
+                        d.addEventListener('pointerup', onPointerUp);
+                        d.addEventListener('touchmove', onPointerMove);
+                        d.addEventListener('touchend', onPointerUp);
+                    };
+
+                    pieceEl.addEventListener('pointerdown', onPointerDown);
+                });
+
+                // Auto-Assemble Button
+                gate.querySelector('#magic-heart-auto-solve').onclick = () => {
+                    const unplaced = gate.querySelectorAll('.magic-butter-piece:not(.snapped)');
+                    unplaced.forEach((p, i) => {
+                        setTimeout(() => {
+                            p.dispatchEvent(new Event('pointerdown'));
+                            const pe = new Event('pointerup');
+                            d.dispatchEvent(pe);
+                        }, i * 130);
+                    });
+                };
+
+                const triggerClimax = () => {
+                    kintsugiSvg.style.display = 'block';
+                    playHeartbeat();
+
+                    // Seamless full heart transition (photo or glowing crystal ruby gem)
+                    const fullSvg = d.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    fullSvg.setAttribute('viewBox', '0 0 320 320');
+                    fullSvg.style.cssText = 'width: 100%; height: 100%; position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; z-index: 5; pointer-events: none;';
+
+                    const climaxGemCore = 'butter-climax-gem-core-' + Date.now();
+                    const climaxGemSheen = 'butter-climax-gem-sheen-' + Date.now();
+
+                    fullSvg.innerHTML = `
+                        <defs>
+                            <radialGradient id="${climaxGemCore}" cx="42%" cy="36%" r="68%">
+                                <stop offset="0%" stop-color="#ff5277" />
+                                <stop offset="25%" stop-color="#ff1744" />
+                                <stop offset="55%" stop-color="#d81b60" />
+                                <stop offset="85%" stop-color="#880e4f" />
+                                <stop offset="100%" stop-color="#3b0024" />
+                            </radialGradient>
+                            <linearGradient id="${climaxGemSheen}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="rgba(255, 255, 255, 0.75)" />
+                                <stop offset="35%" stop-color="rgba(255, 255, 255, 0.12)" />
+                                <stop offset="70%" stop-color="rgba(255, 255, 255, 0)" />
+                                <stop offset="100%" stop-color="rgba(255, 215, 0, 0.3)" />
+                            </linearGradient>
+                        </defs>
+                        <g clip-path="url(#butter-full-heart)">
+                            ${hasPhoto 
+                                ? `<image href="${targetImg}" x="0" y="0" width="320" height="320" preserveAspectRatio="xMidYMid slice" />`
+                                : `<rect x="0" y="0" width="320" height="320" fill="url(#${climaxGemCore})" />
+                                   <rect x="0" y="0" width="320" height="320" fill="url(#${climaxGemSheen})" />
+                                   ${paths.map(p => `<path d="${p}" fill="none" stroke="rgba(255, 255, 255, 0.38)" stroke-width="1.4" />`).join('')}
+                                   <ellipse cx="105" cy="95" rx="36" ry="18" transform="rotate(-30 105 95)" fill="rgba(255, 255, 255, 0.4)" />
+                                   <text x="160" y="172" font-size="44" text-anchor="middle" dominant-baseline="middle" filter="drop-shadow(0 3px 12px rgba(0,0,0,0.4))">💖</text>`
+                            }
+                        </g>
+                    `;
+                    snappedCont.appendChild(fullSvg);
+                    setTimeout(() => { fullSvg.style.opacity = '1'; }, 50);
+
+                    if (typeof ensureConfetti === 'function') {
+                        ensureConfetti(cfn => {
+                            cfn({ particleCount: 80, spread: 90, origin: { y: 0.45 } });
+                        });
+                    }
+
+                    // 1. Gently fade out the top & bottom piece trays so the heart is the solo hero
+                    if (trayTop) { trayTop.style.transition = 'opacity 0.6s ease'; trayTop.style.opacity = '0'; trayTop.style.pointerEvents = 'none'; }
+                    if (trayBottom) { trayBottom.style.transition = 'opacity 0.6s ease'; trayBottom.style.opacity = '0'; trayBottom.style.pointerEvents = 'none'; }
+
+                    // 2. Soften Kintsugi seams and start rhythmic pulsing heartbeat (visual + acoustic loop)
+                    setTimeout(() => {
+                        kintsugiSvg.style.animation = 'kintsugiFade 1.4s forwards';
+                        stage.style.animation = 'butterHeartBeat 2s infinite ease-in-out';
+                        stopHeartbeat();
+                        playHeartbeat();
+                        heartbeatInterval = setInterval(playHeartbeat, 2000);
+                    }, 1200);
+
+                    // 3. Attach the assembled heart permanently to the website section with luxury aesthetics
+                    const uniqueCardClip = 'butter-card-clip-' + Date.now();
+                    const uniqueCardGlow = 'butter-card-glow-' + Date.now();
+                    const uniqueCardGold = 'butter-card-gold-' + Date.now();
+                    const uniqueCardGemCore = 'butter-card-gem-core-' + Date.now();
+                    const uniqueCardGemSheen = 'butter-card-gem-sheen-' + Date.now();
+
+                    card.style.cssText = 'width: 92%; max-width: 450px; margin: 32px auto; background: linear-gradient(155deg, #ffffff 0%, #fff7fb 50%, #fffdf5 100%); border: 1.5px solid rgba(255, 215, 0, 0.45); border-radius: 34px; padding: 32px 22px 28px; box-shadow: 0 22px 55px rgba(216, 27, 96, 0.12), 0 0 35px rgba(255, 215, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.95); cursor: default; text-align: center; position: relative; overflow: hidden; box-sizing: border-box;';
+                    card.onclick = null;
+
+                    card.innerHTML = `
+                        <!-- Ambient Sparkles in Corners -->
+                        <div style="position: absolute; top: 16px; left: 20px; font-size: 1rem; opacity: 0.55; pointer-events: none;">✨</div>
+                        <div style="position: absolute; top: 16px; right: 20px; font-size: 1rem; opacity: 0.55; pointer-events: none;">✨</div>
+
+                        <!-- Top Romantic Pill Badge -->
+                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 16px; border-radius: 30px; background: linear-gradient(135deg, rgba(255, 64, 129, 0.08), rgba(255, 215, 0, 0.15)); border: 1px solid rgba(255, 215, 0, 0.45); font-size: 0.72rem; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: #b71c1c; margin-bottom: 16px;">
+                            <span>✨</span>
+                            <span>${isHi ? 'दिल मुकम्मल हुआ' : 'Our Heart is Whole'}</span>
+                            <span>✨</span>
+                        </div>
+
+                        <!-- The Restored Assembled Heart (Pristine, Seamless, Glowing) -->
+                        <div style="width: 215px; height: 215px; margin: 0 auto 16px; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer;" id="magic-card-heart-preview" title="${isHi ? 'दिल छूकर धड़कन महसूस करें 💖' : 'Tap to feel the heartbeat 💖'}">
+                            <svg viewBox="0 0 320 320" style="width: 100%; height: 100%; overflow: visible; animation: butterHeartBeat 2.4s infinite ease-in-out; filter: drop-shadow(0 14px 30px rgba(216, 27, 96, 0.32)) drop-shadow(0 0 16px rgba(255, 215, 0, 0.45));">
+                                <defs>
+                                    <clipPath id="${uniqueCardClip}">
+                                        <path d="${heartSvgPath}" />
+                                    </clipPath>
+                                    <linearGradient id="${uniqueCardGold}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#fff9c4" />
+                                        <stop offset="40%" stop-color="#ffd700" />
+                                        <stop offset="80%" stop-color="#ffb300" />
+                                        <stop offset="100%" stop-color="#ffa000" />
+                                    </linearGradient>
+                                    <filter id="${uniqueCardGlow}" x="-20%" y="-20%" width="140%" height="140%">
+                                        <feGaussianBlur stdDeviation="3.5" result="blur" />
+                                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                    </filter>
+                                </defs>
+
+                                <!-- Restored Content (Photo or Radiant Crystal Ruby Gem) -->
+                                <defs>
+                                    <radialGradient id="${uniqueCardGemCore}" cx="42%" cy="36%" r="68%">
+                                        <stop offset="0%" stop-color="#ff5277" />
+                                        <stop offset="25%" stop-color="#ff1744" />
+                                        <stop offset="55%" stop-color="#d81b60" />
+                                        <stop offset="85%" stop-color="#880e4f" />
+                                        <stop offset="100%" stop-color="#3b0024" />
+                                    </radialGradient>
+                                    <linearGradient id="${uniqueCardGemSheen}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="rgba(255, 255, 255, 0.75)" />
+                                        <stop offset="35%" stop-color="rgba(255, 255, 255, 0.12)" />
+                                        <stop offset="70%" stop-color="rgba(255, 255, 255, 0)" />
+                                        <stop offset="100%" stop-color="rgba(255, 215, 0, 0.3)" />
+                                    </linearGradient>
+                                </defs>
+                                <g clip-path="url(#${uniqueCardClip})">
+                                    ${hasPhoto 
+                                        ? `<image href="${targetImg}" x="0" y="0" width="320" height="320" preserveAspectRatio="xMidYMid slice" />`
+                                        : `<rect x="0" y="0" width="320" height="320" fill="url(#${uniqueCardGemCore})" />
+                                           <rect x="0" y="0" width="320" height="320" fill="url(#${uniqueCardGemSheen})" />
+                                           ${paths.map(p => `<path d="${p}" fill="none" stroke="rgba(255, 255, 255, 0.38)" stroke-width="1.4" />`).join('')}
+                                           <ellipse cx="105" cy="95" rx="36" ry="18" transform="rotate(-30 105 95)" fill="rgba(255, 255, 255, 0.4)" />
+                                           <text x="160" y="172" font-size="44" text-anchor="middle" dominant-baseline="middle" filter="drop-shadow(0 3px 12px rgba(0,0,0,0.4))">💖</text>`
+                                    }
+                                </g>
+
+                                <!-- Inner Delicate Bevel -->
+                                <path d="${heartSvgPath}" fill="none" stroke="rgba(255, 255, 255, 0.85)" stroke-width="1.2" />
+
+                                <!-- Radiant Outer Gold Frame -->
+                                <path d="${heartSvgPath}" fill="none" stroke="url(#${uniqueCardGold})" stroke-width="3" filter="url(#${uniqueCardGlow})" />
+                            </svg>
+                        </div>
+
+                        <!-- Romantic Title -->
+                        <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', Georgia, serif; font-size: 1.48rem; color: #2e1525; font-weight: 700; letter-spacing: 0.2px;">
+                            ${escapeHtml(titleText)}
+                        </h3>
+
+                        <!-- Romantic Frosted Love Note Quote Container -->
+                        <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 242, 248, 0.7) 100%); border: 1px solid rgba(255, 182, 193, 0.4); border-radius: 20px; padding: 14px 20px; margin: 12px auto 14px; max-width: 380px; box-shadow: 0 4px 18px rgba(216, 27, 96, 0.05); position: relative;">
+                            <div style="font-family: 'Caveat', cursive, sans-serif; font-size: 1.28rem; line-height: 1.5; color: #2e1525; font-weight: 600;">
+                                "${escapeHtml(loveMsg)}"
+                            </div>
+                        </div>
+
+                        <!-- Sender Signature -->
+                        <div style="font-size: 0.9rem; color: #880e4f; font-weight: 600; margin-bottom: 22px; font-family: 'Poppins', sans-serif;">
+                            — ${escapeHtml(userName || '')} <span style="color: #e91e63;">♡</span>
+                        </div>
+
+                        <!-- Dual Action Buttons -->
+                        <div style="display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                            <button type="button" id="magic-heart-card-open-note-btn" style="background: linear-gradient(135deg, #ff4081 0%, #d81b60 100%); color: #fff; font-size: 0.86rem; font-weight: 700; border: none; padding: 10px 22px; border-radius: 25px; box-shadow: 0 6px 18px rgba(216, 27, 96, 0.35); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: transform 0.2s, box-shadow 0.2s;">
+                                <span>💌</span>
+                                <span>${isHi ? 'प्रेम संदेश' : 'Read Note'}</span>
+                            </button>
+                            <button type="button" id="magic-heart-card-replay-btn" style="background: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(216, 27, 96, 0.25); color: #c2185b; font-size: 0.85rem; font-weight: 600; padding: 9px 20px; border-radius: 25px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.2s, background 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                                <span>↺</span>
+                                <span>${isHi ? 'दोबारा खेलें' : 'Replay Puzzle'}</span>
+                            </button>
+                        </div>
+                    `;
+
+                    const replayBtn = card.querySelector('#magic-heart-card-replay-btn');
+                    if (replayBtn) {
+                        replayBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            openGate();
+                        };
+                    }
+                    const openNoteCardBtn = card.querySelector('#magic-heart-card-open-note-btn');
+                    if (openNoteCardBtn) {
+                        openNoteCardBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            revealModal.style.display = 'flex';
+                        };
+                    }
+                    const cardHeartPreview = card.querySelector('#magic-card-heart-preview');
+                    if (cardHeartPreview) {
+                        cardHeartPreview.onclick = (e) => {
+                            e.stopPropagation();
+                            playHeartbeat();
+                        };
+                    }
+
+                    // 4. DO NOT show modal instantly! Give user unlimited time to gaze at their assembled photo!
+                    // Slide in an elegant floating pill at the bottom so they can view the message whenever they choose:
+                    setTimeout(() => {
+                        let actionBar = gate.querySelector('#magic-heart-action-bar');
+                        if (!actionBar) {
+                            actionBar = d.createElement('div');
+                            actionBar.id = 'magic-heart-action-bar';
+                            actionBar.style.cssText = 'position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; z-index: 20; animation: butterSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);';
+                            actionBar.innerHTML = `
+                                <button type="button" id="magic-heart-open-note-btn" style="background: linear-gradient(135deg, #ff4081 0%, #d81b60 100%); color: #fff; font-size: 0.92rem; font-weight: 700; border: none; padding: 12px 28px; border-radius: 30px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(216, 27, 96, 0.45); transition: transform 0.2s, box-shadow 0.2s;">
+                                    <span style="font-size: 1.15rem;">💌</span>
+                                    <span>${isHi ? 'प्रेम संदेश पढ़ें ✨' : 'Read Love Note ✨'}</span>
+                                </button>
+                            `;
+                            gate.appendChild(actionBar);
+
+                            const openNoteBtn = actionBar.querySelector('#magic-heart-open-note-btn');
+                            if (openNoteBtn) {
+                                openNoteBtn.onclick = () => {
+                                    revealModal.style.display = 'flex';
+                                };
+                            }
+                        }
+                    }, 1500);
+                };
+            }
+        },
+        disable: function (d) {
+            if (typeof window !== 'undefined' && window.__assembleHeartStopSound) {
+                window.__assembleHeartStopSound();
+            }
+            d && d.getElementById('magic-assemble-heart-section') && d.getElementById('magic-assemble-heart-section').remove();
+            d && d.getElementById('magic-assemble-heart-gate') && d.getElementById('magic-assemble-heart-gate').remove();
+        }
+    };
+
+
 
     // Global Event Delegation: Guarantees 100% button interactivity on generated & shared websites
     if (typeof document !== 'undefined') {

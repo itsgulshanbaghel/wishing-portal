@@ -5087,7 +5087,7 @@
           featBombExplosion: "\uD83D\uDCA3 Bomb", featGiftBoxOpen: "\uD83C\uDF81 Gift Box", featTextFormation: "\u270D\uFE0F Typing Card",
           featScratchReveal: "\uD83C\uDFAB Scratch Card", featMemoryTimeline: "\uD83D\uDCDC Timeline", featHeartsOnScroll: "\uD83D\uDC96 Hearts Scroll",
           featOldPaperLetter: "\u2709\uFE0F Secret Letter", featHugSkyLetter: "\uD83E\uDD17 Hug + Sky Letter", featInstantCamera: "📸 Instant Camera Snapshot", featFloatingPolaroids: "\uD83D\uDCF7 Floating Memories",
-          featImageExplosion: "\uD83D\uDCA5 Magic Photo", featFinalSurprise: "\uD83C\uDF89 Final Message", featBalloonReveal: "🎈 Balloon Word Reveal",
+          featImageExplosion: "\uD83D\uDCA5 Magic Photo", featFinalSurprise: "\uD83C\uDF89 Final Message", featBalloonReveal: "🎈 Balloon Word Reveal", featAssembleHeart: "💖 Assemble the Heart",
           featVirtualCake: "🎂 Cake Celebration", featVirtualHug: "🤗 Virtual Hug", featNamedBirthdayCard: "🐼 Cute Birthday Poster",
           featAddMusicSection: "\uD83C\uDFB5 Add Music", featMagicMusic: "🎵 Background Music", featVoiceNote: "🎙️ Voice Note", featCountdown: "⏳ Surprise Countdown", placeholderText: "Customize message / text", placeholderEmoji: "Custom emoji(s)",
           uploadImages: "\uD83D\uDCF7 Upload Images", alertCopy: "Link copied!", alertGenerateFirst: "Generate the link first!",
@@ -5169,7 +5169,7 @@
           featBombExplosion: "💣 बम धमाका", featGiftBoxOpen: "🎁 गिफ्ट बॉक्स", featTextFormation: "✍️ टाइपिंग कार्ड",
           featScratchReveal: "🎫 स्क्रैच कार्ड", featMemoryTimeline: "📜 यादों की टाइमलाइन", featHeartsOnScroll: "💖 स्क्रॉल पर दिल",
           featOldPaperLetter: "✉️ पुराना पत्र", featHugSkyLetter: "🤗 आसमानी पत्र", featInstantCamera: "📸 इंस्टेंट कैमरा (Instant Camera)", featFloatingPolaroids: "📷 फ्लोटिंग तस्वीरें",
-          featImageExplosion: "💥 मैजिक फोटो", featFinalSurprise: "🎉 आखिरी सरप्राइज़", featBalloonReveal: "🎈 बैलून मैसेज रिवील",
+          featImageExplosion: "💥 मैजिक फोटो", featFinalSurprise: "🎉 आखिरी सरप्राइज़", featBalloonReveal: "🎈 बैलून मैसेज रिवील", featAssembleHeart: "💖 दिल जोड़ें (Assemble Heart)",
           featVirtualCake: "🎂 वर्चुअल केक सेलिब्रेशन", featVirtualHug: "🤗 वर्चुअल हग (Virtual Hug)", featNamedBirthdayCard: "🐼 नाम वाला बर्थडे पोस्टर",
           featAddMusicSection: "🎧 गाना लगाए", featMagicMusic: "🎵 बैकग्राउंड म्यूजिक", featVoiceNote: "🎙️ वॉइस नोट", featCountdown: "⏳ सरप्राइज़ काउंटडाउन", placeholderText: "अपना संदेश / टेक्स्ट लिखें", placeholderEmoji: "कस्टम इमोजी (एक या अधिक)",
           uploadImages: "📷 तस्वीरें अपलोड करें", alertCopy: "लिंक कॉपी हो गया!", alertGenerateFirst: "पहले लिंक जेनरेट करें!",
@@ -6888,6 +6888,9 @@
           } else if (id === 'balloonReveal') {
             const effCfg = (typeof text === 'object' && text !== null) ? text : curData;
             applyFeature(id, true, userName, effCfg, images, emoji);
+          } else if (id === 'assembleHeart') {
+            const effCfg = (typeof text === 'object' && text !== null) ? text : curData;
+            applyFeature(id, true, userName, effCfg, images);
           } else if (id === 'countdown') {
             const effText = (typeof text === 'object' && text !== null) ? text : { text: (typeof text === 'string' ? text : (curData.text || "")), title: (curData.title || "") };
             const effEmoji = (typeof emoji === 'string' && emoji) ? emoji : (curData.title || "");
@@ -7759,7 +7762,7 @@
       }
 
       const FEATURES_CATALOG = [
-        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "flowerBouquet", nameKey: "featFlowerBouquet" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "instantCamera", nameKey: "featInstantCamera" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }, { id: "balloonReveal", nameKey: "featBalloonReveal" }
+        { id: "lock", nameKey: "featLock" }, { id: "curtainReveal", nameKey: "featCurtainReveal" }, { id: "welcomeTyping", nameKey: "featWelcomeTyping" }, { id: "fireworksText", nameKey: "featFireworksText" }, { id: "flowerRain", nameKey: "featFlowerRain" }, { id: "flyingSwans", nameKey: "featFlyingSwans" }, { id: "flowerBouquet", nameKey: "featFlowerBouquet" }, { id: "balloonParty", nameKey: "featBalloonParty" }, { id: "virtualCake", nameKey: "featVirtualCake" }, { id: "virtualHug", nameKey: "featVirtualHug" }, { id: "namedBirthdayCard", nameKey: "featNamedBirthdayCard" }, { id: "floatingBalloonsNamed", nameKey: "featFloatingBalloonsNamed" }, { id: "fireworksClick", nameKey: "featFireworksClick" }, { id: "bombExplosion", nameKey: "featBombExplosion" }, { id: "giftBoxOpen", nameKey: "featGiftBoxOpen" }, { id: "textFormation", nameKey: "featTextFormation" }, { id: "scratchReveal", nameKey: "featScratchReveal" }, { id: "instantCamera", nameKey: "featInstantCamera" }, { id: "memoryTimeline", nameKey: "featMemoryTimeline" }, { id: "heartsOnScroll", nameKey: "featHeartsOnScroll" }, { id: "oldPaperLetter", nameKey: "featOldPaperLetter" }, { id: "hugSkyLetter", nameKey: "featHugSkyLetter" }, { id: "floatingPolaroids", nameKey: "featFloatingPolaroids" }, { id: "imageExplosion", nameKey: "featImageExplosion" }, { id: "finalSurprise", nameKey: "featFinalSurprise" }, { id: "addMusicSection", nameKey: "featAddMusicSection" }, { id: "magicMusic", nameKey: "featMagicMusic" }, { id: "voiceNote", nameKey: "featVoiceNote" }, { id: "countdown", nameKey: "featCountdown" }, { id: "balloonReveal", nameKey: "featBalloonReveal" }, { id: "assembleHeart", nameKey: "featAssembleHeart" }
       ];
       const noCustomizeIds = new Set(["curtainReveal", "fireworksClick", "bombExplosion", "addMusicSection"]);
 
@@ -7786,6 +7789,12 @@
               const curData = (typeof customData !== 'undefined' && customData.get) ? (customData.get('balloonReveal') || {}) : {};
               const cfg = (typeof customText === 'object' && customText !== null) ? customText : curData;
               feature.enable(doc, win, userName, cfg);
+            }
+            else if (id === "assembleHeart") {
+              const curData = (typeof customData !== 'undefined' && customData.get) ? (customData.get('assembleHeart') || {}) : {};
+              const cfg = (typeof customText === 'object' && customText !== null) ? customText : curData;
+              const imgs = (images && Array.isArray(images) && images.length > 0) ? images : (cfg.image ? [cfg.image] : []);
+              feature.enable(doc, win, userName, cfg, imgs);
             }
             else if (id === "scratchReveal" || id === "giftBoxOpen" || id === "memoryTimeline" || id === "hugSkyLetter" || id === "floatingPolaroids" || id === "imageExplosion" || id === "instantCamera") feature.enable(doc, win, userName, customText, images);
             else if (id === "addMusicSection") feature.enable(doc, win, userName, customText, spotifyEmbedUrl, youtubeEmbedUrl, instagramEmbedUrl);
@@ -7860,7 +7869,7 @@
           [t.catFloral]: ["flowerRain", "flyingSwans", "flowerBouquet"],
           [t.catPlayful]: ["balloonParty", "floatingBalloonsNamed", "balloonReveal", "imageExplosion", "virtualCake", "fireworksClick", "bombExplosion", "giftBoxOpen", "scratchReveal", "namedBirthdayCard", "virtualHug"],
           [t.catMemories]: ["instantCamera", "floatingPolaroids", "memoryTimeline", "oldPaperLetter"],
-          [t.catHeart]: ["textFormation", "heartsOnScroll", "hugSkyLetter"],
+          [t.catHeart]: ["assembleHeart", "textFormation", "heartsOnScroll", "hugSkyLetter"],
           [t.catFinale]: ["magicMusic", "voiceNote", "addMusicSection", "finalSurprise"]
         };
         for (let [catName, ids] of Object.entries(actualCategories)) {
@@ -8196,6 +8205,170 @@
               }
 
               customPanel.appendChild(brWrap);
+            }
+
+
+            // ── ASSEMBLE THE HEART custom panel ──
+            if (id === "assembleHeart" && hasCustom) {
+              const existingHeart = customData.get('assembleHeart') || {};
+              let curStyle = existingHeart.style || 'photo'; // 'photo' or 'gem'
+              let curPieceCount = existingHeart.pieceCount || 4;
+              let curImage = existingHeart.image || '';
+              let curMessage = existingHeart.message || (currentLang === 'hi' ? 'मेरे दिल का हर टुकड़ा सिर्फ तुम्हारा है 💖' : 'Every piece of my heart belongs to you, always and forever 💖');
+
+              const ahWrap = document.createElement('div');
+              ahWrap.className = 'puzzle-compact-panel';
+              ahWrap.style.cssText = 'background: #ffffff; border: 1.5px solid rgba(255, 64, 129, 0.22); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; margin-top: 6px; box-shadow: 0 4px 14px rgba(255,64,129,0.06);';
+
+              // Controls Bar: Style Tabs + Piece Count
+              const ctlRow = document.createElement('div');
+              ctlRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; background: #fff5f8; padding: 4px 8px; border-radius: 10px; border: 1px solid rgba(255,64,129,0.1);';
+
+              // Style Tabs
+              const styleToggleWrap = document.createElement('div');
+              styleToggleWrap.style.cssText = 'display: flex; align-items: center; background: rgba(0,0,0,0.06); padding: 2px; border-radius: 8px; gap: 2px;';
+              const styleOpts = [
+                { id: 'photo', label: currentLang === 'hi' ? '📷 फोटो दिल' : '📷 Photo Heart' },
+                { id: 'gem', label: currentLang === 'hi' ? '💎 रत्न दिल' : '💎 Gem Heart' }
+              ];
+              styleOpts.forEach(s => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                const isAct = curStyle === s.id;
+                btn.style.cssText = 'padding: 4px 8px; font-size: 0.73rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s ease; ' +
+                  (isAct ? 'background: #ffffff; color: #d81b60; box-shadow: 0 1px 4px rgba(0,0,0,0.12);' : 'background: transparent; color: #666;');
+                btn.innerText = s.label;
+                btn.onclick = (e) => {
+                  e.stopPropagation();
+                  curStyle = s.id;
+                  styleToggleWrap.querySelectorAll('button').forEach(b => {
+                    b.style.background = 'transparent'; b.style.color = '#666'; b.style.boxShadow = 'none';
+                  });
+                  btn.style.background = '#ffffff'; btn.style.color = '#d81b60'; btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.12)';
+                  uploadArea.style.display = curStyle === 'photo' ? 'flex' : 'none';
+                  saveAndRefresh();
+                };
+                styleToggleWrap.appendChild(btn);
+              });
+              ctlRow.appendChild(styleToggleWrap);
+
+              // Pieces Count
+              const countWrap = document.createElement('div');
+              countWrap.style.cssText = 'display: flex; align-items: center; gap: 4px;';
+              const countLbl = document.createElement('span');
+              countLbl.style.cssText = 'font-size: 0.7rem; font-weight: 700; color: #777;';
+              countLbl.innerText = currentLang === 'hi' ? 'टुकड़े:' : 'Pieces:';
+              countWrap.appendChild(countLbl);
+
+              [4, 6].forEach(cnt => {
+                const cBtn = document.createElement('button');
+                cBtn.type = 'button';
+                const isAct = curPieceCount === cnt;
+                cBtn.style.cssText = 'min-width: 26px; height: 24px; padding: 0 6px; border-radius: 6px; font-weight: 800; font-size: 0.74rem; cursor: pointer; ' +
+                  (isAct ? 'background: #d81b60; color: #fff; border: none;' : 'background: #fff; color: #555; border: 1px solid rgba(0,0,0,0.1);');
+                cBtn.innerText = cnt;
+                cBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  curPieceCount = cnt;
+                  countWrap.querySelectorAll('button').forEach(b => {
+                    b.style.background = '#fff'; b.style.color = '#555'; b.style.border = '1px solid rgba(0,0,0,0.1)';
+                  });
+                  cBtn.style.background = '#d81b60'; cBtn.style.color = '#fff'; cBtn.style.border = 'none';
+                  saveAndRefresh();
+                };
+                countWrap.appendChild(cBtn);
+              });
+              ctlRow.appendChild(countWrap);
+              ahWrap.appendChild(ctlRow);
+
+              // Upload Dropzone
+              const uploadArea = document.createElement('div');
+              uploadArea.style.cssText = 'width: 100%; border: 2px dashed rgba(255, 64, 129, 0.4); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; background: #fffdfd; display: ' + (curStyle === 'photo' ? 'flex' : 'none') + '; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; transition: border-color 0.2s;';
+              
+              const fileInput = document.createElement('input');
+              fileInput.type = 'file';
+              fileInput.accept = 'image/*';
+              fileInput.style.display = 'none';
+              uploadArea.appendChild(fileInput);
+
+              const renderUploadView = () => {
+                if (curImage) {
+                  uploadArea.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                      <img src="${curImage}" style="width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 1.5px solid #d81b60;" />
+                      <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 0.76rem; font-weight: 700; color: #333;">${currentLang === 'hi' ? 'फोटो अपलोड हो गई' : 'Photo Uploaded'}</div>
+                        <div style="font-size: 0.68rem; color: #888;">${currentLang === 'hi' ? 'बदलने के लिए टैप करें' : 'Tap to change photo'}</div>
+                      </div>
+                      <button type="button" class="remove-photo-btn" style="background: rgba(0,0,0,0.06); border: none; color: #d81b60; width: 26px; height: 26px; border-radius: 50%; cursor: pointer;">✕</button>
+                    </div>
+                  `;
+                  const rm = uploadArea.querySelector('.remove-photo-btn');
+                  if (rm) {
+                    rm.onclick = (e) => {
+                      e.stopPropagation();
+                      curImage = '';
+                      renderUploadView();
+                      saveAndRefresh();
+                    };
+                  }
+                  uploadArea.onclick = () => fileInput.click();
+                } else {
+                  uploadArea.innerHTML = `
+                    <span style="font-size: 1.5rem; margin-bottom: 4px;">📷</span>
+                    <span style="font-size: 0.76rem; font-weight: 700; color: #d81b60;">${currentLang === 'hi' ? 'अपनी खास फोटो अपलोड करें' : 'Upload Meaningful Photo'}</span>
+                    <span style="font-size: 0.68rem; color: #999;">${currentLang === 'hi' ? 'दिल के टुकड़ों में कटेगी' : 'Will be split into heart shards'}</span>
+                  `;
+                  uploadArea.onclick = () => fileInput.click();
+                }
+              };
+              renderUploadView();
+
+              fileInput.onchange = async (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+                try {
+                  const comp = (typeof compressImageIfNeeded === 'function') ? await compressImageIfNeeded(file) : file;
+                  const reader = new FileReader();
+                  reader.onload = (evt) => {
+                    curImage = evt.target.result;
+                    renderUploadView();
+                    autoActivateFeature('assembleHeart');
+                    saveAndRefresh();
+                  };
+                  reader.readAsDataURL(comp);
+                } catch(err) {
+                  console.error(err);
+                }
+              };
+              ahWrap.appendChild(uploadArea);
+
+              // Message Input
+              const msgArea = document.createElement('textarea');
+              msgArea.style.cssText = 'width: 100%; height: 50px; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 6px 8px; font-size: 0.78rem; font-family: inherit; resize: none; box-sizing: border-box;';
+              msgArea.placeholder = currentLang === 'hi' ? 'पूरा होने पर दिखने वाला संदेश...' : 'Message revealed on completion...';
+              msgArea.value = curMessage;
+              msgArea.oninput = () => {
+                curMessage = msgArea.value;
+                saveAndRefresh();
+              };
+              ahWrap.appendChild(msgArea);
+
+              function saveAndRefresh() {
+                const nameVal = getUserName();
+                const configObj = {
+                  style: curStyle,
+                  pieceCount: curPieceCount,
+                  image: curImage,
+                  message: curMessage,
+                  name: nameVal
+                };
+                customData.set('assembleHeart', configObj);
+                autoSaveState();
+                refreshFeatureIfActive('assembleHeart', nameVal, configObj, curImage ? [curImage] : []);
+              }
+
+              customPanel.appendChild(ahWrap);
             }
 
             // ── FLOWER BOUQUET custom panel (bouquet picker + message textarea) ──
