@@ -38,7 +38,7 @@ const CLEAN_STATIC_ROUTES = {
 const EDGE_PRICING = {
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India', country: 'IN',
-    plans: { custom_url: { amount: 29 }, starter: { amount: 79 }, pro: { amount: 149 }, pro_plus: { amount: 249 }, forever: { amount: 399 } }
+    plans: { custom_url: { amount: 29 }, starter: { amount: 59 }, pro: { amount: 99 }, pro_plus: { amount: 149 }, forever: { amount: 299 } }
   },
   GB: {
     currency: 'GBP', symbol: '£', gateway: 'paypal', paypalCurrency: 'GBP', countryName: 'United Kingdom', country: 'GB',

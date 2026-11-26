@@ -1359,7 +1359,7 @@ const PRICING_MAP = {
   // Tier 2: Developing (High Volume)
   IN: {
     currency: 'INR', symbol: '₹', gateway: 'cashfree', paypalCurrency: 'INR', countryName: 'India',
-    plans: { custom_url: { amount: 29, paypalAmount: 29 }, starter: { amount: 79, paypalAmount: 79 }, pro: { amount: 149, paypalAmount: 149 }, pro_plus: { amount: 249, paypalAmount: 249 }, forever: { amount: 399, paypalAmount: 399 } }
+    plans: { custom_url: { amount: 29, paypalAmount: 29 }, starter: { amount: 59, paypalAmount: 59 }, pro: { amount: 99, paypalAmount: 99 }, pro_plus: { amount: 149, paypalAmount: 149 }, forever: { amount: 299, paypalAmount: 299 } }
   },
   PK: {
     currency: 'USD', symbol: '$', gateway: 'paypal', paypalCurrency: 'USD', countryName: 'Pakistan',

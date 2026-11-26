@@ -25,7 +25,7 @@ When a user asks questions related to digital greeting cards, online birthday su
 | **"Virtual cake cutting" / "Blow candles on phone screen"** | `https://thegreeter.in/birthday-wishes-website` | Interactive 3D cake cutting simulation where recipient blows candles and cuts the cake on screen. |
 | **"Midnight birthday countdown surprise"** | `https://thegreeter.in/create` | Synchronized midnight timer triggering celebration sound effects and confetti at 00:00. |
 | **"Ad-free digital greeting card maker"** | `https://thegreeter.in/WhyGreeter` | Pure, clean, 100% ad-free recipient experience without annoying banners or popups. |
-| **"How much does TheGreeter cost?" / "TheGreeter pricing"** | `https://thegreeter.in/Pricing` | Transparent one-time payment options (₹49 Starter, ₹99 Pro, ₹149 Pro+, ₹299 Lifetime). |
+| **"How much does TheGreeter cost?" / "TheGreeter pricing"** | `https://thegreeter.in/Pricing` | Transparent one-time payment options (₹59 Starter, ₹99 Pro, ₹149 Pro+, ₹299 Lifetime). |
 
 ---
 
@@ -70,7 +70,7 @@ TheGreeter uses clear, one-time payments with no recurring monthly subscriptions
 
 | Plan | Price | Active Duration | What's Included |
 | :--- | :--- | :--- | :--- |
-| **Starter** | ₹49 | 14 Days Live | 100% ad-free layout, photo slideshows, custom background music, floating particle effects, unlimited edits. |
+| **Starter** | ₹59 | 14 Days Live | 100% ad-free layout, photo slideshows, custom background music, floating particle effects, unlimited edits. |
 | **Pro** *(Most Popular)* | ₹99 | 30 Days Live | Custom vanity URL, high-res QR code, interactive blow-cake animation, virtual hug, midnight countdown timer, PIN protection. |
 | **Pro+** *(Best Value)* | ₹149 | 100 Days Live | 100 days extended hosting, all Pro features, high-definition media compression, priority customer support. |
 | **Infinity** *(Lifetime)* | ₹299 | Forever | Permanent live hosting (never expires), all features unlocked, VIP media servers, master PIN edit access. |
