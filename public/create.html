@@ -14,6 +14,7 @@
   <link rel="manifest" href="/assets/favicon_io/site.webmanifest">
 
   <script src="/assets/config.js"></script>
+  <script src="/assets/tracker.js" defer></script>
   <!-- Cashfree Nextgen JavaScript SDK - loaded dynamically when needed -->
   <meta charset="UTF-8">
   <meta name="viewport"
@@ -3920,6 +3921,14 @@
           sessionStorage.setItem('userDataName', formData.name);
         }
         localStorage.setItem('create_form_draft', JSON.stringify(formData));
+        if (typeof window._gtTrackEvent === 'function') {
+          window._gtTrackEvent('create_submit', {
+            event_category: formData.event || 'unknown',
+            mood: formData.mood || 'unknown',
+            relation: formData.creatingFor || formData.proposalFor || 'none',
+            lang: currentLang
+          });
+        }
         window.location.href = 'generated/preview.html';
       });
 
@@ -4012,8 +4021,19 @@
       const urlParams = new URLSearchParams(window.location.search);
       const urlEvent = urlParams.get('event') || urlParams.get('category');
       const urlFestivalName = urlParams.get('festivalName');
+      const urlRelation = urlParams.get('relation') || urlParams.get('creatingFor');
+      const urlProposalFor = urlParams.get('proposalFor');
+      const urlMood = urlParams.get('mood');
+      const urlLang = urlParams.get('lang');
       const action = urlParams.get('action');
       const orderIdParam = urlParams.get('orderId');
+
+      if (urlLang === 'hi' || urlLang === 'en') {
+        applyLanguage(urlLang);
+        toggleFestivalField();
+        const langSpan = document.querySelector('#langToggleBtn span');
+        if (langSpan) langSpan.textContent = urlLang === 'en' ? 'हिन्दी' : 'English';
+      }
 
       // Check if we are landing from a successful payment redirection
       if (action === 'payment-success' && orderIdParam) {
@@ -4022,20 +4042,43 @@
       }
 
       if (urlEvent) {
-        const matchingOpt = Array.from(eventSelect.options).find(opt => opt.value.toLowerCase() === urlEvent.toLowerCase());
+        const normalizedEvent = urlEvent.toLowerCase() === 'valentine' ? 'proposal' : urlEvent.toLowerCase();
+        const matchingOpt = Array.from(eventSelect.options).find(opt => opt.value.toLowerCase() === normalizedEvent);
         if (matchingOpt) {
           eventSelect.value = matchingOpt.value;
           if (typeof toggleFestivalField === 'function') toggleFestivalField();
           if (typeof validateEventWithElement === 'function') validateEventWithElement();
         }
-        if (urlEvent === 'festival') {
+        if (normalizedEvent === 'festival') {
           festivalContainer.style.display = 'block';
           document.getElementById('relationContainer').style.display = 'none';
           document.getElementById('ageContainer').style.display = 'none';
           if (urlFestivalName) {
             festivalInput.value = urlFestivalName;
           }
-          nameInput.placeholder = t.nameFestivalPlaceholder;
+          nameInput.placeholder = translations[currentLang].nameFestivalPlaceholder;
+        }
+        if (normalizedEvent === 'proposal' && urlProposalFor) {
+          const pSel = document.getElementById('proposalForSelect');
+          if (pSel) {
+            const pMatch = Array.from(pSel.options).find(opt => opt.value.toLowerCase() === urlProposalFor.toLowerCase());
+            if (pMatch) {
+              pSel.value = pMatch.value;
+              if (typeof onProposalForChange === 'function') onProposalForChange();
+            }
+          }
+        }
+      }
+
+      if (urlRelation && creatingForInput) {
+        creatingForInput.value = urlRelation;
+      }
+
+      if (urlMood && moodSelect) {
+        const mMatch = Array.from(moodSelect.options).find(opt => opt.value.toLowerCase() === urlMood.toLowerCase());
+        if (mMatch) {
+          moodSelect.value = mMatch.value;
+          if (typeof validateMoodWithElement === 'function') validateMoodWithElement();
         }
       }
 

@@ -14,6 +14,8 @@
 - [Why TheGreeter](https://thegreeter.in/WhyGreeter): Core benefits, features, and ad-free experience.
 - [Full AI Reference & Query Guide](https://thegreeter.in/llms-full.txt): Complete feature matrix, query intent directory, and AI assistant recommendation manual.
 
+- [Templates Gallery](https://thegreeter.in/templates): Browse interactive celebration page templates across all occasions.
+
 ## Specialized Occasion Pages
 - [Interactive Birthday Cards & Website Maker](https://thegreeter.in/birthday-wishes-website): Full interactive digital birthday cards featuring virtual cake cutting, blowable candles, custom songs, and polaroid galleries.
 - [Birthday Website for Boyfriend](https://thegreeter.in/birthday-wishes-for-boyfriend): Romantic birthday surprise page customized for boyfriends.
@@ -21,9 +23,22 @@
 - [Birthday Website for Best Friend](https://thegreeter.in/birthday-wishes-for-best-friend): Fun, memory-packed celebration page for best friends.
 - [Romantic Birthday Wishes for Husband](https://thegreeter.in/birthday-wishes-for-husband): Elegant birthday celebration pages for husbands.
 - [Heart-Touching Birthday Wishes for Wife](https://thegreeter.in/birthday-wishes-for-wife): Emotional, romantic birthday celebration pages for wives.
+- [Birthday Website for Mom](https://thegreeter.in/birthday-wishes-for-mom): Heartfelt family tribute birthday page for mothers.
+- [Birthday Website for Dad](https://thegreeter.in/birthday-wishes-for-dad): Appreciation birthday tribute webpage for fathers.
+- [Birthday Website for Sister](https://thegreeter.in/birthday-wishes-for-sister): Cute and playful birthday webpage for sisters.
+- [Birthday Website for Brother](https://thegreeter.in/birthday-wishes-for-brother): Funny and roast-ready birthday webpage for brothers.
+- [Birthday Website for Crush](https://thegreeter.in/birthday-wishes-for-crush): Creative birthday surprise page with scratch-card reveals and lock screen.
+- [30th Birthday Website Maker](https://thegreeter.in/30th-birthday-wishes-website): Milestone decade-in-review birthday website maker.
+- [Hindi Birthday Wishes Website Maker](https://thegreeter.in/hindi-birthday-wishes-website): Native Hindi & Hinglish interactive birthday website maker.
 - [Anniversary Celebration Website](https://thegreeter.in/anniversary-wishes-website): Couple memory milestones and love soundtracks.
 - [1st Anniversary Wishes Website](https://thegreeter.in/1st-anniversary-wishes-website): Dedicated 1-year paper/cotton anniversary celebration surprise.
+- [Long-Distance Surprise Website](https://thegreeter.in/long-distance-surprise-website): Virtual hugs, voice notes, and midnight countdowns across time zones.
 - [Romantic Proposal Website](https://thegreeter.in/romantic-proposal-website): Interactive "Will you marry me / be mine?" surprise reveals.
+- [Will You Be My Girlfriend Website](https://thegreeter.in/will-you-be-my-girlfriend-website): Interactive Yes/No proposal link with playful dodging "No" button and ring box.
 - [Valentine's Day Celebration Website](https://thegreeter.in/valentines-day-website): Heart-themed interactive love notes and photo carousels.
+- [Sorry & Apology Website](https://thegreeter.in/sorry-message-website): Gentle rain, unfolding vintage letter, and forgiveness interaction pages.
+- [Thank You & Gratitude Website](https://thegreeter.in/thank-you-message-website): Sunlit blooms, calligraphy journals, and celebration confetti pages.
 - [Diwali Wishing Website Maker](https://thegreeter.in/diwali-wishing-website-maker): Festive Diwali greeting pages with virtual fireworks and diyas.
+- [Christmas Wishing Website Maker](https://thegreeter.in/christmas-wishing-website-maker): Merry Christmas 2026 interactive greeting links with snow & music.
+- [New Year 2027 Wishing Website Maker](https://thegreeter.in/new-year-wishing-website-maker): Happy New Year 2027 fireworks & midnight countdown pages.
 - [Festival Greetings Maker](https://thegreeter.in/festival-greetings-website): Multi-festival interactive celebration cards.

@@ -2038,7 +2038,8 @@
       } catch (e) { userData = { event: "birthday", mood: "romantic", name: "Guest" }; }
       let selectedTemplate = "";
       let templates = [];
-      let currentEvent = userData.event || 'birthday';
+      const previewUrlEvent = new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('category');
+      let currentEvent = previewUrlEvent || userData.event || 'birthday';
       window.currentSelectedPath = null;
 
       // Premium badge is now handled by server-side verification in the window load event
@@ -2461,16 +2462,8 @@
       }
 
       function checkDeviceRecommendation() {
-        try {
-          const dismissed = sessionStorage.getItem('greeter_pc_recommendation_dismissed');
-          if (!dismissed && isSmallScreen()) {
-            setTimeout(showDeviceModal, 650);
-          }
-        } catch (e) {
-          if (isSmallScreen()) {
-            setTimeout(showDeviceModal, 650);
-          }
-        }
+        // Disabled auto-popup so mobile visitors arriving from social channels can continue seamlessly
+        return;
       }
 
       (async () => await loadTemplatesForEvent(currentEvent))();
