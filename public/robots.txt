@@ -1,38 +1,163 @@
 # TheGreeter.in robots.txt
-# Updated: 2026-07-26
+# Updated: 2026-11-28
 
 User-agent: *
 Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /sitemap.xml
+Allow: /assets/og-cover.webp
+Allow: /assets/og-cover.png
+Allow: /assets/CLOGO.webp
+Allow: /assets/Light_logo.webp
+Allow: /assets/Dark_logo.webp
 
-# Block admin and internal pages
+# Block admin, internal, and user-generated private pages
 Disallow: /admin
 Disallow: /admin.html
 Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
 
-# Block private assets
+# Block internal tracking & admin scripts
 Disallow: /assets/tracker.js
 Disallow: /assets/admin.js
 Disallow: /assets/admin.css
 
-# Allow Google to access static assets for rendering
-Allow: /assets/Light_logo.png
-Allow: /assets/Dark_logo.png
-Allow: /assets/og-cover.png
+# Google Crawlers & AdSense
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
 
-# LLM and AI Search Engines (Generative Engine Optimization)
-Allow: /llms.txt
-Allow: /llms-full.txt
-
-# Allow Google AdSense crawler
 User-agent: Mediapartners-Google
 Allow: /
 
-# Allow Google AdsBot
 User-agent: AdsBot-Google
 Allow: /
 
-# Sitemap
-Sitemap: https://thegreeter.in/sitemap.xml
+# Bing Search
+User-agent: bingbot
+Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
 
-# Crawl delay (be polite to crawlers)
-Crawl-delay: 1
+# AI Search & LLM Crawlers (Generative Engine Optimization)
+User-agent: OAI-SearchBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: Claude-Web
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: Google-Extended
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: GoogleOther
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: Applebot-Extended
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+User-agent: CCBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /generated/
+Disallow: /clear
+Disallow: /maintenance
+
+# Sitemaps
+Sitemap: https://thegreeter.in/sitemap.xml

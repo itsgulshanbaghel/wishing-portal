@@ -365,6 +365,27 @@ export default {
     // Serve static assets from public folder via Cloudflare Workers Assets binding (0 CPU, 100% free unlimited global CDN)
     if (env.ASSETS) {
       const assetRes = await env.ASSETS.fetch(request);
+      if (assetRes.status === 200 && (path === '/llms.txt' || path === '/llms-full.txt' || path === '/robots.txt')) {
+        const headers = new Headers(assetRes.headers);
+        headers.set('Content-Type', 'text/plain; charset=utf-8');
+        headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400');
+        headers.set('Access-Control-Allow-Origin', '*');
+        return new Response(assetRes.body, {
+          status: assetRes.status,
+          statusText: assetRes.statusText,
+          headers
+        });
+      }
+      if (assetRes.status === 200 && path === '/sitemap.xml') {
+        const headers = new Headers(assetRes.headers);
+        headers.set('Content-Type', 'application/xml; charset=utf-8');
+        headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+        return new Response(assetRes.body, {
+          status: assetRes.status,
+          statusText: assetRes.statusText,
+          headers
+        });
+      }
       // For media, fonts, images, scripts, add edge & browser caching headers
       if (assetRes.status === 200 && path.match(/\.(webm|mp4|mov|webp|png|jpg|jpeg|gif|svg|woff2|woff|ttf|mp3|css|js|ico|avif)$/i)) {
         const headers = new Headers(assetRes.headers);
