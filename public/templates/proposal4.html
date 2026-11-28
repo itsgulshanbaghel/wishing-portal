@@ -168,6 +168,7 @@
     ══════════════════════════════════════ */
         #ch1 {
             background: linear-gradient(180deg, #edf6ff 0%, #f5f0ff 50%, #fff0f5 100%);
+            padding-bottom: 108px;
         }
 
         .big-script {
@@ -177,7 +178,8 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1;
+            line-height: 1.08;
+            padding: 0 0.16em 0.08em;
             filter: drop-shadow(0 4px 20px rgba(92, 45, 126, 0.15));
         }
 
@@ -215,7 +217,7 @@
 
         .scroll-cue {
             position: absolute;
-            bottom: 40px;
+            bottom: 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -340,8 +342,15 @@
             font-style: italic;
         }
 
+        .ms-card.expanded {
+            border-color: rgba(155, 89, 166, 0.45);
+            box-shadow: 0 18px 44px rgba(92, 45, 126, 0.16);
+            transform: scale(1.03) translateY(-4px);
+        }
+
         .ms-card.expanded .ms-detail {
             display: block;
+            color: var(--text);
         }
 
         .ms-pulse {
@@ -353,6 +362,13 @@
             border-radius: 50%;
             background: var(--coral);
             animation: msPulse 2s ease-in-out infinite;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .ms-card.expanded .ms-pulse {
+            opacity: 0;
+            transform: scale(0);
+            animation: none;
         }
 
         @keyframes msPulse {
@@ -376,9 +392,10 @@
 
         .flip-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(100px, 160px));
+            grid-template-columns: repeat(3, minmax(92px, 160px));
             gap: 18px;
             width: fit-content;
+            max-width: 100%;
         }
 
         .flip-card {
@@ -394,7 +411,12 @@
             aspect-ratio: 1;
         }
 
-        .flip-card:hover .flip-inner,
+        @media (hover: hover) {
+            .flip-card:hover .flip-inner {
+                transform: rotateY(180deg);
+            }
+        }
+
         .flip-card.flipped .flip-inner {
             transform: rotateY(180deg);
         }
@@ -478,47 +500,42 @@
         }
 
         .open-envelope {
-            width: min(580px, 96vw);
+            width: min(580px, 94vw);
             position: relative;
         }
 
         /* Envelope body */
         .env-back {
             background: white;
-            border-radius: 8px 8px 16px 16px;
+            border-radius: 0 0 16px 16px;
             box-shadow: 0 20px 60px rgba(92, 45, 126, 0.14), 0 2px 8px rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
             z-index: 2;
         }
 
-        /* Top triangle flap (open) */
+        /* Responsive top envelope flap */
         .env-flap-open {
             width: 100%;
-            height: 0;
-            border-left: 290px solid transparent;
-            border-right: 290px solid transparent;
-            border-top: 140px solid #f5f0ff;
+            height: 110px;
+            background: linear-gradient(180deg, #ebe2ff 0%, #f5f0ff 100%);
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
             position: relative;
-            z-index: 3;
-            filter: drop-shadow(0 4px 8px rgba(92, 45, 126, 0.1));
+            z-index: 1;
+            filter: drop-shadow(0 -2px 10px rgba(92, 45, 126, 0.08));
         }
 
         .env-flap-open::after {
             content: '';
             position: absolute;
-            top: -140px;
-            left: -290px;
-            width: 0;
-            height: 0;
-            border-left: 290px solid transparent;
-            border-right: 290px solid transparent;
-            border-top: 140px solid rgba(155, 89, 166, 0.08);
+            inset: 0;
+            background: linear-gradient(180deg, rgba(155, 89, 166, 0.04) 0%, rgba(155, 89, 166, 0.12) 100%);
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
         }
 
         .env-seal {
             position: absolute;
-            top: -20px;
+            top: 86px;
             left: 50%;
             transform: translateX(-50%);
             width: 48px;
@@ -534,12 +551,14 @@
         }
 
         .env-content {
-            padding: 20px 36px 40px;
+            padding: 36px 36px 44px;
+            position: relative;
+            z-index: 1;
         }
 
         .env-border-top {
             height: 4px;
-            margin: -20px -36px 28px;
+            margin: -36px -36px 32px;
             background: repeating-linear-gradient(90deg, var(--blush) 0, var(--blush) 8px, transparent 8px, transparent 16px);
         }
 
@@ -548,6 +567,7 @@
             font-size: 2.2rem;
             color: var(--deep);
             margin-bottom: 14px;
+            text-align: left;
         }
 
         .env-letter-body {
@@ -559,6 +579,7 @@
             border-left: 3px solid var(--blush);
             padding-left: 16px;
             margin-bottom: 20px;
+            text-align: left;
         }
 
         .env-letter-sign {
@@ -568,24 +589,16 @@
             text-align: right;
         }
 
-        /* Envelope bottom triangle decoration */
+        /* Responsive bottom envelope fold */
         .env-bottom-tri {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            overflow: hidden;
-            height: 40px;
-        }
-
-        .env-bottom-tri::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            border-left: 290px solid #f5f0ff;
-            border-right: 290px solid #f5f0ff;
-            border-top: 40px solid transparent;
-            opacity: 0.4;
+            height: 44px;
+            background: linear-gradient(180deg, rgba(245, 240, 255, 0.35), rgba(155, 89, 166, 0.1));
+            clip-path: polygon(0 100%, 50% 0, 100% 100%);
+            pointer-events: none;
         }
 
         /* ══════════════════════════════════════
@@ -651,29 +664,63 @@
             position: absolute;
             inset: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 4px;
+            padding: 8px 6px;
             background: var(--bg-r, #fff0f5);
-            font-size: 2rem;
+            font-size: 1.75rem;
             opacity: 0;
-            transition: opacity 0.5s ease;
+            transform: scale(0.92);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+
+        .puzzle-reason-text {
+            font-family: 'Nunito', sans-serif;
+            font-size: clamp(0.62rem, 2.2vw, 0.76rem);
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--deep);
+            text-align: center;
         }
 
         .puzzle-tile.unlocked .puzzle-tile-inner {
             opacity: 1;
+            transform: scale(1);
         }
 
         .puzzle-tile.unlocked .puzzle-icon {
-            opacity: 0.15;
+            opacity: 0;
+            transform: scale(0.5);
         }
 
         .puzzle-icon {
             position: relative;
             z-index: 1;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .puzzle-latest {
+            margin-top: 16px;
+            min-height: 28px;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--deep);
+            font-weight: 700;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .puzzle-latest.show {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .puzzle-counter {
-            margin-top: 16px;
+            margin-top: 8px;
             font-size: 0.82rem;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -808,7 +855,7 @@
         }
 
         .acc-item.open .acc-body {
-            max-height: 200px;
+            max-height: 500px;
         }
 
         .acc-body-inner {
@@ -838,12 +885,14 @@
             height: 160px;
             margin: 0 auto 36px;
             cursor: pointer;
+            perspective: 700px;
         }
 
         .ring-box {
             position: relative;
             width: 100%;
             height: 100%;
+            transform-style: preserve-3d;
         }
 
         .ring-box-lid {
@@ -858,13 +907,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transform-origin: bottom center;
-            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: top center;
+            z-index: 2;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.45s ease;
             box-shadow: 0 -4px 16px rgba(92, 45, 126, 0.1);
         }
 
         .ring-box-lid.open {
-            transform: rotateX(-120deg);
+            transform: rotateX(-130deg);
+            z-index: 0;
         }
 
         .ring-box-lid-bow {
@@ -922,7 +973,7 @@
         .ring-box-lid.open~.ring-box-base .ring-in-box,
         .ring-box.opened .ring-in-box {
             opacity: 1;
-            transform: scale(1) rotate(5deg);
+            transform: translateY(-10px) scale(1.12) rotate(0deg);
         }
 
         .ring-box-glow {
@@ -961,6 +1012,13 @@
             color: var(--muted);
             margin-bottom: 16px;
             animation: hintPulse 2s ease-in-out infinite;
+            transition: opacity 0.4s ease;
+        }
+
+        .ring-tap-hint.hidden {
+            opacity: 0;
+            animation: none;
+            pointer-events: none;
         }
 
         @keyframes hintPulse {
@@ -1001,7 +1059,8 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1.1;
+            line-height: 1.15;
+            padding: 0 0.16em 0.08em;
             opacity: 0;
             transform: scale(0.85);
             transition: all 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
@@ -1034,11 +1093,13 @@
             flex-wrap: wrap;
             margin-top: 36px;
             opacity: 0;
+            pointer-events: none;
             transition: opacity 0.8s ease 1.4s;
         }
 
         .final-btns.show {
             opacity: 1;
+            pointer-events: all;
         }
 
         .f-btn-yes {
@@ -1128,6 +1189,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            padding: 0 0.16em 0.08em;
             margin-bottom: 12px;
         }
 
@@ -1165,13 +1227,19 @@
             }
 
             .env-flap-open {
-                border-left-width: 49vw;
-                border-right-width: 49vw;
+                height: 76px;
             }
 
-            .env-bottom-tri::before {
-                border-left-width: 49vw;
-                border-right-width: 49vw;
+            .env-seal {
+                top: 52px;
+            }
+
+            .env-content {
+                padding: 34px 22px 34px;
+            }
+
+            .env-border-top {
+                margin: -34px -22px 24px;
             }
         }
     </style>
@@ -1423,6 +1491,7 @@
                     <div class="puzzle-tile-inner">🌈</div>
                 </div>
             </div>
+            <div class="puzzle-latest" id="puzzleLatest"></div>
             <div class="puzzle-counter" id="puzzleCounter">0 / 9 reasons revealed</div>
             <div class="puzzle-bar-wrap">
                 <div class="puzzle-bar-fill" id="puzzleBar"></div>
@@ -1594,6 +1663,11 @@
                     envHead: 'My Dearest {name},', envSign: 'Always yours ♡',
                     envBody: 'You came into my life quietly, like the first light of morning — and everything changed. Not loudly, not all at once, but gently and completely. I find myself choosing you every single day: in the small moments, in the big decisions, in the quiet spaces between. You are woven into every version of my future that I can imagine. There is so much I want to give you — laughter, peace, adventure, home. But more than anything, I want to give you me, for the rest of our lives.',
                     puzzleMsg: 'You are my every reason ♡',
+                    reasons: [
+                        'Your Smile 🌟', 'Your Kindness 💫', 'Your Laugh 🎶',
+                        'Your Courage 🌊', 'Your Heart 💖', 'Your Soul ✨',
+                        'Your Warmth 🌸', 'Your Strength 🦋', 'Simply You 🌈',
+                    ],
                     promises: [
                         { icon: '🌙', t: 'I Promise to Love You Unconditionally', p: 'On every kind of day...', b: 'On your brightest days I will be your biggest cheer. On your darkest days I will hold you without condition, without judgment, without end. My love for you does not depend on the weather of the world.' },
                         { icon: '🌍', t: 'I Promise to Choose You Every Day', p: 'Not just once, but always...', b: 'Love is not a feeling that arrives once and stays. It is a choice made again and again. I choose you in the morning, in the evening, in the arguments, in the laughter, in every ordinary and extraordinary moment.' },
@@ -1628,6 +1702,11 @@
                     envHead: 'मेरी प्रिय {name},', envSign: 'हमेशा तुम्हारा ♡',
                     envBody: 'तुम मेरी ज़िंदगी में चुपचाप आईं, जैसे सुबह की पहली रोशनी — और सब कुछ बदल गया। धीरे-धीरे, पूरी तरह। मैं हर रोज़ तुम्हें चुनता हूँ — छोटे पलों में, बड़े फैसलों में, हर खामोशी में। तुम मेरे हर भविष्य में बुनी हुई हो। मैं तुम्हें हँसी, सुकून, साहसिकता और घर देना चाहता हूँ। पर सबसे ज़्यादा मैं चाहता हूँ — बाकी ज़िंदगी तुम्हें खुद देना।',
                     puzzleMsg: 'तुम मेरी हर वजह हो ♡',
+                    reasons: [
+                        'तुम्हारी मुस्कान 🌟', 'तुम्हारी दरियादिली 💫', 'तुम्हारी हँसी 🎶',
+                        'तुम्हारा हौसला 🌊', 'तुम्हारा दिल 💖', 'तुम्हारी रूह ✨',
+                        'तुम्हारी गर्मजोशी 🌸', 'तुम्हारी ताकत 🦋', 'बस तुम 🌈',
+                    ],
                     promises: [
                         { icon: '🌙', t: 'मैं बिना शर्त प्यार करने का वादा करता हूँ', p: 'हर तरह के दिन में...', b: 'तुम्हारे अच्छे दिनों में तुम्हारा सबसे बड़ा हौसला बनूँगा। मुश्किल दिनों में बिना किसी शर्त के थामे रहूँगा।' },
                         { icon: '🌍', t: 'मैं हर रोज़ तुम्हें चुनने का वादा करता हूँ', p: 'सिर्फ एक बार नहीं, हमेशा...', b: 'प्यार एक बार नहीं होता — हर बार चुना जाता है। मैं सुबह, शाम, झगड़ों में, हँसी में — हर पल तुम्हें चुनता हूँ।' },
@@ -1650,6 +1729,14 @@
             };
             const t = T[lang];
             const isGenerated = typeof window !== 'undefined' && window.__IS_GENERATED_PAGE__;
+            const accItems = document.querySelectorAll('.acc-item');
+
+            function fireConfetti(opts) {
+                const fn = window.confetti || window.canvasConfetti;
+                if (typeof fn === 'function') {
+                    try { fn(opts); } catch { }
+                }
+            }
 
             /* ─── POPULATE ───────────────────────────────────────────────── */
             if (!isGenerated) {
@@ -1665,9 +1752,12 @@
                 document.getElementById('envHead').innerText = t.envHead.replace('{name}', userName);
                 document.getElementById('envSign').innerText = t.envSign;
                 document.getElementById('envBody').innerText = userStory || t.envBody;
+                document.getElementById('puzzleCounter').innerText = t.puzzleCounter.replace('{n}', 0);
                 document.getElementById('puzzleMsg').innerText = t.puzzleMsg;
+                document.querySelectorAll('.puzzle-tile').forEach((tile, i) => {
+                    if (t.reasons[i]) tile.dataset.reason = t.reasons[i];
+                });
                 // Accordion
-                const accItems = document.querySelectorAll('.acc-item');
                 t.promises.forEach((p, i) => {
                     const item = accItems[i];
                     if (!item) return;
@@ -1713,38 +1803,71 @@
                 userMems.slice(0, 6).forEach((m, i) => {
                     if (!cards[i]) return;
                     const back = cards[i].querySelector('.flip-back-img');
-                    if (m.img) back.innerHTML = `<img src="${m.img}" alt="memory">`;
-                    else back.innerText = m.text || '💖';
+                    if (m.img) {
+                        back.textContent = '';
+                        const img = document.createElement('img');
+                        img.src = m.img;
+                        img.alt = m.text || 'memory';
+                        back.appendChild(img);
+                    } else {
+                        back.innerText = m.text || '💖';
+                    }
                     const cap = cards[i].querySelector('.flip-back-cap');
                     if (cap) cap.innerText = m.text || t.flipCaps[i] || '♡';
                 });
             }
 
-            /* ─── MILESTONE CARDS pop-in ─────────────────────────────────── */
+            /* ─── MILESTONE CARDS pop-in & tap ───────────────────────────── */
             const msCards = document.querySelectorAll('.ms-card');
             let msPop = false;
             function popMilestones() {
                 if (msPop) return; msPop = true;
                 msCards.forEach((c, i) => setTimeout(() => c.classList.add('popped'), i * 110));
             }
+            msCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('expanded');
+                });
+            });
 
             /* ─── PUZZLE ─────────────────────────────────────────────────── */
             const puzzleTiles = document.querySelectorAll('.puzzle-tile');
             const puzzleBar = document.getElementById('puzzleBar');
             const puzzleCount = document.getElementById('puzzleCounter');
+            const puzzleLatest = document.getElementById('puzzleLatest');
             const puzzleMsg = document.getElementById('puzzleMsg');
             let unlocked = 0;
 
             puzzleTiles.forEach(tile => {
                 tile.addEventListener('click', () => {
+                    const reasonText = tile.dataset.reason || '';
+                    const inner = tile.querySelector('.puzzle-tile-inner');
+                    if (inner && !inner.querySelector('.puzzle-reason-text')) {
+                        const emoji = inner.textContent.trim();
+                        const label = emoji ? reasonText.replace(emoji, '').trim() : reasonText;
+                        inner.textContent = '';
+                        const emojiEl = document.createElement('span');
+                        emojiEl.textContent = emoji;
+                        inner.appendChild(emojiEl);
+                        if (label) {
+                            const labelEl = document.createElement('span');
+                            labelEl.className = 'puzzle-reason-text';
+                            labelEl.textContent = label;
+                            inner.appendChild(labelEl);
+                        }
+                    }
+                    if (puzzleLatest && reasonText) {
+                        puzzleLatest.textContent = reasonText;
+                        puzzleLatest.classList.add('show');
+                    }
                     if (tile.classList.contains('unlocked')) return;
                     tile.classList.add('unlocked');
                     unlocked++;
-                    puzzleBar.style.width = (unlocked / 9 * 100) + '%';
+                    puzzleBar.style.width = (unlocked / puzzleTiles.length * 100) + '%';
                     puzzleCount.innerText = t.puzzleCounter.replace('{n}', unlocked);
-                    if (unlocked === 9) puzzleMsg.classList.add('show');
+                    if (unlocked === puzzleTiles.length) puzzleMsg.classList.add('show');
                     // mini confetti
-                    canvasConfetti({ particleCount: 30, spread: 60, origin: { y: 0.6 }, colors: ['#9b59a6', '#f4877a', '#e8b84b'], startVelocity: 14 });
+                    fireConfetti({ particleCount: 30, spread: 60, origin: { y: 0.6 }, colors: ['#9b59a6', '#f4877a', '#e8b84b'], startVelocity: 14 });
                 });
             });
 
@@ -1765,6 +1888,7 @@
             /* ─── RING BOX ───────────────────────────────────────────────── */
             const ringBoxLid = document.getElementById('ringBoxLid');
             const ringBox = document.getElementById('ringBox');
+            const ringTapHint = document.getElementById('ringTapHint');
             let boxOpened = false;
 
             function openRingBox() {
@@ -1772,12 +1896,13 @@
                 boxOpened = true;
                 ringBoxLid.classList.add('open');
                 ringBox.classList.add('opened');
+                if (ringTapHint) ringTapHint.classList.add('hidden');
                 // Reveal question text
                 setTimeout(() => document.getElementById('fqPrelude').classList.add('show'), 400);
                 setTimeout(() => document.getElementById('fqMain').classList.add('show'), 900);
                 setTimeout(() => document.getElementById('fqName').classList.add('show'), 1500);
                 setTimeout(() => document.getElementById('finalBtns').classList.add('show'), 2100);
-                canvasConfetti({ particleCount: 60, spread: 80, origin: { y: 0.5 }, colors: ['#9b59a6', '#f4877a', '#e8b84b', '#fdd5e5'], startVelocity: 16 });
+                fireConfetti({ particleCount: 60, spread: 80, origin: { y: 0.5 }, colors: ['#9b59a6', '#f4877a', '#e8b84b', '#fdd5e5'], startVelocity: 16 });
             }
             document.getElementById('ringBoxContainer').addEventListener('click', openRingBox);
 
@@ -1801,7 +1926,7 @@
                     const id = entry.target.id;
 
                     // Update dot nav
-                    dotNavItems.forEach((d, i) => d.classList.toggle('active', d.dataset.target === id));
+                    dotNavItems.forEach(d => d.classList.toggle('active', d.dataset.target === id));
 
                     if (id === 'ch2') popMilestones();
                     if (id === 'ch6' && !accRevealed) {
@@ -1809,7 +1934,7 @@
                         accReveal.forEach((item, i) => setTimeout(() => item.classList.add('revealed'), i * 120));
                     }
                 });
-            }, { threshold: 0.2 });
+            }, { threshold: 0.06, rootMargin: '0px 0px -24px 0px' });
 
             chapters.forEach(c => obs.observe(c));
 
@@ -1823,12 +1948,12 @@
                 const colors = ['#9b59a6', '#f4877a', '#e8b84b', '#fdd5e5', '#c8f0e0', '#edf6ff'];
                 for (let i = 0; i < 7; i++) {
                     setTimeout(() => {
-                        canvasConfetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0 }, colors, startVelocity: 25 });
-                        canvasConfetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 }, colors, startVelocity: 25 });
-                        canvasConfetti({ particleCount: 60, spread: 100, origin: { y: 0.5 }, colors, shapes: ['star', 'circle'], startVelocity: 18 });
+                        fireConfetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0 }, colors, startVelocity: 25 });
+                        fireConfetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 }, colors, startVelocity: 25 });
+                        fireConfetti({ particleCount: 60, spread: 100, origin: { y: 0.5 }, colors, shapes: ['star', 'circle'], startVelocity: 18 });
                     }, i * 240);
                 }
-                setTimeout(() => canvasConfetti({ particleCount: 350, spread: 160, origin: { y: 0.4 }, colors, startVelocity: 20, ticks: 250 }), 600);
+                setTimeout(() => fireConfetti({ particleCount: 350, spread: 160, origin: { y: 0.4 }, colors, startVelocity: 20, ticks: 250 }), 600);
             });
 
             document.getElementById('noBtn').addEventListener('click', function () {
@@ -1858,6 +1983,7 @@
                 const canvas = document.getElementById('skyCanvas');
                 const ctx = canvas.getContext('2d');
                 let items = [];
+                let balloonCount = 8;
 
                 function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
                 resize(); window.addEventListener('resize', resize);
@@ -1916,7 +2042,7 @@
                     ctx.restore();
                 }
 
-                for (let i = 0; i < 8; i++) {
+                for (let i = 0; i < balloonCount; i++) {
                     const b = newBalloon(); b.y = Math.random() * canvas.height;
                     items.push(b);
                 }
@@ -1940,7 +2066,10 @@
                             ctx.restore();
                         }
                     });
-                    if (Math.random() < 0.015) items.push(newBalloon());
+                    if (balloonCount < 14 && Math.random() < 0.015) {
+                        items.push(newBalloon());
+                        balloonCount++;
+                    }
                     requestAnimationFrame(loop);
                 }
                 requestAnimationFrame(loop);
