@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-  <meta name="google-adsense-account" content="ca-pub-8043014881280685">
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
@@ -11936,7 +11935,7 @@
     h2 { font-size: clamp(2rem, 8vw, 2.8rem) !important; }
     .hero-title { font-size: clamp(2.2rem, 9vw, 3.2rem) !important; }
     .gallery-grid, .gallery, .gallery-strip { gap: 12px !important; padding: 10px 0 !important; }
-    .btn, .greeter-cta-btn { width: 100% !important; padding: 16px 20px !important; font-size: 1.1rem !important; }
+    .btn, .greeter-cta-btn { width: 100% !important; padding: 16px 20px !important; font-size: 1.1rem !important; box-sizing: border-box !important; }
     img, video, iframe, canvas { max-width: 100% !important; height: auto !important; }
   }
   /* Harmonious Universal Scaling matching greeting card aesthetic */
@@ -12004,44 +12003,42 @@
   }
 </style>
 `;
-          const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";localStorage.setItem("greeter_lang",lang);localStorage.setItem("customizer_lang",lang);var urlParams=new URLSearchParams(window.location.search);if(urlParams.get("_v")==="c"){var st=document.createElement("style");st.textContent="#magic-cta-section, .greeter-cta-section, .festival-cta-section { display: none !important; }";document.head.appendChild(st);}if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);window.history.replaceState({},"",newUrl);}function applyCTA(){if(urlParams.get("_v")==="c") return;document.querySelectorAll(".greeter-cta-section [data-en],.festival-cta-section [data-en]").forEach(function(el){var en=el.getAttribute("data-en"),hi=el.getAttribute("data-hi");if(lang==="hi"&&hi)el.textContent=hi;else if(en)el.textContent=en;});var ov=document.getElementById("namePopupOverlay");if(ov){ov.querySelectorAll("[data-en]").forEach(function(el){var en=el.getAttribute("data-en"),hi=el.getAttribute("data-hi");if(lang==="hi"&&hi)el.textContent=hi;else if(en)el.textContent=en;});var inp=document.getElementById("recipientNameInput");if(inp){var phe=inp.getAttribute("data-placeholder-en"),phh=inp.getAttribute("data-placeholder-hi");if(lang==="hi"&&phh)inp.placeholder=phh;else if(phe)inp.placeholder=phe;}}}applyCTA();window.addEventListener("load",applyCTA);})();</scr' + 'ipt>';
+          const langScript = '<scr' + 'ipt>(function(){var lang="' + currentLang + '";localStorage.setItem("greeter_lang",lang);localStorage.setItem("customizer_lang",lang);var urlParams=new URLSearchParams(window.location.search);var hideCta=urlParams.get("hide_cta")==="1"||urlParams.get("preview")==="1";if(hideCta){var st=document.createElement("style");st.textContent="#magic-cta-section, .greeter-cta-section, .festival-cta-section, #greeter-viral-pill { display: none !important; }";document.head.appendChild(st);}if(!urlParams.has("lang")){var newUrl=window.location.href+(window.location.href.indexOf("?")===-1?"?lang="+lang:"&lang="+lang);window.history.replaceState({},"",newUrl);}function applyCTA(){if(hideCta) return;var p=document.getElementById("greeter-viral-pill");if(p)p.remove();document.querySelectorAll(".greeter-cta-section [data-en],.festival-cta-section [data-en]").forEach(function(el){var en=el.getAttribute("data-en"),hi=el.getAttribute("data-hi");if(lang==="hi"&&hi)el.textContent=hi;else if(en)el.textContent=en;});var ov=document.getElementById("namePopupOverlay");if(ov){ov.querySelectorAll("[data-en]").forEach(function(el){var en=el.getAttribute("data-en"),hi=el.getAttribute("data-hi");if(lang==="hi"&&hi)el.textContent=hi;else if(en)el.textContent=en;});var inp=document.getElementById("recipientNameInput");if(inp){var phe=inp.getAttribute("data-placeholder-en"),phh=inp.getAttribute("data-placeholder-hi");if(lang==="hi"&&phh)inp.placeholder=phh;else if(phe)inp.placeholder=phe;}}}applyCTA();window.addEventListener("load",applyCTA);})();</scr' + 'ipt>';
           const scrollTopScript = '<scr' + 'ipt>(function(){ if ("scrollRestoration" in history) { history.scrollRestoration = "manual"; } /* Hide content immediately to prevent visibility before features load */ document.documentElement.style.visibility = "hidden"; document.body.style.visibility = "hidden"; document.body.style.overflow = "hidden"; window.addEventListener("load",function(){ setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }, 10); }); })();</scr' + 'ipt>';
 
           const storedTemplateForCta = localStorage.getItem("selectedTemplate") || "";
           const templateFileForCta = storedTemplateForCta.split('/').pop() || new URLSearchParams(window.location.search).get('template') || 'birthday1';
           const isFestival = /festival/i.test(templateFileForCta);
+          const ctaEventData = (typeof getEventData === 'function' ? getEventData() : {}) || {};
+          const ctaEvent = ctaEventData.event || new URLSearchParams(window.location.search).get('event') || (isFestival ? 'festival' : (/proposal/i.test(templateFileForCta) ? 'proposal' : /anniversary/i.test(templateFileForCta) ? 'anniversary' : /sorry/i.test(templateFileForCta) ? 'sorry' : /thankyou/i.test(templateFileForCta) ? 'thankyou' : 'birthday'));
+          const ctaCreateUrl = '/create?event=' + encodeURIComponent(ctaEvent) + '&utm_source=shared_card&utm_medium=card_footer';
 
           const regularCtaHtml = `
-<style>
-.greeter-cta-section { margin: 60px auto 40px; padding: 40px 30px; max-width: 600px; text-align: center; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 28px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); color: inherit; font-family: 'Inter', 'Quicksand', sans-serif; position: relative; z-index: 100; }
-.greeter-cta-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; color: inherit; line-height: 1.3; }
-.greeter-cta-desc { font-size: 1.1rem; margin-bottom: 28px; opacity: 0.9; line-height: 1.6; color: inherit; }
-.greeter-cta-btn { display: inline-block; background: linear-gradient(135deg, #ff2a5f, #ff4b2b); color: #ffffff !important; text-decoration: none; padding: 18px 36px; font-size: 1.15rem; font-weight: 700; border-radius: 50px; box-shadow: 0 10px 24px rgba(255, 42, 95, 0.4); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
-.greeter-cta-btn:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 14px 32px rgba(255, 42, 95, 0.6); }
-.greeter-logo-accent { font-size: 2.5rem; margin-bottom: 16px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15)); }
-@media (max-width: 600px) { .greeter-cta-section { margin: 40px 20px; padding: 30px 20px; } .greeter-cta-title { font-size: 1.5rem; } .greeter-cta-btn { padding: 15px 24px; font-size: 1rem; } }
+<style id="greeter-viral-styles">
+.greeter-cta-section { margin: 56px auto 48px; padding: 34px 28px; max-width: 560px; width: calc(100% - 32px); box-sizing: border-box; text-align: center; background: rgba(255, 255, 255, 0.84); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(123, 93, 246, 0.24); border-radius: 26px; box-shadow: 0 20px 48px rgba(26, 16, 37, 0.14); color: #1a1025; font-family: 'Inter', 'Quicksand', sans-serif; position: relative; z-index: 100; }
+.greeter-made-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 13px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; background: rgba(123, 93, 246, 0.12); color: #6945eb; margin-bottom: 14px; }
+.greeter-cta-title { font-size: 1.6rem; font-weight: 800; margin: 0 0 10px; color: #1a1025; line-height: 1.25; }
+.greeter-cta-desc { font-size: 0.98rem; margin: 0 0 22px; color: #4a3b66; line-height: 1.55; }
+.greeter-cta-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); color: #ffffff !important; text-decoration: none; padding: 14px 30px; font-size: 1rem; font-weight: 700; border-radius: 999px; box-shadow: 0 10px 26px rgba(123, 93, 246, 0.34); transition: transform 0.25s ease, box-shadow 0.25s ease; border: none; cursor: pointer; }
+.greeter-cta-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 32px rgba(123, 93, 246, 0.45); }
+@media (max-width: 600px) { .greeter-cta-section { margin: 40px auto 40px; padding: 26px 18px; width: calc(100% - 24px); } .greeter-cta-title { font-size: 1.38rem; } .greeter-cta-btn { padding: 13px 22px; font-size: 0.95rem; width: 100%; } }
 </style>
 <div class="greeter-cta-section">
-    <div class="greeter-logo-accent">✨🪄</div>
-    <h2 class="greeter-cta-title" data-en="Create Your Own Magical Surprise" data-hi="अपना जादुई सरप्राइज़ बनाएं">Create Your Own Magical Surprise</h2>
-    <p class="greeter-cta-desc" data-en="Surprise your loved ones with a personalized website just like this one. No coding required!" data-hi="बिल्कुल इसी तरह की वेबसाइट से अपने प्रियजनों को सरप्राइज़ दें। कोई कोडिंग जरूरी नहीं!">Surprise your loved ones with a personalized website just like this one. No coding required!</p>
-    <a href="/index.html" target="_blank" class="greeter-cta-btn" data-en="Press this red button to create your own website in minutes" data-hi="मिनटों में अपनी वेबसाइट बनाने के लिए यह लाल बटन दबाएं">Press this red button to create your own website in minutes</a>
+    <div class="greeter-made-badge" data-en="✨ Made with TheGreeter" data-hi="✨ TheGreeter के साथ बनाया गया">✨ Made with TheGreeter</div>
+    <h2 class="greeter-cta-title" data-en="Create a surprise like this in 60s" data-hi="60 सेकंड में ऐसा सरप्राइज़ बनाएं">Create a surprise like this in 60s</h2>
+    <p class="greeter-cta-desc" data-en="Add your favorite photos, custom music, secret letters, and interactive celebrations — 100% ad-free sharing." data-hi="अपनी तस्वीरें, पसंदीदा गाना, दिल की बात और इंटरैक्टिव केक जोड़ें — बिना किसी विज्ञापन के शेयर करें।">Add your favorite photos, custom music, secret letters, and interactive celebrations — 100% ad-free sharing.</p>
+    <a href="${ctaCreateUrl}" target="_blank" rel="noopener" class="greeter-cta-btn" data-en="Create Your Own Surprise →" data-hi="अपना सरप्राइज़ अभी बनाएं →">Create Your Own Surprise →</a>
 </div>
    <scr` + `ipt>
 (function(){
   var urlLang = new URLSearchParams(window.location.search).get("lang");
   var lang = (urlLang==="hi"||urlLang==="en") ? urlLang : "${currentLang}";
-  var section = document.querySelector(".greeter-cta-section");
-  if(section) {
-    var title = section.querySelector(".greeter-cta-title");
-    var desc = section.querySelector(".greeter-cta-desc");
-    var btn = section.querySelector(".greeter-cta-btn");
+  document.querySelectorAll(".greeter-cta-section [data-en]").forEach(function(el){
     if(lang === "hi") {
-      title.innerText = title.getAttribute("data-hi");
-      desc.innerText = desc.getAttribute("data-hi");
-      btn.innerText = btn.getAttribute("data-hi");
+      var hi = el.getAttribute("data-hi");
+      if(hi) el.textContent = hi;
     }
-  }
+  });
 })();
 </scr` + `ipt>
 `;
@@ -12103,7 +12100,7 @@
   if(ov){ ov.querySelectorAll("[data-en]").forEach(applyText); applyPh(document.getElementById("recipientNameInput")); }
   var btnP = document.getElementById("btn-personalize");
   var btnA = document.getElementById("btn-another");
-  if(btnA) btnA.onclick = function(ev){ ev.preventDefault(); window.location.href="/index.html"; };
+  if(btnA) btnA.onclick = function(ev){ ev.preventDefault(); window.location.href="/create?event=festival&utm_source=shared_card&utm_medium=festival_cta"; };
   function showP(){ if(!ov) return; ov.style.display="flex"; ov.classList.add("show"); setTimeout(function(){ var i=document.getElementById("recipientNameInput"); if(i) i.focus(); },120); }
   function hideP(){ if(!ov) return; ov.style.display="none"; ov.classList.remove("show"); }
   if(btnP) btnP.onclick = function(ev){ ev.preventDefault(); showP(); };
@@ -12170,8 +12167,6 @@
           ctaContainer.id = 'magic-cta-section';
           ctaContainer.innerHTML = ctaHtml;
           container.appendChild(ctaContainer);
-
-          const nudgeEl = doc2.createElement("script"); nudgeEl.textContent = "(function(){if(new URLSearchParams(window.location.search).get(\"_v\")===\"c\"||window.__DISABLE_NUDGE__)return;var l=localStorage.getItem(\"greeter_lang\")||localStorage.getItem(\"customizer_lang\")||\"en\";var h=l===\"hi\";var t=h?\"यह सरप्राइज़ पसंद आया?\":\"Liked it? Create your own!\";var m=h?\"क्या आप भी सिर्फ 2 मिनिट इसी तरह की अपनी जादुई वेबसाइट बनाना चाहते हैं?\":\"Want to create your own magical website just like this in 2 minutes only?\";var y=h?\"हाँ, बनाएं!\":\"Yes, create mine!\";var n=h?\"नहीं, धन्यवाद\":\"No thanks\";setTimeout(function showNudge(){if(document.getElementById(\"create-nudge-popup\"))return;var p=document.createElement(\"div\");p.id=\"create-nudge-popup\";p.style.cssText=\"position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(12px);z-index:999999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease;\";p.innerHTML=\"<div style=\\\"background:var(--bg-secondary,#fff);color:var(--text-primary,#1a1025);max-width:340px;width:92%;border-radius:28px;padding:26px 22px 22px;text-align:center;box-shadow:0 30px 60px -15px rgba(0,0,0,0.35);border:1px solid var(--card-border,rgba(0,0,0,0.08));position:relative;font-family:Inter,system-ui,sans-serif;\\\"><div style=\\\"font-size:42px;margin-bottom:6px;\\\">✨🪄</div><h3 style=\\\"margin:0 0 10px;font-size:1.18rem;font-weight:800;line-height:1.2;\\\">\"+t+\"</h3><p style=\\\"margin:0 0 22px;font-size:0.95rem;opacity:.82;line-height:1.45;\\\">\"+m+\"</p><div style=\\\"display:flex;gap:12px;\\\"><button id=\\\"nudge-no\\\" style=\\\"flex:1;padding:12px 0;border-radius:999px;border:1.5px solid var(--card-border,#e5e0f0);background:transparent;color:inherit;font-weight:600;font-size:0.92rem;cursor:pointer;\\\">\"+n+\"</button><button id=\\\"nudge-yes\\\" style=\\\"flex:1;padding:12px 0;border-radius:999px;border:none;background:linear-gradient(145deg,#7b5df6 0%,#ff7a2f 100%);color:#fff;font-weight:700;font-size:0.92rem;cursor:pointer;box-shadow:0 6px 16px rgba(123,93,246,0.35);\\\">\"+y+\"</button></div><div style=\\\"position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;color:#666;cursor:pointer;\\\" onclick=\\\"var pp=document.getElementById('create-nudge-popup');if(pp)pp.remove();\\\">×</div></div>\";document.body.appendChild(p);setTimeout(function(){p.style.opacity=\"1\";},30);var yy=p.querySelector(\"#nudge-yes\"),nn=p.querySelector(\"#nudge-no\");var rm=function(){if(p&&p.parentNode)p.parentNode.removeChild(p);};if(nn)nn.onclick=function(){rm();setTimeout(showNudge,60000);};if(yy)yy.onclick=function(){rm();var cta=document.getElementById(\"magic-cta-section\")||document.querySelector(\".greeter-cta-section,.festival-cta-section\");if(cta){cta.scrollIntoView({behavior:\"smooth\",block:\"center\"});}else{window.scrollTo({top:document.body.scrollHeight,behavior:\"smooth\"});}};setTimeout(function(){var pp=document.getElementById(\"create-nudge-popup\");if(pp&&pp.parentNode)pp.parentNode.removeChild(pp);},600000);},30000);})();"; container.appendChild(nudgeEl);
 
           const urlParams = new URLSearchParams(window.location.search);
           const localEventData = getEventData();
@@ -14664,9 +14659,6 @@
         const setPremiumMode = (newUrl) => {
           newUrl.searchParams.set('_v', 'c');
           window.__DISABLE_NUDGE__ = true;
-          const st = document.createElement("style");
-          st.textContent = "#magic-cta-section, .greeter-cta-section, .festival-cta-section { display: none !important; }";
-          document.head.appendChild(st);
           const popup = document.getElementById('create-nudge-popup');
           if (popup) popup.remove();
         };
@@ -14852,8 +14844,9 @@
               throw new Error('Invalid HTML content');
             }
 
-            // On-the-fly filtering to support older custom URLs purchased before this change:
+            // On-the-fly filtering: keep payment/unlock state, kill intrusive 30s popup, and keep sleek viral loop visible on shared cards
             const urlParams = new URLSearchParams(window.location.search);
+            const isHideCtaMode = urlParams.get("hide_cta") === "1" || urlParams.get("preview") === "1";
             const isPremium = urlParams.get("_v") === "c" || urlParams.get("action") === "payment-success" || (viewId && localStorage.getItem(`premium_${viewId}`) === 'true') || (viewId && sessionStorage.getItem(`premium_${viewId}`) === 'true') || window.__DISABLE_NUDGE__;
             if (isPremium) {
               window.isPremium = true;
@@ -14862,10 +14855,15 @@
                 localStorage.setItem(`premium_${viewId}`, 'true');
                 sessionStorage.setItem(`premium_${viewId}`, 'true');
               }
-              // 1. Inject CSS to hide all possible CTA sections instantly
-              storedHtml = storedHtml.replace('</head>', '<style>#magic-cta-section, .greeter-cta-section, .festival-cta-section { display: none !important; }</style></head>');
-              // 2. Prevent the nudge popup timer function from scheduling
-              storedHtml = storedHtml.replace('setTimeout(function showNudge(){', 'return; setTimeout(function showNudge(){');
+            }
+            // Always disable legacy blocking 30s nudge popup (showNudge / create-nudge-popup)
+            storedHtml = storedHtml.replace(/setTimeout\s*\(\s*function\s+showNudge\s*\(\s*\)\s*\{/g, 'setTimeout(function showNudge(){ return;');
+            storedHtml = storedHtml.replace(/<\/head>/i, '<style>#create-nudge-popup { display: none !important; }</style></head>');
+            if (isHideCtaMode) {
+              storedHtml = storedHtml.replace(/<\/head>/i, '<style>#magic-cta-section, .greeter-cta-section, .festival-cta-section, #greeter-viral-pill { display: none !important; }</style></head>');
+            } else {
+              // Strip legacy baked _v=c CSS rules in previously saved snapshots that hid #magic-cta-section / .greeter-cta-section / .festival-cta-section / #greeter-viral-pill
+              storedHtml = storedHtml.replace(/(?:#magic-cta-section|\.greeter-cta-section|\.festival-cta-section|\.cta-section|#greeter-viral-pill)(?:\s*,\s*(?:#magic-cta-section|\.greeter-cta-section|\.festival-cta-section|\.cta-section|#greeter-viral-pill))*\s*\{\s*display\s*:\s*none(?:\s*!important)?\s*;?\s*\}/gi, '#create-nudge-popup { display: none !important; }');
             }
 
             // Parse and hydrate config on recipient device
@@ -15249,6 +15247,111 @@
       }
     } catch(e) {
       console.warn('restoreSharedCustomDom error:', e);
+    }
+    ensureViralCtaLoop();
+  }
+
+  function ensureViralCtaLoop() {
+    try {
+      if (!document.body) return;
+      var sp = new URLSearchParams(window.location.search);
+      var hideCta = sp.get('hide_cta') === '1' || sp.get('preview') === '1';
+      var oldNudge = document.getElementById('create-nudge-popup');
+      if (oldNudge) oldNudge.remove();
+      if (hideCta) {
+        var existingCta = document.getElementById('magic-cta-section');
+        if (existingCta) existingCta.style.setProperty('display', 'none', 'important');
+        var existingPill = document.getElementById('greeter-viral-pill');
+        if (existingPill) existingPill.style.setProperty('display', 'none', 'important');
+        return;
+      }
+
+      var urlLang = sp.get('lang');
+      var storedLang = '';
+      try { storedLang = localStorage.getItem('greeter_lang') || ''; } catch (e) {}
+      var lang = (urlLang === 'hi' || urlLang === 'en') ? urlLang : (storedLang === 'hi' ? 'hi' : 'en');
+
+      var ud = (config && config.userData) || {};
+      var tplName = String((config && config.templateName) || '');
+      if (!tplName) {
+        try { tplName = localStorage.getItem('selectedTemplate') || ''; } catch (e) {}
+      }
+      var rawEv = String((config && config.eventType) || ud.event || sp.get('event') || '');
+      var hasFestivalCta = !!document.querySelector('.festival-cta-section');
+      var isFest = hasFestivalCta || /festival|diwali|holi|eid|christmas|rakhi|navratri|newyear/i.test(tplName) || /festival/i.test(rawEv);
+      var ctaEvent = rawEv || (isFest ? 'festival' : (/proposal|love|crush/i.test(tplName) ? 'proposal' : /anniversary/i.test(tplName) ? 'anniversary' : /sorry|apology/i.test(tplName) ? 'sorry' : /thank/i.test(tplName) ? 'thankyou' : 'birthday'));
+      var ctaCreateUrl = '/create?event=' + encodeURIComponent(ctaEvent) + '&utm_source=shared_card&utm_medium=card_footer';
+
+      var existingPill = document.getElementById('greeter-viral-pill');
+      if (existingPill) existingPill.remove();
+
+      if (!document.getElementById('greeter-viral-styles') && document.head) {
+        var st = document.createElement('style');
+        st.id = 'greeter-viral-styles';
+        st.textContent =
+          '.greeter-cta-section { margin: 56px auto 48px; padding: 34px 28px; max-width: 560px; width: calc(100% - 32px); box-sizing: border-box; text-align: center; background: rgba(255, 255, 255, 0.84); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(123, 93, 246, 0.24); border-radius: 26px; box-shadow: 0 20px 48px rgba(26, 16, 37, 0.14); color: #1a1025; font-family: Inter, Quicksand, system-ui, sans-serif; position: relative; z-index: 100; }' +
+          '.greeter-made-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 13px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; background: rgba(123, 93, 246, 0.12); color: #6945eb; margin-bottom: 14px; }' +
+          '.greeter-cta-title { font-size: 1.6rem; font-weight: 800; margin: 0 0 10px; color: #1a1025; line-height: 1.25; }' +
+          '.greeter-cta-desc { font-size: 0.98rem; margin: 0 0 22px; color: #4a3b66; line-height: 1.55; }' +
+          '.greeter-cta-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; background: linear-gradient(135deg, #7b5df6 0%, #ff7a2f 100%); color: #ffffff !important; text-decoration: none; padding: 14px 30px; font-size: 1rem; font-weight: 700; border-radius: 999px; box-shadow: 0 10px 26px rgba(123, 93, 246, 0.34); transition: transform 0.25s ease, box-shadow 0.25s ease; border: none; cursor: pointer; }' +
+          '.greeter-cta-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 32px rgba(123, 93, 246, 0.45); }' +
+          '#greeter-viral-pill { display: none !important; }' +
+          '@media (max-width: 600px) { .greeter-cta-section { margin: 40px auto 40px; padding: 26px 18px; width: calc(100% - 24px); } .greeter-cta-title { font-size: 1.38rem; } .greeter-cta-btn { padding: 13px 22px; font-size: 0.95rem; width: 100%; } }';
+        document.head.appendChild(st);
+      }
+
+      if (hasFestivalCta) {
+        var btnA = document.getElementById('btn-another');
+        if (btnA) {
+          btnA.onclick = function(ev) {
+            if (ev && ev.preventDefault) ev.preventDefault();
+            window.location.href = '/create?event=festival&utm_source=shared_card&utm_medium=festival_cta';
+          };
+        }
+        var festSection = document.querySelector('.festival-cta-section');
+        if (festSection) {
+          festSection.style.removeProperty('display');
+          festSection.querySelectorAll('[data-en]').forEach(function(el) {
+            var val = lang === 'hi' ? el.getAttribute('data-hi') : el.getAttribute('data-en');
+            if (val) el.textContent = val;
+          });
+        }
+      } else {
+        document.querySelectorAll('.cta-section').forEach(function(legacyEl) {
+          if (legacyEl.querySelector('a[href="/index.html"], a[href="/"]') || /red button|create your own/i.test(legacyEl.textContent || '')) {
+            legacyEl.remove();
+          }
+        });
+        var ctaRoot = document.getElementById('magic-cta-section');
+        if (!ctaRoot) {
+          ctaRoot = document.createElement('div');
+          ctaRoot.id = 'magic-cta-section';
+          document.body.appendChild(ctaRoot);
+        }
+        ctaRoot.style.removeProperty('display');
+        if (!ctaRoot.querySelector('.greeter-cta-section')) {
+          var badgeTxt = lang === 'hi' ? '✨ TheGreeter के साथ बनाया गया' : '✨ Made with TheGreeter';
+          var titleTxt = lang === 'hi' ? '60 सेकंड में ऐसा सरप्राइज़ बनाएं' : 'Create a surprise like this in 60s';
+          var descTxt = lang === 'hi' ? 'अपनी तस्वीरें, पसंदीदा गाना, दिल की बात और इंटरैक्टिव केक जोड़ें — बिना किसी विज्ञापन के शेयर करें।' : 'Add your favorite photos, custom music, secret letters, and interactive celebrations — 100% ad-free sharing.';
+          var btnTxt = lang === 'hi' ? 'अपना सरप्राइज़ अभी बनाएं →' : 'Create Your Own Surprise →';
+          ctaRoot.innerHTML =
+            '<div class="greeter-cta-section">' +
+              '<div class="greeter-made-badge" data-en="✨ Made with TheGreeter" data-hi="✨ TheGreeter के साथ बनाया गया">' + badgeTxt + '</div>' +
+              '<h2 class="greeter-cta-title" data-en="Create a surprise like this in 60s" data-hi="60 सेकंड में ऐसा सरप्राइज़ बनाएं">' + titleTxt + '</h2>' +
+              '<p class="greeter-cta-desc" data-en="Add your favorite photos, custom music, secret letters, and interactive celebrations — 100% ad-free sharing." data-hi="अपनी तस्वीरें, पसंदीदा गाना, दिल की बात और इंटरैक्टिव केक जोड़ें — बिना किसी विज्ञापन के शेयर करें।">' + descTxt + '</p>' +
+              '<a href="' + ctaCreateUrl + '" target="_blank" rel="noopener" class="greeter-cta-btn" data-en="Create Your Own Surprise →" data-hi="अपना सरप्राइज़ अभी बनाएं →">' + btnTxt + '</a>' +
+            '</div>';
+        } else {
+          ctaRoot.querySelectorAll('.greeter-cta-section [data-en]').forEach(function(el) {
+            var val = lang === 'hi' ? el.getAttribute('data-hi') : el.getAttribute('data-en');
+            if (val) el.textContent = val;
+          });
+          var ctaAnchor = ctaRoot.querySelector('.greeter-cta-btn');
+          if (ctaAnchor) ctaAnchor.setAttribute('href', ctaCreateUrl);
+        }
+      }
+    } catch (e) {
+      console.warn('ensureViralCtaLoop error:', e);
     }
   }
 

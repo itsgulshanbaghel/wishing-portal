@@ -104,11 +104,18 @@ function renderPage(cfg) {
           <span>Explore <i class="fas fa-arrow-right"></i></span>
         </a>`).join('\n');
 
+  const ctaUrl = new URL('https://thegreeter.in' + cfg.primaryCtaHref);
+  const hiddenInputs = [...ctaUrl.searchParams.entries()]
+    .map(([k, v]) => `        <input type="hidden" name="${escapeHtml(k)}" value="${escapeHtml(v)}">`)
+    .join('\n');
+  const isHindiPage = cfg.slug.startsWith('hindi-') || ctaUrl.searchParams.get('lang') === 'hi';
+  const qsPlaceholder = isHindiPage ? 'नाम लिखें (जैसे: प्रिया, आरव)...' : 'Enter their name (e.g., Riya, Aarav)...';
+  const qsButton = isHindiPage ? 'मुफ़्त प्रीव्यू देखें →' : 'Preview Free →';
+
   return `<!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta name="google-adsense-account" content="ca-pub-8043014881280685">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon_io/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_io/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon_io/android-chrome-192x192.png">
@@ -212,6 +219,11 @@ ${JSON.stringify(jsonLd, null, 2)}
     .btn-demo:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(59, 130, 246, 0.45); color: white; }
     .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; width: 100%; margin-top: 8px; }
     .hero-cta-btn { font-size: 1.08rem; padding: 14px 30px; display: inline-flex; align-items: center; justify-content: center; text-align: center; max-width: 100%; white-space: normal; line-height: 1.35; }
+    .quick-start-bar { display: flex; align-items: center; gap: 8px; width: min(520px, 100%); margin: 20px auto 0; padding: 6px 6px 6px 18px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 50px; box-shadow: var(--shadow-md); backdrop-filter: blur(12px); }
+    .quick-start-bar input[type="text"] { flex: 1; min-width: 0; border: none; background: transparent; color: var(--text-primary); font-family: inherit; font-size: 0.96rem; outline: none; }
+    .quick-start-bar input[type="text"]::placeholder { color: var(--text-secondary); opacity: 0.78; }
+    .quick-start-bar button { background: var(--accent-gradient); color: #fff; border: none; padding: 11px 22px; border-radius: 40px; font-weight: 700; font-size: 0.92rem; cursor: pointer; white-space: nowrap; transition: 0.25s ease; }
+    .quick-start-bar button:hover { transform: translateY(-1px); box-shadow: 0 8px 18px var(--glow); }
 
     .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px; flex-wrap: wrap; }
     .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
@@ -290,6 +302,9 @@ ${JSON.stringify(jsonLd, null, 2)}
       .hero p { font-size: 1rem; margin-bottom: 24px; }
       .hero-actions { flex-direction: column; gap: 12px; width: 100%; }
       .hero-cta-btn, .hero-demo-btn { width: 100% !important; max-width: 320px !important; padding: 14px 20px !important; font-size: 1rem !important; justify-content: center !important; margin: 0 auto !important; }
+      .quick-start-bar { flex-direction: column; border-radius: 22px; padding: 10px; gap: 8px; }
+      .quick-start-bar input[type="text"] { width: 100%; padding: 8px 10px; text-align: center; }
+      .quick-start-bar button { width: 100%; padding: 12px 18px; }
       .features-grid { grid-template-columns: 1fr; gap: 14px; margin: 28px 0; }
       .feature-card { padding: 20px 18px; border-radius: 18px; }
       .seo-article { padding: 24px 18px; border-radius: 20px; margin: 28px 0; }
@@ -301,7 +316,6 @@ ${JSON.stringify(jsonLd, null, 2)}
       .footer-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; }
     }
   </style>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8043014881280685" crossorigin="anonymous"></script>
   <script src="/assets/config.js"></script>
   <script src="/assets/tracker.js" defer></script>
 </head>
@@ -323,7 +337,7 @@ ${JSON.stringify(jsonLd, null, 2)}
         <a href="/templates">Templates</a>
         <a href="/Pricing">Pricing</a>
         <a href="/WhyGreeter">Why Greeter</a>
-        <a href="/blog/">Blog</a>
+        <a href="/blog">Blog</a>
         <div class="nav-drawer-cta">
           <a href="${cfg.primaryCtaHref}" class="btn-primary drawer-cta-btn"><i class="fas fa-wand-magic-sparkles"></i> ${escapeHtml(cfg.primaryCtaText)}</a>
         </div>
@@ -351,6 +365,11 @@ ${JSON.stringify(jsonLd, null, 2)}
         <a href="${cfg.primaryCtaHref}" class="btn-primary hero-cta-btn"><i class="fas fa-wand-magic-sparkles"></i> ${escapeHtml(cfg.primaryCtaText)}</a>
         <a href="${cfg.demoHref}" target="_blank" rel="noopener" class="btn-demo hero-demo-btn"><i class="fas fa-circle-play"></i> ${escapeHtml(cfg.demoBtnText)}</a>
       </div>
+      <form class="quick-start-bar" action="/create" method="get">
+${hiddenInputs}
+        <input type="text" name="name" placeholder="${escapeHtml(qsPlaceholder)}" aria-label="${escapeHtml(qsPlaceholder)}" required>
+        <button type="submit">${escapeHtml(qsButton)}</button>
+      </form>
     </section>
 
     <!-- FEATURES GRID -->
@@ -413,7 +432,7 @@ ${faqsHtml}
             <a href="/create">Create Page</a>
             <a href="/templates">All Templates</a>
             <a href="/Pricing">Pricing</a>
-            <a href="/blog/">Blog &amp; Guides</a>
+            <a href="/blog">Blog &amp; Guides</a>
           </div>
           <div class="footer-col">
             <h4 style="margin-bottom:12px; font-size:0.95rem;">Legal &amp; Support</h4>

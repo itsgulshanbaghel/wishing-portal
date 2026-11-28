@@ -4,7 +4,7 @@ const STATIC_PREFIXES = [
   'api', 'generated', 'blog', 'assets', 'templates', 'maintenance', 'admin', 
   'create', 'clear', 'privacy', 'pricing', 'about', 'contact', 'why', 'whygreeter', 
   'edit', 'terms', 'birthday', 'romantic', 'anniversary', '1st', 'diwali', 
-  'festival', 'valentines', 'wedding'
+  'festival', 'valentines', 'wedding', 'online', 'digital'
 ];
 
 const CLEAN_STATIC_ROUTES = {
@@ -20,6 +20,11 @@ const CLEAN_STATIC_ROUTES = {
   '/terms': '/terms.html',
   '/terms&cond': '/terms&cond.html',
   '/birthday-wishes-website': '/birthday-wishes-website.html',
+  '/online-birthday-card': '/online-birthday-card.html',
+  '/birthday-card-with-music': '/birthday-card-with-music.html',
+  '/birthday-card-with-photos': '/birthday-card-with-photos.html',
+  '/digital-birthday-card': '/digital-birthday-card.html',
+  '/birthday-card-with-password': '/birthday-card-with-password.html',
   '/birthday-wishes-for-girlfriend': '/birthday-wishes-for-girlfriend.html',
   '/birthday-wishes-for-boyfriend': '/birthday-wishes-for-boyfriend.html',
   '/birthday-wishes-for-wife': '/birthday-wishes-for-wife.html',
@@ -345,6 +350,39 @@ export default {
 
     if (canonicalRedirects[path]) {
       return Response.redirect(`${url.origin}${canonicalRedirects[path]}${url.search}`, 301);
+    }
+
+    // 301 Canonical normalization for .html extensions and trailing slashes (excluding /generated/, /templates/, /assets/, /admin)
+    if (path === '/index.html') {
+      return Response.redirect(`${url.origin}/${url.search}`, 301);
+    }
+    if (path === '/blog/' || path === '/blog/index.html') {
+      return Response.redirect(`${url.origin}/blog${url.search}`, 301);
+    }
+    if (path.endsWith('.html') && !path.startsWith('/generated/') && !path.startsWith('/templates/') && path !== '/admin.html') {
+      const stem = path.slice(0, -5);
+      const stemLower = stem.toLowerCase();
+      if (stemLower === '/terms' || stemLower === '/terms&cond') {
+        return Response.redirect(`${url.origin}/terms&cond${url.search}`, 301);
+      }
+      const routeMatch = Object.keys(CLEAN_STATIC_ROUTES).find(k => k.toLowerCase() === stemLower) || canonicalRedirects[stemLower];
+      if (routeMatch) {
+        return Response.redirect(`${url.origin}${routeMatch}${url.search}`, 301);
+      }
+      if (stem.startsWith('/blog/') && !stem.includes('.')) {
+        return Response.redirect(`${url.origin}${stem}${url.search}`, 301);
+      }
+    }
+    if (path.length > 1 && path.endsWith('/') && !path.startsWith('/generated/') && !path.startsWith('/templates/') && !path.startsWith('/assets/')) {
+      const trimmed = path.slice(0, -1);
+      const trimmedLower = trimmed.toLowerCase();
+      const routeMatch = Object.keys(CLEAN_STATIC_ROUTES).find(k => k.toLowerCase() === trimmedLower) || canonicalRedirects[trimmedLower];
+      if (routeMatch) {
+        return Response.redirect(`${url.origin}${routeMatch}${url.search}`, 301);
+      }
+      if (trimmed.startsWith('/blog/') && !trimmed.includes('.')) {
+        return Response.redirect(`${url.origin}${trimmed}${url.search}`, 301);
+      }
     }
 
     // Clean static routes resolution (serves HTML directly without redirect loops)

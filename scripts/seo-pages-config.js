@@ -189,7 +189,7 @@ module.exports = [
   },
   {
     slug: 'birthday-wishes-for-brother',
-    title: 'Birthday Website for Brother | Funny & Roast Maker | TheGreeter',
+    title: 'Birthday Website for Brother | Roast Maker | TheGreeter',
     description: 'Make a hilarious or heartfelt birthday website for your brother. Add sibling roasts, throwback photos, music, and interactive celebration games.',
     keywords: 'birthday wishes for brother website, funny birthday website for brother, birthday surprise link for bhai, brother birthday card maker',
     schemaName: 'TheGreeter Birthday Website Maker for Brother',
@@ -648,7 +648,7 @@ module.exports = [
         { strong: 'दिल छू लेने वाली शायरी या पत्र:', text: 'रोमांटिक, इमोशनल या मस्ती भरे अंदाज़ में अपनी बात लिखें या AI से लिखवाएं।' },
         { strong: 'मिडनाइट काउंटडाउन:', text: 'रात 12 बजे के लिए काउंटडाउन टाइमर लगाएं ताकि सरप्राइज़ ठीक समय पर खुले।' },
         { strong: 'पॉप-द-बलून विशेज़:', text: 'रंग-बिरंगे गुब्बारों में छोटे-छोटे प्यार भरे या मज़ाकिया संदेश छिपाएं।' },
-        { strong: 'कस्टम नाम वाला लिंक:', text: 'Pro प्लान के साथ thegreeter.in/HappyBdayAman जैसा खास नाम वाला लिंक पाएं।' }
+        { strong: 'कस्टम नाम वाला लिंक:', text: 'Pro प्लान के साथ thegreeter.in/demo-raman जैसा खास नाम वाला लिंक पाएं।' }
       ],
       stepsHeading: 'सिर्फ 60 सेकंड में हिन्दी जन्मदिन वेबसाइट कैसे बनाएं?',
       steps: [
@@ -673,6 +673,311 @@ module.exports = [
       title: 'अपने खास इंसान का जन्मदिन जादुई बनाएं',
       desc: 'सिर्फ 60 सेकंड में हिन्दी में इंटरैक्टिव बर्थडे वेबसाइट तैयार करें और लाइव प्रीव्यू देखें।',
       buttonText: 'अभी हिन्दी में बनाएं'
+    }
+  },
+  {
+    slug: 'online-birthday-card',
+    title: 'Online Birthday Card Maker | Free Preview | TheGreeter',
+    description: 'Send an online birthday card far better than static ecards. Add personal photos, music, custom letters, and interactive cake cutting in 60 seconds.',
+    keywords: 'online birthday card, send birthday card online, interactive online birthday card, online birthday greeting website, thegreeter',
+    schemaName: 'TheGreeter Online Birthday Card Maker',
+    parentHub: { name: 'Birthday Website Maker', url: '/birthday-wishes-website' },
+    breadcrumbName: 'Online Birthday Card',
+    heroBadge: '💌 Not a Generic E-Card — A Private Interactive Page',
+    heroH1: 'Send an Online Birthday Card They Will Actually Keep',
+    heroLead: 'Skip forgettable PDF e-cards and plain group texts. Build an online birthday card website packed with their favorite photos, music playing on open, personal wishes, and interactive cake cutting — delivered as one clean link.',
+    primaryCtaText: 'Create Online Birthday Card',
+    primaryCtaHref: '/create?event=birthday&mood=happy',
+    demoBtnText: 'See Live Demo',
+    demoHref: '/generated/customize.html?view=vs7nuzc3to&_v=c',
+    features: [
+      { icon: '🎵', title: 'Music That Plays With Their Photos', desc: 'Pair their favorite birthday anthem or a recorded voice note with curated photo carousels and captions.' },
+      { icon: '🎂', title: 'Blow Candles & Cut the Cake', desc: 'Recipients interact right on their phone screen to blow candles and slice an animated multi-tier birthday cake.' },
+      { icon: '💌', title: 'Secret Letters & Scratch Reveals', desc: 'Unfold multi-line messages, scratch-to-reveal gift clues, or add virtual hugs with heart confetti.' },
+      { icon: '🔒', title: 'Optional PIN Lock Screen', desc: 'Guard their surprise behind a 3–6 digit secret PIN code and custom hint before the card opens.' },
+      { icon: '⚡', title: '60-Second Creation, Zero Apps', desc: 'Opens smoothly inside WhatsApp, Instagram, Safari, or Chrome on any device — no login required.' },
+      { icon: '✏️', title: 'Editable Anytime With Edit PIN', desc: 'Fix a typo or add one more photo even after sending the link, without changing the shared URL.' }
+    ],
+    article: {
+      introHeading: 'Why an Interactive Online Birthday Card Beats Generic E-Cards',
+      introParagraphs: [
+        'Traditional online e-cards show a one-size-fits-all GIF surrounded by banner ads. An interactive online birthday card on TheGreeter feels like a tiny private website crafted specifically around your shared memories, favorite inside jokes, and music.',
+        'Because nothing needs to ship or download, it works effortlessly for long-distance partners, college friends in another city, or busy last-minute surprises that still feel deeply personal. You can build and preview everything free before choosing a one-time plan starting at ₹59 (no subscriptions).'
+      ],
+      ideasHeading: 'What Makes an Online Birthday Card Unforgettable',
+      ideas: [
+        { strong: 'Lead With a Personal Hook:', text: 'Open with their nickname and a specific memory only the two of you share.' },
+        { strong: 'Sync a Midnight Countdown:', text: 'Send the link slightly before midnight so a live timer counts down to the confetti reveal.' },
+        { strong: 'Include a Voice Note or Song:', text: 'Audio transforms a visual webpage into an emotional greeting they replay.' },
+        { strong: 'Attach a Printable QR Code:', text: 'On Pro plans, download the QR code to stick onto flowers, cake boxes, or coffee bags.' }
+      ],
+      stepsHeading: 'How to Make Your Online Birthday Card in 4 Steps',
+      steps: [
+        'Enter their name above or open the Creator Studio and select Birthday.',
+        'Pick a mood (Romantic, Funny, Emotional, or Roast) and generate or write your heartfelt message.',
+        'Choose an interactive template, upload photos, and toggle music, virtual cake, or PIN-lock features.',
+        'Preview live for free, publish with a one-time plan, and share on WhatsApp or via custom vanity URL.'
+      ],
+      relatedBlog: { title: 'Compare: Best Birthday Website Makers Compared (2026)', url: '/blog/best-birthday-website-makers' }
+    },
+    faqs: [
+      { q: 'How is an online birthday card on TheGreeter different from Canva or Paperless Post?', a: 'Canva creates static images or PDFs. TheGreeter builds a live interactive webpage with clickable blow-candle cakes, background music playback, virtual hugs, countdowns, and scratch reveals.' },
+      { q: 'Is the online birthday card ad-free for my friend?', a: 'Yes, 100%. Recipient surprise links never show banner ads, popups, or third-party clutter.' },
+      { q: 'How much does it cost to publish?', a: 'Designing and live previewing is free. One-time publishing starts at ₹59 in India (Starter 14 days), ₹99 (Pro 30 days with custom URL, QR code & virtual cake), ₹149 (Pro+ 100 days), or ₹299 (Infinity Lifetime).' }
+    ],
+    relatedPages: [
+      { title: 'Birthday Card With Music', url: '/birthday-card-with-music', desc: 'Add favorite songs or personal voice notes.' },
+      { title: 'Birthday Card With Photos', url: '/birthday-card-with-photos', desc: 'Turn camera-roll memories into polaroids.' },
+      { title: 'Birthday Card With Password', url: '/birthday-card-with-password', desc: 'Add a secret PIN unlock before revealing the wish.' }
+    ],
+    ctaBanner: {
+      title: 'Make Their Online Birthday Card Stand Out Today',
+      desc: 'Customize templates, upload photos, add music, and preview your card live free.',
+      buttonText: 'Create Card Now'
+    }
+  },
+  {
+    slug: 'birthday-card-with-music',
+    title: 'Birthday Card With Music & Voice Notes | TheGreeter',
+    description: 'Create a birthday card with music and personal voice notes. Play curated songs or custom audio tracks seamlessly over photos and birthday wishes.',
+    keywords: 'birthday card with music, online birthday card with song, musical birthday website maker, birthday greeting link with voice note, thegreeter',
+    schemaName: 'TheGreeter Musical Birthday Card Maker',
+    parentHub: { name: 'Birthday Website Maker', url: '/birthday-wishes-website' },
+    breadcrumbName: 'Card With Music',
+    heroBadge: '🎵 Custom Audio, Curated Songs & Voice Notes',
+    heroH1: 'Create an Interactive Birthday Card With Music & Voice Notes',
+    heroLead: 'A birthday card hits ten times deeper when their favorite song starts playing right as they scroll through your memories. Pick from curated celebratory and romantic tracks, upload a custom MP3, or record a heartfelt voice note.',
+    primaryCtaText: 'Create Card With Music',
+    primaryCtaHref: '/create?event=birthday&mood=romantic',
+    demoBtnText: 'See Live Demo',
+    demoHref: '/generated/customize.html?view=vs7nuzc3to&_v=c',
+    features: [
+      { icon: '🎧', title: 'Curated Celebration Soundtracks', desc: 'Choose from upbeat Happy Birthday tunes, acoustic romantic tracks, or emotional instrumentals.' },
+      { icon: '🎤', title: 'Personal Voice Note Option', desc: 'Upload or record a spoken birthday message so they hear your actual voice from miles away.' },
+      { icon: '📲', title: 'Mobile Audio Ready', desc: 'Designed for smooth playback inside Safari, Chrome, and mobile WhatsApp browsers.' },
+      { icon: '🖼️', title: 'Synced With Photos & Letters', desc: 'Pair audio with floating polaroid carousels, custom captions, and heartfelt paragraphs.' },
+      { icon: '🎂', title: 'Cake-Cut Applause Effects', desc: 'Virtual candle blowing and cake slicing pair with celebratory sound cues and confetti.' },
+      { icon: '🔄', title: 'Swap Songs Anytime', desc: 'Use your 4–6 digit Edit PIN after sharing if you ever want to change tracks.' }
+    ],
+    article: {
+      introHeading: 'Why Adding Music Transforms a Digital Birthday Card',
+      introParagraphs: [
+        'Paper musical greeting cards usually play a tinny 8-second beep and break after a week. Building a digital birthday card with music lets you attach a full atmosphere — an emotional track for your partner or mom, a nostalgic Bollywood/pop anthem for your best friend, or your own recorded birthday wish.',
+        'In TheGreeter customizer, background music and voice notes are available right from the Starter plan (₹59 one-time), and you can audition every track inside the live preview before publishing.'
+      ],
+      ideasHeading: 'Best Audio Ideas for Different Recipients',
+      ideas: [
+        { strong: 'For Girlfriend or Boyfriend:', text: 'Use "your song" — the track from a memorable late-night drive or first date.' },
+        { strong: 'For Mom or Dad:', text: 'Pair a calm instrumental song with a spoken thank-you voice note praising them.' },
+        { strong: 'For Best Friends & Siblings:', text: 'Upload an inside-joke voice memo or upbeat party track alongside funny throwbacks.' },
+        { strong: 'Long-Distance Birthdays:', text: 'Record friends singing Happy Birthday together into one custom audio clip.' }
+      ],
+      stepsHeading: 'How to Add Music to Your Birthday Website',
+      steps: [
+        'Open the Creator Studio and fill in the recipient’s name, relationship, and birthday story.',
+        'Pick a Birthday template inside the preview studio.',
+        'Enable the Music or Voice Note feature in the customizer panel and select a built-in track or upload your audio.',
+        'Preview with sound on, publish in one click, and send the link to your recipient.'
+      ],
+      relatedBlog: { title: 'Read: Romantic Birthday Love Letter Examples to Pair With Music', url: '/blog/romantic-birthday-love-letter-examples' }
+    },
+    faqs: [
+      { q: 'Can I upload my own custom song or MP3 recording?', a: 'Yes! You can pick from TheGreeter’s built-in curated music library or upload your own MP3/audio track or voice note directly inside the customizer.' },
+      { q: 'Does background music work on starter and pro plans?', a: 'Yes, background music and voice notes are included across Starter (₹59), Pro (₹99), Pro+ (₹149), and Infinity Lifetime (₹299).' },
+      { q: 'Will audio play on both iPhone and Android?', a: 'Yes, interactive tap-to-open curtains, lock screens, or player controls trigger clean audio playback across iOS Safari, Android Chrome, and desktop browsers.' }
+    ],
+    relatedPages: [
+      { title: 'Birthday Card With Photos', url: '/birthday-card-with-photos', desc: 'Add polaroid memories alongside your song.' },
+      { title: 'Online Birthday Card', url: '/online-birthday-card', desc: 'Compare interactive cards vs traditional ecards.' },
+      { title: 'Birthday Card With Password', url: '/birthday-card-with-password', desc: 'Add a secret unlock screen with sound effects.' }
+    ],
+    ctaBanner: {
+      title: 'Send a Musical Birthday Surprise They Will Replay',
+      desc: 'Pair their favorite song with photos and custom wishes in under 2 minutes.',
+      buttonText: 'Add Music & Preview Free'
+    }
+  },
+  {
+    slug: 'birthday-card-with-photos',
+    title: 'Birthday Card With Photos & Polaroids | TheGreeter',
+    description: 'Make a birthday card with photos from your phone camera roll. Display animated polaroid memories, custom captions, music, and birthday letters online.',
+    keywords: 'birthday card with photos, photo birthday website maker, polaroid birthday card online, custom photo greeting webpage, thegreeter',
+    schemaName: 'TheGreeter Photo Birthday Card Maker',
+    parentHub: { name: 'Birthday Website Maker', url: '/birthday-wishes-website' },
+    breadcrumbName: 'Card With Photos',
+    heroBadge: '📸 Polaroid Galleries, Memory Timelines & Photo Bursts',
+    heroH1: 'Make a Personalized Birthday Card With Your Favorite Photos',
+    heroLead: 'Do not let your best photos stay buried in camera rolls. Turn candid snapshots, throwback pictures, and travel memories into interactive polaroids, floating photo galleries, and captioned timelines inside a single birthday webpage.',
+    primaryCtaText: 'Build Photo Birthday Card',
+    primaryCtaHref: '/create?event=birthday&mood=emotional',
+    demoBtnText: 'See Live Demo',
+    demoHref: '/generated/customize.html?view=vs7nuzc3to&_v=c',
+    features: [
+      { icon: '🖼️', title: 'Polaroids & Instant Camera Prints', desc: 'Reveal your favorite snapshots in tactile polaroid frames with handwritten-style captions and dates.' },
+      { icon: '📅', title: 'Memory Timeline Sections', desc: 'Arrange photos chronologically from childhood throwbacks or your first date up to today.' },
+      { icon: '🎁', title: 'Scratch & Gift-Box Reveals', desc: 'Hide memorable photos inside gift boxes or scratch cards for playful interaction.' },
+      { icon: '✨', title: 'Fast Mobile Optimization', desc: 'Uploaded photos are compressed automatically so galleries load quickly even on mobile data.' },
+      { icon: '✏️', title: 'Add or Swap Photos Anytime', desc: 'Forgot a group picture? Log in via your Edit PIN and update photos without breaking the link.' },
+      { icon: '♾️', title: 'Option to Keep Memories Forever', desc: 'Choose Infinity Lifetime hosting (₹299 one-time) to preserve the photo site permanently.' }
+    ],
+    article: {
+      introHeading: 'Turn Scattered Photos Into a Story They Can Scroll Through',
+      introParagraphs: [
+        'Posting a quick Instagram story collage disappears in 24 hours. A birthday card with photos on TheGreeter curates your shared history into dedicated sections — a memory timeline, captioned polaroid frames, and interactive image reveals paired with your own words and music.',
+        'Every upload works right from your phone gallery with zero formatting stress. You can rearrange captions, test multiple birthday templates, and preview the exact mobile look free.'
+      ],
+      ideasHeading: 'Photo Curation Prompts That Always Work',
+      ideas: [
+        { strong: '1st Photo — Iconic Duo Shot:', text: 'Open strong with your favorite happy picture together.' },
+        { strong: 'Middle Photos — Embarrassing Throwbacks:', text: 'Mix in two funny candid moments or old screenshots for instant laughs.' },
+        { strong: 'Short Specific Captions:', text: 'Write tiny prompts under each polaroid like "Goa rainstorm, 2024" or "2 AM Maggi run".' },
+        { strong: 'Final Photo — Toast to Next Year:', text: 'End with a recent portrait alongside your main birthday wish.' }
+      ],
+      stepsHeading: 'How to Build Your Photo Birthday Card',
+      steps: [
+        'Start by entering their name above and choosing Birthday in the Creator Studio.',
+        'Pick any photo-rich birthday template inside the interactive previewer.',
+        'Enable Polaroid, Memory Timeline, or Instant Camera sections and upload up to 9 photos directly from your device.',
+        'Add captions, pair background music, preview live, and generate your shareable URL.'
+      ],
+      relatedBlog: { title: 'Read: 10 Smart Ways to Surprise Your Best Friend Online', url: '/blog/how-to-surprise-best-friend-online' }
+    },
+    faqs: [
+      { q: 'How many photos can I add to a birthday website?', a: 'You can add up to 9 curated memory photos across the timeline, polaroid, and interactive photo reveal sections, with custom captions on each memory.' },
+      { q: 'Are my uploaded photos private?', a: 'Yes! Generated user pages are unlisted, excluded in robots.txt, and served with noindex headers so only people with your shared link or QR code can open them.' },
+      { q: 'Can I replace or add more photos later?', a: 'Yes, every published page includes a secret Edit PIN so you can swap or update photos anytime at thegreeter.in/edit without changing your URL.' }
+    ],
+    relatedPages: [
+      { title: 'Birthday Card With Music', url: '/birthday-card-with-music', desc: 'Add a favorite song over your photo gallery.' },
+      { title: 'Digital Birthday Card', url: '/digital-birthday-card', desc: 'Include virtual blow-candle cake cutting & countdowns.' },
+      { title: 'Birthday Website for Mom', url: '/birthday-wishes-for-mom', desc: 'Build a family throwback tribute for Mom.' }
+    ],
+    ctaBanner: {
+      title: 'Bring Your Favorite Memories Together Today',
+      desc: 'Upload photos, write captions, add music, and preview your custom birthday card free.',
+      buttonText: 'Upload Photos & Preview'
+    }
+  },
+  {
+    slug: 'digital-birthday-card',
+    title: 'Digital Birthday Card With Virtual Cake | TheGreeter',
+    description: 'Send a rich digital birthday card featuring virtual blow-candle cake cutting, midnight countdowns, music, photos, and zero ads. Ready in under 2 minutes.',
+    keywords: 'digital birthday card, interactive digital birthday card, virtual cake birthday card, ad-free digital card maker, thegreeter',
+    schemaName: 'TheGreeter Digital Birthday Card Generator',
+    parentHub: { name: 'Birthday Website Maker', url: '/birthday-wishes-website' },
+    breadcrumbName: 'Digital Birthday Card',
+    heroBadge: '🎂 Virtual Cake Cutting · Midnight Timer · Zero Ads',
+    heroH1: 'A Digital Birthday Card Built as an Interactive Experience',
+    heroLead: 'Why settle for a flat paper greeting card when you can send a digital birthday card with blowable candles, animated cake cutting, synchronized midnight confetti countdowns, background music, and photo memories?',
+    primaryCtaText: 'Create Digital Birthday Card',
+    primaryCtaHref: '/create?event=birthday',
+    demoBtnText: 'See Live Demo',
+    demoHref: '/generated/customize.html?view=vs7nuzc3to&_v=c',
+    features: [
+      { icon: '🕯️', title: 'Virtual Blow-Candle Cake', desc: 'Recipients tap or blow to extinguish candles and slice their digital birthday cake with applause.' },
+      { icon: '⏳', title: 'Live Midnight Countdown', desc: 'Build anticipation with a real-time countdown screen that unlocks confetti right when their birthday hits.' },
+      { icon: '🤗', title: 'Virtual Hug & Confetti', desc: 'Interactive hug animation and floating petals bring warmth across time zones.' },
+      { icon: '📱', title: 'Printable QR + Custom URL', desc: 'Share instantly on WhatsApp or print the high-res QR code onto a physical gift box or bouquet.' },
+      { icon: '🌍', title: 'English & Hindi Support', desc: 'Create completely in English or switch to Hindi for regional wishes and shayari.' },
+      { icon: '🚫', title: '100% Ad-Free Forever', desc: 'No banner ads, popups, or upsells distracting your recipient on their birthday.' }
+    ],
+    article: {
+      introHeading: 'The Evolution From Paper Cards to Digital Birthday Websites',
+      introParagraphs: [
+        'Traditional greeting cards cost ₹150–₹400 plus delivery time, only say a few lines, and cannot play songs, hold 9 personal photos, or simulate cutting a birthday cake across cities.',
+        'A digital birthday card on TheGreeter gives recipients an interactive celebration flow: unlock or countdown into confetti, flip through your shared photos while music plays, blow out virtual candles, read your long-form letter, and save the custom link as a keepsake.'
+      ],
+      ideasHeading: 'Best Moments to Include in Your Digital Card',
+      ideas: [
+        { strong: '1. Opening Reveal:', text: 'Pick Curtain Reveal, Typewriter Welcome, or a secret PIN Lock Screen.' },
+        { strong: '2. Photo & Letter Core:', text: 'Pair 4–9 personal photos with an honest story + special wishes section.' },
+        { strong: '3. Interactive Celebration:', text: 'Enable Virtual Cake Cutting + Confetti or Virtual Hug near the finale.' },
+        { strong: '4. Easy Sharing:', text: 'Copy a memorable vanity URL on Pro (`thegreeter.in/demo-raman` style) for effortless sharing.' }
+      ],
+      stepsHeading: 'Build Your Digital Birthday Card in 60 Seconds',
+      steps: [
+        'Type the birthday person’s name in the quick-start bar above or open Create.',
+        'Pick Birthday and choose your mood (Romantic, Happy, Emotional, Funny, or Roast).',
+        'Customize template visuals, music, virtual cake, and photos with instant mobile preview.',
+        'Publish once (from ₹59 in India / regional pricing globally) and share immediately.'
+      ],
+      relatedBlog: { title: 'Read: Why Digital Wishes Beat Traditional Paper Cards', url: '/blog/why-digital-wishes-beat-traditional-cards' }
+    },
+    faqs: [
+      { q: 'Does the recipient need any app to open my digital birthday card?', a: 'No app or sign-up needed. Clicking the link or scanning your QR code opens the interactive page directly in any mobile or desktop browser.' },
+      { q: 'Which plan includes virtual cake cutting and custom URLs?', a: 'Starter (₹59) covers ad-free photos, music, and countdowns; Pro (₹99), Pro+ (₹149), and Infinity Lifetime (₹299) unlock custom vanity URLs, printable QR codes, virtual cake cutting, and virtual hugs.' },
+      { q: 'Are there recurring monthly fees?', a: 'Never. Every plan on TheGreeter is a transparent one-time payment.' }
+    ],
+    relatedPages: [
+      { title: 'Online Birthday Card', url: '/online-birthday-card', desc: 'Send one private link instead of generic e-cards.' },
+      { title: 'Birthday Card With Music', url: '/birthday-card-with-music', desc: 'Add favorite songs and voice notes.' },
+      { title: 'Compare Website Makers', url: '/blog/best-birthday-website-makers', desc: 'Side-by-side look at top 2026 card tools.' }
+    ],
+    ctaBanner: {
+      title: 'Send a Digital Card They Can Actually Interact With',
+      desc: 'Virtual cake cutting, custom songs, and photo memories ready in under 2 minutes.',
+      buttonText: 'Start Free Preview'
+    }
+  },
+  {
+    slug: 'birthday-card-with-password',
+    title: 'Password-Protected Birthday Card Maker | TheGreeter',
+    description: 'Create a secret password-protected birthday card locked behind a custom 3–6 digit PIN code and hint before your photos, music, and wishes unlock.',
+    keywords: 'password protected birthday card, pin locked birthday website, secret unlock birthday page, private birthday surprise link, thegreeter',
+    schemaName: 'TheGreeter PIN-Locked Birthday Card Maker',
+    parentHub: { name: 'Birthday Website Maker', url: '/birthday-wishes-website' },
+    breadcrumbName: 'PIN-Locked Card',
+    heroBadge: '🔐 3–6 Digit PIN Lock Screen · Optional Secret Hint',
+    heroH1: 'Build a Password-Protected Birthday Surprise Page',
+    heroLead: 'Turn opening the link into part of the gift. Guard your birthday website behind a themed 3–6 digit secret PIN keypad with a custom clue only the two of you know — like the year you met, their birthday date, or your anniversary.',
+    primaryCtaText: 'Create PIN-Locked Card',
+    primaryCtaHref: '/create?event=birthday&mood=romantic',
+    demoBtnText: 'See Live Demo',
+    demoHref: '/generated/customize.html?view=vs7nuzc3to&_v=c',
+    features: [
+      { icon: '🔐', title: 'Custom 3–6 Digit PIN Keypad', desc: 'Set any memorable 3 to 6 digit code so the recipient must unlock the keypad before seeing the page.' },
+      { icon: '💡', title: 'Built-In Secret Hint Toggle', desc: 'Add an optional clue (e.g., "The date of our first coffee") so they smile guessing it.' },
+      { icon: '🎨', title: 'Themed Lock Screen & Photo', desc: 'Display a portrait preview card and celebratory unlock / wrong-PIN sound effects right on the lock overlay.' },
+      { icon: '⏳', title: 'Pairs With Midnight Countdown', desc: 'If a midnight timer is active, the lock screen triggers cleanly right after the countdown reaches zero.' },
+      { icon: '📸', title: 'Full Surprise Inside Once Unlocked', desc: 'Unlocking reveals your custom photos, background song, letter, and virtual birthday cake.' },
+      { icon: '🔎', title: 'Private & Unlisted Hosting', desc: 'User-generated pages are disallowed in robots.txt and carry noindex tags for extra privacy.' }
+    ],
+    article: {
+      introHeading: 'Why a PIN-Locked Birthday Card Creates Instant Anticipation',
+      introParagraphs: [
+        'Instead of revealing everything in one static screen, starting with a secret unlock keypad immediately makes the recipient curious. Guessing a meaningful 4-digit PIN turns the opening 10 seconds into a playful memory check.',
+        'On TheGreeter, our interactive Lock Screen feature supports 3–6 digit numeric PINs, custom visual themes, an optional hint message, sound effects when entered right or wrong, and seamless handoff after a midnight countdown.'
+      ],
+      ideasHeading: 'Smart Secret PIN Ideas Your Recipient Will Smile Guessing',
+      ideas: [
+        { strong: 'Your Special Date (DDMM):', text: 'The day you met, got engaged, or became best friends (hint: "Where it all started").' },
+        { strong: 'Their Lucky Number or Birth Year:', text: 'Classic 4 digits like 1998 or 2002 paired with a playful roast clue.' },
+        { strong: 'Room / Hostel / Street Number:', text: 'College nostalgia for best friends and siblings ("Our old hostel room!").' },
+        { strong: 'Gift Card / Clue Combo:', text: 'Hide a second clue inside the unlocked page leading to a real-world present.' }
+      ],
+      stepsHeading: 'How to Add a Password Lock to Your Birthday Page',
+      steps: [
+        'Open the Creator Studio with the recipient’s name, relationship, and personal message.',
+        'Choose your template and open the interactive Features panel inside the customizer.',
+        'Toggle ON the Secret PIN Lock Screen, enter your 3–6 digit PIN code, and optionally enable a Hint.',
+        'Preview the unlock flow live, publish your page, and send the link with confidence.'
+      ],
+      relatedBlog: { title: 'Read: 12 Virtual Birthday Ideas for Long-Distance Relationships', url: '/blog/virtual-birthday-ideas-long-distance-relationship' }
+    },
+    faqs: [
+      { q: 'Can I include a clue in case they forget the password?', a: 'Yes! The PIN lock feature includes an optional Hint toggle where you can write a personalized clue right under the keypad.' },
+      { q: 'Does unlocking play music or transition into the birthday card smoothly?', a: 'Yes! Entering the right PIN plays an unlock sound effect, bursts confetti, and smoothly fades into your birthday webpage and background song.' },
+      { q: 'Can I change the recipient unlock PIN after sharing?', a: 'Yes — log in at thegreeter.in/edit with your separate Creator Edit PIN to update the lock screen code, photos, or text anytime.' }
+    ],
+    relatedPages: [
+      { title: 'Long-Distance Surprise', url: '/long-distance-surprise-website', desc: 'Combine PIN locks with countdowns & virtual hugs.' },
+      { title: 'Birthday Card With Music', url: '/birthday-card-with-music', desc: 'Start their favorite song right when they unlock.' },
+      { title: 'Online Birthday Card', url: '/online-birthday-card', desc: 'Explore all interactive card styles.' }
+    ],
+    ctaBanner: {
+      title: 'Lock Your Surprise Behind a Memory Only They Know',
+      desc: 'Add a secret PIN screen, photos, music, and wishes in under 2 minutes.',
+      buttonText: 'Build PIN-Locked Card'
     }
   }
 ];
